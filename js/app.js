@@ -1011,6 +1011,16 @@
      ================================================================= */
   try { S.be = await window.GLBackend.create(); }
   catch (e) { app.innerHTML = `<main class="wrap gate"><div class="card"><h1>Keine Verbindung</h1><p>Der Hub kann die Datenbank gerade nicht laden. Prüf das Internet und lade die Seite neu.</p></div></main>`; return; }
+  /* Rückkehr vom Bestätigungslink in der E-Mail (Supabase hängt Daten an die Adresse an) */
+  const authHash = new URLSearchParams((location.hash || "").replace(/^#/, "") + "&" + (location.search || "").replace(/^\?/, ""));
+  if (authHash.get("access_token") || authHash.get("type") === "signup" || authHash.get("code") || authHash.get("error")) {
+    const err = authHash.get("error_description");
+    await new Promise(r => setTimeout(r, 600));   // Supabase übernimmt die Anmeldung aus der Adresse
+    history.replaceState(null, "", location.pathname);
+    go({ name: "lp" });
+    toast(err ? `Bestätigung hat nicht geklappt: ${err}. Melde dich einfach mit E-Mail und Passwort an.` : "E-Mail bestätigt! Melde dich mit E-Mail und Passwort an, falls du nicht schon drin bist.", err ? "err" : "star", 7000);
+    return;
+  }
   if (S.token) {
     try { await loadMe(); return go({ name: "home" }); }
     catch (e) { store.del("glhub.token"); S.token = ""; S.team = []; saveTeam(); }
