@@ -1,0 +1,22 @@
+# Hält die Gratis-Datenbank wach.
+# Supabase pausiert Gratis-Projekte nach 7 Tagen ohne Betrieb (z. B. in den Ferien).
+# Diese Aufgabe fragt alle 3 Tage kurz bei der Datenbank an. Sie liest die zwei Werte
+# direkt aus js/config.js, du musst also nichts zusätzlich eintragen.
+name: Datenbank wachhalten
+on:
+  schedule:
+    - cron: "17 6 */3 * *"
+  workflow_dispatch: {}
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Kurze Anfrage an Supabase
+        run: |
+          URL=$(grep -o 'SUPABASE_URL: *"[^"]*"' js/config.js | sed 's/.*"\(.*\)"/\1/')
+          KEY=$(grep -o 'SUPABASE_ANON_KEY: *"[^"]*"' js/config.js | sed 's/.*"\(.*\)"/\1/')
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then echo "Noch keine Datenbank eingetragen."; exit 0; fi
+          curl -sS -X POST "$URL/rest/v1/rpc/kid_class" \
+            -H "apikey: $KEY" -H "Content-Type: application/json" \
+            -d '{"p_code":"WACH-0000"}'

@@ -1,0 +1,15 @@
+.glitch { display: inline-block; position: relative; line-height: 0; flex: none; }
+.glitch svg { width: 100%; height: 100%; overflow: visible; display: block; animation: gBob 2.6s ease-in-out infinite; animation-delay: var(--d, 0s); }
+.glitch .gc { transform: translate(-.7px, 0); opacity: .85; animation: gC 3.2s steps(1) infinite; animation-delay: var(--d, 0s); }
+.glitch .gm { transform: translate(.7px, 0); opacity: .85; animation: gM 3.2s steps(1) infinite; animation-delay: var(--d, 0s); }
+.glitch .ge { transform-box: fill-box; transform-origin: center; animation: gBlink 4.4s infinite; animation-delay: var(--d, 0s); }
+.glitch .gsl { opacity: 0; animation: gSl 3.2s steps(1) infinite; animation-delay: var(--d, 0s); }
+.glitch .gp { animation: gPix 2.2s steps(2) infinite; }
+.glitch .gp2 { animation-delay: .6s; } .glitch .gp3 { animation-delay: 1.2s; }
+.glitch.still svg, .glitch.still .gc, .glitch.still .gm, .glitch.still .gsl { animation: none; }
+@keyframes gBob { 50% { transform: translateY(-6%); } }
+@keyframes gC { 0%, 84%, 100% { transform: translate(-.7px, 0); } 86% { transform: translate(-2px, .5px); } 90% { transform: translate(1px, -.4px); } 93% { transform: translate(-1.4px, 0); } }
+@keyframes gM { 0%, 84%, 100% { transform: translate(.7px, 0); } 86% { transform: translate(2px, -.5px); } 90% { transform: translate(-1px, .4px); } 93% { transform: translate(1.4px, 0); } }
+@keyframes gSl { 0%, 85%, 100% { opacity: 0; } 87% { opacity: .9; clip-path: inset(30% 0 48% 0); transform: translateX(1.6px); } 89% { opacity: .9; clip-path: inset(60% 0 18% 0); transform: translateX(-1.6px); } 91% { opacity: 0; } }
+@keyframes gBlink { 0%, 93%, 100% { transform: none; } 95% { transform: scaleY(.15); } }
+@keyframes gPix { 50% { opacity: 0; } }

@@ -1,0 +1,228 @@
+<title>gLiTCh-Editor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: Werkbank mit Schritt-Leiste oben (1 Grundlagen · 2 Material · 3 Belohnungen · 4 Erstellen), darunter je ein Arbeitsbereich. Immer dunkel: Lila, Türkis, Schwarz wie der Glitchlab-Hub. */
+:root{
+  --bg:#07040F; --surface:#120A24; --surface2:#1B1036; --line:#33245E; --ink:#F3EDFF; --muted:#A598C6;
+  --accent:#A07CFF; --teal:#2EE6D6; --pink:#FF2BD6; --gold:#FFC21A; --ok:#3CFF7A; --bad:#FF5A6E;
+  --f-display:"Bricolage Grotesque","Inter",system-ui,sans-serif; --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{background:var(--bg)}
+body{background:radial-gradient(1100px 520px at 0% -10%,rgba(139,92,255,.26),transparent 60%),radial-gradient(900px 480px at 110% 0%,rgba(46,230,214,.14),transparent 60%),var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);min-height:100%}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(160,124,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(160,124,255,.045) 1px,transparent 1px);background-size:28px 28px;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 80px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.12;margin:0;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+.mast{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.mast .glitch{width:62px;height:62px}
+.mast-t{flex:1;min-width:220px}
+.mast-t h1{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.01em}
+.mast-t h1 em{font-style:normal;color:var(--teal);font-family:var(--f-mono);font-size:.62em;vertical-align:.3em;margin-left:6px;letter-spacing:.06em}
+.mast-t p{margin:2px 0 0;color:var(--muted);max-width:62ch}
+.steps{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:18px 0 0;padding:8px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;background:rgba(18,10,36,.88);backdrop-filter:blur(10px);border:1.5px solid var(--line);border-radius:18px}
+.step{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;min-width:0}
+.step b{flex:none;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-family:var(--f-mono);background:var(--surface2);border:1.5px solid var(--line)}
+.step span{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step small{display:block;color:var(--muted);font-weight:600;font-size:.75rem}
+.step[aria-current="step"]{background:linear-gradient(135deg,rgba(160,124,255,.28),rgba(255,43,214,.16))}
+.step[aria-current="step"] b{background:var(--accent);border-color:var(--accent);color:#0B0618}
+.step.ok b{background:var(--teal);border-color:var(--teal);color:#0B0618}
+.step:focus-visible,.btn:focus-visible,.chip:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+@media (max-width:720px){.steps{grid-template-columns:repeat(4,minmax(0,1fr))}.step{justify-content:center;padding:8px 4px}.step span small,.step span{display:none}}
+.pane{margin-top:18px;display:grid;gap:16px}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:20px;padding:18px;display:grid;gap:14px;min-width:0}
+.card-h{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.card-h h2{font-size:1.25rem;flex:1;min-width:200px}
+.card-h p{margin:4px 0 0;color:var(--muted);font-size:.92rem;flex-basis:100%}
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:720px){.grid2,.grid3{grid-template-columns:1fr}}
+.f{display:grid;gap:5px;min-width:0}
+.f>span{font-size:.78rem;font-weight:800;color:var(--muted);letter-spacing:.04em}
+.in{width:100%;background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.in:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(46,230,214,.22)}
+textarea.in{min-height:110px;resize:vertical}
+select.in{appearance:none;padding-right:30px;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%232EE6D6' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center}
+option,optgroup{background:var(--surface);color:var(--ink)}
+.hint{color:var(--muted);font-size:.86rem;margin:0}
+.btn{appearance:none;border:1.5px solid var(--line);background:var(--surface2);border-radius:12px;padding:9px 14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--pink));border-color:transparent;color:#fff;box-shadow:0 6px 18px rgba(160,124,255,.3)}
+.btn.teal{background:var(--teal);border-color:var(--teal);color:#06030D}
+.btn.small{padding:5px 10px;font-size:.85rem;border-radius:10px}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row.end{justify-content:flex-end}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--line);background:var(--bg);font-weight:700;font-size:.9rem;user-select:none}
+.chip input{accent-color:var(--teal)}
+.chip:has(input:checked){border-color:var(--teal);background:rgba(46,230,214,.1)}
+.drop{display:grid;place-items:center;gap:4px;text-align:center;padding:24px 14px;border:2px dashed rgba(46,230,214,.55);border-radius:16px;background:rgba(46,230,214,.05);cursor:pointer}
+.drop.over,.drop:hover{background:rgba(46,230,214,.12);border-color:var(--teal)}
+.drop b{font-family:var(--f-display);font-size:1.1rem}
+.files{display:grid;gap:8px}
+.file{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.file .ic{font-size:1.4rem}
+.file b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file small{color:var(--muted);font-family:var(--f-mono);font-size:.75rem}
+.list{display:grid;gap:8px}
+.item{display:grid;grid-template-columns:64px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.2fr) auto;gap:8px;align-items:center;padding:8px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.item .in{padding:7px 9px;border-radius:10px}
+.item .emo{text-align:center;font-size:1.3rem;padding:4px}
+.item.dip{grid-template-columns:64px minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr) auto}
+.item.bg{grid-template-columns:64px minmax(0,1fr) auto auto minmax(0,1.2fr) auto}
+.item.bg .sw{display:flex;gap:4px}
+.item.bg input[type=color]{width:34px;height:34px;padding:0;border:1.5px solid var(--line);border-radius:8px;background:none}
+@media (max-width:820px){.item,.item.dip,.item.bg{grid-template-columns:56px minmax(0,1fr) auto}.item>*:nth-child(n+3):not(:last-child){grid-column:1/-1}}
+.empty{padding:12px;border-radius:12px;border:1px dashed var(--line);color:var(--muted);font-size:.9rem}
+.cat-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cat-h h3{font-size:1.05rem;flex:1}
+.cat-h .n{font-family:var(--f-mono);color:var(--teal);font-size:.8rem}
+.gen{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:16px;align-items:start}
+@media (max-width:900px){.gen{grid-template-columns:1fr}}
+.prog{display:grid;gap:6px}
+.pr{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.pr i{width:14px;height:14px;border-radius:50%;background:var(--line)}
+.pr.run i{background:var(--teal);box-shadow:0 0 0 0 rgba(46,230,214,.6);animation:pulse 1.2s infinite}
+.pr.ok i{background:var(--ok)} .pr.err i{background:var(--bad)}
+.pr small{color:var(--muted);font-family:var(--f-mono);font-size:.75rem}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(46,230,214,0)}}
+.et{padding:12px;border-radius:14px;background:var(--bg);border:1px solid var(--line);display:grid;gap:8px}
+.et-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.et-h b{flex:1;min-width:160px}
+.et-h .emo{font-size:1.4rem}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:var(--f-mono);font-size:.72rem;padding:2px 8px;border-radius:99px;background:rgba(160,124,255,.16);color:#D9CCFF}
+.preview{border-radius:18px;overflow:hidden;border:1.5px solid var(--accent);background:#06030D;height:min(76vh,760px);display:flex;flex-direction:column}
+.preview-bar{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface2);border-bottom:1px solid var(--line);font-family:var(--f-mono);font-size:.78rem;color:var(--muted)}
+.preview-bar i{width:9px;height:9px;border-radius:50%;background:var(--pink)} .preview-bar i+i{background:var(--gold)} .preview-bar i+i+i{background:var(--teal)}
+.preview iframe{flex:1;width:100%;border:0;background:#06030D}
+.pv-empty{flex:1;display:grid;place-items:center;text-align:center;padding:20px;color:var(--muted)}
+.pv-empty .glitch{width:90px;height:90px;margin:0 auto 10px}
+.say{display:flex;gap:12px;align-items:flex-start}
+.say .glitch{width:54px;height:54px}
+.bubble{flex:1;min-width:0;background:var(--surface2);border:1.5px solid var(--pink);border-radius:16px;padding:10px 14px;box-shadow:3px 3px 0 var(--teal)}
+.bubble b{font-family:var(--f-mono);color:var(--pink);font-size:.78rem}
+.bubble p{margin:2px 0 0}
+.note{padding:10px 12px;border-radius:12px;background:rgba(255,194,26,.08);border:1px solid rgba(255,194,26,.5);font-size:.88rem}
+.err{color:var(--bad);font-weight:700;margin:0}
+.toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;background:var(--gold);color:#140A00;font-weight:800;padding:10px 16px;border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,.45);max-width:calc(100% - 32px)}
+.foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/*@GLITCH_CSS@*/
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <span class="glitch" id="mastG"></span>
+    <div class="mast-t"><h1>gLiTCh-Editor<em>MODUL-WERKSTATT</em></h1>
+      <p>Thema, Ideen und Material eingeben, Belohnungen wählen, gLiTCh baut daraus ein Modul im Stil der NMG- und M&amp;I-Labs. Am Ende ziehst du die Datei in den Glitchlab-Hub.</p></div>
+    <div class="row"><button type="button" class="btn small ghost" id="btnNew">Neues Modul</button></div>
+  </header>
+
+  <nav class="steps" aria-label="Schritte">
+    <button type="button" class="step" data-step="1"><b>1</b><span>Grundlagen<small id="s1sub">Thema &amp; Stufe</small></span></button>
+    <button type="button" class="step" data-step="2"><b>2</b><span>Material<small id="s2sub">PDF, Word, Links</small></span></button>
+    <button type="button" class="step" data-step="3"><b>3</b><span>Belohnungen<small id="s3sub">Diplome &amp; Extras</small></span></button>
+    <button type="button" class="step" data-step="4"><b>4</b><span>Erstellen<small id="s4sub">Vorschau &amp; Datei</small></span></button>
+  </nav>
+
+  <!-- 1 Grundlagen -->
+  <section class="pane" data-pane="1">
+    <div class="card">
+      <div class="card-h"><div><p class="eyebrow">Schritt 1</p><h2>Worum geht es?</h2></div><p>Je genauer, desto besser passt das Modul. Fach und Thema bestimmen, wo das Modul im Hub erscheint.</p></div>
+      <label class="f"><span>Thema des Moduls</span><input class="in" id="titel" maxlength="60" placeholder="z. B. Vulkane und Erdbeben"></label>
+      <div class="grid3">
+        <label class="f"><span>Fach</span><select class="in" id="fach"></select></label>
+        <label class="f"><span>Thema im Hub</span><select class="in" id="hubThema"></select></label>
+        <label class="f" id="neuWrap"><span>Neues Hub-Thema</span><input class="in" id="hubNeu" maxlength="50" placeholder="z. B. Naturgewalten"></label>
+      </div>
+      <div class="grid3">
+        <label class="f"><span>Schulstufe</span><select class="in" id="klasse"></select></label>
+        <label class="f"><span>Dauer</span><select class="in" id="minuten"><option value="30">ca. 30 Minuten</option><option value="45" selected>ca. 45 Minuten (1 Lektion)</option><option value="90">ca. 90 Minuten (2 Lektionen)</option><option value="135">ca. 135 Minuten (3 Lektionen)</option></select></label>
+        <label class="f"><span>Anzahl Etappen</span><select class="in" id="etappen"><option>3</option><option selected>4</option><option>5</option><option>6</option></select></label>
+      </div>
+      <label class="f"><span>Rahmengeschichte</span><select class="in" id="rahmen">
+        <option value="auto">gLiTCh wählt passend zum Thema</option>
+        <option value="Zeitreise">Zeitreise: gLiTCh reist in eine andere Zeit</option>
+        <option value="Detektiv">Detektiv-Fall: Spuren suchen und prüfen</option>
+        <option value="Labor">Labor: Experimente und Erfindungen</option>
+        <option value="Expedition">Expedition: eine Reise mit Etappen</option>
+        <option value="Reporter">Reporter: Interviews und Berichte</option>
+      </select></label>
+      <label class="f"><span>Ideen, Lernziele und Wünsche</span><textarea class="in" id="ideen" placeholder="z. B. Die Kinder sollen erklären können, wie ein Vulkan entsteht. Bitte ein Experiment mit Backpulver einbauen und die Vulkane in Italien erwähnen. Wenig Text, viele Bilder-Beschreibungen."></textarea></label>
+      <div class="f"><span>Aufgabenarten</span><div class="chips" id="typen"></div></div>
+    </div>
+    <div class="foot"><span></span><button type="button" class="btn primary" data-goto="2">Weiter zum Material →</button></div>
+  </section>
+
+  <!-- 2 Material -->
+  <section class="pane" data-pane="2" hidden>
+    <div class="card">
+      <div class="card-h"><div><p class="eyebrow">Schritt 2</p><h2>Material fürs Modul</h2></div><p>gLiTCh liest den Text aus PDFs und Word-Dateien und baut ihn ins Modul ein. Bilder in den Dateien liest es nicht.</p></div>
+      <label class="drop" id="drop" tabindex="0"><input type="file" id="fileIn" multiple accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" class="sr">
+        <span aria-hidden="true" style="font-size:1.8rem">📄</span><b>PDF, Word (.docx) oder Text hierher ziehen</b><span class="hint">oder tippen zum Auswählen</span></label>
+      <div class="files" id="files"></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div><p class="eyebrow">Links</p><h2>Links fürs Modul</h2></div><p>Eine Adresse pro Zeile, optional mit Titel davor: <code>Vulkane bei SRF Kids | https://…</code>. Die Links stehen im Modul in einer Liste. gLiTCh kann die Seiten nicht selbst öffnen: Wichtige Inhalte kopierst du am besten als Text ins Ideen-Feld.</p></div>
+      <textarea class="in" id="links" placeholder="Vulkane einfach erklärt | https://www.srf.ch/…"></textarea>
+    </div>
+    <div class="foot"><button type="button" class="btn" data-goto="1">← Grundlagen</button><button type="button" class="btn primary" data-goto="3">Weiter zu den Belohnungen →</button></div>
+  </section>
+
+  <!-- 3 Belohnungen -->
+  <section class="pane" data-pane="3" hidden>
+    <div class="card">
+      <div class="card-h"><div><p class="eyebrow">Schritt 3</p><h2>Diplome und Extras</h2></div><p>Diplome sind die Achievements (Auszeichnungen) im Modul. Outfits, Emotes, Zimmer-Gegenstände und Hintergründe erscheinen nach dem Hochladen in gLiTChs Zimmer im Hub. Bei jedem Extra legst du fest, wann es frei wird.</p></div>
+      <label class="f"><span>Eigene Ideen für Belohnungen (freiwillig)</span><textarea class="in" id="belIdeen" style="min-height:70px" placeholder="z. B. ein Lava-Helm für gLiTCh, ein Emote, bei dem gLiTCh explodiert, ein Vulkan-Zimmer als Hintergrund"></textarea></label>
+      <div class="row"><button type="button" class="btn teal" id="sugAll">✨ Alles vorschlagen lassen</button><span class="hint" id="sugMsg">Vorschläge ergänzen die Listen. Du kannst alles ändern oder löschen.</span></div>
+    </div>
+    <div class="card" id="cats"></div>
+    <div class="foot"><button type="button" class="btn" data-goto="2">← Material</button><button type="button" class="btn primary" data-goto="4">Weiter zum Erstellen →</button></div>
+  </section>
+
+  <!-- 4 Erstellen -->
+  <section class="pane" data-pane="4" hidden>
+    <div class="gen">
+      <div class="card">
+        <div class="card-h"><div><p class="eyebrow">Schritt 4</p><h2>Modul erstellen</h2></div><p>gLiTCh plant zuerst die Etappen und das Lexikon, dann schreibt es jede Etappe einzeln. Das dauert je nach Grösse 2 bis 6 Minuten.</p></div>
+        <div class="say"><span class="glitch" id="sayG"></span><div class="bubble"><b>gLiTCh</b><p id="sayT">Alles bereit? Dann tippe auf «Modul erstellen».</p></div></div>
+        <label class="f"><span>Gründlichkeit</span><select class="in" id="tier"><option value="default">Normal (schneller)</option><option value="complex">Gründlich (bessere Aufgaben, dauert länger)</option></select></label>
+        <div class="row"><button type="button" class="btn primary" id="btnGen">⚙️ Modul erstellen</button><button type="button" class="btn" id="btnStop" hidden>Stopp</button></div>
+        <div class="prog" id="prog"></div>
+        <p class="err" id="genErr" role="alert"></p>
+        <div id="result" hidden>
+          <div class="list" id="ets"></div>
+          <div class="row" style="margin-top:10px"><button type="button" class="btn teal" id="btnDl">⬇ Modul herunterladen (.html)</button><button type="button" class="btn" id="btnCopy" hidden>Code kopieren</button></div>
+          <p class="hint" id="dlHint">Die Datei ziehst du im Glitchlab-Hub unter Lehrpersonen → «Module hochladen» ins Feld.</p>
+        </div>
+      </div>
+      <div class="preview"><div class="preview-bar"><i></i><i></i><i></i><span id="pvName">Vorschau</span></div>
+        <div class="pv-empty" id="pvEmpty"><div><span class="glitch" id="pvG"></span><p>Hier erscheint das Modul, sobald es fertig ist.<br>Du kannst es direkt ausprobieren (Testmodus).</p></div></div>
+        <iframe id="pv" title="Vorschau des Moduls" hidden></iframe></div>
+    </div>
+    <div class="foot"><button type="button" class="btn" data-goto="3">← Belohnungen</button><span></span></div>
+  </section>
+</div>
+
+<script type="text/plain" id="rt-css">/*@RUNTIME_CSS@*/</script>
+<script type="text/plain" id="rt-gcss">/*@GLITCH_CSS@*/</script>
+<script type="text/plain" id="rt-gjs">/*@GLITCH_JS@*/</script>
+<script type="text/plain" id="rt-js">/*@RUNTIME_JS@*/</script>
+<script>/*@GLITCH_JS@*/</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script>
+/*@EDITOR_JS@*/
+</script>

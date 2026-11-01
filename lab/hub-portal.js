@@ -1,0 +1,1207 @@
+/* ================= gLiTCh-Lab Lernumgebung =================
+   Konten (Vorname + PIN) und Klassen-Daten liegen auf jedem iPad im Browser-Speicher.
+   Austausch zwischen Geräten: «Klassen-Datei» (Lehrperson → iPads) und «Sicherung» (iPad → Lehrperson), z. B. per AirDrop.
+   Beim Laden einer Datei wird zusammengeführt: Sterne zählen das Maximum, Abzeichen werden vereinigt, Projekte: neuester Stand gewinnt. */
+/* Die Artifact-Ansicht blockiert echtes Formular-Absenden: Knopf-Klick und Enter lösen das submit-Ereignis selbst aus */
+document.addEventListener("click", e=>{
+  const b = e.target.closest && e.target.closest("button"); if (!b || !b.form) return;
+  const ty = (b.getAttribute("type") || "submit").toLowerCase(); if (ty !== "submit") return;
+  e.preventDefault(); b.form.dispatchEvent(new Event("submit", {bubbles:true, cancelable:true}));
+}, true);
+document.addEventListener("keydown", e=>{
+  if (e.key !== "Enter" || e.isComposing) return; const el = e.target;
+  if (!el || el.tagName !== "INPUT" || !el.form || el.closest("[data-pt-form]")) return;
+  e.preventDefault(); el.form.dispatchEvent(new Event("submit", {bubbles:true, cancelable:true}));
+}, true);
+(function(){
+const MODULES = [
+  {id:"prompt", n:"Prompt-Labor", d:"Baut in der Gruppe den ultimativen Prompt für eine Klassen-App, testet sie und macht sie besser.", c:"#8B5CFF", c2:"#3A1D7A", live:true,
+   i:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.4.3.5.7.5 1.1v1h6v-1c0-.4.2-.8.5-1.1A6 6 0 0 0 12 3z"/>'},
+  {id:"fakenews", req:{badge:"buehne", txt:"Wird freigeschaltet, sobald ihr Teil 1 im Prompt-Labor fertig habt (alle 4 Etappen präsentiert)."}, n:"Fake-News-Detektiv", d:"Echte Meldung oder Falle? Spuren sichern, Bilder rückwärts suchen und eine Faktencheck-Karte gestalten.", c:"#DD4646", c2:"#5A1414", live:true,
+   i:'<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5M8 10.5h5M10.5 8v5"/>'},
+  {id:"kibilder", req:{badge:"fn_alle", txt:"Wird freigeschaltet, sobald ihr alle 6 Fallakten im Fake-News-Detektiv gelöst habt."}, live:true, n:"KI-Bild oder echt?", d:"Wie entstehen KI-Bilder und Filter? Unterschiede entdecken und ein eigenes Vorher-Nachher-Plakat erstellen.", c:"#00B3C7", c2:"#0B3E5A",
+   i:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/>'},
+  {id:"eidgenossen", live:true, n:"Alte Eidgenossenschaft", y:"1291 – 1798", d:"Bundesbrief, Sagen und Schlachten: Wie aus drei Talschaften ein Bund von 13 Orten wurde. Am Schluss schreibt ihr eine Chronik-Seite.", c:"#D52B1E", c2:"#5A0F0A",
+   i:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/>'},
+  {id:"helvetik", live:true, req:{badge:"eidgenossen_4", txt:"Wird freigeschaltet, sobald ihr alle 4 Etappen der Alten Eidgenossenschaft präsentiert habt."}, n:"Helvetische Republik", y:"1798 – 1803", d:"Die Franzosen kommen! Ein neuer Staat mit gleichen Rechten, aber auch Streit und Not. Am Schluss gestaltet ihr ein Flugblatt.", c:"#1F9D68", c2:"#0B2E22",
+   i:'<path d="M12 21v-6M12 3l5 7h-3l4 5H6l4-5H7z"/>'},
+  {id:"mediation", live:true, req:{badge:"helvetik_4", txt:"Wird freigeschaltet, sobald ihr alle 4 Etappen der Helvetischen Republik präsentiert habt."}, n:"Mediationszeit", y:"1803 – 1813", d:"Napoleon vermittelt: 19 Kantone, Soldaten für Frankreich und das Drama an der Beresina. Am Schluss macht ihr eine Zeitungs-Titelseite.", c:"#2E6BE6", c2:"#10265A",
+   i:'<path d="M2 15c3-6 17-6 20 0-6 2-14 2-20 0zM8 11c1-3 7-3 8 0"/>'},
+  {id:"restauration", live:true, req:{badge:"mediation_4", txt:"Wird freigeschaltet, sobald ihr alle 4 Etappen der Mediationszeit präsentiert habt."}, n:"Restauration und Wiener Kongress", y:"1815", d:"Nach Napoleon wird Europa in Wien neu geordnet. Die Schweiz bekommt 22 Kantone und wird neutral. Am Schluss schreibt ihr einen Brief aus Wien.", c:"#E3A300", c2:"#6B3A00",
+   i:'<path d="M3 13c4 0 6-2 8-6 1 3 3 5 7 5l3-2-1 4c-2 3-6 5-11 5-3 0-5-2-6-6z"/>'}
+,
+  {id:"nachbarn", live:true, req:{badge:"restauration_4", txt:"Wird freigeschaltet, sobald ihr alle 4 Etappen von «Restauration und Wiener Kongress» präsentiert habt."}, n:"Nachbarländer der Schweiz", y:"5 Länderakten", d:"Deutschland, Frankreich, Italien, Österreich und Liechtenstein: Wählt eine Länderakte und entdeckt Geografie, Geschichte, Sprache und Alltag. Am Schluss gestaltet ihr einen Reisepass mit Stempeln.", c:"#00B3C7", c2:"#0B3E5A",
+   i:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>'},
+  {id:"erfindungen", live:true, req:{badge:"nachbarn_4", txt:"Wird freigeschaltet, sobald ihr den Reisepass der Nachbarländer präsentiert habt."}, n:"Schweizer Erfindungen", y:"Lektion 45 Min. + Extra-Level", d:"Vom Sackmesser über die Milchschokolade bis zum Klettverschluss: Erfinder-Rätsel, Zeitmaschine und Extra-Level. Am Schluss meldet ihr eine eigene Erfindung zum Patent an.", c:"#FF7A00", c2:"#5A2A00",
+   i:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.4.3.5.7.5 1.1v1h6v-1c0-.4.2-.8.5-1.1A6 6 0 0 0 12 3z"/>'},
+  {id:"politik", live:true, req:{badge:"erfindungen_4", txt:"Wird freigeschaltet, sobald ihr alle 4 Etappen der Schweizer Erfindungen präsentiert habt."}, n:"Schweizer Politik", y:"Abstimmungs-Simulation", d:"Bringt eine eigene Volksinitiative auf den Weg: Unterschriften sammeln, Argumente abwägen, Kampagne führen und am Abstimmungssonntag auf Volk und Kantone hoffen.", c:"#8B5CFF", c2:"#2A1660",
+   i:'<rect x="5" y="10" width="14" height="10" rx="1.5"/><path d="M9 10V5h6v5M10 14h4"/>'},
+  {id:"ebenen", live:true, req:{badge:"politik_4", txt:"Wird freigeschaltet, sobald ihr alle 4 Etappen der Schweizer Politik präsentiert habt."}, n:"Die drei Ebenen: Bund, Kantone, Gemeinden", y:"Ebenen-Simulator", d:"Wer ist wofür zuständig? Im Ebenen-Simulator verteilt ihr Anliegen, findet Kantone auf der Karte und überzeugt die Gemeindeversammlung von eurem Budget.", c:"#FF4F8B", c2:"#5A0F33",
+   i:'<path d="M4 20h16M6 16h12M8 12h8M12 4l5 4H7z"/>'}
+];
+const COLS = ["#8B5CFF","#DD4646","#2E6BE6","#1F9D68","#E3A300","#FF4F8B","#00B3C7","#7B5CFF","#FF7A00","#3A1D7A"];
+const DIPCOL = ["#FF2BD6","#00E5FF","#FFC21A","#3CFF7A","#B79CFF","#FF7A00","#5B8CFF","#FF5D8F"];
+const BCOL = ["#FFC21A","#FF2BD6","#00E5FF","#3CC48A","#FF7A00","#B79CFF","#FF5D5D","#5B8CFF","#F5E663","#FFFFFF"];
+const GROUP_MAX = 8;
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+const newPin = () => String(Math.floor(1000 + Math.random()*9000));
+const now = () => Date.now();
+function lsGet(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }
+function lsSet(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+
+/* ===== Brücke zum Glitchlab-Hub =====
+   Der Hub liefert Kind, Team, Sterne und Extras. Alles wird dort gespeichert. */
+const HB = (()=>{ try { return window.parent !== window && window.parent.GLHubBridge ? window.parent.GLHubBridge : null; } catch(e){ return null; } })();
+const MODE = (location.hash || "#lobby").slice(1);
+const LAB_MODS = ["prompt","fakenews","kibilder"].concat(MODULES.filter(m=>!["prompt","fakenews","kibilder"].includes(m.id) && m.live).map(m=>m.id));
+const curMod = LAB_MODS.includes(MODE) ? MODE : null;
+const ctx = HB ? HB.context(curMod) : null;
+/* Extras aus hochgeladenen Modulen (vom Hub geliefert). Jedes Extra hat ein «badge»: das bekommt man, wenn die Bedingung im Modul erfüllt ist. */
+const CU = window.GLAB_CUSTOM = Object.assign({outfits:[], emotes:[], room:[], bgs:[], dips:[], mods:[]}, (ctx && ctx.custom) || {});
+/* Hochgeladene Module erscheinen in der Diplom-Übersicht (ihre Diplome hängen an der Wand wie alle anderen) */
+CU.mods.forEach(m=>{ if (!MODULES.some(x=>x.id === m.id)) MODULES.push({id:m.id, n:m.n, d:"", c:m.c || "#8B5CFF", c2:"#1A0B3A", live:false, i:`<text x="12" y="13" font-size="15" text-anchor="middle" dominant-baseline="central" stroke="none" fill="currentColor">${String(m.emoji || "🧩").replace(/[<>&"]/g, "")}</text>`}); });
+const dipArt = (emoji, c) => `<svg viewBox="0 0 40 32" aria-hidden="true"><rect x="1" y="1" width="38" height="30" rx="2" fill="#8B5A2B"/><rect x="3" y="3" width="34" height="26" fill="#FFF8E7"/><rect x="3" y="3" width="34" height="5" fill="${c}"/><text x="20" y="18.5" font-size="11" text-anchor="middle" dominant-baseline="central">${String(emoji || "🏅").replace(/[<>&"]/g, "")}</text><rect x="9" y="25" width="22" height="1.2" fill="#C9B79A"/><circle cx="33" cy="25" r="2.6" fill="#FFC21A" stroke="#C98A00" stroke-width=".6"/></svg>`;
+let D = {cls:null, prog:{}, me:null};
+if (ctx){
+  D.cls = {id:"hub", name: ctx.className, code: ctx.code, rev:0, students: [ctx.me].concat(ctx.team), groups:{}, kiQuiz: ctx.quiz || []};
+  if (curMod){ D.cls.groups[curMod] = {}; D.cls.students.forEach(s=>{ D.cls.groups[curMod][s.id] = ctx.group; }); }
+  D.me = ctx.me.id;
+  D.prog[ctx.me.id] = Object.assign({mods: ctx.mods || {}, outfit:{}, outfitAt:0, seen:0}, ctx.extras || {});
+  D.prog[ctx.me.id].mods = ctx.mods || {};
+}
+/* Hintergrund des Zimmers: Pixel-Zimmer oder Chalet (Chalet ab dem ersten fertigen NMG-Modul) */
+const CHALET_BADGE = "eidgenossen_4";
+window.GLAB_ROOMBG = (ctx && ctx.extras && (ctx.extras.bg === "chalet" || CU.bgs.some(b=>b.id === ctx.extras.bg))) ? ctx.extras.bg : "pixel";
+/* Jedes Emote gehört zu einem Modul. Wer das Modul schafft, bekommt das Emote. «Hopp Schwiiz!» gibt es von Anfang an. */
+const EMOTE_REQ = {
+  sixseven: ["hub:mi-start", "Hallo gLiTCh!"], augustfeuer: ["buehne", "Prompt-Labor (alle 4 Etappen)"],
+  richi: ["eidgenossen_4", "Alte Eidgenossenschaft"], kaese: ["helvetik_4", "Helvetische Republik"], aura: ["mediation_4", "Mediationszeit"],
+  floss: ["restauration_4", "Restauration und Wiener Kongress"], dab: ["nachbarn_4", "Nachbarländer der Schweiz"],
+  postauto: ["erfindungen_4", "Schweizer Erfindungen"], hosenlupf: ["politik_4", "Schweizer Politik"], fondue: ["ebenen_4", "Die drei Ebenen"],
+  m_sixseven: ["hub:mi-start", "Hallo gLiTCh!"], m_dab: ["buehne", "Prompt-Labor (alle 4 Etappen)"], m_kaese: ["fn_alle", "Fake-News-Detektiv"],
+  m_aura: ["ki_plakat", "KI-Bild oder echt?"], m_floss: ["hub:de-wueste", "Wüsten-Game"]
+};
+if (window.GLAB_R) window.GLAB_R.EMOTES.forEach(x=>{ const r = EMOTE_REQ[x.id]; x.req = r ? {badge: r[0], mod: r[1]} : null; x.lv = r ? 9999 : 0; });
+if (window.GLAB_R){
+  CU.emotes.forEach(e=>{ if (!window.GLAB_R.EMOTES.some(x=>x.id === e.id)) window.GLAB_R.EMOTES.push({id:e.id, n:e.n, d:e.d || "", ic:e.ic || "✨", lv:9999, req: e.badge ? {badge:e.badge, mod:e.mod, txt:e.reqTxt} : null}); });
+  CU.room.forEach(r=>{ if (!window.GLAB_R.ROOM.some(x=>x.id === r.id)) window.GLAB_R.ROOM.push({id:r.id, slot:r.slot, n:r.n, lv:0, box:r.box, svg:r.svg, badge:r.badge || null, reqTxt:r.reqTxt || ""}); });
+}
+const roomOpen = (x, li) => x.badge ? totalsFor(D.me).badges.has(x.badge) : x.lv <= li;
+const bgOpen = (b, T) => !b.badge || T.badges.has(b.badge);
+const emoteOpen = (x, T) => !x.req || T.badges.has(x.req.badge);
+const emoteReq = x => x.req ? (x.req.txt || `Modul «${x.req.mod}» schaffen`) : "von Anfang an";
+const pickExtras = p => ({outfit: p.outfit || {}, outfitAt: p.outfitAt || 0, seen: p.seen || 0, room: p.room || null, roomSeen: p.roomSeen || 0, emote: p.emote || null, prefsAt: p.prefsAt || 0, wall: p.wall || null, bg: window.GLAB_ROOMBG});
+function saveD(){ if (HB && D.me && D.prog[D.me]) HB.saveExtras(pickExtras(D.prog[D.me])); }
+function cloudPush(){}
+let S = {};
+
+const codeOf = () => (ctx && ctx.code) || "4313";
+const student = id => D.cls && D.cls.students.find(s=>s.id === id);
+const colorOf = id => { const s = student(id); return (s && s.c) || COLS[0]; };
+const groupOf = (sid, mod="prompt") => (D.cls && D.cls.groups && D.cls.groups[mod] && D.cls.groups[mod][sid]) || null;
+const membersOf = (nr, mod="prompt") => D.cls ? D.cls.students.filter(s=>String(groupOf(s.id, mod)) === String(nr)) : [];
+const workKey = (nr, mod="prompt") => ctx ? ctx.workKey(mod) : "glhub.w.lokal." + mod;
+const managed = () => true;
+const uniquePin = () => "0000";
+const prog = sid => (D.prog[sid] = D.prog[sid] || {mods:{}, outfit:{}, outfitAt:0, seen:0});
+
+const me = student(D.me);
+const modNr = curMod && me ? groupOf(me.id, curMod) : null;
+const inModule = !!(curMod === "prompt" && me && modNr);
+const inFN = !!(curMod === "fakenews" && me && modNr);
+const inKI = !!(curMod === "kibilder" && me && modNr);
+const inGE = !!(curMod && !["prompt","fakenews","kibilder"].includes(curMod) && me && modNr);
+
+let LIB = null;
+const GLAB = window.GLAB = {
+  lobby: !inModule,
+  key: inModule ? workKey(modNr) : null,
+  applyTo(st){
+    if (!inModule) return;
+    st.gruppeNr = String(modNr);
+    st.members = membersOf(modNr).map(s=>s.n);
+    const o = prog(me.id).outfit; if (o && Object.keys(o).length) st.outfit = Object.assign({}, o);
+  },
+  report(r){
+    if (!curMod || !HB) return;
+    const p = prog(me.id), m = p.mods[curMod] || {stars:0, badges:[], fed:0, deaths:0};
+    m.stars = Math.max(m.stars || 0, r.stars || 0);
+    m.badges = Array.from(new Set([...(m.badges||[]), ...(r.badges||[])]));
+    m.fed = Math.max(m.fed || 0, r.fed || 0); m.deaths = Math.max(m.deaths || 0, r.deaths || 0); m.at = now();
+    p.mods[curMod] = m;
+    if (r.outfit && JSON.stringify(r.outfit || {}) !== JSON.stringify(p.outfit || {})){ p.outfit = Object.assign({}, r.outfit || {}); p.outfitAt = now(); saveD(); }
+    HB.report(curMod, {stars: r.stars || 0, badges: r.badges || [], fed: r.fed || 0, deaths: r.deaths || 0});
+  },
+  totals(live){ return totalsFor(me ? me.id : null, live); },
+  exit(){ if (HB) HB.exit(); else history.back(); },
+  emote(){ const sid = D.me; if (!sid || !LIB || !window.GLAB_R) return null; const p = prog(sid), li = LIB.levelOf(totalsFor(sid).stars); const x = window.GLAB_R.EMOTES.find(e=>e.id === (p.emote || "w")); return x && emoteOpen(x, totalsFor(sid)) ? x.id : "w"; },
+  hasEmote(){ const sid = D.me; if (!sid || !LIB || !window.GLAB_R) return false; const li = LIB.levelOf(totalsFor(sid).stars); return true; },
+  libSet(lib){ if (!LIB) LIB = withFN(lib); },
+  gsvg(mood, opts={}){ if (!LIB) return ""; const base = D.me ? Object.assign({}, prog(D.me).outfit || {}) : {}; return LIB.glitchSVG(mood, Object.assign({}, opts, {outfit: Object.assign(base, opts.outfit || {})})); },
+  code(){ return codeOf(); },
+  who(){ return me ? {name: me.n, nr: modNr} : null; },
+  ready(lib){ LIB = withFN(lib); if (HB && HB.lib) try { HB.lib(LIB, typeof MOD_ART !== "undefined" ? MOD_ART : null); } catch(e){} if (inModule) return; document.body.classList.add("in-portal"); portalEl.hidden = false;
+    const X = mod => ({root: portalEl, key: workKey(modNr, mod), nr: modNr, members: membersOf(modNr, mod).map(s=>s.n), teacher: LP_NAME, code: codeOf(), quiz: (D.cls && D.cls.kiQuiz) || [],
+      glitch: (m, o)=>GLAB.gsvg(m, o), labLogo: LIB.labLogo, LEVELS: LIB.LEVELS, levelOf: LIB.levelOf, totals: live=>totalsFor(me.id, Object.assign({mod}, live)), report: r=>GLAB.report(r), exit: ()=>GLAB.exit()});
+    if (inKI && window.GLAB_KI){ portalEl.classList.add("fn-mode"); window.GLAB_KI.start(X("kibilder")); return; }
+    if (inFN && window.GLAB_FN){ portalEl.classList.add("fn-mode"); window.GLAB_FN.start(X("fakenews")); return; }
+    if (inGE && window.GLAB_GE){ portalEl.classList.add("fn-mode"); window.GLAB_GE.start(Object.assign({mod: curMod}, X(curMod))); return; }
+    render(); }
+};
+
+const OUTFIT_MAP = {erfinder:"eidgenossen_1", namen:"eidgenossen_2", logo:"eidgenossen_3", buehne:"eidgenossen_4", daten:"helvetik_1", worte:"helvetik_2", tester:"helvetik_3", bug:"helvetik_4", feature:"mediation_1", zielgruppe:"mediation_2", gourmet:"mediation_3", lexikon:"mediation_4", lexmeister:"restauration_1", detektiv:"restauration_2", tierfreund:"restauration_3", meister:"restauration_4"};
+const OUTFIT_HIDE = ["vr","visor","robo","antennen","laser","astro","schnorchel"];
+function withFN(lib){
+  if (lib.OUTFITS && !lib.OUTFITS.__cu){ lib.OUTFITS.__cu = 1; CU.outfits.forEach(o=>{ if (!lib.OUTFITS.some(x=>x.id === o.id)) lib.OUTFITS.push({id:o.id, slot:o.slot, n:o.n, say:o.say || "", lv:0, svg:o.svg, badge:o.badge || null, reqTxt:o.reqTxt || ""}); }); }
+  const BADGES = lib.BADGES.filter(b=>!b.mod || b.mod === "prompt").map(b=>Object.assign({mod:"prompt"}, b))
+    .concat(window.GLAB_FN_BADGES || []).concat(window.GLAB_KI_BADGES || []).concat(window.GLAB_GE_BADGES || [])
+    .filter((b, k, all)=>all.findIndex(x=>x.id === b.id) === k);
+  (lib.OUTFITS || []).forEach(o=>{ if (o.badge && OUTFIT_MAP[o.badge]) o.alt = OUTFIT_MAP[o.badge]; if (o.id === "fahne") o.say = "Hopp Schwiiz! Von 1291 bis 1815 kenne ich jetzt alles."; });
+  const outfitReq = x => { if (x.reqTxt) return x.reqTxt; if (x.badge){ const b = BADGES.find(b=>b.id === x.badge), a = x.alt && BADGES.find(b=>b.id === x.alt); return `Diplom «${b ? b.n : x.badge}»${a ? ` oder «${a.n}»` : ""}`; } return lib.outfitReq(x); };
+  CU.dips.forEach(b=>{ if (!BADGES.some(x=>x.id === b.id)) BADGES.push({id:b.id, n:b.n, d:b.d || `Aus dem Modul «${b.mod}».`, mod:b.modId, art:dipArt(b.emoji, b.c)}); });
+  return Object.assign({}, lib, {BADGES, outfitReq, OUTFITS: lib.OUTFITS.slice()});
+}
+function totalsFor(sid, live){
+  const p = sid ? prog(sid) : {mods:{}};
+  let stars = 0; const badges = new Set(); let fed = 0, deaths = 0;
+  Object.entries(p.mods || {}).forEach(([k, m])=>{
+    let st = m.stars || 0;
+    if (live && k === (live.mod || "prompt")) st = Math.max(st, live.stars || 0);
+    stars += st; (m.badges || []).forEach(b=>badges.add(b)); fed = Math.max(fed, m.fed || 0); deaths = Math.max(deaths, m.deaths || 0);
+  });
+  if (live){
+    if (!(p.mods || {})[live.mod || "prompt"]) stars += live.stars || 0;
+    (live.badges ? Array.from(live.badges) : []).forEach(b=>badges.add(b));
+    fed = Math.max(fed, live.fed || 0); deaths = Math.max(deaths, live.deaths || 0);
+  }
+  return {stars, badges, fed, deaths};
+}
+
+/* ================= Dateien: Export & Zusammenführen ================= */
+function snapshot(kind){
+  const work = {};
+  if (D.cls){ const pre = WPRE + D.cls.id + "."; try { for (let i=0; i<localStorage.length; i++){ const k = localStorage.key(i); if (k && k.startsWith(pre)){ const v = lsGet(k); if (v) work[k] = v; } } } catch(e){} }
+  const cls = D.cls && kind === "klasse" ? Object.assign({}, D.cls, {self: undefined}) : D.cls;
+  return {glab:1, kind, at: now(), cls, prog: D.prog, work};
+}
+function mergeIn(f){
+  if (!f || f.glab !== 1 || !f.cls || !Array.isArray(f.cls.students)) throw new Error("bad");
+  let replaced = false;
+  if (!D.cls || D.cls.id !== f.cls.id){ if (D.cls) replaced = true; D.cls = f.cls; D.prog = {}; D.me = null; }
+  else if ((f.cls.rev || 0) > (D.cls.rev || 0)) D.cls = f.cls;
+  Object.entries(f.prog || {}).forEach(([sid, q])=>{
+    const p = prog(sid);
+    Object.entries(q.mods || {}).forEach(([k, m])=>{
+      if (k === "cheat") return;
+      const a = p.mods[k] || {stars:0, badges:[], fed:0, deaths:0};
+      p.mods[k] = {stars: Math.max(a.stars||0, m.stars||0), badges: Array.from(new Set([...(a.badges||[]), ...(m.badges||[])])), fed: Math.max(a.fed||0, m.fed||0), deaths: Math.max(a.deaths||0, m.deaths||0), at: Math.max(a.at||0, m.at||0)};
+    });
+    if ((q.outfitAt || 0) > (p.outfitAt || 0)){ p.outfit = q.outfit || {}; p.outfitAt = q.outfitAt; }
+    if ((q.prefsAt || 0) > (p.prefsAt || 0)){ p.room = q.room || {}; p.emote = q.emote || null; p.prefsAt = q.prefsAt; }
+  });
+  let projects = 0;
+  Object.entries(f.work || {}).forEach(([k, v])=>{
+    if (!k.startsWith(WPRE + D.cls.id + ".")) return;
+    const cur = lsGet(k);
+    if (!cur || (v.at || 0) > (cur.at || 0)){ lsSet(k, v); projects++; }
+  });
+  if (D.me && !student(D.me)) D.me = null;
+  saveD();
+  return {replaced, projects};
+}
+/* Konten anderer Geräte nach Vorname zusammenführen (Kind hat selbst angefangen, ohne Klassen-Datei) */
+const normN = n => String(n || "").trim().toLowerCase().normalize("NFC").replace(/\s+/g, " ");
+function mergeProgInto(sid, q){
+  const p = prog(sid);
+  Object.entries(q.mods || {}).forEach(([k, m])=>{
+    if (k === "cheat") return;
+    const a = p.mods[k] || {stars:0, badges:[], fed:0, deaths:0};
+    p.mods[k] = {stars: Math.max(a.stars||0, m.stars||0), badges: Array.from(new Set([...(a.badges||[]), ...(m.badges||[])])), fed: Math.max(a.fed||0, m.fed||0), deaths: Math.max(a.deaths||0, m.deaths||0), at: Math.max(a.at||0, m.at||0)};
+  });
+  if ((q.outfitAt || 0) > (p.outfitAt || 0)){ p.outfit = q.outfit || {}; p.outfitAt = q.outfitAt; }
+  if ((q.prefsAt || 0) > (p.prefsAt || 0)){ p.room = q.room || {}; p.emote = q.emote || null; p.prefsAt = q.prefsAt; }
+}
+function mergeForeign(f){
+  if (!f || f.glab !== 1 || !f.cls || !Array.isArray(f.cls.students)) throw new Error("bad");
+  const map = {}; let added = [];
+  f.cls.students.forEach(fs=>{ let s = D.cls.students.find(x=>normN(x.n) === normN(fs.n));
+    if (!s){ s = {id: D.cls.students.some(x=>x.id === fs.id) ? uid() : fs.id, n: String(fs.n).trim().slice(0,30)}; D.cls.students.push(s); added.push(s.n); }
+    map[fs.id] = s.id; });
+  Object.entries(f.prog || {}).forEach(([fid, q])=>{ if (map[fid]) mergeProgInto(map[fid], q); });
+  D.cls.groups = D.cls.groups || {};
+  Object.entries(f.cls.groups || {}).forEach(([mod, g])=>{ D.cls.groups[mod] = D.cls.groups[mod] || {}; Object.entries(g || {}).forEach(([fid, nr])=>{ if (map[fid] && nr) D.cls.groups[mod][map[fid]] = nr; }); });
+  let projects = 0; const fpre = WPRE + f.cls.id + ".";
+  Object.entries(f.work || {}).forEach(([k, v])=>{ if (!k.startsWith(fpre)) return; const nk = WPRE + D.cls.id + "." + k.slice(fpre.length); const cur = lsGet(nk);
+    if (!cur || (v.at || 0) > (cur.at || 0)){ lsSet(nk, v); projects++; } });
+  D.cls.rev = now(); saveD();
+  return {added, projects, map};
+}
+function importFile(f){
+  if (!f || f.glab !== 1 || !f.cls || !Array.isArray(f.cls.students)) throw new Error("bad");
+  const teacher = view === "lp" && lpOk;
+  if (!D.cls){
+    if (teacher){ D.cls = {id: uid(), name: "Meine Klasse", code: "4313", rev: now(), students: [], groups: {}}; D.prog = {}; return Object.assign({replaced:false}, mergeForeign(f)); }
+    const r = mergeIn(f); return Object.assign({added:[]}, r);
+  }
+  if (D.cls.id === f.cls.id) return (teacher || f.kind !== "klasse") ? Object.assign({replaced:false}, mergeForeign(f)) : Object.assign({added:[]}, mergeIn(f));
+  if (teacher || f.kind !== "klasse") return Object.assign({replaced:false}, mergeForeign(f));
+  if (D.cls.self){
+    const old = snapshot("sicherung"), meName = (student(D.me) || {}).n;
+    D.cls = null; D.prog = {}; mergeIn(f); const r = mergeForeign(old);
+    const m = D.cls.students.find(s=>normN(s.n) === normN(meName)); D.me = m ? m.id : null; saveD();
+    return Object.assign({replaced:false}, r);
+  }
+  return Object.assign({added:[]}, mergeIn(f));
+}
+async function saveFile(kind, btn){
+  const msg = $p("#ptMsg");
+  const who = kind === "klasse" ? (D.cls ? D.cls.name : "Klasse") : (student(D.me) || {n:"Sicherung"}).n;
+  const filename = (kind === "klasse" ? "gLiTCh-Klasse " : "gLiTCh-Sicherung ") + who.replace(/[^\wäöüÄÖÜ\- ]+/g, "").trim() + ".json";
+  try {
+    const dl = (window.claude && window.claude.use ? await window.claude.use("downloads") : null) || fbDownloads();
+    if (btn) btn.disabled = true;
+    await dl.save({filename, data: new Blob([JSON.stringify(snapshot(kind))], {type:"application/json"})});
+    say(msg, kind === "klasse"
+      ? "Gespeichert! Jetzt per AirDrop an die iPads der Klasse senden. Dort: «Klassen-Datei laden»."
+      : "Gespeichert! Jetzt per AirDrop an " + LP_NAME + " senden: Teilen-Symbol → AirDrop.");
+  } catch(e){
+    const code = e && e.code;
+    say(msg, code === "declined" ? "Speichern abgebrochen." : code === "rate_limited" ? "Bitte einen Moment warten und nochmals versuchen." : "Speichern hat nicht geklappt.", true);
+  } finally { if (btn) btn.disabled = false; }
+}
+async function loadFiles(files){
+  const msg = $p("#ptMsg"); let ok = 0, projects = 0, bad = [], replaced = false, added = [];
+  for (const file of files){
+    try { const r = importFile(JSON.parse(await file.text())); ok++; projects += r.projects; replaced = replaced || r.replaced; (r.added || []).forEach(n=>added.push(n)); }
+    catch(e){ bad.push(file.name); }
+  }
+  render();
+  const m = $p("#ptMsg") || msg;
+  if (ok) say(m, (ok === 1 ? "Datei geladen." : ok + " Dateien geladen.") + (projects ? " " + projects + " Projekt(e) aktualisiert." : "") + (added.length && view === "lp" ? " Neu in der Klasse: " + added.join(", ") + "." : "") + (replaced ? " Achtung: Die Klasse auf diesem Gerät wurde ersetzt." : "") + (bad.length ? " Nicht lesbar: " + bad.join(", ") : ""), !!bad.length);
+  else say(m, "Das ist keine gLiTCh-Lab-Datei" + (bad.length ? ": " + bad.join(", ") : "") + ".", true);
+}
+function say(el, text, err){ if (!el) return; el.textContent = text; el.classList.toggle("err", !!err); }
+
+/* ================= Online-Speicher (nur für die Lehrperson, wenn bei Claude angemeldet) ================= */
+let cloud = {db:null, state:"wait", at:0}, pushT = null, pushing = Promise.resolve(), pushed = {};
+const CDOC = "glab/klasse", CWORK = "glab_work", CIMG = "glab_img";
+const clsLite = c => c ? Object.assign({}, c, {kiQuiz: (c.kiQuiz || []).map(q=>({id:q.id, ans:q.ans, hint:q.hint, src:q.src}))}) : c;
+function cloudHTML(){
+  const st = cloud.state;
+  if (cloud.fb || FBX.on()){ const t2 = st === "on" ? `Online gespeichert im Klassen-Speicher${cloud.at ? " · zuletzt " + new Date(cloud.at).toLocaleTimeString("de-CH", {hour:"2-digit", minute:"2-digit"}) : ""}. Alle iPads mit dem Klassen-Link sind auf dem gleichen Stand.` : st === "wait" ? "Verbinde mit dem Klassen-Speicher …" : `Online-Speichern hat gerade nicht geklappt. Alles ist auf diesem Gerät gespeichert, ich versuche es gleich nochmals.${fbSync.err ? " (" + FBX.explain(fbSync.err) + ")" : ""}`;
+    return `<div class="pt-cloud ${st}" role="status"><span aria-hidden="true">${st === "on" ? "☁" : st === "wait" ? "…" : "⚠"}</span><span>${t2}</span></div>`; }
+  const txt = st === "on" ? `Online gespeichert${cloud.at ? " · zuletzt " + new Date(cloud.at).toLocaleTimeString("de-CH", {hour:"2-digit", minute:"2-digit"}) : ""}. Auf all deinen Geräten, auf denen du bei Claude angemeldet bist, ist alles gleich.`
+    : st === "wait" ? "Verbinde mit dem Online-Speicher …"
+    : st === "err" ? "Online-Speichern hat gerade nicht geklappt. Alles ist auf diesem Gerät gespeichert, ich versuche es beim nächsten Speichern nochmals."
+    : "Nur auf diesem Gerät gespeichert. Online speichern geht nur, wenn du als Besitzer bei Claude angemeldet bist.";
+  return `<div class="pt-cloud ${st}" role="status"><span aria-hidden="true">${st === "on" ? "☁" : st === "wait" ? "…" : "⚠"}</span><span>${txt}</span></div>`;
+}
+function setCloud(st){ cloud.state = st; const el = document.querySelector(".pt-cloud"); if (el) el.outerHTML = cloudHTML(); }
+function workKeys(){ const out = []; if (!D.cls) return out; const pre = WPRE + D.cls.id + "."; try { for (let i=0; i<localStorage.length; i++){ const k = localStorage.key(i); if (k && k.startsWith(pre)) out.push(k); } } catch(e){} return out; }
+/* ================= Online-Speicher ohne Claude-Konto (Firebase Firestore, REST) =================
+   Pro Klasse: klassen/{Code}/meta/klasse, klassen/{Code}/kinder/{id}, klassen/{Code}/arbeit/{Schlüssel}.
+   Anmeldung anonym, die Kinder brauchen kein Konto. Konfiguration und Klassen-Code kommen über den Klassen-Link. */
+const FBX = (()=>{
+  const LS = k => { try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } };
+  const LSS = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+  try { const h = new URLSearchParams(location.hash.slice(1)), k = h.get("klasse"), f = h.get("fb");
+    if (f){ const [p, a] = f.split("~"); if (p && a) LSS("glab.fbcfg", {projectId:p, apiKey:a}); }
+    if (k) LSS("glab.fbclass", k);
+    if (k || f) history.replaceState(null, "", location.pathname + location.search); } catch(e){}
+  const BAKED = {projectId:"glitch-lab-8a5aa", apiKey:"AIzaSyAdotB234MxWe7y2y0-9VydxkTdpxkXz9k"};
+  const cfg = () => { const c = BAKED || LS("glab.fbcfg"); return c && c.projectId && c.apiKey ? c : null; };
+  const klass = () => LS("glab.fbclass");
+  const on = () => !!(cfg() && klass());
+  let tok = LS("glab.fbauth");
+  const err = (code, status, body) => Object.assign(new Error(code), {code, status, body});
+  async function token(c){
+    if (tok && tok.key === c.apiKey && tok.exp > Date.now() + 60000) return tok.id;
+    if (tok && tok.key === c.apiKey && tok.refresh){
+      const r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${encodeURIComponent(c.apiKey)}`, {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:"grant_type=refresh_token&refresh_token=" + encodeURIComponent(tok.refresh)});
+      if (r.ok){ const j = await r.json(); tok = {key:c.apiKey, id:j.id_token, refresh:j.refresh_token, exp:Date.now() + (+j.expires_in)*1000}; LSS("glab.fbauth", tok); return tok.id; }
+    }
+    const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${encodeURIComponent(c.apiKey)}`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({returnSecureToken:true})});
+    if (!r.ok) throw err("auth", r.status, await r.text());
+    const j = await r.json(); tok = {key:c.apiKey, id:j.idToken, refresh:j.refreshToken, exp:Date.now() + (+j.expiresIn)*1000}; LSS("glab.fbauth", tok); return tok.id;
+  }
+  const base = c => `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(c.projectId)}/databases/(default)/documents/klassen/${encodeURIComponent(klass())}`;
+  async function call(method, path, body){
+    const c = cfg(); if (!c || !klass()) throw err("off");
+    const t = await token(c);
+    const r = await fetch(base(c) + path, {method, headers:{"Authorization":"Bearer " + t, "Content-Type":"application/json"}, body: body ? JSON.stringify(body) : undefined});
+    if (r.status === 404) return null;
+    if (!r.ok) throw err("fs", r.status, await r.text());
+    return method === "DELETE" ? {} : r.json();
+  }
+  const dec = d => { try { return JSON.parse(d.fields.json.stringValue); } catch(e){ return null; } };
+  const seg = p => p.split("/").map(encodeURIComponent).join("/");
+  return {
+    cfg, klass, on, setCfg: c=>LSS("glab.fbcfg", c), setKlass: k=>LSS("glab.fbclass", k), baked: ()=>!!BAKED,
+    async get(path){ const d = await call("GET", "/" + seg(path)); return d ? dec(d) : null; },
+    async set(path, obj){ await call("PATCH", "/" + seg(path), {fields:{json:{stringValue:JSON.stringify(obj)}, at:{integerValue:String(Date.now())}}}); },
+    async del(path){ await call("DELETE", "/" + seg(path)); },
+    async list(coll){ const out = []; let pt = "";
+      for (let i = 0; i < 30; i++){ const d = await call("GET", `/${coll}?pageSize=300${pt ? "&pageToken=" + encodeURIComponent(pt) : ""}`);
+        ((d && d.documents) || []).forEach(x=>{ const v = dec(x); if (v) out.push(v); }); if (!d || !d.nextPageToken) break; pt = d.nextPageToken; }
+      return out; },
+    explain(e){ if (!e) return ""; if (e.code === "auth") return "Die anonyme Anmeldung hat nicht geklappt. In Firebase unter «Authentication» → «Sign-in method» muss «Anonym» aktiviert sein. Prüfe auch den API-Key.";
+      if (e.code === "fs" && e.status === 403) return "Firebase verweigert den Zugriff. Prüfe die Regeln unter «Firestore Database» → «Regeln».";
+      if (e.code === "fs" && e.status === 404) return "Die Datenbank wurde nicht gefunden. Lege unter «Firestore Database» eine Datenbank an und prüfe die Projekt-ID.";
+      if (e.code === "fs") return "Firebase meldet einen Fehler (" + e.status + ").";
+      return "Keine Verbindung zum Internet oder zu Firebase."; }
+  };
+})();
+const fbSync = {lastG:{}, lastMeta:"", sig:{}, err:null, timer:null};
+const fbMetaOf = c => { const m = Object.assign({}, c); delete m.students; delete m.groups; delete m.kiQuiz; delete m.self; return m; };
+const fbGroupsOf = sid => { const g = {}; Object.entries((D.cls && D.cls.groups) || {}).forEach(([m, x])=>{ if (x && x[sid]) g[m] = x[sid]; }); return g; };
+function fbProgMerge(a, b){
+  const p = JSON.parse(JSON.stringify(a || {mods:{}, outfit:{}, outfitAt:0}));
+  p.mods = p.mods || {};
+  Object.entries((b && b.mods) || {}).forEach(([k, m])=>{ if (k === "cheat") return; const x = p.mods[k] || {stars:0, badges:[], fed:0, deaths:0};
+    p.mods[k] = {stars: Math.max(x.stars||0, m.stars||0), badges: Array.from(new Set([...(x.badges||[]), ...(m.badges||[])])), fed: Math.max(x.fed||0, m.fed||0), deaths: Math.max(x.deaths||0, m.deaths||0), at: Math.max(x.at||0, m.at||0)}; });
+  if (b && (b.outfitAt || 0) > (p.outfitAt || 0)){ p.outfit = b.outfit || {}; p.outfitAt = b.outfitAt; }
+  if (b && (b.prefsAt || 0) > (p.prefsAt || 0)){ p.room = b.room || {}; p.emote = b.emote || null; p.prefsAt = b.prefsAt; }
+  ["wall","wallKnown","seen"].forEach(k=>{ if (b && b[k] != null && p[k] == null) p[k] = b[k]; });
+  return p;
+}
+async function fbPull(){
+  const meta = await FBX.get("meta/klasse");
+  if (!meta || !meta.cls) return null;
+  const kids = await FBX.list("kinder"), work = await FBX.list("arbeit");
+  return {meta, kids, work};
+}
+function fbAdopt(r){
+  const mc = r.meta.cls, kids = r.kids.filter(k=>k && k.s && k.s.id);
+  if (!D.cls || D.cls.id !== mc.id){
+    const old = D.cls ? snapshot("sicherung") : null, meName = (student(D.me) || {}).n;
+    D.cls = Object.assign({}, mc, {students:[], groups:{}}); D.prog = {}; D.me = null;
+    fbMergeKids(kids, true);
+    if (old && old.cls && !mc.self){ old.cls = Object.assign({}, old.cls, {students: old.cls.students.filter(x=>D.cls.students.some(y=>normN(y.n) === normN(x.n)))}); }
+    if (old && old.cls && old.cls.students.length){ mergeForeign(old); D.cls.rev = mc.rev || D.cls.rev; }
+    const m = meName ? D.cls.students.find(s=>normN(s.n) === normN(meName)) : null; D.me = m ? m.id : null;
+  } else {
+    if ((mc.rev || 0) > (D.cls.rev || 0)) Object.assign(D.cls, fbMetaOf(mc), {rev: mc.rev});
+    fbMergeKids(kids, false);
+  }
+  fbSync.lastMeta = JSON.stringify(fbMetaOf(D.cls));
+  const pre = WPRE + D.cls.id + ".", openKey = curMod && modNr ? workKey(modNr, curMod) : null;
+  r.work.forEach(w=>{ if (!w || !w.k || !w.v || !w.k.startsWith(pre) || w.k === openKey) return; const cur = lsGet(w.k);
+    if (!cur || (w.v.at || 0) > (cur.at || 0)){ lsSet(w.k, w.v); fbSync.sig["a:" + w.k] = JSON.stringify(w.v); } });
+  lsSet(PKEY, D);
+}
+function fbMergeKids(kids, fresh){
+  D.cls.groups = D.cls.groups || {};
+  const ids = new Set(kids.map(k=>k.s.id));
+  D.cls.students = D.cls.students.filter(s=>{ if (!s.cl || ids.has(s.id) || kids.some(k=>normN(k.s.n) === normN(s.n))) return true;
+    Object.values(D.cls.groups).forEach(g=>{ if (g) delete g[s.id]; }); delete D.prog[s.id]; if (D.me === s.id) D.me = null; return false; });
+  kids.forEach(k=>{
+    let s = D.cls.students.find(x=>x.id === k.s.id) || D.cls.students.find(x=>normN(x.n) === normN(k.s.n));
+    if (!s){ s = Object.assign({}, k.s); D.cls.students.push(s); }
+    else if ((k.s.at || 0) > (s.at || 0)){ s.n = k.s.n; s.pin = k.s.pin; s.at = k.s.at; }
+    s.cl = 1;
+    D.prog[s.id] = fbProgMerge(D.prog[s.id], k.prog);
+    const cg = k.groups || {}, cgs = JSON.stringify(cg), local = JSON.stringify(fbGroupsOf(s.id));
+    const localChanged = !fresh && fbSync.lastG[s.id] != null && fbSync.lastG[s.id] !== local;
+    if (!localChanged){ Object.values(D.cls.groups).forEach(g=>{ if (g) delete g[s.id]; }); Object.entries(cg).forEach(([m, nr])=>{ (D.cls.groups[m] = D.cls.groups[m] || {})[s.id] = nr; }); fbSync.lastG[s.id] = cgs; }
+  });
+}
+async function fbPush(){
+  if (!FBX.on() || !D.cls) return;
+  try {
+    const metaSig = JSON.stringify(fbMetaOf(D.cls));
+    if (metaSig !== fbSync.lastMeta){ await FBX.set("meta/klasse", {cls: Object.assign(fbMetaOf(D.cls), {students:[], groups:{}})}); fbSync.lastMeta = metaSig; }
+    for (const s of D.cls.students){
+      const g = fbGroupsOf(s.id), mine = {s:{id:s.id, n:s.n, pin:s.pin, at:s.at || 0}, prog: D.prog[s.id] || {mods:{}}, groups: g}, sig = JSON.stringify(mine);
+      if (fbSync.sig["k:" + s.id] === sig) continue;
+      const cloudK = await FBX.get("kinder/" + s.id);
+      const out = Object.assign({}, mine);
+      if (cloudK){ out.prog = fbProgMerge(mine.prog, cloudK.prog);
+        if (cloudK.s && (cloudK.s.at || 0) > (s.at || 0)){ s.n = cloudK.s.n; s.pin = cloudK.s.pin; s.at = cloudK.s.at; out.s = Object.assign({}, cloudK.s); } D.prog[s.id] = fbProgMerge(D.prog[s.id], cloudK.prog);
+        const localChanged = fbSync.lastG[s.id] == null || fbSync.lastG[s.id] !== JSON.stringify(g); if (!localChanged) out.groups = cloudK.groups || {}; }
+      await FBX.set("kinder/" + s.id, out); s.cl = 1; fbSync.lastG[s.id] = JSON.stringify(out.groups); fbSync.sig["k:" + s.id] = JSON.stringify(Object.assign({}, out, {prog: D.prog[s.id]}));
+    }
+    for (const k of workKeys()){
+      const raw = localStorage.getItem(k); if (!raw || fbSync.sig["a:" + k] === raw || raw.length > 600000) continue;
+      const v = lsGet(k) || {}; const c = await FBX.get("arbeit/" + k);
+      if (c && c.v && (c.v.at || 0) > (v.at || 0)){ const openKey = curMod && modNr ? workKey(modNr, curMod) : null; if (k !== openKey){ lsSet(k, c.v); fbSync.sig["a:" + k] = JSON.stringify(c.v); continue; } }
+      await FBX.set("arbeit/" + k, {k, v}); fbSync.sig["a:" + k] = raw;
+    }
+    lsSet(PKEY, D); fbSync.err = null; cloud.at = Date.now(); setCloud("on");
+  } catch(e){ fbSync.err = e; setCloud("err"); }
+}
+async function fbInit(render1){
+  setCloud("wait");
+  try {
+    const r = await fbPull();
+    if (r){ const before = JSON.stringify([D.cls, D.prog]); fbAdopt(r); if (render1 !== false && LIB && !curMod && before !== JSON.stringify([D.cls, D.prog]) && !document.querySelector(".pt-ov")) render(); }
+    cloud.fb = true; cloud.at = Date.now(); fbSync.err = null; setCloud("on");
+    await fbPush();
+  } catch(e){ cloud.fb = true; fbSync.err = e; setCloud("err"); }
+  clearInterval(fbSync.timer); fbSync.timer = setInterval(()=>{ if (document.hidden) return; fbInit(); }, 60000);
+}
+function fbDownloads(){ return {save: async ({filename, data})=>{ const url = URL.createObjectURL(data); const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 4000); }}; }
+const fbCode = () => { const a = "abcdefghijkmnpqrstuvwxyz23456789"; let s = ""; const r = new Uint32Array(16); crypto.getRandomValues(r); r.forEach(x=>s += a[x % a.length]); return s; };
+const fbLink = () => { const c = FBX.cfg(), k = FBX.klass(); return c && k ? `${location.origin}${location.pathname}#klasse=${k}&fb=${c.projectId}~${c.apiKey}` : ""; };
+function fbSetupHTML(){
+  const c = FBX.cfg(), k = FBX.klass(), link = fbLink(), here = /^https?:/.test(location.protocol) && !/claude\.ai|claudeusercontent|anthropic/.test(location.hostname);
+  return `<div class="pt-card" style="margin-top:16px"><h2>Online-Speicher ohne Claude-Konto</h2>
+    <p>Damit speichern alle iPads der Klasse automatisch online, ohne Anmeldung. Du brauchst einmalig ein kostenloses Firebase-Projekt. Die Anleitung steht unten.</p>
+    ${!here ? `<p class="pt-lockmsg">ℹ️ Diese Ansicht läuft innerhalb von Claude. Den Online-Speicher richtest du in der Version ein, die du selbst ins Netz stellst (zum Beispiel bei Netlify).</p>` : ""}
+    <ol class="pt-steps">
+      <li><b>Firebase-Projekt:</b> Auf <b>console.firebase.google.com</b> mit einem Google-Konto ein Projekt erstellen (Google Analytics braucht es nicht).</li>
+      <li><b>Datenbank:</b> «Firestore Database» → «Datenbank erstellen» → Standort <b>europe-west6 (Zürich)</b> → «Im Produktionsmodus starten».</li>
+      <li><b>Regeln:</b> Bei «Firestore Database» → «Regeln» alles ersetzen durch den Text unten und «Veröffentlichen» tippen.</li>
+      <li><b>Anonyme Anmeldung:</b> «Authentication» → «Los geht's» → «Sign-in method» → «Anonym» aktivieren.</li>
+      <li><b>Web-App:</b> Projekteinstellungen (Zahnrad) → «Meine Apps» → Web-Symbol &lt;/&gt; → Namen eingeben → registrieren. Den angezeigten Block mit <code>firebaseConfig</code> kopieren und hier einfügen.</li>
+      <li><b>Klassen-Code erstellen</b> und den Klassen-Link (oder QR-Code) an die Kinder geben. Wer den Link einmal öffnet, ist verbunden.</li></ol>
+    <pre class="pt-rules" id="ptRules">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /klassen/{code}/{rest=**} {
+      allow read, write: if request.auth != null &amp;&amp; code.size() >= 12;
+    }
+  }
+}</pre><div class="pt-row" style="justify-content:flex-start; margin-top:6px"><button type="button" class="pt-btn small" data-pt-fb="copyrules">Regeln kopieren</button></div>
+    <div class="pt-form" style="margin-top:14px; flex-direction:column; align-items:stretch"><label for="ptFbCfg" style="font-weight:700">Firebase-Konfiguration ${c ? `<span style="color:#1F9D68">✓ gespeichert (Projekt ${esc(c.projectId)})</span>` : ""}</label>
+      <textarea class="pt-in" id="ptFbCfg" rows="4" placeholder='const firebaseConfig = { apiKey: "…", projectId: "…", … };' ${FBX.baked() ? "disabled" : ""}></textarea>
+      <div class="pt-row" style="justify-content:flex-start; margin-top:6px"><button type="button" class="pt-btn" data-pt-fb="savecfg" ${FBX.baked() ? "disabled" : ""}>Konfiguration speichern</button>${c ? `<button type="button" class="pt-btn small danger" data-pt-fb="clearcfg">Online-Speicher trennen</button>` : ""}</div></div>
+    <div style="margin-top:14px"><b>Klassen-Code:</b> ${k ? `<code>${esc(k)}</code>` : "noch keiner"}
+      <div class="pt-row" style="justify-content:flex-start; margin-top:6px"><button type="button" class="pt-btn ${k ? "" : "primary"}" data-pt-fb="newcode" ${c ? "" : "disabled"}>${k ? "Neuen Klassen-Code erstellen" : "Klassen-Code erstellen"}</button>${k && c ? `<button type="button" class="pt-btn" data-pt-fb="test">Verbindung testen</button>` : ""}</div></div>
+    ${link ? `<div class="pt-fblink"><b>Klassen-Link für die Kinder</b><input class="pt-in" id="ptFbLink" readonly value="${esc(link)}"><div class="pt-row" style="justify-content:flex-start; margin-top:6px"><button type="button" class="pt-btn primary" data-pt-fb="copylink">Link kopieren</button><button type="button" class="pt-btn" data-pt-fb="qr">QR-Code zeigen</button></div><div id="ptFbQr" class="pt-fbqr"></div>
+      <p style="color:var(--muted); font-size:.85rem">Der Link enthält den Klassen-Code. Gib ihn nur deiner Klasse. Ein neuer Klassen-Code startet einen neuen, leeren Online-Speicher: Verteile danach den neuen Link.</p></div>` : ""}
+    <p class="pt-msg" id="ptFbMsg" role="status">${fbSync.err ? esc(FBX.explain(fbSync.err)) : ""}</p></div>`;
+}
+async function fbAction(a, btn){
+  const msg = document.getElementById("ptFbMsg"), out = (t, bad)=>{ if (msg){ msg.textContent = t; msg.style.color = bad ? "#DD4646" : ""; } };
+  if (a === "copyrules" || a === "copylink"){ const t = a === "copylink" ? fbLink() : document.getElementById("ptRules").textContent; try { await navigator.clipboard.writeText(t); out("Kopiert!"); } catch(e){ const i = document.getElementById("ptFbLink"); if (i && a === "copylink"){ i.select(); out("Markiert: jetzt kopieren."); } else out("Kopieren ging nicht. Bitte von Hand markieren.", true); } return; }
+  if (a === "savecfg"){ const t = (document.getElementById("ptFbCfg").value || ""); const p = (t.match(/projectId["']?\s*:\s*["']([^"']+)/) || [])[1], k = (t.match(/apiKey["']?\s*:\s*["']([^"']+)/) || [])[1];
+    if (!p || !k){ out("Ich finde darin keine «apiKey» und «projectId». Bitte den ganzen firebaseConfig-Block einfügen.", true); return; }
+    FBX.setCfg({projectId:p.trim(), apiKey:k.trim()}); render(); setTimeout(()=>{ const m = document.getElementById("ptFbMsg"); if (m) m.textContent = "Gespeichert. Jetzt einen Klassen-Code erstellen."; }, 50); return; }
+  if (a === "clearcfg"){ FBX.setCfg(null); FBX.setKlass(null); clearInterval(fbSync.timer); cloud.fb = false; setCloud("off"); render(); return; }
+  if (a === "newcode"){ FBX.setKlass(fbCode()); fbSync.lastMeta = ""; fbSync.sig = {}; fbSync.lastG = {}; render(); out("Verbinde …"); await fbInit(false); render(); setTimeout(()=>{ const m = document.getElementById("ptFbMsg"); if (m) m.textContent = fbSync.err ? FBX.explain(fbSync.err) : "Verbunden! Die Klasse ist jetzt online gespeichert."; if (m && fbSync.err) m.style.color = "#DD4646"; }, 50); return; }
+  if (a === "test"){ out("Teste …"); fbSync.sig = {}; fbSync.lastMeta = ""; await fbInit(false); out(fbSync.err ? FBX.explain(fbSync.err) : "Alles in Ordnung: verbunden und gespeichert.", !!fbSync.err); return; }
+  if (a === "qr"){ const box = document.getElementById("ptFbQr"); if (!box) return; box.innerHTML = "QR-Code wird erstellt …";
+    try { if (!window.QRCode) await new Promise((ok, no)=>{ const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+      box.innerHTML = ""; new window.QRCode(box, {text: fbLink(), width: 220, height: 220, correctLevel: window.QRCode.CorrectLevel.L}); } catch(e){ box.textContent = "QR-Code konnte nicht geladen werden."; } return; }
+}
+
+window.fbDownloads = fbDownloads;
+async function cloudInit(){
+  if (FBX.on()) return fbInit();
+  let db = null;
+  try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch(e){ db = null; }
+  if (!db){ setCloud("off"); return; }
+  try {
+    const snap = await db.doc(CDOC).get();
+    const f = {glab:1, cls:null, prog:{}, work:{}};
+    if (snap.exists){ const d = snap.data() || {}; try { f.cls = JSON.parse(d.cls || "null"); f.prog = JSON.parse(d.prog || "{}"); } catch(e){} }
+    if (f.cls){
+      if ((f.cls.kiQuiz || []).length){ try { const is = await db.collection(CIMG).get(); const m = {}; is.docs.forEach(x=>{ const d = x.data() || {}; if (d.id && d.img){ m[d.id] = d.img; pushed["img:" + d.id] = "1"; } }); const loc = {}; ((D.cls && D.cls.kiQuiz) || []).forEach(q=>{ if (q.img) loc[q.id] = q.img; }); f.cls.kiQuiz = f.cls.kiQuiz.map(q=>Object.assign({}, q, {img: m[q.id] || loc[q.id] || ""})); } catch(e){} }
+      const ws = await db.collection(CWORK).get();
+      ws.docs.forEach(x=>{ const d = x.data() || {}; if (d.k && d.json){ try { f.work[d.k] = JSON.parse(d.json); } catch(e){} } });
+      if (D.cls && D.cls.id !== f.cls.id && (D.cls.rev || 0) > (f.cls.rev || 0)){ /* lokal neuere, andere Klasse: lokal behalten und hochladen */ }
+      else { const keep = f.work; if (curMod) f.work = {}; mergeIn(f); f.work = keep; }
+      pushed[CDOC] = JSON.stringify({cls: JSON.stringify(clsLite(f.cls)), prog: JSON.stringify(f.prog)});
+      Object.entries(f.work).forEach(([k,v])=>{ pushed[k] = JSON.stringify(v); });
+    }
+    cloud.db = db; cloud.at = Date.now(); setCloud("on");
+    if (LIB && !curMod) render();
+    cloudPush(true);
+  } catch(e){ cloud.db = null; setCloud(e && e.code === "invalid_argument" ? "off" : "err"); }
+}
+function cloudPush(now){
+  if (cloud.fb){ clearTimeout(pushT); pushT = setTimeout(()=>{ pushing = pushing.then(fbPush).catch(()=>{}); }, now ? 0 : 1500); return; }
+  if (!cloud.db || !D.cls) return;
+  clearTimeout(pushT);
+  pushT = setTimeout(()=>{ pushing = pushing.then(doPush).catch(()=>{}); }, now ? 0 : 1500);
+}
+async function doPush(){
+  const db = cloud.db; if (!db || !D.cls) return;
+  try {
+    const body = {cls: JSON.stringify(clsLite(D.cls)), prog: JSON.stringify(D.prog), at: Date.now()};
+    const sig = JSON.stringify({cls: body.cls, prog: body.prog});
+    if (pushed[CDOC] !== sig){ await db.doc(CDOC).set(body); pushed[CDOC] = sig; }
+    for (const q of (D.cls.kiQuiz || [])){ if (!q.img || pushed["img:" + q.id] === "1" || q.img.length > 250000) continue; await db.collection(CIMG).doc(q.id).set({id:q.id, img:q.img}); pushed["img:" + q.id] = "1"; }
+    for (const k of workKeys()){
+      const raw = localStorage.getItem(k); if (!raw || pushed[k] === raw) continue;
+      if (raw.length > 240000) continue;
+      const v = lsGet(k) || {};
+      await db.collection(CWORK).doc(k).set({k, at: v.at || Date.now(), json: raw});
+      pushed[k] = raw;
+    }
+    cloud.at = Date.now(); if (cloud.state !== "on") setCloud("on"); else { const el = document.querySelector(".pt-cloud"); if (el) el.outerHTML = cloudHTML(); }
+  } catch(e){
+    if (e && e.code === "invalid_argument"){ cloud.db = null; setCloud("off"); }
+    else setCloud("err");
+  }
+}
+
+/* ================= Darstellung ================= */
+const portalEl = document.getElementById("portal");
+const $p = sel => portalEl.querySelector(sel) || document.querySelector(sel);
+let view = "home", lpTab = "sus", lpOk = false;
+const LP_NAME = (ctx && ctx.teacher) || "deiner Lehrperson";
+
+
+function topHTML(right){
+  return `<header class="pt-top"><div class="pt-brand" data-pt="logo" role="button" tabindex="0" title="Zur Startseite" style="cursor:pointer"><div class="lab-logo" aria-hidden="true">${LIB.labLogo(64)}</div><div>
+    <h1 class="lab-title"><span class="lt-g">gLiTCh</span><span class="lt-l">-Lab</span><span class="nmg-badge" aria-label="NMG"><svg viewBox="0 0 60 22" shape-rendering="crispEdges" aria-hidden="true"><rect x="0" y="0" width="60" height="22" rx="3" fill="#D52B1E"/><path d="M0 22 L10 12 L15 16 L24 7 L33 15 L39 10 L50 19 L60 13 L60 22Z" fill="#B71C1C"/><path d="M22 9 L24 7 L26 9 L25 9 L24 8 L23 9Z" fill="#fff" opacity=".7"/><g class="nmg-cross"><rect x="7" y="5" width="4" height="12" fill="#fff"/><rect x="3" y="9" width="12" height="4" fill="#fff"/></g><g class="nmg-c"><rect x="20" y="5" width="2" height="2" fill="#00E5FF"/><rect x="28" y="5" width="2" height="2" fill="#00E5FF"/><rect x="20" y="7" width="2" height="2" fill="#00E5FF"/><rect x="22" y="7" width="2" height="2" fill="#00E5FF"/><rect x="28" y="7" width="2" height="2" fill="#00E5FF"/><rect x="20" y="9" width="2" height="2" fill="#00E5FF"/><rect x="24" y="9" width="2" height="2" fill="#00E5FF"/><rect x="28" y="9" width="2" height="2" fill="#00E5FF"/><rect x="20" y="11" width="2" height="2" fill="#00E5FF"/><rect x="26" y="11" width="2" height="2" fill="#00E5FF"/><rect x="28" y="11" width="2" height="2" fill="#00E5FF"/><rect x="20" y="13" width="2" height="2" fill="#00E5FF"/><rect x="28" y="13" width="2" height="2" fill="#00E5FF"/><rect x="32" y="5" width="2" height="2" fill="#00E5FF"/><rect x="40" y="5" width="2" height="2" fill="#00E5FF"/><rect x="32" y="7" width="2" height="2" fill="#00E5FF"/><rect x="34" y="7" width="2" height="2" fill="#00E5FF"/><rect x="38" y="7" width="2" height="2" fill="#00E5FF"/><rect x="40" y="7" width="2" height="2" fill="#00E5FF"/><rect x="32" y="9" width="2" height="2" fill="#00E5FF"/><rect x="36" y="9" width="2" height="2" fill="#00E5FF"/><rect x="40" y="9" width="2" height="2" fill="#00E5FF"/><rect x="32" y="11" width="2" height="2" fill="#00E5FF"/><rect x="40" y="11" width="2" height="2" fill="#00E5FF"/><rect x="32" y="13" width="2" height="2" fill="#00E5FF"/><rect x="40" y="13" width="2" height="2" fill="#00E5FF"/><rect x="46" y="5" width="2" height="2" fill="#00E5FF"/><rect x="48" y="5" width="2" height="2" fill="#00E5FF"/><rect x="50" y="5" width="2" height="2" fill="#00E5FF"/><rect x="44" y="7" width="2" height="2" fill="#00E5FF"/><rect x="44" y="9" width="2" height="2" fill="#00E5FF"/><rect x="48" y="9" width="2" height="2" fill="#00E5FF"/><rect x="50" y="9" width="2" height="2" fill="#00E5FF"/><rect x="52" y="9" width="2" height="2" fill="#00E5FF"/><rect x="44" y="11" width="2" height="2" fill="#00E5FF"/><rect x="52" y="11" width="2" height="2" fill="#00E5FF"/><rect x="46" y="13" width="2" height="2" fill="#00E5FF"/><rect x="48" y="13" width="2" height="2" fill="#00E5FF"/><rect x="50" y="13" width="2" height="2" fill="#00E5FF"/></g><g class="nmg-m"><rect x="22" y="5" width="2" height="2" fill="#FF2BD6"/><rect x="30" y="5" width="2" height="2" fill="#FF2BD6"/><rect x="22" y="7" width="2" height="2" fill="#FF2BD6"/><rect x="24" y="7" width="2" height="2" fill="#FF2BD6"/><rect x="30" y="7" width="2" height="2" fill="#FF2BD6"/><rect x="22" y="9" width="2" height="2" fill="#FF2BD6"/><rect x="26" y="9" width="2" height="2" fill="#FF2BD6"/><rect x="30" y="9" width="2" height="2" fill="#FF2BD6"/><rect x="22" y="11" width="2" height="2" fill="#FF2BD6"/><rect x="28" y="11" width="2" height="2" fill="#FF2BD6"/><rect x="30" y="11" width="2" height="2" fill="#FF2BD6"/><rect x="22" y="13" width="2" height="2" fill="#FF2BD6"/><rect x="30" y="13" width="2" height="2" fill="#FF2BD6"/><rect x="34" y="5" width="2" height="2" fill="#FF2BD6"/><rect x="42" y="5" width="2" height="2" fill="#FF2BD6"/><rect x="34" y="7" width="2" height="2" fill="#FF2BD6"/><rect x="36" y="7" width="2" height="2" fill="#FF2BD6"/><rect x="40" y="7" width="2" height="2" fill="#FF2BD6"/><rect x="42" y="7" width="2" height="2" fill="#FF2BD6"/><rect x="34" y="9" width="2" height="2" fill="#FF2BD6"/><rect x="38" y="9" width="2" height="2" fill="#FF2BD6"/><rect x="42" y="9" width="2" height="2" fill="#FF2BD6"/><rect x="34" y="11" width="2" height="2" fill="#FF2BD6"/><rect x="42" y="11" width="2" height="2" fill="#FF2BD6"/><rect x="34" y="13" width="2" height="2" fill="#FF2BD6"/><rect x="42" y="13" width="2" height="2" fill="#FF2BD6"/><rect x="48" y="5" width="2" height="2" fill="#FF2BD6"/><rect x="50" y="5" width="2" height="2" fill="#FF2BD6"/><rect x="52" y="5" width="2" height="2" fill="#FF2BD6"/><rect x="46" y="7" width="2" height="2" fill="#FF2BD6"/><rect x="46" y="9" width="2" height="2" fill="#FF2BD6"/><rect x="50" y="9" width="2" height="2" fill="#FF2BD6"/><rect x="52" y="9" width="2" height="2" fill="#FF2BD6"/><rect x="54" y="9" width="2" height="2" fill="#FF2BD6"/><rect x="46" y="11" width="2" height="2" fill="#FF2BD6"/><rect x="54" y="11" width="2" height="2" fill="#FF2BD6"/><rect x="48" y="13" width="2" height="2" fill="#FF2BD6"/><rect x="50" y="13" width="2" height="2" fill="#FF2BD6"/><rect x="52" y="13" width="2" height="2" fill="#FF2BD6"/></g><g class="nmg-w"><rect x="21" y="5" width="2" height="2" fill="#FFFFFF"/><rect x="29" y="5" width="2" height="2" fill="#FFFFFF"/><rect x="21" y="7" width="2" height="2" fill="#FFFFFF"/><rect x="23" y="7" width="2" height="2" fill="#FFFFFF"/><rect x="29" y="7" width="2" height="2" fill="#FFFFFF"/><rect x="21" y="9" width="2" height="2" fill="#FFFFFF"/><rect x="25" y="9" width="2" height="2" fill="#FFFFFF"/><rect x="29" y="9" width="2" height="2" fill="#FFFFFF"/><rect x="21" y="11" width="2" height="2" fill="#FFFFFF"/><rect x="27" y="11" width="2" height="2" fill="#FFFFFF"/><rect x="29" y="11" width="2" height="2" fill="#FFFFFF"/><rect x="21" y="13" width="2" height="2" fill="#FFFFFF"/><rect x="29" y="13" width="2" height="2" fill="#FFFFFF"/><rect x="33" y="5" width="2" height="2" fill="#FFFFFF"/><rect x="41" y="5" width="2" height="2" fill="#FFFFFF"/><rect x="33" y="7" width="2" height="2" fill="#FFFFFF"/><rect x="35" y="7" width="2" height="2" fill="#FFFFFF"/><rect x="39" y="7" width="2" height="2" fill="#FFFFFF"/><rect x="41" y="7" width="2" height="2" fill="#FFFFFF"/><rect x="33" y="9" width="2" height="2" fill="#FFFFFF"/><rect x="37" y="9" width="2" height="2" fill="#FFFFFF"/><rect x="41" y="9" width="2" height="2" fill="#FFFFFF"/><rect x="33" y="11" width="2" height="2" fill="#FFFFFF"/><rect x="41" y="11" width="2" height="2" fill="#FFFFFF"/><rect x="33" y="13" width="2" height="2" fill="#FFFFFF"/><rect x="41" y="13" width="2" height="2" fill="#FFFFFF"/><rect x="47" y="5" width="2" height="2" fill="#FFFFFF"/><rect x="49" y="5" width="2" height="2" fill="#FFFFFF"/><rect x="51" y="5" width="2" height="2" fill="#FFFFFF"/><rect x="45" y="7" width="2" height="2" fill="#FFFFFF"/><rect x="45" y="9" width="2" height="2" fill="#FFFFFF"/><rect x="49" y="9" width="2" height="2" fill="#FFFFFF"/><rect x="51" y="9" width="2" height="2" fill="#FFFFFF"/><rect x="53" y="9" width="2" height="2" fill="#FFFFFF"/><rect x="45" y="11" width="2" height="2" fill="#FFFFFF"/><rect x="53" y="11" width="2" height="2" fill="#FFFFFF"/><rect x="47" y="13" width="2" height="2" fill="#FFFFFF"/><rect x="49" y="13" width="2" height="2" fill="#FFFFFF"/><rect x="51" y="13" width="2" height="2" fill="#FFFFFF"/></g><rect class="nmg-scan" x="0" y="0" width="60" height="1" fill="#fff" opacity=".35"/></svg></span></h1><p>gLiTChs Zimmer</p></div></div>
+    <div class="pt-who">${right || ""}</div></header>`;
+}
+let sayT = null;
+function sayHide(){ clearTimeout(sayT); const el = document.getElementById("ptSay"); if (!el) return; el.classList.remove("gone"); sayT = setTimeout(()=>{ const e2 = document.getElementById("ptSay"); if (e2) e2.classList.add("gone"); }, 7000); }
+function render(){
+  if (!LIB) return;
+  if (curMod){ if (window.GLAB_ONCLOSE) try { window.GLAB_ONCLOSE(); } catch(e){} return; }
+  if (!ctx){ portalEl.innerHTML = `<div class="pt-card" style="margin-top:40px"><h2>Bitte über den Glitchlab-Hub öffnen</h2><p>Diese Seite gehört zum Glitchlab-Hub. Öffne zuerst den Hub und melde dich dort an.</p></div>`; return; }
+  portalEl.innerHTML = dashHTML();
+  sayHide();
+  if (MODE === "home") homeHooks();
+}
+function setupHTML(){
+  return topHTML() + `<div class="pt-card"><div class="pt-hello"><span class="glitch">${LIB.glitchSVG("happy")}</span>
+    <div class="pt-bubble"><b class="gname">gLiTCh</b>${FBX.on() ? "Hallo! Ich bin gLiTCh. Gleich zeige ich dir die Namen deiner Klasse." : "Hallo! Ich bin gLiTCh. Wie heisst du? Schreib nur deinen Vornamen."}</div></div>
+    ${FBX.on() ? `<p class="pt-empty">${cloud.state === "err" ? "Ich erreiche den Klassen-Speicher gerade nicht. Ist das iPad mit dem Internet verbunden?" : cloud.state === "wait" ? "Ich lade deine Klasse …" : "Deine Lehrperson hat die Klasse noch nicht eingerichtet."}</p>` : `<div class="pt-form pt-join" data-pt-form="join"><input class="pt-in" id="ptJoin" placeholder="Dein Vorname" maxlength="30" autocomplete="off" aria-label="Dein Vorname"><button type="button" data-pt-submit class="pt-btn primary">Los geht's →</button></div>`}
+    <div class="pt-foot" style="margin-top:18px"><label class="pt-btn small">Klassen-Datei laden<input type="file" data-pt-file accept=".json,application/json"></label><button type="button" class="pt-btn small" data-pt="lp">Lehrperson</button></div>
+    <p class="pt-msg" id="ptMsg" role="status"></p></div>`;
+}
+function loginHTML(){
+  const list = D.cls.students.slice().sort((a,b)=>a.n.localeCompare(b.n, "de"));
+  return topHTML() + `<div class="pt-hello"><span class="glitch">${LIB.glitchSVG("wink")}</span>
+    <div class="pt-bubble"><b class="gname">gLiTCh</b>${managed() ? "Wer bist du? Tippe auf deinen Namen und gib deinen PIN ein. Auf jedem iPad geht es dort weiter, wo du aufgehört hast." : "Wer bist du? Tippe auf deinen eigenen Namen, dann geht es dort weiter, wo du aufgehört hast."}</div></div>
+    ${list.length ? `<div class="pt-names">${list.map(s=>`<button type="button" class="pt-name" data-pt-login="${s.id}" style="--c:${colorOf(s.id)}"><i aria-hidden="true">${esc(s.n.charAt(0).toUpperCase())}</i>${esc(s.n)}</button>`).join("")}</div>`
+      : `<p class="pt-empty">In dieser Klasse gibt es noch keine Konten.</p>`}
+    ${managed() ? `<p class="pt-empty" style="margin-top:14px">Dein Name fehlt? Frag deine Lehrperson. Sie legt dein Konto an und gibt dir deinen PIN.</p>` : `<div class="pt-form pt-join" data-pt-form="join" style="margin-top:18px"><input class="pt-in" id="ptJoin" placeholder="Nicht in der Liste? Vorname eintippen" maxlength="30" autocomplete="off" aria-label="Neuer Vorname"><button type="button" data-pt-submit class="pt-btn">+ Das bin ich</button></div>`}
+    <div class="pt-foot"><label class="pt-btn small">Klassen-Datei laden<input type="file" data-pt-file accept=".json,application/json"></label><button type="button" class="pt-btn small" data-pt="lp">Lehrperson</button></div>
+    <p class="pt-msg" id="ptMsg" role="status" style="text-align:center"></p>`;
+}
+function outfitOpenFor(x, T){
+  if (x.lv != null && LIB.levelOf(T.stars) < x.lv) return false;
+  if (x.badge && !T.badges.has(x.badge) && !(x.alt && T.badges.has(x.alt))) return false;
+  if (x.fed && T.fed < x.fed) return false;
+  if (x.deaths && T.deaths < x.deaths) return false;
+  return true;
+}
+function dashHTML(){
+  const s = student(D.me), p = prog(s.id), T = totalsFor(s.id), RR = window.GLAB_R;
+  const L = LIB.LEVELS, li = LIB.levelOf(T.stars), nx = L[li+1];
+  const pct = nx ? Math.round(100 * (T.stars - L[li].s) / (nx.s - L[li].s)) : 100;
+  const unl = LIB.OUTFITS.filter(x=>outfitOpenFor(x, T)).length;
+  const roomUnl = RR.ROOM.filter(x=>roomOpen(x, li)).length;
+  const emoUnl = RR.EMOTES.filter(x=>emoteOpen(x, T)).length;
+  const items = roomOf(p);
+  const wallIds = wallOf(p, T);
+  const dips = RR.WALL_SLOTS.map((sl,k)=>{ const b = LIB.BADGES.find(x=>x.id === wallIds[k]), pos = RR.diplomaPos(k);
+    if (!b) return `<i class="pt-nail" style="left:${sl[0] + sl[2]/2}%; top:${sl[1] + 1}%" aria-hidden="true"></i>`;
+    return `<button type="button" class="pt-dip on" data-pt-badge="${b.id}" style="left:${pos.left}%; top:${pos.top}%; width:${pos.w}%; rotate:${pos.r}deg" aria-label="Diplom ${esc(b.n)}">${b.art ? `<span class="pt-wall">${b.art}</span>` : `<svg viewBox="0 0 24 24" aria-hidden="true">${b.i}</svg>`}</button>`; }).join("");
+  const team = D.cls.students.map(x=>x.n), who = team.length > 1 ? team.slice(0, -1).join(", ") + " und " + team[team.length-1] : s.n;
+  const greet = MODE === "home" ? (team.length > 1 ? `Hoi ${who}! Ihr arbeitet als Team: Alle Sterne bekommt ihr gemeinsam.` : T.stars === 0 ? `Hoi ${s.n}! Willkommen in meinem Zimmer. Wähle unten ein Fach, dann sammeln wir Sterne.` : `Hoi ${s.n}! Schön, dass du da bist. Wohin geht's heute?`) : T.stars === 0 ? `Willkommen in meinem Zimmer, ${s.n}! Starte ein Modul, dann sammeln wir Sterne.` : `Hey ${s.n}! Schön, dass du da bist. Wohin geht's heute?`;
+  return (MODE === "home" ? "" : topHTML(`<span class="pt-chip" style="--c:${colorOf(s.id)}"><i aria-hidden="true">${esc(s.n.charAt(0).toUpperCase())}</i>${esc(s.n)}</span><button type="button" class="pt-btn small primary" data-pt="hub">← Zurück zum Hub</button>`))
+  + `<div class="pt-card pt-dark pt-home">
+      <div class="pt-home-main">
+        <div class="pt-room" id="ptRoom">${RR.roomSVG(items)}${dips}
+          <span class="pt-room-g glitch" role="img" aria-label="gLiTCh in seinem Zimmer"><span>${LIB.glitchSVG("happy", {outfit: p.outfit || {}})}</span></span>
+          <div class="pt-room-say" id="ptSay"><b class="gname">gLiTCh</b>${esc(greet)}</div>
+          <span class="pt-room-hint">Auf gLiTCh tippen und nach unten ziehen: Emote!</span></div>
+        <div class="pt-lvl" style="margin-top:16px"><span class="pt-ring">${li+1}</span><div><span>Level ${li+1} von ${L.length}</span><b>${esc(L[li].n)}</b><span>${nx ? `noch ${nx.s - T.stars} Sterne bis «${esc(nx.n)}»` : "Level 100 geschafft! Du bist eine echte Schweizer Legende."}</span></div>
+          <span class="pt-stars" aria-label="${T.stars} Sterne">★ ${T.stars}</span></div>
+        <div class="pt-bar" aria-hidden="true"><i style="width:${Math.max(3, Math.min(100, pct))}%"></i></div>
+      </div>
+      <nav class="pt-rail" aria-label="Mein gLiTCh">
+        ${railBtn("wardrobe", "👕", "Garderobe", `${unl} / ${LIB.OUTFITS.length}`, unl > (p.seen || 0), "#FF2BD6", 0)}
+        ${railBtn("room", "🛋️", "Zimmer", `${roomUnl} / ${RR.ROOM.length}`, roomUnl > (p.roomSeen || 0), "#00E5FF", 1)}
+        ${railBtn("emotes", "✨", "Emotes", `${emoUnl} / ${RR.EMOTES.length}`, false, "#FFC21A", 2)}
+        ${railBtn("diplome", "📜", "Diplome", `${LIB.BADGES.filter(b=>T.badges.has(b.id)).length} / ${LIB.BADGES.length}`, false, "#3CFF7A", 3)}
+        ${railBtn("lexikon", "📖", "Lexikon", "als PDF", false, "#8B5CFF", 4)}
+        ${railBtn("levels", "🏆", "Alle Level", `${li+1} / ${L.length}`, false, "#B79CFF", 4)}
+        ${railBtn("sound", window.GLAB_R.soundOn() ? "🔊" : "🔇", "Ton", window.GLAB_R.soundOn() ? "an" : "aus", false, "#FF7A00", 5)}
+      </nav></div>`;
+}
+/* Im Hub eingebettet: Höhe melden und Fenster (Garderobe usw.) gross machen */
+let homeHooked = false;
+function homeHooks(){
+  if (homeHooked || !HB) return; homeHooked = true;
+  document.documentElement.classList.add("hub-home");
+  const size = ()=>{ try { HB.resize && HB.resize(Math.ceil(portalEl.getBoundingClientRect().height)); } catch(e){} };
+  try { new ResizeObserver(size).observe(portalEl); } catch(e){ setInterval(size, 1000); }
+  size();
+  let open = false;
+  const check = ()=>{ const now = !!document.querySelector("body > .wd-ov, body > .pt-ov"); if (now !== open){ open = now; try { HB.overlay && HB.overlay(now); } catch(e){} } };
+  new MutationObserver(check).observe(document.body, {childList:true});
+}
+function railBtn(act, ic, n, sub, isNew, c, k){
+  return `<button type="button" class="pt-rb" data-pt="${act}" style="--rc:${c}; --rd:${(k*.35).toFixed(2)}s"${act === "sound" ? ` aria-pressed="${window.GLAB_R.soundOn()}"` : ""}><span class="pt-rb-ic" aria-hidden="true">${ic}</span><span class="pt-rb-t"><b>${n}</b><small>${sub}</small></span>${isNew ? `<span class="pt-new">NEU</span>` : ""}</button>`;
+}
+/* ---- Diplome-Übersicht ---- */
+/* Welche Diplome hängen an der Wand? Erreichte Diplome der Reihe nach, ohne die abgehängten, höchstens 10 */
+const WALL_MAX = 10;
+function wallOf(p, T){ const E = LIB.BADGES.filter(b=>T.badges.has(b.id)).map(b=>b.id); if (!Array.isArray(p.wall)) return E.slice(0, WALL_MAX);
+  const list = p.wall.filter(id=>T.badges.has(id)), known = new Set(p.wallKnown || []);
+  E.forEach(id=>{ if (list.length < WALL_MAX && !list.includes(id) && !known.has(id)) list.push(id); }); return list.slice(0, WALL_MAX); }
+function diplomasHTML(){
+  const s = student(D.me), T = totalsFor(s.id), RR = window.GLAB_R, hungIds = wallOf(prog(s.id), T);
+  const card = (b, k)=>{ const on = T.badges.has(b.id); return `<div class="pt-dipc ${on ? "on" : "off"}" style="--bc:${DIPCOL[k % DIPCOL.length]}; --dl:-${(k*.73 % 6).toFixed(2)}s"><span class="pt-dipf">${b.art ? `<span class="pt-wall">${b.art}</span>` : (on ? `<svg viewBox="0 0 24 24" aria-hidden="true">${b.i}</svg>` : "")}</span><b>${esc(b.n)}</b><small>${esc(b.d)}</small><span class="st">${on ? "✓ erreicht" : "noch offen"}</span>${on ? `<button type="button" class="pt-wallbtn${hungIds.includes(b.id) ? " on" : ""}" data-pt-wall="${b.id}">${hungIds.includes(b.id) ? "🖼️ Hängt an der Wand · abhängen" : "An die Wand hängen"}</button>` : ""}</div>`; };
+  const mods = MODULES.map(m=>{ const list = LIB.BADGES.map((b,k)=>[b,k]).filter(([b])=>(b.mod || "prompt") === m.id);
+    const head = `<div class="pt-dipmod" style="--mc:${m.c}"><i>${svg(m.i)}</i><h3>${esc(m.n)}</h3><span>${list.length ? `${list.filter(([b])=>T.badges.has(b.id)).length} / ${list.length}` : "bald"}</span></div>`;
+    return head + (list.length ? `<div class="pt-dips">${list.map(([b,k])=>card(b,k)).join("")}</div>` : `<div class="pt-dipsoon">Diplome für dieses Modul kommen, sobald es freigeschaltet ist.</div>`); }).join("");
+  return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptDpT" style="max-width:860px">
+    <div class="wd-head"><div><small>${esc(s.n)} · ${LIB.BADGES.filter(b=>T.badges.has(b.id)).length} von ${LIB.BADGES.length} Diplomen</small><h2 id="ptDpT">Diplome</h2><p>An der Wand in gLiTChs Chalet ist Platz für ${WALL_MAX} Diplome (${hungIds.length} von ${WALL_MAX} belegt). Wählt hier, welche hängen sollen. Ihr seht auch, in welchem Modul es welches Diplom gibt.</p></div>
+      <button type="button" class="btn" data-pt="dp-close">Fertig</button></div>${mods}</div>`;
+}
+function openDiplomas(){
+  closeOv("ptDp"); const ov = document.createElement("div"); ov.className = "wd-ov"; ov.id = "ptDp"; ov.innerHTML = diplomasHTML();
+  document.body.appendChild(ov); document.body.style.overflow = "hidden"; ov.querySelector('[data-pt="dp-close"]').focus({preventScroll:true});
+}
+function modHTML(m, s, p){
+  const art = `<div class="pt-art" style="--mc:${m.c}; --mc2:${m.c2}">${MOD_ART[m.id] || ""}</div>`;
+  if (!m.live) return `<div class="pt-mod soon" style="--mc:${m.c}">${art}<span class="pt-soon">Bald</span><div class="pt-mod-b"><h3>${esc(m.n)}</h3><p>${esc(m.d)}</p></div></div>`;
+  const nr = groupOf(s.id, m.id), mem = nr ? membersOf(nr, m.id) : [];
+  if (!modOpen(m, s.id)) return `<div class="pt-mod locked" style="--mc:${m.c}">${art}<span class="pt-soon">🔒 Gesperrt</span><div class="pt-mod-b"><h3>${esc(m.n)}</h3>${m.y ? `<span class="pt-yr">${esc(m.y)}</span>` : ""}<p>${esc(m.d)}</p>
+    <p class="pt-lockmsg">🔒 ${esc(m.req.txt)}</p></div></div>`;
+  const st = (p.mods[m.id] || {}).stars || 0;
+  return `<div class="pt-mod live" style="--mc:${m.c}">${art}<div class="pt-mod-b"><h3>${esc(m.n)}</h3>${m.y ? `<span class="pt-yr">${esc(m.y)}</span>` : ""}<p>${esc(m.d)}</p>
+    <div class="meta"><span class="pt-tag">★ ${st}</span></div>
+    <button type="button" class="pt-btn primary go" data-pt-modgo="${m.id}">Modul starten →</button></div></div>`;
+}
+const svg = inner => `<svg viewBox="0 0 24 24" aria-hidden="true">${inner}</svg>`;
+const roomOf = p => (p.room && Object.keys(p.room).length) ? p.room : {links:"bett", teppich:"teppichrot"};
+
+/* Animierte Modul-Bilder (120 × 60) */
+const MINI_G = (x, y, s=1) => `<g transform="translate(${x} ${y}) scale(${s})" class="ma-bob"><rect x="2" y="0" width="10" height="2" fill="#B79CFF"/><rect x="0" y="2" width="14" height="10" fill="#8B5CFF"/><rect x="2" y="12" width="3" height="2" fill="#6A3FE0"/><rect x="9" y="12" width="3" height="2" fill="#6A3FE0"/><rect x="3" y="4" width="3" height="3" fill="#fff"/><rect x="8" y="4" width="3" height="3" fill="#fff"/><rect x="4" y="5" width="1" height="2" fill="#14062E"/><rect x="9" y="5" width="1" height="2" fill="#14062E"/><rect x="4" y="9" width="6" height="1" fill="#14062E"/></g>`;
+const MOD_ART = {
+  prompt: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <g class="ma-drop d1"><rect x="62" y="40" width="22" height="8" fill="#F2BE2E"/><rect x="65" y="37" width="5" height="3" fill="#F2BE2E"/><rect x="76" y="37" width="5" height="3" fill="#F2BE2E"/></g>
+    <g class="ma-drop d2"><rect x="64" y="30" width="22" height="8" fill="#F06C6C"/><rect x="67" y="27" width="5" height="3" fill="#F06C6C"/><rect x="78" y="27" width="5" height="3" fill="#F06C6C"/></g>
+    <g class="ma-drop d3"><rect x="61" y="20" width="22" height="8" fill="#6592F7"/><rect x="64" y="17" width="5" height="3" fill="#6592F7"/><rect x="75" y="17" width="5" height="3" fill="#6592F7"/></g>
+    <g class="ma-drop d4"><rect x="63" y="10" width="22" height="8" fill="#3CC48A"/><rect x="66" y="7" width="5" height="3" fill="#3CC48A"/><rect x="77" y="7" width="5" height="3" fill="#3CC48A"/></g>
+    ${MINI_G(30, 30, 1.2)}<g class="ma-type"><rect x="16" y="14" width="34" height="11" fill="#14062E"/><text x="19" y="22" font-size="6" font-family="monospace" fill="#3CFF7A">Prompt_</text></g>
+    <g class="ma-twinkle"><rect x="98" y="12" width="2" height="2" fill="#FFE680"/><rect x="104" y="30" width="2" height="2" fill="#fff"/><rect x="10" y="44" width="2" height="2" fill="#FFE680"/></g></svg>`,
+  fakenews: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <rect x="40" y="10" width="44" height="40" fill="#F5F5F5"/><rect x="44" y="14" width="36" height="5" fill="#14062E"/><rect x="44" y="22" width="16" height="12" fill="#B0BEC5"/><rect x="63" y="22" width="17" height="2" fill="#78909C"/><rect x="63" y="26" width="15" height="2" fill="#78909C"/><rect x="63" y="30" width="17" height="2" fill="#78909C"/><rect x="44" y="37" width="36" height="2" fill="#78909C"/><rect x="44" y="41" width="30" height="2" fill="#78909C"/>
+    <g class="ma-stamp"><rect x="62" y="34" width="22" height="9" fill="none" stroke="#E53935" stroke-width="2"/><text x="73" y="41" font-size="6" font-weight="700" font-family="monospace" text-anchor="middle" fill="#E53935">FAKE?</text></g>
+    <g class="ma-scan"><circle cx="0" cy="0" r="9" fill="rgba(189,244,255,.35)" stroke="#5D4037" stroke-width="2.5" shape-rendering="geometricPrecision"/><rect x="6" y="6" width="3" height="10" fill="#5D4037" transform="rotate(-45 7 7)"/></g>
+    ${MINI_G(8, 34, 1.1)}<rect x="9" y="31" width="14" height="3" fill="#8B5A2B"/><rect x="11" y="28" width="10" height="3" fill="#A9773F"/></svg>`,
+  kibilder: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <rect x="36" y="8" width="48" height="40" fill="#FFC21A"/><rect x="39" y="11" width="42" height="34" fill="#4FC3F7"/>
+    <g class="ma-real"><rect x="39" y="34" width="42" height="11" fill="#3CC48A"/><rect x="66" y="15" width="7" height="7" fill="#FFE680"/><rect x="46" y="24" width="10" height="10" fill="#1F9D68"/></g>
+    <g class="ma-fake"><rect x="39" y="34" width="42" height="11" fill="#FF2BD6"/><rect x="63" y="14" width="10" height="10" fill="#00E5FF"/><rect x="45" y="22" width="12" height="12" fill="#8B5CFF"/><rect x="39" y="26" width="42" height="2" fill="#fff" opacity=".7"/></g>
+    <text x="60" y="57" font-size="6" font-weight="700" font-family="monospace" text-anchor="middle" fill="#fff" class="ma-label">ECHT?</text>
+    ${MINI_G(92, 30, 1.1)}</svg>`,
+  datenspuren: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    ${[0,1,2,3,4,5].map(k=>`<g class="ma-step" style="animation-delay:${k*.35}s"><rect x="${14+k*14}" y="${k%2 ? 36 : 42}" width="5" height="7" rx="2" fill="#3CFF7A" shape-rendering="geometricPrecision"/><rect x="${15+k*14}" y="${k%2 ? 33 : 39}" width="3" height="2" fill="#3CFF7A"/></g>`).join("")}
+    <g class="ma-ping"><rect x="96" y="10" width="14" height="10" fill="#14062E" stroke="#3CFF7A"/><text x="103" y="17" font-size="5" font-family="monospace" text-anchor="middle" fill="#3CFF7A">01</text></g>
+    ${MINI_G(96, 30, 1.1)}</svg>`,
+  werbung: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <rect x="30" y="24" width="10" height="12" fill="#B0BEC5"/><path d="M40 24 L58 14 L58 46 L40 36 Z" fill="#E53935" shape-rendering="geometricPrecision"/><rect x="34" y="36" width="4" height="8" fill="#78909C"/>
+    <g class="ma-wave"><path d="M64 22 Q70 30 64 38" stroke="#FFC21A" stroke-width="3" fill="none" shape-rendering="geometricPrecision"/></g><g class="ma-wave w2"><path d="M72 16 Q82 30 72 44" stroke="#FFC21A" stroke-width="3" fill="none" shape-rendering="geometricPrecision"/></g>
+    <g class="ma-coin"><rect x="86" y="10" width="8" height="8" fill="#FFE680"/><text x="90" y="16" font-size="6" font-weight="700" font-family="monospace" text-anchor="middle" fill="#B8860B">$</text></g>
+    ${MINI_G(6, 32, 1.1)}<rect x="6" y="36" width="14" height="3" fill="#00E5FF" opacity=".8"/></svg>`,
+  netiquette: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <g class="ma-pop p1"><rect x="20" y="8" width="38" height="14" fill="#fff"/><rect x="24" y="22" width="5" height="4" fill="#fff"/><rect x="24" y="13" width="26" height="2" fill="#B0BEC5"/><rect x="24" y="17" width="18" height="2" fill="#B0BEC5"/></g>
+    <g class="ma-pop p2"><rect x="58" y="24" width="40" height="14" fill="#FF4F8B"/><rect x="88" y="38" width="5" height="4" fill="#FF4F8B"/><rect x="62" y="29" width="28" height="2" fill="#fff"/><rect x="62" y="33" width="20" height="2" fill="#fff"/></g>
+    <g class="ma-pop p3"><rect x="24" y="40" width="22" height="12" fill="#3CC48A"/><text x="35" y="49" font-size="7" font-family="monospace" text-anchor="middle" fill="#fff">♥ 👍</text></g>
+    ${MINI_G(100, 40, 1)}</svg>`,
+  eidgenossen: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <path d="M0 50 L22 22 L34 34 L52 12 L74 40 L88 26 L120 50 Z" fill="#8FA3BF"/><path d="M46 20 L52 12 L58 20 L55 18 L52 21 L49 18 Z" fill="#fff"/><path d="M84 31 L88 26 L92 31 L88 30 Z" fill="#fff"/>
+    <rect x="0" y="50" width="120" height="10" fill="#3CC48A"/>
+    <rect x="26" y="14" width="2" height="36" fill="#8B5A2B"/><g class="ma-bob"><rect x="28" y="14" width="18" height="16" fill="#D52B1E"/><rect x="35" y="17" width="4" height="10" fill="#fff"/><rect x="32" y="20" width="10" height="4" fill="#fff"/></g>
+    <g class="ma-drop d2"><rect x="62" y="38" width="24" height="10" fill="#F4E7C8"/><rect x="60" y="37" width="3" height="12" fill="#D9C28E"/><rect x="85" y="37" width="3" height="12" fill="#D9C28E"/><rect x="66" y="41" width="14" height="1" fill="#8B5A2B"/><rect x="66" y="44" width="10" height="1" fill="#8B5A2B"/><text x="74" y="36" font-size="6" font-weight="700" font-family="monospace" text-anchor="middle" fill="#fff">1291</text></g>
+    ${MINI_G(96, 36, 1)}</svg>`,
+  helvetik: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <rect x="0" y="50" width="120" height="10" fill="#6B4A2B"/>
+    <rect x="36" y="16" width="3" height="34" fill="#8B5A2B"/><rect x="30" y="8" width="15" height="10" fill="#1F9D68"/><rect x="33" y="5" width="9" height="4" fill="#3CC48A"/><rect x="33" y="22" width="9" height="2" fill="#D52B1E"/><rect x="33" y="26" width="9" height="2" fill="#FFC21A"/>
+    <rect x="58" y="12" width="2" height="38" fill="#B0BEC5"/><g class="ma-bob"><rect x="60" y="12" width="30" height="6" fill="#1F9D68"/><rect x="60" y="18" width="30" height="6" fill="#D52B1E"/><rect x="60" y="24" width="30" height="6" fill="#FFC21A"/></g>
+    <g class="ma-twinkle"><rect x="100" y="10" width="2" height="2" fill="#FFE680"/><rect x="108" y="22" width="2" height="2" fill="#fff"/><rect x="14" y="20" width="2" height="2" fill="#FFE680"/></g>
+    ${MINI_G(94, 36, 1)}</svg>`,
+  mediation: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <rect x="52" y="14" width="42" height="40" fill="#F1ECE0"/><rect x="56" y="18" width="34" height="4" fill="#10265A"/><rect x="56" y="26" width="30" height="2" fill="#9AA3B5"/><rect x="56" y="30" width="26" height="2" fill="#9AA3B5"/><rect x="56" y="46" width="20" height="2" fill="#9AA3B5"/>
+    <g class="ma-stamp"><rect x="62" y="33" width="22" height="10" fill="none" stroke="#B8322A" stroke-width="2"/><text x="73" y="40.5" font-size="6" font-weight="700" font-family="monospace" text-anchor="middle" fill="#B8322A">1803</text></g>
+    <g class="ma-bob"><path d="M6 30 Q26 12 46 30 Q26 26 6 30 Z" fill="#14141C" shape-rendering="geometricPrecision"/><rect x="24" y="18" width="4" height="4" fill="#2E6BE6"/><rect x="25" y="19" width="2" height="2" fill="#fff"/><rect x="25" y="20" width="2" height="1" fill="#D52B1E"/></g>
+    ${MINI_G(16, 36, 1)}<text x="104" y="22" font-size="8" font-weight="700" font-family="monospace" text-anchor="middle" fill="#FFE680" class="ma-label">19</text></svg>`,
+  restauration: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <rect x="34" y="10" width="40" height="40" fill="#D52B1E"/><rect x="50" y="17" width="8" height="26" fill="#fff"/><rect x="41" y="26" width="26" height="8" fill="#fff"/>
+    <g class="ma-bob"><path d="M78 20 Q86 12 94 18 L102 14 L98 22 Q92 30 82 26 L76 28 Z" fill="#FFFFFF" shape-rendering="geometricPrecision"/><rect x="92" y="17" width="2" height="2" fill="#14062E"/><path d="M100 20 L106 22 L100 24 Z" fill="#3CC48A" shape-rendering="geometricPrecision"/></g>
+    <g class="ma-pop p1"><rect x="8" y="10" width="20" height="10" fill="#FFC21A"/><text x="18" y="17.5" font-size="6" font-weight="700" font-family="monospace" text-anchor="middle" fill="#14062E">1815</text></g>
+    <g class="ma-pop p2"><rect x="80" y="38" width="30" height="10" fill="#fff"/><text x="95" y="45.5" font-size="5.5" font-weight="700" font-family="monospace" text-anchor="middle" fill="#14062E">NEUTRAL</text></g>
+    ${MINI_G(10, 36, 1)}</svg>`,
+  nachbarn: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <g class="ma-pop p1"><rect x="14" y="8" width="20" height="4" fill="#111"/><rect x="14" y="12" width="20" height="4" fill="#DD0000"/><rect x="14" y="16" width="20" height="4" fill="#FFCE00"/></g>
+    <g class="ma-pop p2"><rect x="86" y="8" width="7" height="12" fill="#0055A4"/><rect x="93" y="8" width="7" height="12" fill="#fff"/><rect x="100" y="8" width="7" height="12" fill="#EF4135"/></g>
+    <g class="ma-pop p3"><rect x="14" y="40" width="7" height="12" fill="#009246"/><rect x="21" y="40" width="7" height="12" fill="#fff"/><rect x="28" y="40" width="7" height="12" fill="#CE2B37"/></g>
+    <g class="ma-pop p1" style="animation-delay:2.4s"><rect x="86" y="40" width="21" height="4" fill="#ED2939"/><rect x="86" y="44" width="21" height="4" fill="#fff"/><rect x="86" y="48" width="21" height="4" fill="#ED2939"/></g>
+    <g class="ma-bob"><rect x="50" y="18" width="20" height="20" fill="#D52B1E"/><rect x="58" y="21" width="4" height="14" fill="#fff"/><rect x="53" y="26" width="14" height="4" fill="#fff"/></g>
+    <g class="ma-twinkle"><rect x="40" y="28" width="6" height="2" fill="#fff" opacity=".6"/><rect x="74" y="28" width="6" height="2" fill="#fff" opacity=".6"/></g>
+    ${MINI_G(52, 42, .9)}</svg>`,
+  erfindungen: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <g class="ma-blade"><rect x="30" y="20" width="26" height="5" fill="#D9DEE6"/><rect x="52" y="20" width="4" height="3" fill="#fff"/></g>
+    <rect x="22" y="24" width="34" height="10" rx="3" fill="#D52B1E"/><rect x="36" y="26" width="2" height="6" fill="#fff"/><rect x="34" y="28" width="6" height="2" fill="#fff"/>
+    <g class="ma-twinkle"><rect x="78" y="10" width="12" height="12" fill="#FFE680"/><rect x="80" y="22" width="8" height="4" fill="#B0BEC5"/><rect x="74" y="6" width="2" height="2" fill="#FFE680"/><rect x="92" y="6" width="2" height="2" fill="#FFE680"/><rect x="72" y="14" width="2" height="2" fill="#FFE680"/><rect x="94" y="14" width="2" height="2" fill="#FFE680"/></g>
+    <g class="ma-drop d2"><rect x="70" y="38" width="22" height="12" fill="#6D3B1F"/><rect x="70" y="38" width="7" height="6" fill="#8B5A2B"/><rect x="77" y="44" width="8" height="6" fill="#8B5A2B"/><rect x="85" y="38" width="7" height="6" fill="#8B5A2B"/></g>
+    ${MINI_G(98, 34, 1)}</svg>`,
+  politik: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <rect x="12" y="30" width="34" height="22" fill="#E6E2D6"/><rect x="16" y="34" width="4" height="18" fill="#C9C2AE"/><rect x="27" y="34" width="4" height="18" fill="#C9C2AE"/><rect x="38" y="34" width="4" height="18" fill="#C9C2AE"/>
+    <rect x="20" y="20" width="18" height="10" fill="#3CA08A"/><rect x="26" y="14" width="6" height="6" fill="#3CA08A"/><rect x="28" y="10" width="2" height="4" fill="#D52B1E"/>
+    <rect x="62" y="34" width="28" height="18" fill="#8B5CFF"/><rect x="70" y="32" width="12" height="3" fill="#2A1660"/>
+    <g class="ma-drop d1"><rect x="70" y="16" width="12" height="8" fill="#fff"/><rect x="72" y="18" width="5" height="2" fill="#B0BEC5"/></g>
+    <g class="ma-drop d3"><rect x="70" y="16" width="12" height="8" fill="#FFF6C9"/><rect x="74" y="19" width="4" height="2" fill="#1F9D68"/></g>
+    <g class="ma-label"><text x="76" y="47" font-size="6" font-weight="700" font-family="monospace" text-anchor="middle" fill="#fff">JA?</text></g>
+    ${MINI_G(98, 38, 1)}</svg>`,
+  ebenen: `<svg viewBox="0 0 120 60" shape-rendering="crispEdges" aria-hidden="true">
+    <g class="ma-bob"><rect x="22" y="6" width="44" height="12" fill="#D52B1E"/><rect x="56" y="8" width="4" height="8" fill="#fff"/><rect x="54" y="10" width="8" height="4" fill="#fff"/><text x="26" y="14.5" font-size="6" font-weight="700" font-family="monospace" fill="#fff">BUND</text></g>
+    <g class="ma-bob" style="animation-delay:.3s"><rect x="18" y="22" width="52" height="12" fill="#2E6BE6"/><rect x="58" y="24" width="8" height="8" fill="#FFC21A"/><text x="22" y="30.5" font-size="6" font-weight="700" font-family="monospace" fill="#fff">KANTON</text></g>
+    <g class="ma-bob" style="animation-delay:.6s"><rect x="14" y="38" width="60" height="12" fill="#1F9D68"/><rect x="61" y="41" width="8" height="7" fill="#F4E7C8"/><rect x="60" y="39" width="10" height="2" fill="#8B5A2B"/><text x="18" y="46.5" font-size="6" font-weight="700" font-family="monospace" fill="#fff">GEMEINDE</text></g>
+    ${MINI_G(88, 30, .9)}</svg>`
+};
+
+/* ---- Zimmer einrichten ---- */
+function bgHTML(T){
+  const chalet = T.badges.has(CHALET_BADGE), cur = window.GLAB_ROOMBG;
+  const b = (id, n, open, sub) => `<button type="button" class="wd-item${cur === id ? " on" : ""}${open ? "" : " locked"}" data-pt="bg-${id}" ${open ? "" : 'aria-disabled="true"'} aria-pressed="${cur === id}"><b>${n}</b><small>${open ? (cur === id ? "aktiv" : "antippen") : sub}</small>${open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`;
+  return `<div class="pt-bgpick"><b>Hintergrund</b><div class="wd-grid">${b("pixel", "🟪 Pixel-Zimmer", true, "")}${b("chalet", "🏔️ Schweizer Chalet", chalet, "nach dem ersten NMG-Modul (Alte Eidgenossenschaft)")}${CU.bgs.map(x=>b(x.id, esc((x.ic ? x.ic + " " : "") + x.n), bgOpen(x, T), esc(x.reqTxt || ""))).join("")}</div></div>`;
+}
+function pickBg(id){
+  const T = totalsFor(D.me);
+  if (id === "chalet" && !T.badges.has(CHALET_BADGE)){ const el = document.querySelector('[data-pt="bg-chalet"]'); if (el) el.animate([{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"none"}], {duration:300}); return; }
+  const cb = CU.bgs.find(x=>x.id === id);
+  if (cb && !bgOpen(cb, T)){ const el = document.querySelector(`[data-pt="bg-${id}"]`); if (el) el.animate([{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"none"}], {duration:300}); return; }
+  if (id !== "pixel" && id !== "chalet" && !cb) return;
+  window.GLAB_ROOMBG = id; saveD();
+  const ov = document.getElementById("ptRm"); if (ov){ const sc = ov.scrollTop; ov.innerHTML = roomHTML(); ov.scrollTop = sc; }
+}
+function roomHTML(){
+  const s = student(D.me), p = prog(s.id), T = totalsFor(s.id), li = LIB.levelOf(T.stars), RR = window.GLAB_R, items = roomOf(p);
+  return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptRmT">
+    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptRmT">Zimmer einrichten</h2><p>${RR.ROOM.filter(x=>roomOpen(x, li)).length} von ${RR.ROOM.length} Gegenständen freigeschaltet. Pro Platz einen antippen, nochmals tippen räumt ihn weg. Neue Gegenstände gibt es mit höheren Leveln.</p></div>
+      <button type="button" class="btn" data-pt="rm-close">Fertig</button></div>
+    ${bgHTML(T)}
+    <div class="pt-room" style="margin-top:14px">${RR.roomSVG(items)}<span class="pt-room-g glitch"><span>${LIB.glitchSVG("cool", {outfit: p.outfit || {}})}</span></span></div>
+    ${RR.ROOM_SLOTS.map((sl,si)=>{
+      const its = RR.ROOM.filter(x=>x.slot===sl.id), cur = its.find(x=>items[sl.id]===x.id);
+      return window.GLAB_ACC("rm", sl.id, sl.n, {cur: cur ? esc(cur.n) : "", prev: cur ? RR.thumb(cur) : "", n: its.filter(x=>roomOpen(x, li)).length, t: its.length}, si === 0) + `<div class="wd-grid">${its.map(x=>{
+      const open = roomOpen(x, li), on = items[sl.id] === x.id;
+      return `<button type="button" class="wd-item${on ? " on" : ""}${open ? "" : " locked"}" data-pt-room="${x.id}" ${open ? "" : 'aria-disabled="true"'} aria-pressed="${on}">
+        <span class="pt-thumb wd-mini">${RR.thumb(x)}</span><b>${esc(x.n)}</b><small>${open ? (on ? "im Zimmer" : "antippen") : (x.reqTxt ? esc(x.reqTxt) : `ab Level ${x.lv+1}`)}</small>${open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`;
+    }).join("")}</div></details>`; }).join("")}</div>`;
+}
+function openRoom(){
+  closeOv("ptRm"); const p = prog(D.me), li = LIB.levelOf(totalsFor(D.me).stars);
+  p.roomSeen = window.GLAB_R.ROOM.filter(x=>roomOpen(x, li)).length; saveD();
+  const ov = document.createElement("div"); ov.className = "wd-ov"; ov.id = "ptRm"; ov.innerHTML = roomHTML();
+  document.body.appendChild(ov); document.body.style.overflow = "hidden";
+  ov.querySelector('[data-pt="rm-close"]').focus({preventScroll:true});
+}
+function pickRoom(id){
+  const x = window.GLAB_R.ROOM.find(o=>o.id === id); if (!x) return;
+  const p = prog(D.me), li = LIB.levelOf(totalsFor(D.me).stars), ov = document.getElementById("ptRm");
+  if (!roomOpen(x, li)){ const b = ov.querySelector(`[data-pt-room="${id}"]`); if (b) b.animate([{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"none"}], {duration:300}); return; }
+  const r = Object.assign({}, roomOf(p)); r[x.slot] = r[x.slot] === x.id ? null : x.id; p.room = r; p.prefsAt = now(); saveD();
+  const sc = ov.scrollTop; ov.innerHTML = roomHTML(); ov.scrollTop = sc;
+}
+
+/* ---- Emotes ---- */
+function emotesHTML(){
+  const s = student(D.me), p = prog(s.id), li = LIB.levelOf(totalsFor(s.id).stars), RR = window.GLAB_R;
+  return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptEmT">
+    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptEmT">Emotes</h2><p>«Hopp Schwiiz!» und «W» hast du von Anfang an. Jedes weitere Emote bekommst du, wenn du das passende Modul schaffst. Wähle eines aus. Dann auf gLiTCh tippen und nach unten ziehen oder wischen, auch in den Modulen.</p></div>
+      <button type="button" class="btn" data-pt="em-close">Fertig</button></div>
+    <div class="wd-stage"><span class="glitch wd-g pt-room-g" style="position:static; width:150px">${LIB.glitchSVG("happy", {outfit: p.outfit || {}})}</span></div>
+    <div class="wd-grid">${RR.EMOTES.map(x=>{ const open = emoteOpen(x, totalsFor(s.id)), on = (p.emote || "w") === x.id;
+      return `<button type="button" class="wd-item${on ? " on" : ""}${open ? "" : " locked"}" data-pt-emote="${x.id}" ${open ? "" : 'aria-disabled="true"'} aria-pressed="${on}">
+        <span class="pt-emo-ic" aria-hidden="true">${x.ic}</span><b>${esc(x.n)}</b><small>${open ? (on ? "aktiv · nochmals tippen zum Vorführen" : esc(x.d)) : esc(emoteReq(x))}</small>${open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`; }).join("")}</div></div>`;
+}
+function openEmotes(){
+  closeOv("ptEm"); const ov = document.createElement("div"); ov.className = "wd-ov"; ov.id = "ptEm"; ov.innerHTML = emotesHTML();
+  document.body.appendChild(ov); document.body.style.overflow = "hidden"; ov.querySelector('[data-pt="em-close"]').focus({preventScroll:true});
+}
+function pickEmote(id){
+  const x = window.GLAB_R.EMOTES.find(o=>o.id === id); if (!x) return;
+  const p = prog(D.me), li = LIB.levelOf(totalsFor(D.me).stars), ov = document.getElementById("ptEm");
+  if (!emoteOpen(x, totalsFor(D.me))){ const b = ov.querySelector(`[data-pt-emote="${id}"]`); if (b) b.animate([{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"none"}], {duration:300}); return; }
+  const again = p.emote === id; p.emote = id; p.prefsAt = now(); saveD();
+  ov.innerHTML = emotesHTML();
+  const g = ov.querySelector(".pt-room-g"); setTimeout(()=>window.GLAB_R.playEmote(g, id), again ? 0 : 150);
+}
+
+/* ---- Alle Level ---- */
+function levelsHTML(){
+  const s = student(D.me), T = totalsFor(s.id), li = LIB.levelOf(T.stars), L = LIB.LEVELS, RR = window.GLAB_R;
+  return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptLvT">
+    <div class="wd-head"><div><small>${esc(s.n)} · ★ ${T.stars}</small><h2 id="ptLvT">Alle ${L.length} Level</h2><p>Sterne aus allen Fächern im Hub zählen zusammen. Jedes Level bringt eine Belohnung.</p></div>
+      <button type="button" class="btn" data-pt="lv-close">Fertig</button></div>
+    <ol class="pt-lv-list">${L.map((l,k)=>{
+      const gifts = LIB.OUTFITS.filter(o=>o.lv === k).map(o=>`<span class="pt-gift"><i class="glitch">${LIB.glitchSVG("normal", {outfit:{[o.slot]:o.id}})}</i>${esc(o.n)}</span>`).concat(RR.rewardsAt(k).map(r=>`<span class="pt-gift"><i>${r.ic}</i>${esc(r.n)}</span>`));
+      return `<li class="pt-lv-row ${k < li ? "done" : k === li ? "cur" : "next"}"><span class="pt-lv-n">${k+1}</span><div><b>${esc(l.n)}</b><small>${k ? `ab ${l.s} ★` : "Start"}</small><div class="pt-gifts">${gifts.join("") || `<span class="pt-gift">Futter für gLiTCh im Modul</span>`}</div></div><span aria-hidden="true">${k < li ? "✓" : k === li ? "★" : "🔒"}</span></li>`; }).join("")}${LV_TEASER}</ol></div>`;
+}
+const LV_TEASER = `<li class="pt-lv-row pt-lv-more" aria-label="Weitere Level folgen"><span class="pt-lv-n">51+</span><div><b>Weitere Level</b><small>bald</small><div class="pt-gifts"><span class="pt-gift">🔒 Neue Module bringen neue Level, Belohnungen und Emotes</span></div></div><span aria-hidden="true">✨</span></li>`;
+function openLevels(){
+  closeOv("ptLv"); const ov = document.createElement("div"); ov.className = "wd-ov"; ov.id = "ptLv"; ov.innerHTML = levelsHTML();
+  document.body.appendChild(ov); document.body.style.overflow = "hidden";
+  const cur = ov.querySelector(".pt-lv-row.cur"); if (cur) cur.scrollIntoView({block:"center"}); ov.querySelector('[data-pt="lv-close"]').focus({preventScroll:true});
+}
+
+
+/* ---- Garderobe (Konto) ---- */
+function wardrobeHTML(){
+  const s = student(D.me), p = prog(s.id), T = totalsFor(s.id), o = p.outfit || {};
+  const li = LIB.levelOf(T.stars), unl = LIB.OUTFITS.filter(x=>outfitOpenFor(x, T)).length;
+  return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptWdT">
+    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptWdT">Garderobe</h2><p>${unl} von ${LIB.OUTFITS.length} freigeschaltet. Dein gLiTCh trägt das auch in den Modulen. Pro Körperteil eines antippen, nochmals tippen nimmt es wieder ab.</p></div>
+      <button type="button" class="btn" data-pt="wd-close">Fertig</button></div>
+    <div class="wd-stage"><span class="glitch wd-g">${LIB.glitchSVG("cool", {outfit:o})}</span></div>
+    ${LIB.SLOTS.map((sl,si)=>{
+      const its = LIB.OUTFITS.filter(x=>x.slot===sl.id), cur = its.find(x=>o[sl.id]===x.id);
+      return window.GLAB_ACC("wd", sl.id, sl.n, {cur: cur ? esc(cur.n) : "", glitch:true, prev: LIB.glitchSVG("normal", {outfit: cur ? {[sl.id]:cur.id} : {}}), n: its.filter(x=>outfitOpenFor(x, T)).length, t: its.length}, si === 0) + `<div class="wd-grid">${its.map(x=>{
+      const open = outfitOpenFor(x, T), on = o[sl.id] === x.id;
+      return `<button type="button" class="wd-item${on ? " on" : ""}${open ? "" : " locked"}" data-pt-outfit="${x.id}" ${open ? "" : 'aria-disabled="true"'} aria-pressed="${on}">
+        <span class="glitch wd-mini">${LIB.glitchSVG("normal", {outfit:{[sl.id]:x.id}})}</span>
+        <b>${esc(x.n)}</b><small>${open ? (on ? "angezogen" : "antippen") : esc(LIB.outfitReq(x))}</small>${open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`;
+    }).join("")}</div></details>`; }).join("")}</div>`;
+}
+function openWardrobe(){
+  closeOv("ptWd");
+  const s = student(D.me), p = prog(s.id), T = totalsFor(s.id);
+  p.seen = LIB.OUTFITS.filter(x=>outfitOpenFor(x, T)).length; saveD();
+  const ov = document.createElement("div"); ov.className = "wd-ov"; ov.id = "ptWd"; ov.innerHTML = wardrobeHTML();
+  document.body.appendChild(ov); document.body.style.overflow = "hidden";
+  ov.querySelector('[data-pt="wd-close"]').focus({preventScroll:true});
+}
+function pickOutfit(id){
+  const x = LIB.OUTFITS.find(o=>o.id === id); if (!x) return;
+  const s = student(D.me), p = prog(s.id), T = totalsFor(s.id), ov = document.getElementById("ptWd");
+  if (!outfitOpenFor(x, T)){ const b = ov.querySelector(`[data-pt-outfit="${id}"]`); if (b){ b.animate([{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"none"}], {duration:300}); } return; }
+  const o = Object.assign({}, p.outfit); o[x.slot] = o[x.slot] === x.id ? null : x.id; p.outfit = o; p.outfitAt = now(); saveD();
+  const sc = ov.scrollTop; ov.innerHTML = wardrobeHTML(); ov.scrollTop = sc;
+}
+/* ---- Modul starten: Gruppe und Namen im Pop-up ---- */
+let GS = null;
+function grpStartHTML(){
+  const m = MODULES.find(x=>x.id === GS.mod), meN = (student(D.me) || {}).n;
+  return `<div class="pt-dlg pt-gs" role="dialog" aria-modal="true" aria-labelledby="ptGsT" style="--mc:${m.c}">
+    <div class="pt-gs-h"><span class="glitch">${LIB.glitchSVG("happy")}</span><div><small>Modul starten</small><h2 id="ptGsT">${esc(m.n)}</h2></div></div>
+    <b class="pt-gs-l">1. Welche Gruppe seid ihr?</b>
+    <div class="pt-gs-nrs">${Array.from({length:GROUP_MAX},(_,k)=>k+1).map(n=>`<button type="button" data-pt-gsnr="${n}" aria-pressed="${String(GS.nr)===String(n)}">${n}</button>`).join("")}</div>
+    <small class="pt-gs-hint">Die Nummer sagt euch ${LP_NAME.replace(/^Herrn/,"Herr")}. Alle in der Gruppe wählen dieselbe.</small>
+    <b class="pt-gs-l">2. Wer arbeitet mit?</b>
+    <div class="pt-gs-names">${GS.names.map((n,i)=>`<span class="pt-gs-name${normN(n)===normN(meN) ? " me" : ""}">${esc(n)}${normN(n)===normN(meN) ? " (du)" : `<button type="button" data-pt-gsdel="${i}" aria-label="${esc(n)} entfernen">✕</button>`}</span>`).join("")}</div>
+    ${managed() ? `<small class="pt-gs-hint">Tippt die Namen an, die mit euch arbeiten:</small><div class="pt-gs-pick">${D.cls.students.filter(x=>x.id !== D.me).slice().sort((a,b)=>a.n.localeCompare(b.n, "de")).map(x=>{ const on = GS.names.some(n=>normN(n) === normN(x.n)); return `<button type="button" data-pt-gstog="${x.id}" aria-pressed="${on}">${on ? "✓ " : "+ "}${esc(x.n)}</button>`; }).join("")}</div>` : `<div class="pt-form" data-pt-form="gsadd"><input class="pt-in" id="ptGsAdd" placeholder="Vorname eintippen" maxlength="30" autocomplete="off" aria-label="Vorname hinzufügen"><button type="button" data-pt-submit class="pt-btn">+ Dazu</button></div>`}
+    <p class="pt-gs-info">⭐ Alle Namen hier bekommen die Sterne, Diplome und Freischaltungen gutgeschrieben. Ihr braucht nur ein iPad pro Gruppe.</p>
+    <p class="pt-err" id="ptGsErr" role="alert"></p>
+    <div class="pt-row"><button type="button" class="pt-btn" data-pt="gs-close">Abbrechen</button><button type="button" class="pt-btn primary" data-pt="gs-go">Starten →</button></div></div>`;
+}
+const testOpen = id => { try { const o = JSON.parse(localStorage.getItem("glab.testUnlock") || "[]"); return o.includes("*") || o.includes(id); } catch(e){ return false; } };
+const modOpen = (m, sid) => !m.req || testOpen(m.id) || totalsFor(sid).badges.has(m.req.badge);
+function openGrpStart(mod){
+  const mm = MODULES.find(x=>x.id === mod); if (mm && !modOpen(mm, D.me)) return;
+  if (!D.me || !student(D.me)) return;
+  D.cls.groups = D.cls.groups || {}; const g = D.cls.groups[mod] = D.cls.groups[mod] || {};
+  if (g[D.me] !== "p:" + D.me){ g[D.me] = "p:" + D.me; saveD(); }
+  S = {sid: D.me, mod}; lsSet(SKEY, S);
+  const gb = document.querySelector(`[data-pt-modgo="${mod}"]`); if (gb){ gb.disabled = true; gb.textContent = "Wird gestartet …"; }
+  setTimeout(()=>location.reload(), cloud.fb ? 700 : 0); return;
+  const nr = groupOf(D.me, mod), me = student(D.me);
+  GS = {mod, nr, names: nr ? membersOf(nr, mod).map(s=>s.n) : [me.n]};
+  if (!GS.names.some(n=>normN(n) === normN(me.n))) GS.names.unshift(me.n);
+  closeOv("ptGs"); const ov = document.createElement("div"); ov.className = "pt-ov"; ov.id = "ptGs"; ov.innerHTML = grpStartHTML();
+  document.body.appendChild(ov); document.body.style.overflow = "hidden";
+}
+function gsRender(){ const ov = document.getElementById("ptGs"); if (ov){ ov.innerHTML = grpStartHTML(); } }
+function gsGo(){
+  if (!GS.nr){ document.getElementById("ptGsErr").textContent = "Wählt zuerst eure Gruppennummer."; const r = document.querySelector(".pt-gs-nrs"); r.animate([{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"none"}], {duration:300}); return; }
+  const mod = GS.mod; D.cls.groups = D.cls.groups || {}; const g = D.cls.groups[mod] = D.cls.groups[mod] || {};
+  const ids = GS.names.map(n=>{ let s = D.cls.students.find(x=>normN(x.n) === normN(n)); if (!s){ if (managed()) return null; s = {id: uid(), n}; D.cls.students.push(s); } return s.id; }).filter(Boolean);
+  Object.keys(g).forEach(sid=>{ if (String(g[sid]) === String(GS.nr) && !ids.includes(sid)) delete g[sid]; });
+  ids.forEach(id=>{ g[id] = +GS.nr; });
+  saveD(); S = {sid: D.me, mod}; lsSet(SKEY, S);
+  const b = document.querySelector('[data-pt="gs-go"]'); if (b){ b.disabled = true; b.textContent = "Wird gestartet …"; } location.reload();
+}
+function closeOv(id){ const el = document.getElementById(id); if (el){ el.remove(); document.body.style.overflow = ""; } }
+
+
+/* ---- Zugangskarten zum Ausdrucken ---- */
+async function printCards(){
+  const link = typeof fbLink === "function" ? fbLink() : "";
+  let qr = "";
+  if (link){ try { if (!window.QRCode) await new Promise((ok, no)=>{ const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+    const box = document.createElement("div"); new window.QRCode(box, {text: link, width: 240, height: 240, correctLevel: window.QRCode.CorrectLevel.L}); const cv = box.querySelector("canvas"); qr = cv ? cv.toDataURL() : ""; } catch(e){} }
+  const list = D.cls.students.slice().sort((a,b)=>a.n.localeCompare(b.n, "de"));
+  closeOv("ptCards");
+  const ov = document.createElement("div"); ov.className = "pt-ov pt-cardsov"; ov.id = "ptCards";
+  ov.innerHTML = `<div class="pt-cardsbar"><b>Zugangskarten · ${esc(D.cls.name)}</b><span>Ausschneiden und jedem Kind seine Karte geben.</span><button type="button" class="pt-btn primary" data-pt="cards-print">🖨️ Drucken</button><button type="button" class="pt-btn" data-pt="cards-close">Schliessen</button></div>
+    <div class="pt-cardsgrid">${list.map(s=>`<div class="pt-acard"><div class="pt-acard-h"><span class="glitch">${LIB.glitchSVG("happy", {outfit: (D.prog[s.id] || {}).outfit || {}})}</span><div><small>gLiTCh-Lab NMG · ${esc(D.cls.name)}</small><b>${esc(s.n)}</b></div></div>
+      <div class="pt-acard-pin"><small>Dein PIN</small><b>${esc(s.pin || "––––")}</b></div>${qr ? `<img src="${qr}" alt="QR-Code zum Klassen-Link">` : ""}<p>${qr ? "QR-Code scannen, Namen antippen, PIN eingeben." : "Namen antippen, PIN eingeben."} Den PIN verrätst du niemandem!</p></div>`).join("")}</div>`;
+  document.body.appendChild(ov); document.body.style.overflow = "hidden";
+}
+/* ---- PIN-Eingabe ---- */
+let pinFor = null, pinVal = "";
+function openPin(sid){
+  pinFor = sid; pinVal = "";
+  const s = student(sid); closeOv("ptPin");
+  const ov = document.createElement("div"); ov.className = "pt-ov"; ov.id = "ptPin";
+  ov.innerHTML = `<div class="pt-dlg" role="dialog" aria-modal="true" aria-labelledby="ptPinT"><span class="glitch" style="display:block; width:70px; height:70px; margin:0 auto">${LIB.glitchSVG("happy", {outfit: prog(sid).outfit || {}})}</span>
+    <h2 id="ptPinT">Hallo ${esc(s.n)}!</h2><p>Gib deinen 4-stelligen PIN ein.</p>
+    <div class="pt-dots" id="ptDots" aria-live="polite" aria-label="0 von 4 Ziffern">${"<i></i>".repeat(4)}</div>
+    <div class="pt-pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" class="pt-key" data-pt-key="${n}">${n}</button>`).join("")}<button type="button" class="pt-key ghost" data-pt="pin-close">Zurück</button><button type="button" class="pt-key" data-pt-key="0">0</button><button type="button" class="pt-key ghost" data-pt-key="del" aria-label="Löschen">⌫</button></div>
+    <p class="pt-err" id="ptPinErr" role="alert"></p></div>`;
+  document.body.appendChild(ov); document.body.style.overflow = "hidden";
+  ov.querySelector('[data-pt-key="1"]').focus({preventScroll:true});
+}
+function pinKey(k){
+  if (k === "del") pinVal = pinVal.slice(0, -1); else if (pinVal.length < 4) pinVal += k;
+  const dots = document.getElementById("ptDots"); if (!dots) return;
+  dots.querySelectorAll("i").forEach((d,i)=>d.classList.toggle("on", i < pinVal.length));
+  dots.setAttribute("aria-label", pinVal.length + " von 4 Ziffern");
+  if (pinVal.length === 4){
+    const s = student(pinFor);
+    if (s && s.pin === pinVal){ D.me = s.id; saveD(); closeOv("ptPin"); view = "home"; render(); }
+    else { document.getElementById("ptPinErr").textContent = "Falscher PIN. Versuch es nochmals!"; dots.classList.remove("shake"); void dots.offsetWidth; dots.classList.add("shake"); pinVal = ""; setTimeout(()=>dots.querySelectorAll("i").forEach(d=>d.classList.remove("on")), 350); }
+  }
+}
+
+/* ---- Lehrperson ---- */
+function askTeacher(){
+  if (lpOk){ view = "lp"; render(); return; }
+  closeOv("ptCode");
+  const ov = document.createElement("div"); ov.className = "pt-ov"; ov.id = "ptCode";
+  ov.innerHTML = `<div class="pt-dlg" role="dialog" aria-modal="true" aria-labelledby="ptCodeT" data-pt-form="code"><h2 id="ptCodeT">Lehrperson</h2>
+    <p>${D.cls ? "Gib den Lehrpersonen-Code ein." : "Zum Einrichten den Lehrpersonen-Code eingeben."}</p>
+    ${window.GLAB_KEYPAD("ptCodeIn", "#ptCodeOk")}
+    <p class="pt-err" id="ptCodeErr" role="alert"></p>
+    <div class="pt-row"><button type="button" class="pt-btn" data-pt="code-close">Abbrechen</button><button type="button" data-pt-submit id="ptCodeOk" class="pt-btn primary" hidden>Öffnen</button></div></div>`;
+  document.body.appendChild(ov); document.body.style.overflow = "hidden";
+  
+}
+function checkCode(){
+  const v = (document.getElementById("ptCodeIn").value || "").trim();
+  const code = codeOf();
+  if (v.toLowerCase() === code.toLowerCase()){ lpOk = true; closeOv("ptCode"); view = "lp"; render(); }
+  else document.getElementById("ptCodeErr").textContent = "Falscher Code.";
+}
+function touch(){ D.cls.rev = now(); saveD(); }
+function teacherHTML(){
+  const back = `<button type="button" class="pt-btn small" data-pt="lp-close">Zurück</button><button type="button" class="pt-btn small" data-pt="lp-lock">Sperren</button>`;
+  if (!D.cls) return topHTML(back) + `<div class="pt-card"><h2>Neue Klasse einrichten</h2><p>Gib einen Klassennamen und die Vornamen ein (einer pro Zeile). Keine Nachnamen (Datenschutz).</p>
+    <div data-pt-form="create" class="pt-lp"><input class="pt-in" id="ptClsName" placeholder="Klassenname, z. B. 6a Allschwil" maxlength="40" required>
+    <textarea class="pt-in" id="ptNames" placeholder="Anna&#10;Ben&#10;Lia" aria-label="Vornamen, einer pro Zeile"></textarea>
+    <div class="pt-row" style="justify-content:flex-start"><button type="button" data-pt-submit class="pt-btn primary">Klasse erstellen</button></div></div>
+    <p>Oder direkt die Dateien der Kinder laden. Die Klasse entsteht dann automatisch aus ihren Vornamen:</p><label class="pt-btn">📥 Dateien laden<input type="file" data-pt-file accept=".json,application/json" multiple></label>
+    <p class="pt-msg" id="ptMsg" role="status"></p></div>`;
+  const tabs = [["sus","Schülerinnen & Schüler"],["dateien","Dateien & Sync"],["test","🧪 Test-Modus"],["setup","Einstellungen"]];
+  return topHTML(back) + `<div class="pt-lp">${cloudHTML()}<div class="pt-tabs" role="tablist">${tabs.map(([k,n])=>`<button type="button" class="pt-tab" role="tab" aria-selected="${lpTab===k}" data-pt-tab="${k}">${n}</button>`).join("")}</div>
+    ${({sus:lpSus, gruppen:lpGroups, dateien:lpFiles, test:lpTest, quiz:lpQuiz, setup:lpSetup}[lpTab] || lpSus)()}</div>`;
+}
+function grpSelect(sid, mod){
+  const cur = groupOf(sid, mod);
+  return `<select data-pt-grp="${sid}" data-mod="${mod}" aria-label="Gruppe für ${esc(student(sid).n)}"><option value="">–</option>${Array.from({length:GROUP_MAX},(_,k)=>k+1).map(n=>`<option value="${n}"${String(cur)===String(n)?" selected":""}>Gruppe ${n}</option>`).join("")}</select>`;
+}
+function lpSus(){
+  const list = D.cls.students;
+  return `<div class="pt-card"><h2>Konten</h2><p>${managed() ? "Jedes Kind meldet sich auf einem beliebigen iPad mit seinem Namen und seinem 4-stelligen PIN an." + (FBX.on() ? " Dank dem Online-Speicher ist der Stand auf allen Geräten gleich." : "") + " Neue Kinder fügst du unten hinzu." : "Die Kinder melden sich selbst mit dem Vornamen an und wählen ihre Gruppe. Neue Kinder erscheinen hier, sobald du ihre Datei unter «Dateien & Sync» lädst."}</p>
+    ${managed() ? `<div class="pt-row" style="justify-content:flex-start; margin:0 0 10px"><button type="button" class="pt-btn primary" data-pt="cards">🖨️ Zugangskarten drucken</button>${list.some(s=>!s.pin) ? `<button type="button" class="pt-btn" data-pt="allpins">Fehlende PINs erstellen</button>` : ""}</div>` : ""}
+    <div class="pt-scroll"><table class="pt-table"><thead><tr><th>Vorname</th>${managed() ? "<th>PIN</th>" : ""}<th>Level</th><th>Sterne</th><th>Abzeichen</th><th></th></tr></thead><tbody>
+    ${list.map(s=>{ const T = totalsFor(s.id), li = LIB.levelOf(T.stars); return `<tr><td><b>${esc(s.n)}</b></td>${managed() ? `<td class="pt-pin"><code>${esc(s.pin || "–")}</code><button type="button" class="pt-btn small" data-pt-repin="${s.id}" title="Neuen PIN erstellen">${s.pin ? "neu" : "erstellen"}</button></td>` : ""}
+      <td>${li+1} · ${esc(LIB.LEVELS[li].n)}</td><td>★ ${T.stars}</td><td>${LIB.BADGES.filter(b=>T.badges.has(b.id)).length} / ${LIB.BADGES.length}</td>
+      <td><button type="button" class="pt-btn small danger" data-pt-del="${s.id}">${delAsk === s.id ? "Wirklich löschen?" : "Entfernen"}</button></td></tr>`; }).join("") || `<tr><td colspan="7" class="pt-empty">Noch keine Konten.</td></tr>`}
+    </tbody></table></div>
+    <div class="pt-form" data-pt-form="add" style="margin-top:14px"><input class="pt-in" id="ptAdd" placeholder="Vorname" maxlength="30" aria-label="Vorname hinzufügen"><button type="button" data-pt-submit class="pt-btn primary">+ Konto hinzufügen</button></div>
+    <p class="pt-msg" id="ptMsg" role="status"></p></div>`;
+}
+function lpGroups(){
+  return MODULES.filter(m=>m.live).map(m=>{
+    const nrs = Array.from({length:GROUP_MAX},(_,k)=>k+1).filter(n=>membersOf(n, m.id).length);
+    const free = D.cls.students.filter(s=>!groupOf(s.id, m.id));
+    return `<div class="pt-card" style="margin-bottom:16px"><h2>Gruppen: ${esc(m.n)}</h2><p>Jede Gruppe arbeitet auf einem iPad. Sterne und Diplome bekommen alle Mitglieder der Gruppe.</p>
+    <div class="pt-groups">${nrs.map(n=>{ const w = lsGet(workKey(n, m.id)); const st = w && w.state ? w.state.banked : null;
+      const what = !w ? "Noch kein Projekt auf diesem Gerät" : window.GLAB_GE_MODS && window.GLAB_GE_MODS[m.id] ? `${esc(window.GLAB_GE_MODS[m.id].prod.file)}: ${esc((w.state && w.state.title) || "–")}` : m.id === "prompt" ? `Projekt${w.state && w.state.name ? ` «${esc(w.state.name)}»` : ""}` : m.id === "kibilder" ? `Plakat: ${esc((w.state && w.state.title) || "–")}${w.state && w.state.quiz ? ` · Quiz: ${Object.keys(w.state.quiz).length} beantwortet` : ""}` : `Meldung: ${esc((w.state && w.state.news) || "–")}${w.state && w.state.verdict ? ` · Urteil: ${esc(w.state.verdict)}` : ""}`;
+      return `<div class="pt-group"><b>Gruppe ${n}</b><ul>${membersOf(n, m.id).map(s=>`<li>${esc(s.n)}</li>`).join("")}</ul>
+      <p style="margin:8px 0 0; font-size:.88rem; color:var(--muted)">${what}${st != null ? ` · ★ ${st}` : ""}</p></div>`; }).join("") || `<p class="pt-empty">Noch keine Gruppen zugewiesen.</p>`}</div>
+    ${free.length ? `<p style="margin-top:14px"><b>Ohne Gruppe:</b> ${esc(free.map(s=>s.n).join(", "))}</p>` : ""}</div>`; }).join("");
+}
+function lpFiles(){
+  return `<div class="pt-card"><h2>Dateien & Sync</h2><p>Die Konten liegen auf jedem iPad. Mit Dateien bringst du alle auf den gleichen Stand.</p>
+    <ol class="pt-steps"><li><b>Start:</b> Die Kinder öffnen den Link, tippen ihren Vornamen und wählen im Modul ihre Gruppennummer. Mehr braucht es nicht.</li>
+      <li><b>Nach jeder Lektion:</b> Die Kinder tippen im Hauptmenü auf «📤 Datei speichern» und schicken sie dir per AirDrop.</li>
+      <li><b>Hier laden:</b> alle Dateien auf einmal auswählen. Neue Kinder kommen automatisch in die Klasse (gleicher Vorname = gleiches Konto). Sterne, Diplome, Gruppen und Projekte werden zusammengeführt.</li>
+      <li><b>Optional verteilen:</b> Die Klassen-Datei bringt deinen Lehrpersonen-Code und die Sterne der ganzen Gruppe auf die iPads.</li></ol>
+    <div class="pt-row" style="justify-content:flex-start"><button type="button" class="pt-btn gold" data-pt="export">Klassen-Datei speichern</button>
+      <label class="pt-btn primary">📥 Dateien der Kinder laden<input type="file" data-pt-file accept=".json,application/json" multiple></label></div>
+    <p class="pt-msg" id="ptMsg" role="status"></p></div>`;
+}
+function lpPins(){
+  return `<div class="pt-card"><h2>PIN-Liste</h2><p>Zum Ausschneiden oder als Bildschirmfoto. Jedes Kind bekommt nur seine eigene Karte.</p>
+    <div class="pt-pins">${D.cls.students.map(s=>`<div class="pt-pincard"><b>${esc(s.n)}</b><span>${esc(s.pin)}</span></div>`).join("") || `<p class="pt-empty">Noch keine Konten.</p>`}</div></div>`;
+}
+function lpSetup(){
+  return `<div class="pt-card"><h2>Einstellungen</h2>
+    <div class="pt-form" data-pt-form="rename"><label for="ptRen" style="font-weight:700">Klassenname</label><input class="pt-in" id="ptRen" value="${esc(D.cls.name)}" maxlength="40"><button type="button" data-pt-submit class="pt-btn">Speichern</button></div>
+    <div class="pt-form" data-pt-form="code2" style="margin-top:14px"><label for="ptNewCode" style="font-weight:700">Lehrpersonen-Code</label><input class="pt-in" id="ptNewCode" placeholder="neuer Code, nur Ziffern 1–9" maxlength="8" inputmode="numeric" autocomplete="off"><button type="button" data-pt-submit class="pt-btn">Ändern</button></div>
+    <p style="color:var(--muted); font-size:.9rem">Der Code wird mit der Klassen-Datei auf die iPads übertragen. Er wird über das Zahlenfeld eingegeben (nur Ziffern 1–9, 4 bis 8 Stellen). Zu Beginn lautet er 4313.</p>
+    <p class="pt-msg" id="ptMsg" role="status"></p></div>` + fbSetupHTML();
+}
+let delAsk = null, grpEdit = null;
+function lpQuiz(){
+  const Q = D.cls.kiQuiz || [], ready = Q.filter(q=>q.img && q.ans).length, kb = Math.round(Q.reduce((n,q)=>n + (q.img || "").length, 0) * .75 / 1024);
+  return `<div class="pt-card"><h2>Bilder-Quiz für «KI-Bild oder echt?»</h2>
+    <p>Lade echte Fotos und KI-Bilder hoch, zum Beispiel eigene Fotos und Bilder, die du mit einem KI-Bildprogramm erzeugt hast. Verwende nur Bilder, die du nutzen darfst, und keine Fotos von Kindern. Pro Bild wählst du «Foto» oder «KI-Bild» und schreibst einen Hinweis, den die Kinder nach ihrer Antwort sehen. Die Bilder werden verkleinert und kommen mit der Klassen-Datei auf die iPads.</p>
+    <div class="pt-row" style="justify-content:flex-start; margin-top:0"><label class="pt-btn primary">+ Bilder hinzufügen<input type="file" data-pt-qfile accept="image/*" multiple></label><span style="align-self:center; color:var(--muted); font-size:.9rem">${ready} von ${Q.length} Bildern bereit · ca. ${kb} KB</span></div>
+    <p class="pt-msg" id="ptMsg" role="status"></p>
+    <div class="pt-qlist">${Q.map((q,i)=>`<div class="pt-qi${q.ans ? "" : " todo"}"><span class="pt-qn">${i+1}</span><img src="${q.img}" alt="Quiz-Bild ${i+1}">
+      <div class="pt-qf"><div class="pt-qa" role="group" aria-label="Antwort für Bild ${i+1}"><button type="button" data-pt-qans="${q.id}" data-val="foto" aria-pressed="${q.ans==="foto"}">📷 Foto</button><button type="button" data-pt-qans="${q.id}" data-val="ki" aria-pressed="${q.ans==="ki"}">🤖 KI-Bild</button></div>
+        <textarea class="pt-in" data-pt-qhint="${q.id}" placeholder="Hinweis nach der Antwort, z. B. «Schau die Finger an: Es sind sechs!»" aria-label="Hinweis für Bild ${i+1}">${esc(q.hint || "")}</textarea><input class="pt-in" data-pt-qsrc="${q.id}" value="${esc(q.src || "")}" placeholder="Quelle, z. B. «Foto: Tim Wehrli» oder «Bild: WDR, CC BY 4.0»" aria-label="Quelle für Bild ${i+1}" maxlength="120"></div>
+      <div class="pt-qb"><button type="button" class="pt-btn small" data-pt-qmove="${q.id}" data-d="-1" ${i ? "" : "disabled"} aria-label="Nach oben">↑</button><button type="button" class="pt-btn small" data-pt-qmove="${q.id}" data-d="1" ${i < Q.length-1 ? "" : "disabled"} aria-label="Nach unten">↓</button><button type="button" class="pt-btn small danger" data-pt-qdel="${q.id}" aria-label="Bild entfernen">✕</button></div></div>`).join("") || `<p class="pt-empty">Noch keine Bilder. Gut sind etwa 8 bis 12 Bilder, gemischt Fotos und KI-Bilder.</p>`}</div>
+    <p style="color:var(--muted); font-size:.9rem; margin-top:12px">Danach unter «Dateien & Sync» eine neue Klassen-Datei verteilen, damit die Bilder auf die iPads kommen.</p></div>`;
+}
+function shrinkImage(file){ return new Promise((ok, no)=>{ const fr = new FileReader(); fr.onerror = no; fr.onload = ()=>{ const im = new Image(); im.onerror = no; im.onload = ()=>{ const M = 800, k = Math.min(1, M / Math.max(im.width, im.height)); const c = document.createElement("canvas"); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL("image/jpeg", .8)); }; im.src = fr.result; }; fr.readAsDataURL(file); }); }
+async function addQuizImages(files){
+  const msg = $p("#ptMsg"); let n = 0;
+  D.cls.kiQuiz = D.cls.kiQuiz || [];
+  for (const f of files){ try { const img = await shrinkImage(f); D.cls.kiQuiz.push({id: "q" + uid(), ans:"", hint:"", img}); n++; } catch(e){} }
+  touch(); render(); say($p("#ptMsg"), n ? `${n} Bild(er) hinzugefügt. Jetzt bei jedem Bild «Foto» oder «KI-Bild» wählen.` : "Diese Datei(en) konnte ich nicht lesen.", !n);
+}
+function lpTest(){
+  const L = LIB.LEVELS;
+  return `<div class="pt-card"><h2>Test-Modus (Cheats)</h2><p>Zum Ausprobieren: Gib einem Konto ein Level, alle Abzeichen oder einfach alles. Test-Werte bleiben auf diesem Gerät und werden nicht mit den iPads der Kinder synchronisiert. Danach mit «Test entfernen» wieder zurücksetzen.</p>
+    <div class="pt-form"><select id="ptCheatWho" aria-label="Konto"><option value="*">Alle Konten</option>${D.cls.students.map(s=>`<option value="${s.id}"${s.id === D.me ? " selected" : ""}>${esc(s.n)}${prog(s.id).mods.cheat ? " (Test)" : ""}</option>`).join("")}</select>
+      <select id="ptCheatLv" aria-label="Level">${L.map((l,k)=>`<option value="${k}"${k === L.length-1 ? " selected" : ""}>Level ${k+1} · ${esc(l.n)}</option>`).join("")}</select>
+      <button type="button" class="pt-btn primary" data-pt-cheat="level">Level geben</button></div>
+    <div class="pt-row" style="justify-content:flex-start">
+      <button type="button" class="pt-btn gold" data-pt-cheat="all">⚡ Alles freischalten</button>
+      <button type="button" class="pt-btn" data-pt-cheat="badges">Alle Abzeichen</button>
+      <button type="button" class="pt-btn danger" data-pt-cheat="reset">Test entfernen</button></div>
+    <h3 style="margin-top:18px">Bausteine freischalten</h3><p style="color:var(--muted); font-size:.9rem">Öffnet ein Modul mit allen Bausteinen und Etappen, ohne dass man zuerst präsentieren muss. «Weiter» geht auch ohne fertige Aufgabe. Gilt nur auf diesem Gerät.</p>
+    <div class="pt-form"><select id="ptUnlMod" aria-label="Modul"><option value="*">Alle Module</option>${MODULES.filter(m=>m.live).map(m=>`<option value="${m.id}">${esc(m.n)}${testOpen(m.id) ? " (offen)" : ""}</option>`).join("")}</select>
+      <button type="button" class="pt-btn primary" data-pt-unl="on">🔓 Alle Bausteine freischalten</button><button type="button" class="pt-btn" data-pt-unl="off">🔒 Wieder sperren</button></div>
+    <p style="color:var(--muted); font-size:.85rem">Jetzt offen: ${(()=>{ let o = []; try { o = JSON.parse(localStorage.getItem("glab.testUnlock") || "[]"); } catch(e){} return o.length ? o.map(id=>id === "*" ? "alle Module" : esc((MODULES.find(m=>m.id === id) || {}).n || id)).join(", ") : "nichts"; })()}</p>
+    <p style="color:var(--muted); font-size:.9rem; margin-top:12px">«Alles freischalten» gibt Level ${L.length}, alle Abzeichen und die geheimen Accessoires. Danach als Kind anmelden und Zimmer, Garderobe und Emotes ausprobieren.</p>
+    <p class="pt-msg" id="ptMsg" role="status"></p></div>`;
+}
+function cheat(kind){
+  const who = (document.getElementById("ptCheatWho") || {}).value || "*";
+  const lv = +((document.getElementById("ptCheatLv") || {}).value || 0);
+  const ids = who === "*" ? D.cls.students.map(s=>s.id) : [who];
+  ids.forEach(id=>{
+    const p = prog(id);
+    if (kind === "reset"){ delete p.mods.cheat; return; }
+    const c = p.mods.cheat || {stars:0, badges:[], fed:0, deaths:0};
+    if (kind === "level" || kind === "all"){
+      const L = LIB.LEVELS, target = kind === "all" ? L[L.length-1].s : L[lv].s;
+      const base = Object.entries(p.mods).filter(([k])=>k !== "cheat").reduce((n,[,m])=>n + (m.stars||0), 0);
+      c.stars = Math.max(0, target - base);
+    }
+    if (kind === "badges" || kind === "all") c.badges = LIB.BADGES.map(b=>b.id);
+    if (kind === "all"){ c.fed = 7; c.deaths = 1; }
+    c.at = now(); p.mods.cheat = c;
+  });
+  saveD(); render();
+  say($p("#ptMsg"), kind === "reset" ? "Test-Werte entfernt." : `Erledigt für ${who === "*" ? "alle Konten" : student(who).n}.`);
+}
+
+/* ---- Ereignisse ---- */
+portalEl.addEventListener("change", e=>{
+  const t = e.target;
+  if (t.matches("[data-pt-qfile]") && t.files && t.files.length){ addQuizImages(Array.from(t.files)); t.value = ""; return; }
+  if (t.matches("[data-pt-qsrc]")){ const q = (D.cls.kiQuiz || []).find(x=>x.id === t.dataset.ptQsrc); if (q){ q.src = t.value.slice(0, 120); touch(); } return; }
+  if (t.matches("[data-pt-qhint]")){ const q = (D.cls.kiQuiz || []).find(x=>x.id === t.dataset.ptQhint); if (q){ q.hint = t.value.slice(0, 300); touch(); } return; }
+  if (t.matches("[data-pt-file]") && t.files && t.files.length){ loadFiles(Array.from(t.files)); t.value = ""; return; }
+  if (t.matches("[data-pt-grp]")){ const mod = t.dataset.mod; D.cls.groups = D.cls.groups || {}; D.cls.groups[mod] = D.cls.groups[mod] || {}; if (t.value) D.cls.groups[mod][t.dataset.ptGrp] = +t.value; else delete D.cls.groups[mod][t.dataset.ptGrp]; touch(); say($p("#ptMsg"), "Gruppe gespeichert."); }
+});
+/* Formulare ohne <form>-Absenden (die Artifact-Ansicht blockiert das): Knopf oder Enter-Taste */
+document.addEventListener("click", e=>{ const b = e.target.closest("[data-pt-submit]"); if (!b) return; const f = b.closest("[data-pt-form]"); if (f){ e.preventDefault(); runForm(f.dataset.ptForm); } });
+document.addEventListener("keydown", e=>{ if (e.key !== "Enter" || e.isComposing) return; const el = e.target; if (!el || el.tagName !== "INPUT") return; const f = el.closest("[data-pt-form]"); if (f){ e.preventDefault(); runForm(f.dataset.ptForm); } });
+function runForm(k){
+  if (k === "code") return checkCode();
+  if (k === "join"){
+    const n = (document.getElementById("ptJoin").value || "").trim().slice(0,30); if (!n){ const i = document.getElementById("ptJoin"); i.focus(); i.animate([{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"none"}], {duration:300}); return; }
+    if (!D.cls){ D.cls = {id: uid(), self: true, name: "Meine Klasse", code: "4313", rev: 0, students: [], groups: {}}; D.prog = {}; }
+    let s = D.cls.students.find(x=>normN(x.n) === normN(n)); if (!s){ s = {id: uid(), n}; D.cls.students.push(s); D.cls.rev = D.cls.self ? 0 : now(); }
+    D.me = s.id; saveD(); view = "home"; render(); return;
+  }
+  if (k === "gsadd"){ const inp = document.getElementById("ptGsAdd"), n = (inp.value || "").trim().slice(0,30); if (!n) return; if (!GS.names.some(x=>normN(x) === normN(n))) GS.names.push(n); gsRender(); const i = document.getElementById("ptGsAdd"); if (i) i.focus(); return; }
+  if (k.startsWith("mem:")){
+    const mod = k.slice(4), inp = document.getElementById("ptMem-" + mod), n = (inp.value || "").trim().slice(0,30), nr = groupOf(D.me, mod); if (!n || !nr) return;
+    let s = D.cls.students.find(x=>normN(x.n) === normN(n)); if (!s){ s = {id: uid(), n}; D.cls.students.push(s); }
+    D.cls.groups[mod] = D.cls.groups[mod] || {}; D.cls.groups[mod][s.id] = nr; saveD(); render(); return;
+  }
+  if (k === "create"){
+    const name = document.getElementById("ptClsName").value.trim() || "Meine Klasse";
+    const names = Array.from(new Set(document.getElementById("ptNames").value.split(/\n|,/).map(x=>x.trim()).filter(Boolean))).slice(0, 40);
+    D.cls = {id: uid(), name, code: "4313", rev: now(), students: names.map(n=>({id: uid(), n: n.slice(0,30), pin: newPin(), at: now()})), groups:{prompt:{}}};
+    D.prog = {}; D.me = null; saveD(); lpTab = "sus"; render(); say($p("#ptMsg"), "Klasse erstellt. Drucke jetzt die Zugangskarten mit den PINs."); return;
+  }
+  if (k === "add"){
+    const inp = document.getElementById("ptAdd"); const n = inp.value.trim().slice(0,30); if (!n) return;
+    D.cls.students.push({id: uid(), n, pin: uniquePin(), at: now()}); touch(); render(); say($p("#ptMsg"), `Konto für ${n} erstellt.`); const a = document.getElementById("ptAdd"); if (a) a.focus(); return;
+  }
+  if (k === "rename"){ D.cls.name = document.getElementById("ptRen").value.trim() || D.cls.name; touch(); render(); say($p("#ptMsg"), "Gespeichert."); return; }
+  if (k === "code2"){ const c = document.getElementById("ptNewCode").value.trim(); if (!/^[1-9]{4,8}$/.test(c)){ say($p("#ptMsg"), "Der Code braucht 4 bis 8 Ziffern von 1 bis 9 (keine 0).", true); return; } D.cls.code = c; touch(); render(); say($p("#ptMsg"), "Neuer Code gespeichert. Verteile danach eine neue Klassen-Datei."); return; }
+}
+document.addEventListener("click", e=>{
+  const t = e.target.closest("[data-pt-wall],[data-pt-modgo],[data-pt-gsnr],[data-pt-gsdel],[data-pt-gstog],[data-pt-pick],[data-pt-grpedit],[data-pt],[data-pt-login],[data-pt-key],[data-pt-start],[data-pt-tab],[data-pt-repin],[data-pt-del],[data-pt-outfit],[data-pt-badge],[data-pt-room],[data-pt-emote],[data-pt-cheat],[data-pt-unl],[data-pt-fb],[data-pt-qans],[data-pt-qmove],[data-pt-qdel]");
+  if (!t){ if (["ptWd","ptRm","ptEm","ptLv","ptDp"].includes(e.target.id)){ closeOv(e.target.id); render(); } return; }
+  const a = t.dataset.pt;
+  if (t.dataset.ptModgo) return openGrpStart(t.dataset.ptModgo);
+  if (t.dataset.ptGsnr){ GS.nr = +t.dataset.ptGsnr; gsRender(); return; }
+  if (t.dataset.ptGsdel !== undefined){ GS.names.splice(+t.dataset.ptGsdel, 1); gsRender(); return; }
+  if (a === "gs-close") return closeOv("ptGs");
+  if (a === "gs-go") return gsGo();
+  if (t.dataset.ptGstog){ const s2 = student(t.dataset.ptGstog); if (s2){ const i = GS.names.findIndex(n=>normN(n) === normN(s2.n)); if (i >= 0) GS.names.splice(i, 1); else GS.names.push(s2.n); gsRender(); } return; }
+  if (a === "cards") return printCards();
+  if (a === "cards-print"){ try { window.print(); } catch(e){} return; }
+  if (a === "cards-close") return closeOv("ptCards");
+  if (a === "allpins"){ D.cls.students.forEach(s2=>{ if (!s2.pin){ s2.pin = uniquePin(); s2.at = now(); } }); touch(); render(); return; }
+  if (t.dataset.ptPick){ const mod = t.dataset.ptPick; D.cls.groups = D.cls.groups || {}; D.cls.groups[mod] = D.cls.groups[mod] || {}; D.cls.groups[mod][D.me] = +t.dataset.nr; grpEdit = null; saveD(); render(); return; }
+  if (t.dataset.ptGrpedit){ grpEdit = t.dataset.ptGrpedit; render(); return; }
+  if (t.dataset.ptLogin){ const ls = student(t.dataset.ptLogin); if (ls && ls.pin) return openPin(ls.id); D.me = t.dataset.ptLogin; saveD(); view = "home"; render(); return; }
+  if (t.dataset.ptKey) return pinKey(t.dataset.ptKey);
+  if (t.dataset.ptStart){ S = {sid: D.me, mod: t.dataset.ptStart}; lsSet(SKEY, S); t.disabled = true; t.textContent = "Wird gestartet …"; location.reload(); return; }
+  if (t.dataset.ptTab){ lpTab = t.dataset.ptTab; delAsk = null; render(); return; }
+  if (t.dataset.ptRepin){ const s = student(t.dataset.ptRepin); s.pin = uniquePin(); s.at = now(); touch(); render(); say($p("#ptMsg"), `Neuer PIN für ${s.n}: ${s.pin}`); return; }
+  if (t.dataset.ptDel){ const id = t.dataset.ptDel; if (delAsk !== id){ delAsk = id; render(); return; } const s = student(id); D.cls.students = D.cls.students.filter(x=>x.id !== id); Object.values(D.cls.groups || {}).forEach(g=>delete g[id]); delete D.prog[id]; if (cloud.fb) FBX.del("kinder/" + id).catch(()=>{}); if (D.me === id) D.me = null; delAsk = null; touch(); render(); say($p("#ptMsg"), `Konto ${s ? s.n : ""} entfernt.`); return; }
+  if (t.dataset.ptFb) return fbAction(t.dataset.ptFb, t);
+  if (t.dataset.ptCheat) return cheat(t.dataset.ptCheat);
+  if (t.dataset.ptUnl){ const id = (document.getElementById("ptUnlMod") || {}).value || "*"; let o = []; try { o = JSON.parse(localStorage.getItem("glab.testUnlock") || "[]"); } catch(e){}
+    if (t.dataset.ptUnl === "on"){ if (!o.includes(id)) o.push(id); } else o = id === "*" ? [] : o.filter(x=>x !== id);
+    try { localStorage.setItem("glab.testUnlock", JSON.stringify(o)); } catch(e){} render(); say($p("#ptMsg"), t.dataset.ptUnl === "on" ? "Freigeschaltet. Jetzt als Kind ins Modul gehen." : "Wieder gesperrt."); return; }
+  if (t.dataset.ptQans){ const q = (D.cls.kiQuiz || []).find(x=>x.id === t.dataset.ptQans); if (q){ q.ans = t.dataset.val; touch(); render(); } return; }
+  if (t.dataset.ptQmove){ const Q = D.cls.kiQuiz || [], i = Q.findIndex(x=>x.id === t.dataset.ptQmove), j = i + (+t.dataset.d); if (i >= 0 && j >= 0 && j < Q.length){ [Q[i], Q[j]] = [Q[j], Q[i]]; touch(); render(); } return; }
+  if (t.dataset.ptQdel){ D.cls.kiQuiz = (D.cls.kiQuiz || []).filter(x=>x.id !== t.dataset.ptQdel); touch(); render(); return; }
+  if (t.dataset.ptOutfit) return pickOutfit(t.dataset.ptOutfit);
+  if (t.dataset.ptRoom) return pickRoom(t.dataset.ptRoom);
+  if (t.dataset.ptEmote) return pickEmote(t.dataset.ptEmote);
+  if (t.dataset.ptWall){ const p = prog(D.me), T = totalsFor(D.me), id = t.dataset.ptWall, list = wallOf(p, T), i = list.indexOf(id);
+    if (i >= 0) list.splice(i, 1); else { if (list.length >= WALL_MAX){ t.textContent = "Die Wand ist voll: zuerst ein Diplom abhängen"; t.classList.add("full"); return; } list.push(id); }
+    p.wall = list; p.wallKnown = LIB.BADGES.filter(b=>T.badges.has(b.id)).map(b=>b.id); saveD(); const sc = (document.querySelector("#ptDp .wd-box") || {}).scrollTop || 0; openDiplomas(); const bx = document.querySelector("#ptDp .wd-box"); if (bx) bx.scrollTop = sc; return; }
+  if (t.dataset.ptBadge){ const b = LIB.BADGES.find(x=>x.id === t.dataset.ptBadge); const on = totalsFor(D.me).badges.has(b.id); const el = document.getElementById("ptSay"); if (el){ el.innerHTML = `<b>${on ? "Diplom: " : "Noch offen: "}${esc(b.n)}</b>${esc(b.d)}`; el.animate([{opacity:.3},{opacity:1}], {duration:250}); sayHide(); } return; }
+  if (a === "hub"){ return GLAB.exit(); }
+  if (a && a.startsWith("bg-")){ return pickBg(a.slice(3)); }
+  if (a === "logo"){ ["ptWd","ptRm","ptEm","ptLv","ptDp","ptCode"].forEach(closeOv); view = "home"; render(); scrollTo(0,0); return; }
+  if (a === "logout"){ D.me = null; saveD(); view = "home"; render(); return; }
+  if (a === "pin-close") return closeOv("ptPin");
+  if (a === "wardrobe") return openWardrobe();
+  if (a === "room") return openRoom();
+  if (a === "sound"){ try { localStorage.setItem("promptBaukasten.sound", window.GLAB_R.soundOn() ? "off" : "on"); } catch(e){} render(); return; }
+  if (a === "emotes") return openEmotes();
+  if (a === "levels") return openLevels();
+  if (a === "diplome") return openDiplomas();
+  if (a === "lexikon"){ if (window.GLAB_LEX) window.GLAB_LEX.open({who: (student(D.me) || {}).n || "", haveOf: m=>{ const out = new Set(); [groupOf(D.me, m), "p:" + D.me].filter(Boolean).forEach(nr=>{ const v = lsGet(workKey(nr, m)); ((v && v.buddy && v.buddy.lex) || []).forEach(w=>out.add(w)); }); return [...out]; }}); return; }
+  if (a === "dp-close"){ closeOv("ptDp"); render(); return; }
+  if (a === "rm-close" || a === "em-close" || a === "lv-close"){ closeOv({"rm-close":"ptRm","em-close":"ptEm","lv-close":"ptLv"}[a]); render(); return; }
+  if (a === "wd-close"){ closeOv("ptWd"); render(); return; }
+  if (a === "lp") return askTeacher();
+  if (a === "code-close") return closeOv("ptCode");
+  if (a === "lp-close"){ view = "home"; delAsk = null; render(); return; }
+  if (a === "lp-lock"){ lpOk = false; view = "home"; delAsk = null; render(); return; }
+  if (a === "backup") return saveFile("sicherung", t);
+  if (a === "export") return saveFile("klasse", t);
+});
+document.addEventListener("keydown", e=>{
+  if (!document.getElementById("ptPin")) { if (e.key === "Escape"){ ["ptGs","ptWd","ptRm","ptEm","ptLv","ptDp","ptCode"].forEach(closeOv); } return; }
+  if (/^[0-9]$/.test(e.key)){ e.preventDefault(); pinKey(e.key); }
+  else if (e.key === "Backspace"){ e.preventDefault(); pinKey("del"); }
+  else if (e.key === "Escape") closeOv("ptPin");
+});
+window.GLAB.openWardrobe = ()=>openWardrobe();
+window.GLAB.openLevels = ()=>openLevels();
+window.GLAB.openDiplomas = ()=>openDiplomas();
+})();
