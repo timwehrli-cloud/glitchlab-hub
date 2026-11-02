@@ -577,7 +577,19 @@ footer.foot { text-align: center; padding-block: 8px 28px; }
 @keyframes brandSpark { 0%,100% { opacity: 0; } 10%,30% { opacity: 1; } 31% { opacity: 0; } 60% { opacity: .8; transform: translate(2px,-2px); } 64% { opacity: 0; } }
 @keyframes brandGlitchA { 0%,86%,100% { opacity: 0; } 87% { opacity: .9; transform: translate(-3px,-1px); clip-path: inset(8% 0 60% 0); } 90% { opacity: .9; transform: translate(2px,1px); clip-path: inset(40% 0 30% 0); } 93% { opacity: 0; } }
 @keyframes brandGlitchB { 0%,87%,100% { opacity: 0; } 88% { opacity: .9; transform: translate(3px,1px); clip-path: inset(60% 0 5% 0); } 91% { opacity: .9; transform: translate(-2px,0); clip-path: inset(20% 0 55% 0); } 94% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .brand .brand-g .glitch, .brand-spark, .logo-word .lw-a, .logo-word::before, .logo-word::after { animation: none; } }
+/* Schriftzug grösser und cooler: Neon-Verlauf, 3D-Pixelschatten, Glanz und kurzer Glitch-Ruck */
+.brand .brand-g { width: 54px; height: 54px; }
+.brand .brand-g .glitch { width: 52px; height: 52px; }
+.brand .logo-word { font-size: clamp(26px, 2.6vw + 12px, 36px); font-weight: 800; letter-spacing: -.035em; line-height: 1;
+  filter: drop-shadow(2px 2px 0 #14062E) drop-shadow(2px 2px 0 rgba(255,43,214,.55)) drop-shadow(0 0 14px rgba(139,92,255,.45));
+  animation: brandJolt 6s steps(1) infinite; }
+.logo-word .lw-a { background-image: linear-gradient(100deg, #B79CFF 0%, #FF2BD6 30%, #FFFFFF 38%, #FF2BD6 46%, #A07CFF 70%, #B79CFF 100%); background-size: 250% 100%; animation: brandFlow 4s linear infinite; }
+.logo-word .lw-b { background-image: linear-gradient(100deg, #2EE6D6 0%, #7BFFB0 30%, #FFFFFF 38%, #7BFFB0 46%, #2EE6D6 70%, #7BFFB0 100%); background-size: 250% 100%; animation: brandFlow 4s linear infinite; }
+.logo-word::before, .logo-word::after { font-weight: 800; }
+.brand .brand-t small { margin-top: 3px; }
+@keyframes brandJolt { 0%, 88%, 100% { transform: none; } 89% { transform: skewX(-8deg) translateX(1px); } 90% { transform: skewX(6deg) translateX(-1px); } 91% { transform: none; } }
+@media (max-width: 560px) { .brand .logo-word { font-size: 26px; } .brand .brand-g, .brand .brand-g .glitch { width: 42px; height: 42px; } }
+@media (prefers-reduced-motion: reduce) { .brand .brand-g .glitch, .brand-spark, .logo-word, .logo-word .lw-a, .logo-word .lw-b, .logo-word::before, .logo-word::after { animation: none; } }
 .restore-card{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1.5px solid color-mix(in srgb,var(--accent) 35%,transparent);display:grid;gap:2px}
 .restore-card small{color:var(--muted)}
 .acc-r{grid-template-columns:minmax(0,1fr) auto minmax(170px,240px)}
