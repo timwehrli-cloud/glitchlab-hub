@@ -945,8 +945,8 @@ function wardrobeHTML(){
 }
 function skinPickHTML(o){
   const L = (window.GLAB_SKINS || []).filter(x=>x.id !== "gold"), cur = o.skin || "violett";
-  if (window.GLAB_IS_LP) return `<div class="wd-skin"><b>Hautfarbe</b><div class="wd-skins"><span class="wd-sk on gold" style="--sk:#F2B705" aria-label="Gold"><span class="glitch">${LIB.glitchSVG("happy")}</span><small>Gold</small></span></div><p class="wd-skin-note">✨ Lehrpersonen sind immer golden. Diese Farbe gibt es nur für Lehrpersonen.</p></div>`;
-  return `<div class="wd-skin"><b>Hautfarbe</b><div class="wd-skins" role="radiogroup" aria-label="Hautfarbe von gLiTCh">${L.map(x=>`<button type="button" class="wd-sk${cur === x.id ? " on" : ""}" data-pt-skin="${x.id}" role="radio" aria-checked="${cur === x.id}" style="--sk:${x.base}"><span class="glitch">${LIB.glitchSVG("normal", {outfit:{skin:x.id}})}</span><small>${esc(x.n)}</small></button>`).join("")}</div></div>`;
+  if (window.GLAB_IS_LP) return `<div class="wd-skin"><b>Skin</b><div class="wd-skins"><span class="wd-sk on gold" style="--sk:#F2B705" aria-label="Gold"><span class="glitch">${LIB.glitchSVG("happy")}</span><small>Gold</small></span></div><p class="wd-skin-note">✨ Lehrpersonen sind immer golden. Diese Farbe gibt es nur für Lehrpersonen.</p></div>`;
+  return `<div class="wd-skin"><b>Skin</b><div class="wd-skins" role="radiogroup" aria-label="Skin von gLiTCh">${L.map(x=>`<button type="button" class="wd-sk${cur === x.id ? " on" : ""}" data-pt-skin="${x.id}" role="radio" aria-checked="${cur === x.id}" style="--sk:${x.base}"><span class="glitch">${LIB.glitchSVG("normal", {outfit:{skin:x.id}})}</span><small>${esc(x.n)}</small></button>`).join("")}</div></div>`;
 }
 function pickSkin(id){
   if (window.GLAB_IS_LP || id === "gold" || !(window.GLAB_SKINS || []).some(x=>x.id === id)) return;

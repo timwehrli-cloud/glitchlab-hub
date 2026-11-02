@@ -1,0 +1,25 @@
+{
+ "name": "Glitchlab-Hub",
+ "short_name": "Glitchlab",
+ "start_url": "./",
+ "display": "standalone",
+ "background_color": "#14062E",
+ "theme_color": "#14062E",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "favicon.svg",
+   "sizes": "any",
+   "type": "image/svg+xml"
+  }
+ ]
+}

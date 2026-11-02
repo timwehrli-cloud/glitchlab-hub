@@ -1,4 +1,4 @@
-# gLiTCh-Hautfarben in der Garderobe: 10 Farben, Standard Violett; Lehrpersonen immer Gold (nicht wählbar)
+# gLiTCh-Skins in der Garderobe: 10 Farben, Standard Violett; Lehrpersonen immer Gold (nicht wählbar)
 import json as _json
 _SK = (pathlib.Path(__file__).parent / "skins.json").read_text(encoding="utf-8")
 
@@ -10,7 +10,7 @@ assert a in portal
 portal = portal.replace(a, a + '''
   window.GLAB_IS_LP = !!ctx.lp; window.GLAB_CUR_SKIN = ((ctx.extras || {}).outfit || {}).skin || "";''', 1)
 
-# Garderobe: Hautfarbe zuoberst
+# Garderobe: Skin zuoberst
 a = '''    <div class="wd-stage"><span class="glitch wd-g">${LIB.glitchSVG("cool", {outfit:o})}</span></div>'''
 assert a in portal
 portal = portal.replace(a, a + '''
@@ -18,8 +18,8 @@ portal = portal.replace(a, a + '''
 a = "function openWardrobe(){"
 portal = portal.replace(a, '''function skinPickHTML(o){
   const L = (window.GLAB_SKINS || []).filter(x=>x.id !== "gold"), cur = o.skin || "violett";
-  if (window.GLAB_IS_LP) return `<div class="wd-skin"><b>Hautfarbe</b><div class="wd-skins"><span class="wd-sk on gold" style="--sk:#F2B705" aria-label="Gold"><span class="glitch">${LIB.glitchSVG("happy")}</span><small>Gold</small></span></div><p class="wd-skin-note">✨ Lehrpersonen sind immer golden. Diese Farbe gibt es nur für Lehrpersonen.</p></div>`;
-  return `<div class="wd-skin"><b>Hautfarbe</b><div class="wd-skins" role="radiogroup" aria-label="Hautfarbe von gLiTCh">${L.map(x=>`<button type="button" class="wd-sk${cur === x.id ? " on" : ""}" data-pt-skin="${x.id}" role="radio" aria-checked="${cur === x.id}" style="--sk:${x.base}"><span class="glitch">${LIB.glitchSVG("normal", {outfit:{skin:x.id}})}</span><small>${esc(x.n)}</small></button>`).join("")}</div></div>`;
+  if (window.GLAB_IS_LP) return `<div class="wd-skin"><b>Skin</b><div class="wd-skins"><span class="wd-sk on gold" style="--sk:#F2B705" aria-label="Gold"><span class="glitch">${LIB.glitchSVG("happy")}</span><small>Gold</small></span></div><p class="wd-skin-note">✨ Lehrpersonen sind immer golden. Diese Farbe gibt es nur für Lehrpersonen.</p></div>`;
+  return `<div class="wd-skin"><b>Skin</b><div class="wd-skins" role="radiogroup" aria-label="Skin von gLiTCh">${L.map(x=>`<button type="button" class="wd-sk${cur === x.id ? " on" : ""}" data-pt-skin="${x.id}" role="radio" aria-checked="${cur === x.id}" style="--sk:${x.base}"><span class="glitch">${LIB.glitchSVG("normal", {outfit:{skin:x.id}})}</span><small>${esc(x.n)}</small></button>`).join("")}</div></div>`;
 }
 function pickSkin(id){
   if (window.GLAB_IS_LP || id === "gold" || !(window.GLAB_SKINS || []).some(x=>x.id === id)) return;

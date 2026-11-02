@@ -552,3 +552,29 @@ footer.foot { text-align: center; padding-block: 8px 28px; }
 .km-kid.all .km-allic{width:30px;height:30px;display:grid;place-items:center;font-size:18px}
 .km-b.part{background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .km-b em{font-style:normal;display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:4px;padding:0 4px;border-radius:99px;background:var(--accent);color:#fff;font-size:11px}
+
+/* ---------- Logo: animierter Glitch-Schriftzug ---------- */
+.brand .brand-g { position: relative; width: 44px; height: 44px; flex: none; display: grid; place-items: center; }
+.brand .brand-g .glitch { width: 42px; height: 42px; animation: brandBob 3.2s ease-in-out infinite; filter: drop-shadow(0 0 8px rgba(139,92,255,.55)); }
+.brand-spark { position: absolute; width: 6px; height: 6px; background: #2EE6D6; box-shadow: 0 0 6px #2EE6D6; animation: brandSpark 2.6s steps(1) infinite; }
+.brand-spark.s1 { top: 0; right: -2px; }
+.brand-spark.s2 { bottom: 4px; left: -3px; background: #FF2BD6; box-shadow: 0 0 6px #FF2BD6; animation-delay: -1.3s; }
+.brand .brand-t { display: grid; }
+.logo-word { position: relative; display: inline-block; font-family: var(--f-display); font-size: 22px; letter-spacing: -.02em; line-height: 1.05; }
+.logo-word span { background-clip: text; -webkit-background-clip: text; color: transparent; }
+.logo-word .lw-a { background-image: linear-gradient(90deg, #A07CFF, #FF2BD6, #A07CFF); background-size: 200% 100%; animation: brandFlow 5s linear infinite; }
+.logo-word .lw-b { background-image: linear-gradient(90deg, #2EE6D6, #7BFFB0); }
+.logo-word .lw-c { background-image: linear-gradient(90deg, #FFC21A, #FF8A1F); }
+.logo-word::before, .logo-word::after { content: attr(data-t); position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.logo-word::before { color: #2EE6D6; transform: translate(-2px, 0); clip-path: inset(10% 0 55% 0); animation: brandGlitchA 4.2s steps(1) infinite; }
+.logo-word::after { color: #FF2BD6; transform: translate(2px, 0); clip-path: inset(55% 0 8% 0); animation: brandGlitchB 4.2s steps(1) infinite; }
+.brand:hover .logo-word::before, .brand:focus-visible .logo-word::before { animation-duration: .5s; }
+.brand:hover .logo-word::after, .brand:focus-visible .logo-word::after { animation-duration: .5s; }
+.brand:hover .brand-g .glitch { animation: brandJump .5s ease-out; }
+@keyframes brandBob { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(-3deg); } }
+@keyframes brandJump { 40% { transform: translateY(-7px) scale(1.08); } }
+@keyframes brandFlow { to { background-position: 200% 0; } }
+@keyframes brandSpark { 0%,100% { opacity: 0; } 10%,30% { opacity: 1; } 31% { opacity: 0; } 60% { opacity: .8; transform: translate(2px,-2px); } 64% { opacity: 0; } }
+@keyframes brandGlitchA { 0%,86%,100% { opacity: 0; } 87% { opacity: .9; transform: translate(-3px,-1px); clip-path: inset(8% 0 60% 0); } 90% { opacity: .9; transform: translate(2px,1px); clip-path: inset(40% 0 30% 0); } 93% { opacity: 0; } }
+@keyframes brandGlitchB { 0%,87%,100% { opacity: 0; } 88% { opacity: .9; transform: translate(3px,1px); clip-path: inset(60% 0 5% 0); } 91% { opacity: .9; transform: translate(-2px,0); clip-path: inset(20% 0 55% 0); } 94% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .brand .brand-g .glitch, .brand-spark, .logo-word .lw-a, .logo-word::before, .logo-word::after { animation: none; } }

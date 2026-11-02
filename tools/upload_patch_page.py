@@ -51,7 +51,7 @@ assert _a in page
 page = page.replace(_a, 'const pwOK = v => window.GLAB_CODE_OK ? GLAB_CODE_OK(v, window.GLAB && GLAB.code ? GLAB.code() : PASSWORT) : v.trim().toUpperCase() === String(window.GLAB && GLAB.code ? GLAB.code() : PASSWORT).toUpperCase();')
 
 
-# Hautfarbe von gLiTCh (Garderobe im Hub): Schattierungen aus GLAB_SKINS, Lehrpersonen immer Gold
+# Skin von gLiTCh (Garderobe im Hub): Schattierungen aus GLAB_SKINS, Lehrpersonen immer Gold
 _a = 'const shade = y => y<=3 ? "#B79CFF" : y>=11 ? "#6A3FE0" : "#8B5CFF";'
 assert _a in page
 page = page.replace(_a, '''const _L = window.GLAB_SKINS || [], _id = (opts.outfit && opts.outfit.skin) || window.GLAB_CUR_SKIN;

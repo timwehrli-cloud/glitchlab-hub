@@ -106,6 +106,9 @@
     ? `<span class="stars" aria-label="${n} von ${max} Sternen">★ <b style="color:var(--ink)">${n}</b><span style="color:var(--muted);letter-spacing:0"> / ${max}</span></span>`
     : `<span class="stars" aria-label="${n} von ${max} Sternen">${"★".repeat(n)}<span>${"★".repeat(Math.max(0, max - n))}</span></span>`;
 
+  /* ---------- Logo: gLiTCh mit animiertem Glitch-Schriftzug ---------- */
+  const brandLogo = (mood, sub) => `<span class="brand-g" aria-hidden="true"><span class="glitch">${G.svg(mood, "#8B5CFF", { outfit: S.me ? outfitOf() : {}, lp: isLP() })}</span><i class="brand-spark s1"></i><i class="brand-spark s2"></i></span>
+    <span class="brand-t"><b class="logo-word" data-t="Glitchlab-Hub"><span class="lw-a">Glitch</span><span class="lw-b">lab</span><span class="lw-c">-Hub</span></b><small>${esc(sub)}</small></span>`;
   /* ---------- Navigation ---------- */
   function go(view) {
     if (S.cleanup) { try { S.cleanup(); } catch (e) { /* egal */ } S.cleanup = null; }
@@ -139,7 +142,7 @@
     const st = S.me?.student;
     const team = S.team.map((t, i) => `<span class="chip">${kidG("happy", t.student, "still")}${esc(t.student.first_name)}<button type="button" data-unteam="${i}" aria-label="${esc(t.student.first_name)} aus dem Team nehmen">×</button></span>`).join("");
     return `<header class="top"><div class="wrap">
-      <button type="button" class="brand" data-home aria-label="Zur Startseite">${gl("happy", "#8B5CFF")}<span><b>Glitchlab-Hub</b><small>${esc(S.me?.class_name || "")}</small></span></button>
+      <button type="button" class="brand" data-home aria-label="Zur Startseite">${brandLogo("happy", S.me?.class_name || "")}</button>
       <div class="top-r">
         ${st ? `<span class="starcount" title="Deine Sterne"><i>★</i>${allStars()}</span>
         <div class="team"><span class="chip">${kidG("normal", st, "still")}${esc(st.first_name)}</span>${team}
@@ -287,7 +290,7 @@
   }
   async function logout() {
     if (extT && S.me) { clearTimeout(extT); extT = null; try { await S.be.saveExtras(S.token, S.me.extras); } catch (e) { /* egal */ } }
-    S.cls = null;   // Namensliste neu laden: zeigt die aktuellen gLiTChs (Outfit, Hautfarbe)
+    S.cls = null;   // Namensliste neu laden: zeigt die aktuellen gLiTChs (Outfit, Skin)
     for (const t of S.team) S.be.logout(t.token);
     S.be.logout(S.token);
     const n = S.me?.student?.first_name;
@@ -653,7 +656,7 @@
   async function viewTeacher() {
     const who = await S.be.teacher();
     const head = `<header class="top"><div class="wrap">
-      <button type="button" class="brand" data-exit>${gl("cool", "#8B5CFF")}<span><b>Glitchlab-Hub</b><small>Lehrpersonen</small></span></button>
+      <button type="button" class="brand" data-exit>${brandLogo("cool", "Lehrpersonen")}</button>
       <div class="top-r">${who ? `<span class="hint">${esc(who.email)}</span><button type="button" class="btn small" data-signout>Abmelden</button>` : ""}
       <button type="button" class="btn small" data-exit>Zur Kinder-Ansicht</button></div></div></header>`;
     if (!who) {

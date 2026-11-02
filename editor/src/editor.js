@@ -161,7 +161,7 @@
   /* ---------- Maskottchen ---------- */
   function paintMascot() {
     const ms = D.opt.mascot, own = ms.pix ? GLMascot.pixel(ms.pix, ms.pal) : "";
-    const L = [["glitch", "gLiTCh", "Das Pixel-Maskottchen des Hubs, mit Outfit und Hautfarbe des Kindes.", G ? `<span class="glitch">${G.svg("happy", "#8B5CFF")}</span>` : ""],
+    const L = [["glitch", "gLiTCh", "Das Pixel-Maskottchen des Hubs, mit Outfit und Skin des Kindes.", G ? `<span class="glitch">${G.svg("happy", "#8B5CFF")}</span>` : ""],
       ["fenni", "Fenni", "Der Wüstenfuchs aus dem Wüsten-Game.", GLMascot.fenni()],
       ["eigen", ms.typ === "eigen" && ms.name ? ms.name : "Eigenes", own ? "Dein eigenes Maskottchen. Beschreibung ändern und neu generieren geht jederzeit." : "Beschreibe es, gLiTCh zeichnet es als Pixel-Figur.", own || '<span style="font-size:28px">✨</span>']];
     $("#masOpts").innerHTML = L.map(([v, n, d, pic]) => `<button type="button" class="mas${ms.typ === v ? " on" : ""}" role="radio" aria-checked="${ms.typ === v}" data-mas="${v}"><span class="pic">${pic}</span><span><b>${esc(n)}</b><small>${esc(d)}</small></span></button>`).join("");
