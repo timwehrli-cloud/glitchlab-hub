@@ -39,8 +39,12 @@
   const WERT = { mc: 1, tf: 1, text: 1, luecke: 2, ordnen: 2, zuordnen: 2, schreiben: 2, mehrfach: 2, schaetzen: 2, gestalten: 2, sortieren: 3, zeitmaschine: 3, raetsel: 3, memory: 3, wortsalat: 2, wortraten: 2, blitz: 2, markieren: 2, wortsuche: 3, karteikarten: 2, chat: 2, meinung: 2 };
   const wert = a => WERT[a.typ] || 1;
   const solved = (e, t) => !!(S.ans[k(e, t)] && S.ans[k(e, t)].ok);
-  const etStars = e => ET[e].aufgaben.reduce((n, a, t) => { const x = S.ans[k(e, t)]; return n + (scorable(a) && x && x.ok ? Math.min(wert(a), x.pts != null ? x.pts : wert(a)) : 0); }, 0);
-  const etMax = e => ET[e].aufgaben.reduce((n, a) => n + (scorable(a) ? wert(a) : 0), 0);
+  const etStarsRaw = e => ET[e].aufgaben.reduce((n, a, t) => { const x = S.ans[k(e, t)]; return n + (scorable(a) && x && x.ok ? Math.min(wert(a), x.pts != null ? x.pts : wert(a)) : 0); }, 0);
+  const etMaxRaw = e => ET[e].aufgaben.reduce((n, a) => n + (scorable(a) ? wert(a) : 0), 0);
+  /* Sterne-Budget aus dem Editor: die Punkte der Aufgaben werden auf die Sterne des Moduls umgerechnet */
+  const RAWMAX = ET.reduce((n, _, e) => n + etMaxRaw(e), 0), SCL = +M.sterne > 0 && RAWMAX ? +M.sterne / RAWMAX : 1;
+  const etStars = e => Math.round(etStarsRaw(e) * SCL);
+  const etMax = e => Math.round(etMaxRaw(e) * SCL);
   const etOpen = e => ET[e].aufgaben.filter((a, t) => scorable(a) && !solved(e, t)).length;
   const etDone = e => ET[e].aufgaben.some(scorable) ? etOpen(e) === 0 : !!S.ans[k(e, "seen")];
   const total = () => ET.reduce((n, _, e) => n + etStars(e), 0);
@@ -309,7 +313,7 @@
   function renderTask() {
     const { e, t } = view, A = ET[e].aufgaben, a = A[t], key = k(e, t), st = S.ans[key] || {};
     const last = view.b === B.length - 1;
-    const stars = wert(a) > 1 && scorable(a) ? ` · bis ${"★".repeat(wert(a))}` : " · ★";
+    const stars = scorable(a) ? ` · bis ${Math.max(1, Math.round(wert(a) * SCL))} ★` : "";
     let body = "";
     if (a.typ === "info") body = `<h3>${esc(a.titel || "")}</h3><div class="txt">${rich(a.text || "")}</div>`;
     if (a.typ === "mc") body = `<h3>${rich(a.frage).replace(/^<p>|<\/p>$/g, "")}</h3><div class="opts">${(a.optionen || []).map((o, i) => `<button type="button" class="opt${st.ok && i === +a.richtig ? " ok" : ""}" data-o="${i}" ${st.ok ? 'aria-disabled="true"' : ""}>${esc(o)}</button>`).join("")}</div>`;

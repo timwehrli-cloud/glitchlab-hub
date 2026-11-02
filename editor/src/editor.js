@@ -50,6 +50,12 @@
   const WERT = { mc: 1, tf: 1, text: 1, luecke: 2, ordnen: 2, zuordnen: 2, schreiben: 2, mehrfach: 2, schaetzen: 2, gestalten: 2, sortieren: 3, zeitmaschine: 3, raetsel: 3, memory: 3, wortsalat: 2, wortraten: 2, blitz: 2, markieren: 2, wortsuche: 3, karteikarten: 2, chat: 2, meinung: 2 };
   const wert = a => WERT[a.typ] || 1;
   const etSterne = e => e.aufgaben.reduce((n, a) => n + (a.typ === "info" ? 0 : wert(a)), 0);
+  /* Sterne-Budget: Standard 60 Sterne pro Lektion (45 Minuten), anpassbar */
+  const STARS_PER_LESSON = 60;
+  const budgetAuto = () => Math.max(5, Math.round((+D.minuten || 45) / 45 * STARS_PER_LESSON));
+  const budget = () => +D.sterne > 0 ? Math.round(+D.sterne) : budgetAuto();
+  const rawTotal = () => D.inhalt.reduce((n, e) => n + (e ? etSterne(e) : 0), 0);
+  const etBudget = e => { const r = rawTotal(); return r ? Math.round(etSterne(e) * budget() / r) : 0; };
   const OUT_SLOTS = [["kopf", "Kopf"], ["augen", "Augen"], ["mund", "Mund"], ["hals", "Hals & Rücken"], ["fuesse", "Füsse & Beine"], ["hand", "In der Hand"], ["haustier", "Haustier"]];
   const ROOM_SLOTS = [["links", "Links"], ["rechts", "Rechts"], ["wand", "Wand"], ["teppich", "Teppich"], ["deko", "Deko"], ["decke", "Decke"]];
   const ANIMS = [["huepfen", "Hüpfen"], ["drehen", "Drehen"], ["wackeln", "Wackeln"], ["gross", "Gross werden"], ["jubeln", "Jubeln"], ["regen", "Emoji-Regen"]];
@@ -58,11 +64,12 @@
   /* ---------- Entwurf (bleibt in diesem Browser) ---------- */
   const KEY = "gle.draft.v1";
   const fresh = () => ({ typenV2: true, typenV3: true, titel: "", fach: "nmg", hubThema: "", hubNeu: "", klasse: "6", minuten: "45", etappen: "4", rahmen: "auto", ideen: "", typen: TYPES.map(t => t[0]), material: [], links: "", belIdeen: "",
-    diplome: [], outfits: [], emotes: [], zimmer: [], hintergruende: [], plan: null, inhalt: [], step: 1, opt: freshOpt() });
+    diplome: [], outfits: [], emotes: [], zimmer: [], hintergruende: [], skins: [], plan: null, inhalt: [], step: 1, opt: freshOpt(), art: "modul", sterne: "", addonName: "", addonText: "" });
   const freshOpt = () => ({ tipps: true, vorlesen: true, lexikon: true, pdf: true, gates: [], code: "", mascot: { typ: "glitch" } });
   let D = fresh();
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === "object") D = Object.assign(fresh(), s); } catch (e) { /* kein Speicher */ }
   D.opt = Object.assign(freshOpt(), D.opt || {});
+  if (!Array.isArray(D.skins)) D.skins = [];
   if (!D.opt.mascot || !D.opt.mascot.typ) D.opt.mascot = { typ: "glitch" };
   if (!Array.isArray(D.opt.gates)) D.opt.gates = D.opt.freigabe === "selbst" ? ["selbst"] : D.opt.freigabe === "lp" ? ["lp"] : [];
   if (!D.typenV3) { D.typen = [...new Set([...D.typen, "wortsalat", "wortraten", "blitz", "markieren", "wortsuche", "karteikarten", "chat", "meinung"])]; D.typenV3 = true; }
@@ -73,22 +80,26 @@
 
   /* ---------- Schritte ---------- */
   function go(n) {
+    if (D.art === "addon" && n === 2) n = 3;
     D.step = n; save();
     $$("[data-pane]").forEach(p => p.hidden = +p.dataset.pane !== n);
     $$(".step").forEach(s => { s.setAttribute("aria-current", +s.dataset.step === n ? "step" : "false"); });
     if (n === 3) renderCats();
-    if (n === 4) renderResult();
+    if (n === 4) { if (D.art === "addon") renderAddon(); else renderResult(); }
     paintSteps(); window.scrollTo({ top: 0 });
   }
+  const nx0 = () => D.outfits.length + D.emotes.length + D.zimmer.length + D.hintergruende.length + (D.skins || []).length;
   function paintSteps() {
-    $(".step[data-step='1']").classList.toggle("ok", !!D.titel.trim());
+    const AD = D.art === "addon";
+    $(".step[data-step='1']").classList.toggle("ok", AD ? !!(D.addonName || "").trim() : !!D.titel.trim());
     $(".step[data-step='2']").classList.toggle("ok", D.material.length > 0 || !!D.links.trim());
-    $(".step[data-step='3']").classList.toggle("ok", D.diplome.length + D.outfits.length + D.emotes.length + D.zimmer.length + D.hintergruende.length > 0);
-    $(".step[data-step='4']").classList.toggle("ok", D.inhalt.length > 0);
+    $(".step[data-step='3']").classList.toggle("ok", D.diplome.length + nx0() > 0);
+    $(".step[data-step='4']").classList.toggle("ok", AD ? nx0() > 0 : D.inhalt.length > 0);
     $("#s2sub").textContent = D.material.length ? `${D.material.length} Datei${D.material.length === 1 ? "" : "en"}` : "PDF, Word, Links";
-    const nx = D.outfits.length + D.emotes.length + D.zimmer.length + D.hintergruende.length;
+    const nx = D.outfits.length + D.emotes.length + D.zimmer.length + D.hintergruende.length + (D.skins || []).length;
     $("#s3sub").textContent = D.diplome.length + nx ? `${D.diplome.length} Diplome · ${nx} Extras` : "Diplome & Extras";
-    $("#s4sub").textContent = D.inhalt.length ? "Modul fertig" : "Vorschau & Datei";
+    $("#s4sub").textContent = AD ? "Paket als Datei" : D.inhalt.length ? "Modul fertig" : "Vorschau & Datei";
+    $("#s1sub").textContent = AD ? "Name des Pakets" : "Thema & Stufe"; $("#s3sub").textContent = AD ? `${nx} Belohnungen` : $("#s3sub").textContent;
   }
   $$(".step").forEach(b => b.onclick = () => go(+b.dataset.step));
   $$("[data-goto]").forEach(b => b.onclick = () => go(+b.dataset.goto));
@@ -111,7 +122,16 @@
     $("#fach").innerHTML = opts(SUBJ, D.fach);
     $("#klasse").innerHTML = opts(KLASSEN, D.klasse);
     ["titel", "hubNeu", "ideen", "links", "belIdeen"].forEach(id => { const el = $("#" + id); el.value = D[id] || ""; el.oninput = () => { D[id] = el.value; save(); paintSteps(); }; });
-    const durHint = () => { const m = +D.minuten || 45, l = m / 45; $("#durHint").textContent = `ca. ${m} Minuten · ${Number.isInteger(l) ? l + (l === 1 ? " Lektion" : " Lektionen") : "etwa " + (Math.round(l * 10) / 10).toLocaleString("de-CH") + " Lektionen"}`; $$("[data-min]").forEach(b => b.classList.toggle("on", +b.dataset.min === m)); };
+    const sHint = () => { const auto = !(+D.sterne > 0); $("#sterneAuto").checked = auto; $("#sterneIn").disabled = auto; $("#sterneIn").value = budget();
+      $("#sterneHint").textContent = auto ? `automatisch: ${STARS_PER_LESSON} Sterne pro Lektion (45 Min.)` : `eigene Zahl · automatisch wären es ${budgetAuto()}`; };
+    $("#sterneAuto").onchange = () => { D.sterne = $("#sterneAuto").checked ? "" : String(budget()); save(); sHint(); };
+    $("#sterneIn").oninput = () => { if (+$("#sterneIn").value >= 5) { D.sterne = String(Math.min(2000, Math.round(+$("#sterneIn").value))); save(); $("#sterneHint").textContent = `eigene Zahl · automatisch wären es ${budgetAuto()}`; } };
+    window.__sHint = sHint;
+    const paintArt = () => { document.body.classList.toggle("addon", D.art === "addon"); $$("[data-art]").forEach(b => { b.classList.toggle("on", b.dataset.art === D.art); b.setAttribute("aria-checked", String(b.dataset.art === D.art)); }); };
+    $$("[data-art]").forEach(b => b.onclick = () => { D.art = b.dataset.art; save(); paintArt(); paintSteps(); });
+    paintArt();
+    ["addonName", "addonText"].forEach(id => { const el = $("#" + id); el.value = D[id] || ""; el.oninput = () => { D[id] = el.value; save(); paintSteps(); }; });
+    const durHint = () => { const m = +D.minuten || 45, l = m / 45; if (window.__sHint) window.__sHint(); $("#durHint").textContent = `ca. ${m} Minuten · ${Number.isInteger(l) ? l + (l === 1 ? " Lektion" : " Lektionen") : "etwa " + (Math.round(l * 10) / 10).toLocaleString("de-CH") + " Lektionen"}`; $$("[data-min]").forEach(b => b.classList.toggle("on", +b.dataset.min === m)); };
     const setMin = v => { D.minuten = String(Math.max(10, Math.min(600, Math.round(+v || 45)))); $("#minuten").value = D.minuten; save(); durHint(); };
     $("#minuten").value = D.minuten || "45"; $("#minuten").oninput = () => { if (+$("#minuten").value >= 10) { D.minuten = String(Math.min(600, Math.round(+$("#minuten").value))); save(); durHint(); } }; $("#minuten").onchange = () => setMin($("#minuten").value);
     $$("[data-min]").forEach(b => b.onclick = () => setMin(b.dataset.min)); durHint();
@@ -246,10 +266,13 @@ Gib NUR JSON zurück: {"name":"…","palette":{"a":"#rrggbb", …},"pixel":["...
     { k: "outfits", n: "Outfits für gLiTCh", ic: "👕", d: "Kleider und Accessoires für die Garderobe." },
     { k: "emotes", n: "Emotes", ic: "✨", d: "Kleine Animationen, die gLiTCh vorführt." },
     { k: "zimmer", n: "Zimmer-Gegenstände", ic: "🛋️", d: "Möbel und Deko für gLiTChs Zimmer." },
-    { k: "hintergruende", n: "Hintergründe", ic: "🖼️", d: "Neue Farben und Stimmung für das ganze Zimmer." }
+    { k: "hintergruende", n: "Hintergründe", ic: "🖼️", d: "Neue Farben und Stimmung für das ganze Zimmer." },
+    { k: "skins", n: "Spezial-Skins", ic: "🎨", d: "Eigene Farben für gLiTCh. Standard: frei, wenn das Modul abgeschlossen ist (90 % der Sterne)." }
   ];
+  const catsNow = () => D.art === "addon" ? CATS.filter(c => c.k !== "diplome") : CATS;
+  const LEVEL_OPTS = [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 105, 110, 120, 130, 140, 150, 175, 200, 250, 300].map(n => [`level:${n}`, `Ab Level ${n}`]);
   const DIP_COND = () => [["start", "Erster Stern"], ...Array.from({ length: +D.etappen || 4 }, (_, i) => [`etappe:${i + 1}`, `Etappe ${i + 1} geschafft`]), ["alle", "Alle Etappen"], ["perfekt", "Alles beim 1. Versuch"], ["lexikon", "Lexikon geöffnet"]];
-  const UNLOCK = () => [["sofort", "Sofort"], ["start", "Ab 1. Stern"], ["sterne:5", "Ab 5 Sternen"], ["sterne:10", "Ab 10 Sternen"], ["fertig", "Alle Sterne"], ...D.diplome.map(d => [`badge:${d.id}`, `Diplom «${d.name}»`])];
+  const UNLOCK = () => D.art === "addon" ? [["sofort", "Sofort"], ...LEVEL_OPTS] : [["sofort", "Sofort"], ["start", "Ab 1. Stern"], ["prozent:25", "Ab 25 % der Sterne"], ["prozent:50", "Ab der Hälfte der Sterne"], ["prozent:90", "Modul abgeschlossen (90 %)"], ["fertig", "Alle Sterne"], ...D.diplome.map(d => [`badge:${d.id}`, `Diplom «${d.name}»`]), ...LEVEL_OPTS];
   const sel = (list, cur, attr) => `<select class="in" ${attr}>${opts(list, cur)}</select>`;
   function uid(list, base) { let id = slug(base) || "x", n = 2; while (list.some(x => x.id === id)) id = slug(base) + "-" + n++; return id; }
   function rowHTML(c, x, i) {
@@ -259,15 +282,16 @@ Gib NUR JSON zurück: {"name":"…","palette":{"a":"#rrggbb", …},"pixel":["...
     const unl = sel(UNLOCK(), x.freischalten, `data-f="${c.k}:${i}:freischalten" aria-label="Freischalten"`);
     if (c.k === "diplome") { if (!x.wand) x.wand = GLWall.pick(x.id || x.name);
       return `<div class="item dip"><span class="wl-prev" title="So hängt es an gLiTChs Wand">${GLWall.svg(x.wand, x.emoji, (D.plan && D.plan.farbe) || "#7B4CEF")}</span>${emo}${name}<input class="in" data-f="${c.k}:${i}:beschreibung" value="${esc(x.beschreibung)}" maxlength="120" aria-label="Beschreibung" placeholder="Wofür gibt es das Diplom?">${sel(DIP_COND(), x.bedingung, `data-f="${c.k}:${i}:bedingung" aria-label="Bedingung"`)}${sel(GLWall.KINDS, x.wand, `data-f="${c.k}:${i}:wand" aria-label="Wandgegenstand"`)}${del}</div>`; }
+    if (c.k === "skins") return `<div class="item skin"><span class="sk-prev">${G ? G.svg("happy", isCol(x.farbe) ? x.farbe : "#8B5CFF", { calm: true }) : ""}</span>${name}<input type="color" class="in" data-f="${c.k}:${i}:farbe" value="${isCol(x.farbe) ? x.farbe : "#FF6A00"}" aria-label="Farbe" style="padding:2px;height:40px">${sel(UNLOCK(), x.freischalten || "prozent:90", `data-f="${c.k}:${i}:freischalten" aria-label="Freischalten"`)}${del}</div>`;
     if (c.k === "outfits") return `<div class="item">${emo}${name}${sel(OUT_SLOTS, x.platz, `data-f="${c.k}:${i}:platz" aria-label="Platz"`)}${unl}${del}</div>`;
     if (c.k === "emotes") return `<div class="item">${emo}${name}${sel(ANIMS, x.animation, `data-f="${c.k}:${i}:animation" aria-label="Animation"`)}${unl}${del}</div>`;
     if (c.k === "zimmer") return `<div class="item">${emo}${name}${sel(ROOM_SLOTS, x.platz, `data-f="${c.k}:${i}:platz" aria-label="Platz"`)}${unl}${del}</div>`;
     return `<div class="item bg">${emo}${name}<label class="sw" title="Wandfarbe"><input type="color" data-f="${c.k}:${i}:wand0" value="${isCol(x.wand && x.wand[0]) ? x.wand[0] : "#241052"}" aria-label="Wandfarbe oben"><input type="color" data-f="${c.k}:${i}:wand1" value="${isCol(x.wand && x.wand[1]) ? x.wand[1] : "#4B2696"}" aria-label="Wandfarbe unten"></label>
       <label class="sw" title="Bodenfarbe"><input type="color" data-f="${c.k}:${i}:boden0" value="${isCol(x.boden && x.boden[0]) ? x.boden[0] : "#7A4A26"}" aria-label="Bodenfarbe hinten"><input type="color" data-f="${c.k}:${i}:boden1" value="${isCol(x.boden && x.boden[1]) ? x.boden[1] : "#9C6534"}" aria-label="Bodenfarbe vorne"></label>${unl}${del}</div>`;
   }
-  const blank = k => ({ diplome: { emoji: "🏅", name: "Neues Diplom", beschreibung: "", bedingung: "alle" }, outfits: { emoji: "🎩", name: "Neues Outfit", platz: "kopf", freischalten: "start" }, emotes: { emoji: "🎉", name: "Neues Emote", animation: "huepfen", text: "", freischalten: "fertig" }, zimmer: { emoji: "🪴", name: "Neuer Gegenstand", platz: "deko", freischalten: "sterne:5" }, hintergruende: { emoji: "🎨", name: "Neuer Hintergrund", wand: ["#241052", "#4B2696"], boden: ["#7A4A26", "#9C6534"], freischalten: "fertig" } })[k];
+  const blank = k => k === "skins" ? { name: "Neuer Skin", farbe: "#FF6A00", freischalten: D.art === "addon" ? "level:110" : "prozent:90" } : ({ diplome: { emoji: "🏅", name: "Neues Diplom", beschreibung: "", bedingung: "alle" }, outfits: { emoji: "🎩", name: "Neues Outfit", platz: "kopf", freischalten: "start" }, emotes: { emoji: "🎉", name: "Neues Emote", animation: "huepfen", text: "", freischalten: "fertig" }, zimmer: { emoji: "🪴", name: "Neuer Gegenstand", platz: "deko", freischalten: "sterne:5" }, hintergruende: { emoji: "🎨", name: "Neuer Hintergrund", wand: ["#241052", "#4B2696"], boden: ["#7A4A26", "#9C6534"], freischalten: "fertig" } })[k];
   function renderCats() {
-    $("#cats").innerHTML = CATS.map(c => `<div class="f" style="gap:10px"><div class="cat-h"><span aria-hidden="true" style="font-size:1.3rem">${c.ic}</span><h3>${c.n} <span class="n">${D[c.k].length}</span></h3>
+    $("#cats").innerHTML = catsNow().map(c => `<div class="f" style="gap:10px"><div class="cat-h"><span aria-hidden="true" style="font-size:1.3rem">${c.ic}</span><h3>${c.n} <span class="n">${D[c.k].length}</span></h3>
         <button type="button" class="btn small" data-add="${c.k}">+ Eigenes</button><button type="button" class="btn small teal" data-sug="${c.k}">✨ Vorschlagen</button></div>
         <p class="hint">${c.d}</p><div class="list">${D[c.k].map((x, i) => rowHTML(c, x, i)).join("") || `<div class="empty">Noch nichts. Füge eigene hinzu oder lass gLiTCh etwas vorschlagen.</div>`}</div></div>`).join(`<hr style="border:0;border-top:1px solid var(--line);margin:4px 0;width:100%">`);
     $$("[data-f]", $("#cats")).forEach(el => { el.oninput = el.onchange = () => {
@@ -275,6 +299,7 @@ Gib NUR JSON zurück: {"name":"…","palette":{"a":"#rrggbb", …},"pixel":["...
       if (f === "wand0" || f === "wand1") { x.wand = x.wand || []; x.wand[+f.slice(-1)] = el.value; }
       else if (f === "boden0" || f === "boden1") { x.boden = x.boden || []; x.boden[+f.slice(-1)] = el.value; }
       else x[f] = el.value;
+      if (k === "skins" && f === "farbe") { const pv = el.closest(".item").querySelector(".sk-prev"); if (pv && G) pv.innerHTML = G.svg("happy", el.value, { calm: true }); }
       if (k === "diplome" && (f === "wand" || f === "emoji")) { const pv = el.closest(".item").querySelector(".wl-prev"); if (pv) pv.innerHTML = GLWall.svg(x.wand, x.emoji, (D.plan && D.plan.farbe) || "#7B4CEF"); }
       if (k === "diplome" && f === "name" && el.tagName === "INPUT") { /* Name ändert die id nicht, damit Freischaltungen gültig bleiben */ }
       save(); paintSteps(); if (k === "diplome" && f === "name") $$("select[data-f$=':freischalten']", $("#cats")).forEach(s => { const v = s.value; s.innerHTML = opts(UNLOCK(), v); });
@@ -282,7 +307,7 @@ Gib NUR JSON zurück: {"name":"…","palette":{"a":"#rrggbb", …},"pixel":["...
     $$("[data-del]", $("#cats")).forEach(b => b.onclick = () => { const [k, i] = b.dataset.del.split(":"); const gone = D[k].splice(+i, 1)[0];
       if (k === "diplome" && gone) CATS.slice(1).forEach(c => D[c.k].forEach(x => { if (x.freischalten === "badge:" + gone.id) x.freischalten = "fertig"; }));
       save(); renderCats(); paintSteps(); });
-    $$("[data-add]", $("#cats")).forEach(b => b.onclick = () => { const k = b.dataset.add, x = blank(k); x.id = uid(D[k], x.name); D[k].push(x); save(); renderCats(); paintSteps(); const ins = $$(`[data-f^="${k}:${D[k].length - 1}:name"]`); if (ins[0]) ins[0].select(); });
+    $$("[data-add]", $("#cats")).forEach(b => b.onclick = () => { const k = b.dataset.add, x = blank(k); if (D.art === "addon" && k !== "skins") x.freischalten = "level:110"; x.id = uid(D[k], x.name); D[k].push(x); save(); renderCats(); paintSteps(); const ins = $$(`[data-f^="${k}:${D[k].length - 1}:name"]`); if (ins[0]) ins[0].select(); });
     $$("[data-sug]", $("#cats")).forEach(b => b.onclick = () => suggest([b.dataset.sug], b));
   }
 
@@ -330,7 +355,8 @@ SPRACHE
       outfits: `outfits: 3 Outfits {name, emoji, platz, spruch} – platz ist eine von: ${OUT_SLOTS.map(s => s[0]).join(", ")}. Das Emoji muss gut als Kleidungsstück oder Accessoire passen.`,
       emotes: `emotes: 2–3 Emotes {name, emoji, text, animation, farben} – animation ist eine von: ${ANIMS.map(a => a[0]).join(", ")}; text ist ein kurzer Ausruf (max. 3 Wörter); farben 2–3 Hex-Farben`,
       zimmer: `zimmer: 3 Gegenstände {name, emoji, platz} – platz ist eine von: ${ROOM_SLOTS.map(s => s[0]).join(", ")}`,
-      hintergruende: "hintergruende: 1–2 Hintergründe {name, emoji, wand:[hex oben, hex unten], boden:[hex hinten, hex vorne]} – eher dunkle, stimmige Farben, damit gLiTCh gut sichtbar bleibt" };
+      hintergruende: "hintergruende: 1–2 Hintergründe {name, emoji, wand:[hex oben, hex unten], boden:[hex hinten, hex vorne]} – eher dunkle, stimmige Farben, damit gLiTCh gut sichtbar bleibt",
+      skins: "skins: 1–2 Spezial-Skins {name, farbe} – farbe ist eine kräftige Hex-Farbe, die zum Thema passt (keine Haut- oder Menschenfarben, kein Gold)" };
     const have = keys.map(k => D[k].length ? `Schon vorhanden bei ${k}: ${D[k].map(x => x.name).join(", ")} (nichts doppelt vorschlagen)` : "").filter(Boolean).join("\n");
     const prompt = `${context()}
 
@@ -357,15 +383,17 @@ Beispiel: {"${keys[0]}": [ … ]}`;
     if (k === "outfits") return { emoji: emoji || "🎩", name, platz: OUT_SLOTS.some(s => s[0] === x.platz) ? x.platz : "kopf", spruch: String(x.spruch || "").slice(0, 140), freischalten: "" };
     if (k === "emotes") return { emoji: emoji || "🎉", name, text: String(x.text || "").slice(0, 30), animation: ANIMS.some(a => a[0] === x.animation) ? x.animation : "huepfen", farben: (Array.isArray(x.farben) ? x.farben : []).filter(isCol).slice(0, 3), freischalten: "" };
     if (k === "zimmer") return { emoji: emoji || "🪴", name, platz: ROOM_SLOTS.some(s => s[0] === x.platz) ? x.platz : "deko", freischalten: "" };
+    if (k === "skins") return isCol(x.farbe) ? { name: name.slice(0, 30), farbe: x.farbe, freischalten: D.art === "addon" ? "" : "prozent:90" } : null;
     if (k === "hintergruende") return { emoji: emoji || "🎨", name, wand: (Array.isArray(x.wand) ? x.wand : []).filter(isCol).slice(0, 2), boden: (Array.isArray(x.boden) ? x.boden : []).filter(isCol).slice(0, 2), freischalten: "" };
     return null;
   }
   /* Neue Extras ohne Freischaltung bekommen eine sinnvolle: der Reihe nach Diplome, sonst Sterne */
   function linkUnlocks() {
-    const pool = D.diplome.map(d => "badge:" + d.id), fallback = ["start", "sterne:5", "fertig"]; let i = 0;
+    if (D.art === "addon") { let lv = 105; ["outfits", "emotes", "zimmer", "hintergruende", "skins"].forEach(k => D[k].forEach(x => { if (!x.freischalten) { x.freischalten = "level:" + Math.min(300, lv); lv += 5; } })); return; }
+    const pool = D.diplome.map(d => "badge:" + d.id), fallback = ["start", "prozent:50", "prozent:90"]; let i = 0;
     ["outfits", "emotes", "zimmer", "hintergruende"].forEach(k => D[k].forEach(x => { if (!x.freischalten) { x.freischalten = pool.length ? pool[i % pool.length] : fallback[i % fallback.length]; i++; } }));
   }
-  $("#sugAll").onclick = () => suggest(CATS.map(c => c.k), $("#sugAll"));
+  $("#sugAll").onclick = () => suggest(catsNow().map(c => c.k), $("#sugAll"));
 
   /* ---------- 4 Erstellen ---------- */
   const TASK_DOC = `AUFGABEN (JSON-Objekte mit Feld "typ"):
@@ -518,7 +546,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
     $("#result").hidden = !D.inhalt.length;
     $("#btnGen").textContent = D.inhalt.length ? "⚙️ Ganz neu erstellen" : "⚙️ Modul erstellen";
     if (D.plan) $("#ets").innerHTML = D.plan.etappen.map((e, i) => { const c = D.inhalt[i];
-      return `<div class="et"><div class="et-h"><span class="emo" aria-hidden="true">${esc(e.emoji)}</span><b>${i + 1}. ${esc(e.titel)}</b>${c ? `<span class="tag">★ ${etSterne(c)}</span>` : `<span class="tag">fehlt</span>`}</div>
+      return `<div class="et"><div class="et-h"><span class="emo" aria-hidden="true">${esc(e.emoji)}</span><b>${i + 1}. ${esc(e.titel)}</b>${c ? `<span class="tag">★ ${etBudget(c)}</span>` : `<span class="tag">fehlt</span>`}</div>
         ${c ? `<div class="tags">${c.aufgaben.map(a => `<span class="tag">${KIND[a.typ]}</span>`).join("")}</div>` : ""}
         <div class="row"><input class="in" id="wish${i}" placeholder="Änderungswunsch, z. B. «einfachere Fragen» oder «mehr zum Experiment»" style="flex:1;min-width:180px;padding:7px 10px"><button type="button" class="btn small" data-redo="${i}" ${SAMPLE ? "" : "disabled"}>↻ Neu schreiben</button></div></div>`; }).join("");
     $$("[data-redo]").forEach(b => b.onclick = async () => {
@@ -533,18 +561,54 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
     else { $("#pv").hidden = true; $("#pvEmpty").hidden = false; }
     $("#btnDl").disabled = !ready; $("#btnPdf").disabled = !ready;
   }
+  /* ---------- Belohnungs-Paket (Addon) ---------- */
+  const addonUnlock = x => /^(sofort|level:\d+)$/.test(x.freischalten || "") ? x.freischalten : "level:110";
+  function addonManifest() {
+    const nm = (D.addonName || "").trim() || "Belohnungs-Paket";
+    return { typ: "addon", titel: nm, beschreibung: (D.addonText || "").trim(), emoji: "🎁",
+      extras: {
+        outfits: D.outfits.map(x => ({ id: x.id, name: x.name, platz: x.platz, emoji: x.emoji, spruch: x.spruch || "", freischalten: addonUnlock(x) })),
+        emotes: D.emotes.map(x => ({ id: x.id, name: x.name, emoji: x.emoji, text: x.text || x.name, animation: x.animation, farben: x.farben || [], beschreibung: `Aus dem Paket «${nm}».`, freischalten: addonUnlock(x) })),
+        zimmer: D.zimmer.map(x => ({ id: x.id, name: x.name, platz: x.platz, emoji: x.emoji, freischalten: addonUnlock(x) })),
+        hintergruende: D.hintergruende.map(x => ({ id: x.id, name: x.name, emoji: x.emoji, wand: x.wand || [], boden: x.boden || [], freischalten: addonUnlock(x) })),
+        skins: D.skins.map(x => ({ id: x.id, name: x.name, farbe: x.farbe, freischalten: addonUnlock(x) }))
+      }, erstellt: "gLiTCh-Editor" };
+  }
+  function buildAddon() {
+    const m = addonManifest(), j = o => JSON.stringify(o).replace(/</g, "\\u003c"), SC = "<" + "/script>";
+    const rows = [["outfits", "👕 Outfits"], ["emotes", "✨ Emotes"], ["zimmer", "🛋️ Zimmer"], ["hintergruende", "🖼️ Hintergründe"], ["skins", "🎨 Skins"]].map(([k, n]) => m.extras[k].length ? `<h2>${n}</h2><ul>${m.extras[k].map(x => `<li>${esc((x.emoji ? x.emoji + " " : "") + x.name)} · <small>${esc(x.freischalten === "sofort" ? "sofort" : "ab Level " + x.freischalten.slice(6))}</small></li>`).join("")}</ul>` : "").join("");
+    return `<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(m.titel)}</title>
+<!-- Belohnungs-Paket aus dem gLiTCh-Editor. In den Glitchlab-Hub hochladen: Lehrpersonen → «Module hochladen». -->
+<script type="application/json" id="glitchlab-modul">${j(m)}${SC}
+<style>body{font:16px/1.5 system-ui,sans-serif;background:#14062E;color:#F3EEFF;max-width:720px;margin:0 auto;padding:24px}h1{margin:0 0 4px}small{color:#B9B2D0}h2{font-size:1.05rem;margin:18px 0 6px}li{margin:4px 0}.hint{background:#2A1466;border-radius:12px;padding:12px 14px}</style></head>
+<body><h1>🎁 ${esc(m.titel)}</h1><p>${esc(m.beschreibung || "Belohnungen für gLiTCh.")}</p><p class="hint">Diese Datei im Glitchlab-Hub unter Lehrpersonen → «Module hochladen» hineinziehen. Die Belohnungen erscheinen bei den Kindern, sobald sie das Level erreichen.</p>${rows}</body></html>`;
+  }
+  function renderAddon() {
+    const m = addonManifest(), n = ["outfits", "emotes", "zimmer", "hintergruende", "skins"].reduce((a, k) => a + m.extras[k].length, 0);
+    $("#addonSum").innerHTML = n ? `<p><b>${esc(m.titel)}</b> · ${n} Belohnungen</p><div class="tags">${["outfits", "emotes", "zimmer", "hintergruende", "skins"].flatMap(k => m.extras[k].map(x => `<span class="tag">${esc((x.emoji ? x.emoji + " " : "") + x.name)} · ${x.freischalten === "sofort" ? "sofort" : "Level " + x.freischalten.slice(6)}</span>`)).join("")}</div>`
+      : `<p class="hint">Noch keine Belohnungen. Lege sie in Schritt 3 an.</p>`;
+    $("#btnAddon").disabled = !n;
+  }
+  $("#btnAddon").onclick = async () => {
+    const html = buildAddon(), name = (slug(D.addonName) || "belohnungs-paket") + ".html";
+    let dl = null; try { dl = await claude.use("downloads"); } catch (e) { dl = null; }
+    if (dl) { try { await dl.save({ filename: name, data: new Blob([html], { type: "text/html" }) }); toast(`«${name}» gespeichert. Jetzt im Hub hochladen.`); return; } catch (e) { if (e && e.code === "declined") return; } }
+    const u = URL.createObjectURL(new Blob([html], { type: "text/html" })), a = document.createElement("a"); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+  };
   function manifest() {
     const P = D.plan;
     const un = x => x.freischalten || "fertig";
     return {
       titel: P.titel, fach: D.fach, thema: hubThemaName(), beschreibung: P.beschreibung || "", minuten: +D.minuten, farbe: P.farbe, emoji: P.emoji,
-      aufgaben: D.inhalt.map((e, i) => ({ id: "etappe-" + (i + 1), titel: e.titel, sterne: etSterne(e) })),
+      aufgaben: D.inhalt.map((e, i) => ({ id: "etappe-" + (i + 1), titel: e.titel, sterne: etBudget(e) })), sterne: budget(),
       diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, wand: d.wand || GLWall.pick(d.id) })),
       extras: {
         outfits: D.outfits.map(x => ({ id: x.id, name: x.name, platz: x.platz, emoji: x.emoji, spruch: x.spruch || "", freischalten: un(x) })),
         emotes: D.emotes.map(x => ({ id: x.id, name: x.name, emoji: x.emoji, text: x.text || x.name, animation: x.animation, farben: x.farben || [], beschreibung: `Aus dem Modul «${P.titel}».`, freischalten: un(x) })),
         zimmer: D.zimmer.map(x => ({ id: x.id, name: x.name, platz: x.platz, emoji: x.emoji, freischalten: un(x) })),
-        hintergruende: D.hintergruende.map(x => ({ id: x.id, name: x.name, emoji: x.emoji, wand: x.wand || [], boden: x.boden || [], freischalten: un(x) }))
+        hintergruende: D.hintergruende.map(x => ({ id: x.id, name: x.name, emoji: x.emoji, wand: x.wand || [], boden: x.boden || [], freischalten: un(x) })),
+        skins: D.skins.map(x => ({ id: x.id, name: x.name, farbe: x.farbe, freischalten: x.freischalten || "prozent:90" }))
       },
       erstellt: "gLiTCh-Editor", maskottchen: (D.opt.mascot || {}).typ || "glitch"
     };
@@ -552,7 +616,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
   function buildModule() {
     const P = D.plan, j = o => JSON.stringify(o).replace(/</g, "\\u003c");
     const mod = { titel: P.titel, beschreibung: P.beschreibung, emoji: P.emoji, farbe: P.farbe, intro: P.intro, schluss: P.schluss, fachname: fachName(), fachkurz: ({ mi: "M&I", nmg: "NMG", de: "DE", ma: "MA", en: "EN", fr: "FR", sp: "SPORT", mg: "GAMES" })[D.fach] || "",
-      etappen: D.inhalt, lexikon: P.lexikon, opt: Object.assign({}, D.opt), diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, bedingung: d.bedingung, wand: d.wand || GLWall.pick(d.id) })), links: linkList() };
+      etappen: D.inhalt, lexikon: P.lexikon, opt: Object.assign({}, D.opt), sterne: budget(), diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, bedingung: d.bedingung, wand: d.wand || GLWall.pick(d.id) })), links: linkList() };
     const T = id => document.getElementById(id).textContent;
     const SC = "<" + "/script>";
     return `<!doctype html>
@@ -617,7 +681,7 @@ ${T("rt-css")}</style>
       y = 40;
       if (P.beschreibung) text(P.beschreibung, 10.5, "italic", [80, 70, 110], 2);
       const G = (D.opt.gates || []).map(g => ({ selbst: "Selbsteinschätzung", praes: "Präsentation", lp: "LP-Code" })[g]);
-      text(`Maskottchen: ${GLMascot.nameOf(D.opt.mascot)} · Freigabe nach jeder Etappe: ${G.length ? G.join(", ") : "keine"} · Sterne total: ${D.inhalt.reduce((n, e) => n + etSterne(e), 0)}`, 9.5, "normal", [90, 82, 120], 4);
+      text(`Maskottchen: ${GLMascot.nameOf(D.opt.mascot)} · Freigabe nach jeder Etappe: ${G.length ? G.join(", ") : "keine"} · Sterne total: ${budget()}`, 9.5, "normal", [90, 82, 120], 4);
       D.inhalt.forEach((E, e) => {
         need(18); doc.setDrawColor(...rgb); doc.setLineWidth(.6); doc.line(X, y, X + MW, y); y += 6;
         text(`Etappe ${e + 1}: ${E.titel || (P.etappen[e] || {}).titel || ""}`, 13, "bold", [20, 10, 50], 1);
@@ -625,7 +689,7 @@ ${T("rt-css")}</style>
         let nr = 0;
         (E.aufgaben || []).forEach(a => {
           if (a.typ === "info") { text(`Info${a.titel ? ": " + a.titel : ""}`, 10, "bold", [60, 50, 90], 0); text(a.text, 9.5, "normal", [70, 65, 90], 2, 3); return; }
-          nr++; text(`${nr}. ${(TYPES.find(x => x[0] === a.typ) || [, a.typ])[1]}${a.titel ? " · " + a.titel : ""} (${wert(a)} ${wert(a) === 1 ? "Stern" : "Sterne"})`, 10.5, "bold", rgb, .5);
+          nr++; text(`${nr}. ${(TYPES.find(x => x[0] === a.typ) || [, a.typ])[1]}${a.titel ? " · " + a.titel : ""} (Wert ${wert(a)})`, 10.5, "bold", rgb, .5);
           solution(a).filter(Boolean).forEach(l => text(l, 9.5, "normal", [40, 35, 60], .2, 4));
           if (a.erklaerung) text("Erklärung: " + a.erklaerung, 9, "italic", [100, 95, 120], .5, 4);
           y += 1.5;
