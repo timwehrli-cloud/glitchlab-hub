@@ -170,6 +170,7 @@ option,optgroup{background:var(--surface);color:var(--ink)}
 .ty-ck{position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:5px;border:1.5px solid var(--muted);display:grid;place-items:center;font-style:normal;font-size:.7rem}
 .ty.on{opacity:1;border-color:var(--teal);background:linear-gradient(135deg,rgba(46,230,214,.14),rgba(160,124,255,.12))}.ty.on .ty-ck{background:var(--teal);border-color:var(--teal);color:#0B0618}
 .ty:focus-within{outline:3px solid var(--teal);outline-offset:2px}
+.dur{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.dur .in{width:96px}.dur-q{display:flex;gap:4px;flex-wrap:wrap}.dur-q .on{border-color:var(--teal);color:var(--teal)}
 </style>
 
 <div class="wrap">
@@ -199,7 +200,7 @@ option,optgroup{background:var(--surface);color:var(--ink)}
       </div>
       <div class="grid3">
         <label class="f"><span>Schulstufe</span><select class="in" id="klasse"></select></label>
-        <label class="f"><span>Dauer</span><select class="in" id="minuten"><option value="30">ca. 30 Minuten</option><option value="45" selected>ca. 45 Minuten (1 Lektion)</option><option value="90">ca. 90 Minuten (2 Lektionen)</option><option value="135">ca. 135 Minuten (3 Lektionen)</option></select></label>
+        <div class="f"><span>Dauer in Minuten</span><div class="dur"><input class="in" id="minuten" type="number" min="10" max="600" step="5" inputmode="numeric" value="45" aria-describedby="durHint"><span class="dur-q"><button type="button" class="btn small ghost" data-min="30">30</button><button type="button" class="btn small ghost" data-min="45">45</button><button type="button" class="btn small ghost" data-min="90">90</button><button type="button" class="btn small ghost" data-min="135">135</button></span></div><small class="hint" id="durHint">1 Lektion = 45 Minuten</small></div>
         <label class="f"><span>Anzahl Etappen</span><select class="in" id="etappen"><option>3</option><option selected>4</option><option>5</option><option>6</option></select></label>
       </div>
       <label class="f"><span>Rahmengeschichte</span><select class="in" id="rahmen">
@@ -1761,7 +1762,11 @@ window.GLMascot = window.GLMascot || (function () {
     $("#fach").innerHTML = opts(SUBJ, D.fach);
     $("#klasse").innerHTML = opts(KLASSEN, D.klasse);
     ["titel", "hubNeu", "ideen", "links", "belIdeen"].forEach(id => { const el = $("#" + id); el.value = D[id] || ""; el.oninput = () => { D[id] = el.value; save(); paintSteps(); }; });
-    ["minuten", "etappen", "rahmen", "klasse"].forEach(id => { const el = $("#" + id); el.value = D[id]; el.onchange = () => { D[id] = el.value; save(); }; });
+    const durHint = () => { const m = +D.minuten || 45, l = m / 45; $("#durHint").textContent = `ca. ${m} Minuten · ${Number.isInteger(l) ? l + (l === 1 ? " Lektion" : " Lektionen") : "etwa " + (Math.round(l * 10) / 10).toLocaleString("de-CH") + " Lektionen"}`; $$("[data-min]").forEach(b => b.classList.toggle("on", +b.dataset.min === m)); };
+    const setMin = v => { D.minuten = String(Math.max(10, Math.min(600, Math.round(+v || 45)))); $("#minuten").value = D.minuten; save(); durHint(); };
+    $("#minuten").value = D.minuten || "45"; $("#minuten").oninput = () => { if (+$("#minuten").value >= 10) { D.minuten = String(Math.min(600, Math.round(+$("#minuten").value))); save(); durHint(); } }; $("#minuten").onchange = () => setMin($("#minuten").value);
+    $$("[data-min]").forEach(b => b.onclick = () => setMin(b.dataset.min)); durHint();
+    ["etappen", "rahmen", "klasse"].forEach(id => { const el = $("#" + id); el.value = D[id]; el.onchange = () => { D[id] = el.value; save(); }; });
     $("#fach").onchange = e => { D.fach = e.target.value; D.hubThema = ""; paintThemes(); save(); };
     $("#hubThema").onchange = e => { D.hubThema = e.target.value; $("#neuWrap").hidden = D.hubThema !== "__neu"; save(); };
     paintThemes();

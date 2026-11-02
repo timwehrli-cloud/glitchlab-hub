@@ -111,7 +111,11 @@
     $("#fach").innerHTML = opts(SUBJ, D.fach);
     $("#klasse").innerHTML = opts(KLASSEN, D.klasse);
     ["titel", "hubNeu", "ideen", "links", "belIdeen"].forEach(id => { const el = $("#" + id); el.value = D[id] || ""; el.oninput = () => { D[id] = el.value; save(); paintSteps(); }; });
-    ["minuten", "etappen", "rahmen", "klasse"].forEach(id => { const el = $("#" + id); el.value = D[id]; el.onchange = () => { D[id] = el.value; save(); }; });
+    const durHint = () => { const m = +D.minuten || 45, l = m / 45; $("#durHint").textContent = `ca. ${m} Minuten · ${Number.isInteger(l) ? l + (l === 1 ? " Lektion" : " Lektionen") : "etwa " + (Math.round(l * 10) / 10).toLocaleString("de-CH") + " Lektionen"}`; $$("[data-min]").forEach(b => b.classList.toggle("on", +b.dataset.min === m)); };
+    const setMin = v => { D.minuten = String(Math.max(10, Math.min(600, Math.round(+v || 45)))); $("#minuten").value = D.minuten; save(); durHint(); };
+    $("#minuten").value = D.minuten || "45"; $("#minuten").oninput = () => { if (+$("#minuten").value >= 10) { D.minuten = String(Math.min(600, Math.round(+$("#minuten").value))); save(); durHint(); } }; $("#minuten").onchange = () => setMin($("#minuten").value);
+    $$("[data-min]").forEach(b => b.onclick = () => setMin(b.dataset.min)); durHint();
+    ["etappen", "rahmen", "klasse"].forEach(id => { const el = $("#" + id); el.value = D[id]; el.onchange = () => { D[id] = el.value; save(); }; });
     $("#fach").onchange = e => { D.fach = e.target.value; D.hubThema = ""; paintThemes(); save(); };
     $("#hubThema").onchange = e => { D.hubThema = e.target.value; $("#neuWrap").hidden = D.hubThema !== "__neu"; save(); };
     paintThemes();
