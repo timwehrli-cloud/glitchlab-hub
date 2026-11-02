@@ -171,7 +171,7 @@ const roomOpen = (x, li) => x.sw ? swCount(totalsFor(D.me)) >= x.sw : x.badge ? 
 const bgOpen = (b, T) => !b.badge || T.badges.has(b.badge);
 const emoteOpen = (x, T) => !x.req || T.badges.has(x.req.badge);
 const emoteReq = x => x.req ? (x.req.txt || `Modul «${x.req.mod}» schaffen`) : "von Anfang an";
-const pickExtras = p => ({outfit: p.outfit || {}, outfitAt: p.outfitAt || 0, seen: p.seen || 0, room: p.room || null, roomSeen: p.roomSeen || 0, emote: p.emote || null, prefsAt: p.prefsAt || 0, wall: p.wall || null, bg: window.GLAB_ROOMBG});
+const pickExtras = p => ({outfit: p.outfit || {}, outfitAt: p.outfitAt || 0, seen: p.seen || 0, room: p.room || null, roomSeen: p.roomSeen || 0, emote: p.emote || null, prefsAt: p.prefsAt || 0, wall: p.wall || null, seenW: p.seenW || null, seenR: p.seenR || null, bg: window.GLAB_ROOMBG});
 function saveD(){ if (HB && D.me && D.prog[D.me]) HB.saveExtras(pickExtras(D.prog[D.me])); }
 function cloudPush(){}
 let S = {};
@@ -865,11 +865,62 @@ const MOD_ART = {
     ${MINI_G(88, 30, .9)}</svg>`
 };
 
+/* ---- Übersicht für Garderobe und Zimmer ---- */
+window.GLAB_VF = window.GLAB_VF || {wd:"mine", rm:"mine"};
+const NEWSET = {wd:new Set(), rm:new Set()};
+function markNew(kind){
+  const s = student(D.me), p = prog(s.id), T = totalsFor(s.id), li = LIB.levelOf(T.stars);
+  const ids = kind === "wd"
+    ? LIB.OUTFITS.filter(x=>outfitOpenFor(x, T)).map(x=>x.id).concat((window.GLAB_SKINS || []).filter(x=>x.id !== "gold" && skinOpen(x, T)).map(x=>"sk:" + x.id))
+    : window.GLAB_R.ROOM.filter(x=>roomOpen(x, li)).map(x=>x.id).concat(CU.bgs.filter(x=>bgOpen(x, T)).map(x=>"bg:" + x.id));
+  const key = kind === "wd" ? "seenW" : "seenR", had = Array.isArray(p[key]) ? new Set(p[key]) : null;
+  NEWSET[kind] = had ? new Set(ids.filter(i=>!had.has(i))) : new Set();
+  p[key] = ids;
+}
+function vfBar(kind, nOpen, nAll){
+  const f = window.GLAB_VF[kind], b = (v, t) => `<button type="button" class="vf-b${f === v ? " on" : ""}" data-pt-vf="${kind}:${v}" aria-pressed="${f === v}">${t}</button>`;
+  return `<div class="vf-bar" role="group" aria-label="Was anzeigen?">${b("mine", `✓ Meine Sachen <i>${nOpen}</i>`)}${b("todo", `🔒 Noch zu holen <i>${nAll - nOpen}</i>`)}${b("all", `Alle <i>${nAll}</i>`)}</div>`;
+}
+const vfShow = (kind, open, on) => { const f = window.GLAB_VF[kind]; return on || f === "all" || (f === "mine" ? open : !open); };
+const vfSort = (its, isOpen) => its.slice().sort((a, b) => (isOpen(b) - isOpen(a)) || ((a.lv == null ? 9999 : a.lv) - (b.lv == null ? 9999 : b.lv)));
+const vfEmpty = kind => `<p class="vf-empty">${window.GLAB_VF[kind] === "mine" ? "Hier ist noch nichts frei. Unter «🔒 Noch zu holen» siehst du, wie du etwas bekommst." : "Hier hast du schon alles! 🎉"}</p>`;
+const vfNew = on => on ? '<span class="vf-new">NEU</span>' : "";
+function nextGift(kind, T){
+  const li = LIB.levelOf(T.stars);
+  const L = kind === "wd"
+    ? LIB.OUTFITS.filter(x=>x.lv != null && !x.badge && !x.sw && x.lv > li).map(x=>({n:x.n, lv:x.lv})).concat((window.GLAB_SKINS || []).filter(x=>x.lv != null && !x.badge && x.lv > li).map(x=>({n:"Skin «" + x.n + "»", lv:x.lv})))
+    : window.GLAB_R.ROOM.filter(x=>!x.badge && !x.sw && x.lv > li && x.lv < 9999).map(x=>({n:x.n, lv:x.lv}));
+  if (!L.length){
+    if (kind !== "rm") return "";
+    const tip = window.GLAB_R.ROOM.filter(x=>x.badge && !roomOpen(x, li) && x.reqTxt).sort((a, b)=>(b.id.startsWith("hr_") - a.id.startsWith("hr_"))).slice(0, 2);
+    return tip.length ? `<div class="vf-next"><span aria-hidden="true">🎁</span><span><b>Als Nächstes zum Beispiel:</b> ${tip.map(x=>esc(x.n)).join(", ")}<small>${tip.map(x=>esc(x.reqTxt)).join(" · ")}</small></span></div>` : "";
+  }
+  const lv = Math.min(...L.map(x=>x.lv)), g = L.filter(x=>x.lv === lv), need = LIB.LEVELS[lv] ? Math.max(0, LIB.LEVELS[lv].s - T.stars) : 0;
+  return `<div class="vf-next"><span aria-hidden="true">🎁</span><span><b>Nächste Belohnung:</b> ${g.map(x=>esc(x.n)).join(", ")}<small>ab Level ${lv + 1}${need ? ` · noch ${need} ★` : ""}</small></span></div>`;
+}
+document.addEventListener("click", e=>{ const b = e.target.closest && e.target.closest("[data-pt-vf]"); if (!b) return; e.preventDefault();
+  const [kind, v] = b.dataset.ptVf.split(":"); window.GLAB_VF[kind] = v;
+  const ov = document.getElementById(kind === "wd" ? "ptWd" : "ptRm"); if (ov){ const sc = ov.scrollTop; ov.innerHTML = kind === "wd" ? wardrobeHTML() : roomHTML(); ov.scrollTop = sc; } });
+(function(){ if (document.getElementById("vfCss")) return; const st = document.createElement("style"); st.id = "vfCss";
+  st.textContent = ".vf-bar{position:sticky;top:-20px;z-index:3;display:flex;gap:6px;flex-wrap:wrap;margin:10px -20px 8px;padding:10px 20px;background:#14062E;border-bottom:1px solid rgba(139,92,255,.35)}"
+  + ".vf-b{all:unset;cursor:pointer;box-sizing:border-box;padding:7px 12px;border-radius:999px;border:2px solid #4A23A0;background:#2A0F66;font:800 .85rem/1.1 system-ui,sans-serif;color:#fff}"
+  + ".vf-b i{font-style:normal;opacity:.75;margin-left:4px}.vf-b.on{background:#FFC21A;border-color:#FFC21A;color:#14062E}.vf-b:focus-visible{outline:3px solid #00E5FF;outline-offset:2px}"
+  + ".vf-next{display:flex;gap:10px;align-items:center;margin:0 0 12px;padding:10px 12px;border-radius:14px;background:rgba(255,194,26,.12);border:1px dashed rgba(255,194,26,.6);font-size:.92rem}"
+  + ".vf-next > span:first-child{font-size:1.4rem}.vf-next small{display:block;opacity:.8;font-size:.8rem;margin-top:2px}"
+  + ".vf-new{position:absolute;top:6px;left:6px;padding:1px 6px;border-radius:999px;background:#FF2BD6;color:#fff;font:900 .62rem/1.4 system-ui,sans-serif;letter-spacing:.04em}"
+  + ".vf-empty{margin:0;padding:6px 14px 16px;opacity:.8;font-size:.9rem}.wd-sk{position:relative}.wd-sk .vf-new{top:2px;left:2px}"
+  + ".acc-emo{font-size:26px;line-height:1;display:grid;place-items:center;width:100%;height:100%}";
+  (document.head || document.documentElement).appendChild(st); })();
 /* ---- Zimmer einrichten ---- */
+function bgList(T){
+  return [{id:"pixel", n:"Pixel-Zimmer", ic:"🟪", open:true, req:""}, {id:"chalet", n:"Schweizer Chalet", ic:"🏔️", open:T.badges.has(CHALET_BADGE), req:"nach dem ersten NMG-Modul (Alte Eidgenossenschaft)"}]
+    .concat(CU.bgs.map(x=>({id:x.id, n:x.n, ic:x.ic || "🖼️", open:bgOpen(x, T), req:x.reqTxt || ""})));
+}
 function bgHTML(T){
-  const chalet = T.badges.has(CHALET_BADGE), cur = window.GLAB_ROOMBG;
-  const b = (id, n, open, sub) => `<button type="button" class="wd-item${cur === id ? " on" : ""}${open ? "" : " locked"}" data-pt="bg-${id}" ${open ? "" : 'aria-disabled="true"'} aria-pressed="${cur === id}"><b>${n}</b><small>${open ? (cur === id ? "aktiv" : "antippen") : sub}</small>${open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`;
-  return `<div class="pt-bgpick"><b>Hintergrund</b><div class="wd-grid">${b("pixel", "🟪 Pixel-Zimmer", true, "")}${b("chalet", "🏔️ Schweizer Chalet", chalet, "nach dem ersten NMG-Modul (Alte Eidgenossenschaft)")}${CU.bgs.map(x=>b(x.id, esc((x.ic ? x.ic + " " : "") + x.n), bgOpen(x, T), esc(x.reqTxt || ""))).join("")}</div></div>`;
+  const cur = window.GLAB_ROOMBG || "pixel", L = bgList(T), NW = NEWSET.rm, c = L.find(x=>x.id === cur) || L[0];
+  const show = vfSort(L.filter(x=>vfShow("rm", x.open, cur === x.id)), x=>x.open);
+  return window.GLAB_ACC("rm", "bg", "Hintergrund", {cur: esc(c.n), prev: `<span class="acc-emo">${c.ic}</span>`, n: L.filter(x=>x.open).length, t: L.length, isNew: L.some(x=>NW.has("bg:" + x.id))}, true)
+    + (show.length ? `<div class="wd-grid">${show.map(x=>`<button type="button" class="wd-item${cur === x.id ? " on" : ""}${x.open ? "" : " locked"}" data-pt="bg-${x.id}" ${x.open ? "" : 'aria-disabled="true"'} aria-pressed="${cur === x.id}">${vfNew(NW.has("bg:" + x.id))}<span class="pt-emo-ic" aria-hidden="true">${x.ic}</span><b>${esc(x.n)}</b><small>${x.open ? (cur === x.id ? "aktiv" : "antippen") : esc(x.req)}</small>${x.open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`).join("")}</div>` : vfEmpty("rm")) + `</details>`;
 }
 function pickBg(id){
   const T = totalsFor(D.me);
@@ -881,22 +932,25 @@ function pickBg(id){
   const ov = document.getElementById("ptRm"); if (ov){ const sc = ov.scrollTop; ov.innerHTML = roomHTML(); ov.scrollTop = sc; }
 }
 function roomHTML(){
-  const s = student(D.me), p = prog(s.id), T = totalsFor(s.id), li = LIB.levelOf(T.stars), RR = window.GLAB_R, items = roomOf(p);
+  const s = student(D.me), p = prog(s.id), T = totalsFor(s.id), li = LIB.levelOf(T.stars), RR = window.GLAB_R, items = roomOf(p), NW = NEWSET.rm;
+  const BL = bgList(T), nOpen = RR.ROOM.filter(x=>roomOpen(x, li)).length + BL.filter(x=>x.open).length, nAll = RR.ROOM.length + BL.length;
   return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptRmT">
-    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptRmT">Zimmer einrichten</h2><p>${RR.ROOM.filter(x=>roomOpen(x, li)).length} von ${RR.ROOM.length} Gegenständen freigeschaltet. Pro Platz einen antippen, nochmals tippen räumt ihn weg. Neue Gegenstände gibt es mit höheren Leveln.</p></div>
+    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptRmT">Zimmer einrichten</h2><p>Pro Platz einen Gegenstand antippen, nochmals tippen räumt ihn weg. Neues gibt es mit höheren Leveln und für Diplome aus den Modulen.</p></div>
       <button type="button" class="btn" data-pt="rm-close">Fertig</button></div>
-    ${bgHTML(T)}
     <div class="pt-room" style="margin-top:14px">${RR.roomSVG(items)}<span class="pt-room-g glitch"><span>${LIB.glitchSVG("cool", {outfit: p.outfit || {}})}</span></span></div>
-    ${RR.ROOM_SLOTS.map((sl,si)=>{
-      const its = RR.ROOM.filter(x=>x.slot===sl.id), cur = its.find(x=>items[sl.id]===x.id);
-      return window.GLAB_ACC("rm", sl.id, sl.n, {cur: cur ? esc(cur.n) : "", prev: cur ? RR.thumb(cur) : "", n: its.filter(x=>roomOpen(x, li)).length, t: its.length}, si === 0) + `<div class="wd-grid">${its.map(x=>{
-      const open = roomOpen(x, li), on = items[sl.id] === x.id;
-      return `<button type="button" class="wd-item${on ? " on" : ""}${open ? "" : " locked"}" data-pt-room="${x.id}" ${open ? "" : 'aria-disabled="true"'} aria-pressed="${on}">
+    ${vfBar("rm", nOpen, nAll)}${nextGift("rm", T)}
+    ${bgHTML(T)}
+    ${RR.ROOM_SLOTS.map(sl=>{
+      const its = RR.ROOM.filter(x=>x.slot === sl.id), cur = its.find(x=>items[sl.id] === x.id), isOpen = x=>roomOpen(x, li);
+      const show = vfSort(its.filter(x=>vfShow("rm", isOpen(x), items[sl.id] === x.id)), isOpen);
+      return window.GLAB_ACC("rm", sl.id, sl.n, {cur: cur ? esc(cur.n) : "", prev: cur ? RR.thumb(cur) : "", n: its.filter(isOpen).length, t: its.length, isNew: its.some(x=>NW.has(x.id))}, false) + (show.length ? `<div class="wd-grid">${show.map(x=>{
+      const open = isOpen(x), on = items[sl.id] === x.id;
+      return `<button type="button" class="wd-item${on ? " on" : ""}${open ? "" : " locked"}" data-pt-room="${x.id}" ${open ? "" : 'aria-disabled="true"'} aria-pressed="${on}">${vfNew(NW.has(x.id))}
         <span class="pt-thumb wd-mini">${RR.thumb(x)}</span><b>${esc(x.n)}</b><small>${open ? (on ? "im Zimmer" : "antippen") : (x.reqTxt ? esc(x.reqTxt) : `ab Level ${x.lv+1}`)}</small>${open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`;
-    }).join("")}</div></details>`; }).join("")}</div>`;
+    }).join("")}</div>` : vfEmpty("rm")) + `</details>`; }).join("")}</div>`;
 }
 function openRoom(){
-  closeOv("ptRm"); const p = prog(D.me), li = LIB.levelOf(totalsFor(D.me).stars);
+  closeOv("ptRm"); markNew("rm"); const p = prog(D.me), li = LIB.levelOf(totalsFor(D.me).stars);
   p.roomSeen = window.GLAB_R.ROOM.filter(x=>roomOpen(x, li)).length; saveD();
   const ov = document.createElement("div"); ov.className = "wd-ov"; ov.id = "ptRm"; ov.innerHTML = roomHTML();
   document.body.appendChild(ov); document.body.style.overflow = "hidden";
@@ -954,27 +1008,34 @@ function openLevels(){
 
 /* ---- Garderobe (Konto) ---- */
 function wardrobeHTML(){
-  const s = student(D.me), p = prog(s.id), T = totalsFor(s.id), o = p.outfit || {};
-  const li = LIB.levelOf(T.stars), unl = LIB.OUTFITS.filter(x=>outfitOpenFor(x, T)).length;
+  const s = student(D.me), p = prog(s.id), T = totalsFor(s.id), o = p.outfit || {}, NW = NEWSET.wd;
+  const li = LIB.levelOf(T.stars), isOpen = x=>outfitOpenFor(x, T), LP = !!window.GLAB_IS_LP;
+  const SK = (window.GLAB_SKINS || []).filter(x=>x.id !== "gold"), skOpen = SK.filter(x=>skinOpen(x, T)).length;
+  const nOpen = LIB.OUTFITS.filter(isOpen).length + (LP ? 0 : skOpen), nAll = LIB.OUTFITS.length + (LP ? 0 : SK.length);
   return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptWdT">
-    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptWdT">Garderobe</h2><p>${unl} von ${LIB.OUTFITS.length} freigeschaltet. Dein gLiTCh trägt das auch in den Modulen. Pro Körperteil eines antippen, nochmals tippen nimmt es wieder ab.</p></div>
+    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptWdT">Garderobe</h2><p>Dein gLiTCh trägt das auch in den Modulen. Pro Körperteil eines antippen, nochmals tippen nimmt es wieder ab.</p></div>
       <button type="button" class="btn" data-pt="wd-close">Fertig</button></div>
     <div class="wd-stage"><span class="glitch wd-g">${LIB.glitchSVG("cool", {outfit:o})}</span></div>
+    ${vfBar("wd", nOpen, nAll)}${nextGift("wd", T)}
     ${skinPickHTML(o)}
-    ${LIB.SLOTS.map((sl,si)=>{
-      const its = LIB.OUTFITS.filter(x=>x.slot===sl.id), cur = its.find(x=>o[sl.id]===x.id);
-      return window.GLAB_ACC("wd", sl.id, sl.n, {cur: cur ? esc(cur.n) : "", glitch:true, prev: LIB.glitchSVG("normal", {outfit: cur ? {[sl.id]:cur.id} : {}}), n: its.filter(x=>outfitOpenFor(x, T)).length, t: its.length}, si === 0) + `<div class="wd-grid">${its.map(x=>{
-      const open = outfitOpenFor(x, T), on = o[sl.id] === x.id;
-      return `<button type="button" class="wd-item${on ? " on" : ""}${open ? "" : " locked"}" data-pt-outfit="${x.id}" ${open ? "" : 'aria-disabled="true"'} aria-pressed="${on}">
+    ${LIB.SLOTS.map(sl=>{
+      const its = LIB.OUTFITS.filter(x=>x.slot === sl.id), cur = its.find(x=>o[sl.id] === x.id);
+      const show = vfSort(its.filter(x=>vfShow("wd", isOpen(x), o[sl.id] === x.id)), isOpen);
+      return window.GLAB_ACC("wd", sl.id, sl.n, {cur: cur ? esc(cur.n) : "", glitch:true, prev: LIB.glitchSVG("normal", {outfit: cur ? {[sl.id]:cur.id} : {}}), n: its.filter(isOpen).length, t: its.length, isNew: its.some(x=>NW.has(x.id))}, false) + (show.length ? `<div class="wd-grid">${show.map(x=>{
+      const open = isOpen(x), on = o[sl.id] === x.id;
+      return `<button type="button" class="wd-item${on ? " on" : ""}${open ? "" : " locked"}" data-pt-outfit="${x.id}" ${open ? "" : 'aria-disabled="true"'} aria-pressed="${on}">${vfNew(NW.has(x.id))}
         <span class="glitch wd-mini">${LIB.glitchSVG("normal", {outfit:{[sl.id]:x.id}})}</span>
         <b>${esc(x.n)}</b><small>${open ? (on ? "angezogen" : "antippen") : esc(LIB.outfitReq(x))}</small>${open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`;
-    }).join("")}</div></details>`; }).join("")}</div>`;
+    }).join("")}</div>` : vfEmpty("wd")) + `</details>`; }).join("")}</div>`;
 }
 function skinPickHTML(o){
-  const L = (window.GLAB_SKINS || []).filter(x=>x.id !== "gold"), cur = o.skin || "violett";
-  if (window.GLAB_IS_LP) return `<div class="wd-skin"><b>Skin</b><div class="wd-skins"><span class="wd-sk on gold" style="--sk:#F2B705" aria-label="Gold"><span class="glitch">${LIB.glitchSVG("happy")}</span><small>Gold</small></span></div><p class="wd-skin-note">✨ Lehrpersonen sind immer golden. Diese Farbe gibt es nur für Lehrpersonen.</p></div>`;
-  const T = totalsFor(D.me);
-  return `<div class="wd-skin"><b>Skin</b><div class="wd-skins" role="radiogroup" aria-label="Skin von gLiTCh">${L.map(x=>{ const open = skinOpen(x, T); return `<button type="button" class="wd-sk${cur === x.id ? " on" : ""}${open ? "" : " locked"}" data-pt-skin="${x.id}" role="radio" aria-checked="${cur === x.id}" ${open ? "" : 'aria-disabled="true"'} style="--sk:${x.base}"><span class="glitch">${LIB.glitchSVG("normal", {outfit:{skin:x.id}})}</span><small>${esc(x.n)}</small>${open ? "" : `<em>${esc(skinReq(x))}</em>`}</button>`; }).join("")}</div></div>`;
+  const SK = (window.GLAB_SKINS || []).filter(x=>x.id !== "gold"), cur = o.skin || "violett", NW = NEWSET.wd;
+  if (window.GLAB_IS_LP) return window.GLAB_ACC("wd", "skin", "Skin", {cur: "Gold", glitch:true, prev: LIB.glitchSVG("happy"), n: 1, t: 1}, true)
+    + `<div class="wd-skin" style="padding:4px 14px 14px"><div class="wd-skins"><span class="wd-sk on gold" style="--sk:#F2B705" aria-label="Gold"><span class="glitch">${LIB.glitchSVG("happy")}</span><small>Gold</small></span></div><p class="wd-skin-note">✨ Lehrpersonen sind immer golden. Diese Farbe gibt es nur für Lehrpersonen.</p></div></details>`;
+  const T = totalsFor(D.me), c = SK.find(x=>x.id === cur) || SK[0], isOpen = x=>skinOpen(x, T);
+  const show = vfSort(SK.filter(x=>vfShow("wd", isOpen(x), cur === x.id)), isOpen);
+  return window.GLAB_ACC("wd", "skin", "Skin", {cur: esc(c ? c.n : "Violett"), glitch:true, prev: LIB.glitchSVG("normal", {outfit:{skin:cur}}), n: SK.filter(isOpen).length, t: SK.length, isNew: SK.some(x=>NW.has("sk:" + x.id))}, true)
+    + (show.length ? `<div class="wd-skin" style="padding:4px 14px 14px"><div class="wd-skins" role="radiogroup" aria-label="Skin von gLiTCh">${show.map(x=>{ const open = isOpen(x); return `<button type="button" class="wd-sk${cur === x.id ? " on" : ""}${open ? "" : " locked"}" data-pt-skin="${x.id}" role="radio" aria-checked="${cur === x.id}" ${open ? "" : 'aria-disabled="true"'} style="--sk:${x.base}">${vfNew(NW.has("sk:" + x.id))}<span class="glitch">${LIB.glitchSVG("normal", {outfit:{skin:x.id}})}</span><small>${esc(x.n)}</small>${open ? "" : `<em>${esc(skinReq(x))}</em>`}</button>`; }).join("")}</div></div>` : vfEmpty("wd")) + `</details>`;
 }
 const skinOpen = (x, T) => (x.lv == null || LIB.levelOf(T.stars) >= x.lv) && (!x.badge || T.badges.has(x.badge));
 const skinReq = x => x.reqTxt || (x.lv != null ? `ab Level ${x.lv + 1}` : "");
@@ -995,7 +1056,7 @@ document.addEventListener("click", e=>{ const b = e.target.closest && e.target.c
   + ".wd-skin-note{margin:8px 0 0;font-size:.85rem;opacity:.85}.wd-sk.locked .glitch{filter:grayscale(.85) brightness(.6)}.wd-sk em{font:600 .62rem/1.15 system-ui,sans-serif;font-style:normal;opacity:.75}";
   (document.head || document.documentElement).appendChild(st); })();
 function openWardrobe(){
-  closeOv("ptWd");
+  closeOv("ptWd"); markNew("wd");
   const s = student(D.me), p = prog(s.id), T = totalsFor(s.id);
   p.seen = LIB.OUTFITS.filter(x=>outfitOpenFor(x, T)).length; saveD();
   const ov = document.createElement("div"); ov.className = "wd-ov"; ov.id = "ptWd"; ov.innerHTML = wardrobeHTML();
