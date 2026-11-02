@@ -269,7 +269,8 @@
   }
   /* ---------- Logo: gLiTCh mit animiertem Glitch-Schriftzug ---------- */
   const brandLogo = (mood, sub) => `<span class="brand-g" aria-hidden="true"><span class="glitch">${G.svg(mood, "#8B5CFF", { outfit: S.me ? outfitOf() : {}, lp: isLP() })}</span><i class="brand-spark s1"></i><i class="brand-spark s2"></i></span>
-    <span class="brand-t"><b class="logo-word" data-t="Glitchlab"><span class="lw-a">Glitch</span><span class="lw-b">lab</span></b><small>${esc(sub)}</small></span>`;
+    <span class="brand-t"><b class="logo-word" data-t="Glitchlab"><span class="lw-a">Glitch</span><span class="lw-b">lab</span></b></span>`;
+  const clsChip = name => name ? `<span class="cls-chip" title="Klasse"><i aria-hidden="true">🏫</i>${esc(name)}</span>` : "";
   /* ---------- Navigation ---------- */
   function go(view) {
     if (S.cleanup) { try { S.cleanup(); } catch (e) { /* egal */ } S.cleanup = null; }
@@ -305,7 +306,7 @@
     return `<header class="top"><div class="wrap">
       <button type="button" class="brand" data-home aria-label="Zur Startseite">${brandLogo("happy", S.me?.class_name || "")}</button>
       <div class="top-r">
-        ${st ? `<span class="starcount" title="Deine Sterne"><i>★</i>${allStars()}</span>
+        ${st ? `${clsChip(S.me.class_name || "")}<span class="starcount" title="Deine Sterne"><i>★</i>${allStars()}</span>
         <div class="team"><span class="chip">${kidG("normal", st, "still")}${esc(st.first_name)}</span>${team}
         ${S.team.length < 3 ? `<button type="button" class="btn small" data-addteam>+ Teampartner</button>` : ""}</div>
         <button type="button" class="btn small" data-logout>Abmelden</button>` : ""}
@@ -821,7 +822,7 @@
     const who = await S.be.teacher();
     const head = `<header class="top"><div class="wrap">
       <button type="button" class="brand" data-exit>${brandLogo("cool", "Lehrpersonen")}</button>
-      <div class="top-r">${who ? `<span class="hint">${esc(who.email)}</span><button type="button" class="btn small" data-signout>Abmelden</button>` : ""}
+      <div class="top-r">${clsChip("Lehrpersonen")}${who ? `<span class="hint">${esc(who.email)}</span><button type="button" class="btn small" data-signout>Abmelden</button>` : ""}
       <button type="button" class="btn small" data-exit>Zur Kinder-Ansicht</button></div></div></header>`;
     if (!who) {
       app.innerHTML = head + `<main class="wrap gate"><form class="card" id="lpForm">

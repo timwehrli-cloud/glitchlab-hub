@@ -577,18 +577,25 @@ footer.foot { text-align: center; padding-block: 8px 28px; }
 @keyframes brandSpark { 0%,100% { opacity: 0; } 10%,30% { opacity: 1; } 31% { opacity: 0; } 60% { opacity: .8; transform: translate(2px,-2px); } 64% { opacity: 0; } }
 @keyframes brandGlitchA { 0%,86%,100% { opacity: 0; } 87% { opacity: .9; transform: translate(-3px,-1px); clip-path: inset(8% 0 60% 0); } 90% { opacity: .9; transform: translate(2px,1px); clip-path: inset(40% 0 30% 0); } 93% { opacity: 0; } }
 @keyframes brandGlitchB { 0%,87%,100% { opacity: 0; } 88% { opacity: .9; transform: translate(3px,1px); clip-path: inset(60% 0 5% 0); } 91% { opacity: .9; transform: translate(-2px,0); clip-path: inset(20% 0 55% 0); } 94% { opacity: 0; } }
-/* Schriftzug grösser und cooler: Neon-Verlauf, 3D-Pixelschatten, Glanz und kurzer Glitch-Ruck */
+/* Schriftzug im Pixel- und Glitch-Stil, so hoch wie gLiTCh daneben */
+.brand { gap: 12px; }
 .brand .brand-g { width: 54px; height: 54px; }
-.brand .brand-g .glitch { width: 52px; height: 52px; }
-.brand .logo-word { font-size: clamp(26px, 2.6vw + 12px, 36px); font-weight: 800; letter-spacing: -.035em; line-height: 1;
-  filter: drop-shadow(2px 2px 0 #14062E) drop-shadow(2px 2px 0 rgba(255,43,214,.55)) drop-shadow(0 0 14px rgba(139,92,255,.45));
-  animation: brandJolt 6s steps(1) infinite; }
-.logo-word .lw-a { background-image: linear-gradient(100deg, #B79CFF 0%, #FF2BD6 30%, #FFFFFF 38%, #FF2BD6 46%, #A07CFF 70%, #B79CFF 100%); background-size: 250% 100%; animation: brandFlow 4s linear infinite; }
-.logo-word .lw-b { background-image: linear-gradient(100deg, #2EE6D6 0%, #7BFFB0 30%, #FFFFFF 38%, #7BFFB0 46%, #2EE6D6 70%, #7BFFB0 100%); background-size: 250% 100%; animation: brandFlow 4s linear infinite; }
-.logo-word::before, .logo-word::after { font-weight: 800; }
-.brand .brand-t small { margin-top: 3px; }
-@keyframes brandJolt { 0%, 88%, 100% { transform: none; } 89% { transform: skewX(-8deg) translateX(1px); } 90% { transform: skewX(6deg) translateX(-1px); } 91% { transform: none; } }
-@media (max-width: 560px) { .brand .logo-word { font-size: 26px; } .brand .brand-g, .brand .brand-g .glitch { width: 42px; height: 42px; } }
+.brand .brand-g .glitch { width: 54px; height: 54px; }
+.brand .brand-t { align-self: center; }
+.brand .logo-word { font-family: var(--f-pixel); font-weight: 400; font-size: 58px; letter-spacing: 0; line-height: .8; padding-top: 2px; text-transform: none;
+  filter: drop-shadow(-2px 0 0 rgba(46,230,214,.85)) drop-shadow(2px 0 0 rgba(255,43,214,.85)) drop-shadow(0 3px 0 #14062E) drop-shadow(0 0 12px rgba(139,92,255,.5));
+  animation: brandJolt 5s steps(1) infinite; }
+.logo-word .lw-a, .logo-word .lw-b { background-size: 100% 100%, 300% 100%; animation: brandFlow 3.5s steps(12) infinite; }
+.logo-word .lw-a { background-image: repeating-linear-gradient(0deg, rgba(20,6,46,.35) 0 2px, transparent 2px 5px), linear-gradient(90deg, #B79CFF, #FF2BD6, #FFFFFF, #FF2BD6, #B79CFF, #FF2BD6); }
+.logo-word .lw-b { background-image: repeating-linear-gradient(0deg, rgba(20,6,46,.35) 0 2px, transparent 2px 5px), linear-gradient(90deg, #2EE6D6, #7BFFB0, #FFFFFF, #7BFFB0, #2EE6D6, #7BFFB0); }
+.logo-word::before, .logo-word::after { font-family: var(--f-pixel); font-weight: 400; }
+@keyframes brandFlow { to { background-position: 0 0, 300% 0; } }
+@keyframes brandJolt { 0%, 84%, 100% { transform: none; clip-path: none; } 85% { transform: translateX(3px); clip-path: inset(0 0 55% 0); } 86% { transform: translateX(-3px) skewX(-10deg); clip-path: none; } 87% { transform: translateX(2px); clip-path: inset(45% 0 0 0); } 88% { transform: none; clip-path: none; } 94% { opacity: 1; } 95% { opacity: .55; } 96% { opacity: 1; } }
+/* Klasse rechts bei den Sternen */
+.cls-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: rgba(139,92,255,.16); border: 1px solid rgba(139,92,255,.45);
+  font-family: var(--f-pixel); font-size: 13px; color: #DCCEFF; white-space: nowrap; }
+.cls-chip i { font-style: normal; font-size: 14px; }
+@media (max-width: 560px) { .brand .logo-word { font-size: 40px; } .brand .brand-g, .brand .brand-g .glitch { width: 38px; height: 38px; } .brand { gap: 8px; } }
 @media (prefers-reduced-motion: reduce) { .brand .brand-g .glitch, .brand-spark, .logo-word, .logo-word .lw-a, .logo-word .lw-b, .logo-word::before, .logo-word::after { animation: none; } }
 .restore-card{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1.5px solid color-mix(in srgb,var(--accent) 35%,transparent);display:grid;gap:2px}
 .restore-card small{color:var(--muted)}
