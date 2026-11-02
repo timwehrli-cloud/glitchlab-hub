@@ -106,6 +106,8 @@
     async q(p) { const { data, error } = await p; if (error) throw new Error(error.message); return data; }
     listClasses() { return this.q(this.sb.from("classes").select("id,name,code,settings,created_at").order("created_at")); }
     saveClassSettings(id, settings) { return this.q(this.sb.from("classes").update({ settings: settings || {} }).eq("id", id)); }
+    /* Wer macht was? Der zuletzt gemeldete Ort jedes Kindes (aus den Extras) */
+    async classNow(ids) { if (!ids.length) return []; const r = await this.q(this.sb.from("extras").select("student_id,now:data->now").in("student_id", ids)); return (r || []).map(x => ({ student_id: x.student_id, now: x.now || null })); }
     async createClass(name) {
       for (let i = 0; i < 5; i++) {
         const { data, error } = await this.sb.from("classes").insert({ name: cleanName(name).slice(0, 40), code: randCode() }).select().single();
@@ -327,6 +329,7 @@
     async teacherSignUp(email) { await this.teacherSignIn(email); return "ok"; }
     async teacherSignOut() { this.db.teacher = null; this.save(); }
     async listClasses() { return this.wait(this.db.classes.map(({ teacher, ...c }) => Object.assign({ settings: {} }, c))); }
+    async classNow(ids) { let d = null; try { d = JSON.parse(localStorage.getItem(this.key)); } catch (e) { /* egal */ } const ex = (d || this.db).extras || {}; return ids.map(id => ({ student_id: id, now: (ex[id] || {}).now || null })); }
     async saveClassSettings(id, settings) { const c = this.db.classes.find(x => x.id === id); if (c) { c.settings = settings || {}; this.save(); } }
     async createClass(name) {
       let code; do { code = randCode(); } while (this.db.classes.some(c => c.code === code));

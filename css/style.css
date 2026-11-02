@@ -712,3 +712,17 @@ body.has-sitebg::after { opacity: .25; }
 @keyframes pbGlitch{0%,88%,100%{translate:0 0;opacity:1}90%{translate:2px 0;opacity:.5}92%{translate:-2px 0;opacity:1}94%{translate:0 0}}
 @keyframes pbScan{from{translate:0 0}to{translate:0 60px}}
 @media (prefers-reduced-motion: reduce){#siteBg [class^="pb-"],#siteBg [class*=" pb-"]{animation:none!important;opacity:1}}
+
+/* ---------- Wer macht was? ---------- */
+.who-groups { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.who-g { padding: 6px 10px; border-radius: 12px; background: rgba(139,92,255,.16); border: 1px solid rgba(139,92,255,.4); font-size: 14px; }
+.who-list { display: grid; gap: 6px; }
+.who-row { display: grid; grid-template-columns: 12px 30px minmax(70px, 120px) 1fr auto; gap: 10px; align-items: center; padding: 6px 10px; border-radius: 12px; background: rgba(255,255,255,.04); }
+.who-row .glitch { width: 28px; height: 28px; }
+.who-dot { width: 10px; height: 10px; border-radius: 50%; background: #5A5070; }
+.who-row.on .who-dot { background: #3CFF7A; box-shadow: 0 0 8px #3CFF7A; }
+.who-row.off { opacity: .6; }
+.who-n { font-weight: 800; }
+.who-p small { opacity: .7; }
+.who-t { font-size: 13px; opacity: .85; white-space: nowrap; }
+@media (max-width: 640px) { .who-row { grid-template-columns: 12px 28px 1fr; } .who-p, .who-t { grid-column: 3; } }

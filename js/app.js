@@ -352,6 +352,7 @@
   function render() {
     try { liveEnsure(); } catch (e) { /* egal */ }
     try { applySiteBg(); } catch (e) { /* egal */ }
+    try { presenceBeat(); } catch (e) { /* egal */ }
     try { const r = renderView(); if (r && r.catch) r.catch(err => { console.error(err); toast("Fehler: " + (err && err.message || err), "err", 9000); }); return r; }
     catch (err) {
       console.error(err);
@@ -1015,6 +1016,7 @@
           <label class="hint" style="display:inline-flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="backupMods" checked> mit hochgeladenen Modulen</label>
           <button type="button" class="btn small danger" data-delcls>${LP.confirm === "cls" ? "Wirklich ganze Klasse löschen?" : "Klasse löschen"}</button></div></section>
       ${livePanelHTML(c)}
+      <section class="panel"><h2>👀 Wer macht was?</h2><div id="whoNow"><p class="hint">Lädt …</p></div></section>
       <section class="panel"><h2>Kinder (${LP.kids.filter(k => !k.is_teacher).length}) + Lehrpersonen-Konto</h2>
         <p class="hint">Das Konto «${esc(CFG.TEACHER_NAME || "Lehrperson")}» steht in jeder Klasse zuoberst. Dort ist immer alles freigeschaltet: alle Module, Level, Diplome, Outfits, Emotes und das Chalet. Ideal zum Vorzeigen.</p>
         ${LP.kids.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Kind</th><th>Bild-Passwort</th>${actSubjects.map(s => `<th class="num">${esc(s.short)}</th>`).join("")}<th class="num">Total ★</th><th>Level</th><th></th></tr></thead><tbody>
@@ -1071,7 +1073,7 @@
       const id = b.dataset.delkid; if (LP.confirm !== "d" + id) { LP.confirm = "d" + id; return render(); }
       await S.be.deleteStudent(id); LP.confirm = null; toast("Kind entfernt."); render();
     });
-    bindAccessPanel(c); bindKidModsPanel(); bindTeachersPanel(c); bindLivePanel(c);
+    bindAccessPanel(c); bindKidModsPanel(); bindTeachersPanel(c); bindLivePanel(c); bindWho();
     $("#addKids").onsubmit = async e => {
       e.preventDefault();
       const names = $("#kidNames").value.split(/\n|,/).map(s => s.trim()).filter(Boolean);
@@ -1222,6 +1224,31 @@
     $$("[data-live-send]").forEach(b => b.onclick = () => { const v = ($("#liveMsg") || {}).value || ""; if (!v.trim()) { toast("Schreib zuerst eine Nachricht."); return; } set({ msg: v.trim().slice(0, 200), msgAt: Date.now() }, "gLiTCh zeigt die Nachricht allen."); });
     $$("[data-live-clear]").forEach(b => b.onclick = () => set({ msg: "", msgAt: Date.now() }, "Nachricht ausgeblendet."));
   }
+  /* ---------- Wer macht was? (Lehrperson) ---------- */
+  const agoTxt = ms => ms < 60000 ? "gerade eben" : ms < 3600000 ? `vor ${Math.round(ms / 60000)} Min.` : "länger her";
+  function whoNowHTML(rows) {
+    const kids = LP.kids.filter(k => !k.is_teacher), by = Object.fromEntries((rows || []).map(r => [r.student_id, r.now]));
+    const nameOf = id => (kids.find(k => k.id === id) || {}).first_name;
+    const leadOf = {}; kids.forEach(k => { const n = by[k.id]; if (n && Date.now() - n.at < 120000) (n.team || []).forEach(t => { const tk = kids.find(x => x.first_name === t); if (tk) leadOf[tk.id] = k.id; }); });
+    const info = k => { const n = by[k.id], lead = leadOf[k.id] && by[leadOf[k.id]];
+      if (lead) return { on: true, ...lead, team: [nameOf(leadOf[k.id])].concat((lead.team || []).filter(t => t !== k.first_name)), via: true };
+      if (!n) return { on: false }; return Object.assign({ on: Date.now() - n.at < 120000 }, n); };
+    const list = kids.map(k => ({ k, i: info(k) }));
+    const groups = {}; list.filter(x => x.i.on && x.i.t === "m").forEach(x => { (groups[x.i.mid || x.i.n] = groups[x.i.mid || x.i.n] || { n: x.i.n, sub: x.i.sub, kids: [] }).kids.push(x.k.first_name); });
+    const placeTxt = i => i.t === "m" ? `<b>${esc(i.n)}</b>${i.sub ? ` <small>${esc(i.sub)}</small>` : ""}` : i.t === "s" ? `Fach ${esc(i.n)}` : i.t === "t" ? `Thema ${esc(i.n)}` : "Startseite / Zimmer";
+    return `${Object.keys(groups).length ? `<div class="who-groups">${Object.values(groups).map(g => `<span class="who-g">🧩 <b>${esc(g.n)}</b>: ${g.kids.map(esc).join(", ")}</span>`).join("")}</div>` : ""}
+      <div class="who-list">${list.map(({ k, i }) => `<div class="who-row ${i.on ? "on" : "off"}"><span class="who-dot" aria-hidden="true"></span>${gl("normal", k.color, "still")}<span class="who-n">${esc(k.first_name)}</span>
+        <span class="who-p">${i.on ? placeTxt(i) : i.at ? `zuletzt ${agoTxt(Date.now() - i.at)}` : "nicht angemeldet"}</span>
+        <span class="who-t">${i.on && i.team && i.team.length ? `👥 mit ${i.team.map(esc).join(", ")}` : i.on ? "allein" : ""}</span></div>`).join("")}</div>
+      <p class="hint" style="margin-top:8px">Aktualisiert sich alle 10 Sekunden. Grün = gerade aktiv (in den letzten 2 Minuten).</p>`;
+  }
+  let whoTimer = null;
+  function bindWho() {
+    clearInterval(whoTimer);
+    const load = async () => { const el = $("#whoNow"); if (!el) { clearInterval(whoTimer); return; } try { el.innerHTML = whoNowHTML(await S.be.classNow(LP.kids.map(k => k.id))); } catch (e) { el.innerHTML = `<p class="hint">Konnte nicht laden: ${esc(e.message)}</p>`; } };
+    if ($("#whoNow")) { load(); whoTimer = setInterval(load, 10000); }
+  }
+
   /* Kinder-Seite: alle 5 Sekunden nachfragen, Pause-Bildschirm und Sprechblase zeigen */
   const LIVE = { t: null, tok: null, shown: "", closed: "" };
   function liveEnsure() {
@@ -1229,7 +1256,7 @@
     if (!want) { if (LIVE.t) { clearInterval(LIVE.t); LIVE.t = null; LIVE.tok = null; liveApply({}); } return; }
     if (LIVE.t && LIVE.tok === S.token) return;
     clearInterval(LIVE.t); LIVE.tok = S.token;
-    const tick = async () => { if (!S.me || S.token !== LIVE.tok) return; try { liveApply(await S.be.live(S.token) || {}); } catch (e) { /* nächstes Mal */ } };
+    const tick = async () => { if (!S.me || S.token !== LIVE.tok) return; try { presenceBeat(); } catch (e) { /* egal */ } try { liveApply(await S.be.live(S.token) || {}); } catch (e) { /* nächstes Mal */ } };
     tick(); LIVE.t = setInterval(tick, 5000);
   }
   /* Wieder im Vordergrund (z. B. Web-App auf dem iPad): sofort nachfragen */
@@ -1251,6 +1278,19 @@
   }
   setInterval(checkVersion, 120000);
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkVersion(); });
+  /* Wer macht was? Das Gerät meldet, wo das Kind gerade ist und mit wem (höchstens alle 30 Sekunden, sofort bei Wechsel) */
+  const PRES = { key: "", at: 0 };
+  function presenceBeat() {
+    if (!S.me || !S.token || isLP() || !S.view || S.view.name === "lp") return;
+    const v = S.view, m = v.name === "module" ? H.modules.find(x => x.id === v.id) : null;
+    const where = m ? { t: "m", n: m.title, sub: (H.subjects.find(x => x.id === m.subject) || {}).short || "" }
+      : v.name === "subject" ? { t: "s", n: (H.subjects.find(x => x.id === v.id) || {}).name || "" }
+      : v.name === "theme" ? { t: "t", n: (H.themes.find(x => x.id === v.id) || {}).title || "" } : { t: "h", n: "Startseite und Zimmer" };
+    const team = S.team.map(t => t.student.first_name), key = JSON.stringify([where, team]);
+    if (key === PRES.key && Date.now() - PRES.at < 30000) return;
+    PRES.key = key; PRES.at = Date.now();
+    saveExtras({ now: Object.assign({ at: Date.now(), team, mid: m ? m.id : "" }, where) });
+  }
   function liveApply(L) {
     let ov = document.getElementById("livePause");
     if (L.pause && !ov) {
