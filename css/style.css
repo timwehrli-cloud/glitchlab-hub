@@ -726,3 +726,11 @@ body.has-sitebg::after { opacity: .25; }
 .who-p small { opacity: .7; }
 .who-t { font-size: 13px; opacity: .85; white-space: nowrap; }
 @media (max-width: 640px) { .who-row { grid-template-columns: 12px 28px 1fr; } .who-p, .who-t { grid-column: 3; } }
+
+/* ---------- Menü im Lehrpersonen-Bereich ---------- */
+.lp-tabs { position: sticky; top: 0; z-index: 20; display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 14px; padding: 10px; border-radius: 18px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--line); }
+.lp-tb { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px; font: 800 15px/1.1 var(--f-display); color: var(--ink); background: rgba(139,92,255,.12); border: 2px solid transparent; }
+.lp-tb:hover { background: rgba(139,92,255,.24); }
+.lp-tb.on { background: #8B5CFF; color: #fff; border-color: #B79CFF; box-shadow: 0 6px 18px rgba(139,92,255,.35); }
+.lp-tb:focus-visible { outline: 3px solid #FFC21A; outline-offset: 2px; }
+.lp-tab[hidden] { display: none !important; }

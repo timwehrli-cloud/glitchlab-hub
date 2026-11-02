@@ -953,6 +953,8 @@
     if (LP.cur && !LP.classes.some(c => c.id === LP.cur.id)) LP.cur = null;
     if (!LP.cur) {
       app.innerHTML = head + `<main class="wrap">
+        ${lpTabsNav("home")}
+        <div class="lp-tab" data-tab="klassen">
         <div class="sec-h"><h1 style="font-size:30px">Deine Klassen</h1><p>Jede Klasse hat einen eigenen Klassencode.</p></div>
         ${LP.classes.length ? `<div class="classes">${LP.classes.map(c => `<button type="button" class="cls" data-cls="${c.id}"><h3>${esc(c.name)}</h3><span class="code-pill">${esc(c.code)}</span></button>`).join("")}</div>`
           : `<div class="empty-box">${gl("wink", "#8B5CFF")}<div><h2>Noch keine Klasse</h2><p>Leg unten deine erste Klasse an.</p></div></div>`}
@@ -963,12 +965,12 @@
         <section class="panel" id="restore"><h2>Klasse aus Datei wiederherstellen</h2>
           <p class="hint">Hast du eine Klasse mit «💾 Klasse sichern» als Datei gespeichert? Lade sie hier hoch. Die Klasse kommt mit allen Kindern, Bild-Passwörtern, Sternen, Diplomen, Garderoben, gespeicherten Arbeiten und Einstellungen zurück. Die Kinder melden sich danach genau wie vorher an.</p>
           <label class="btn" style="cursor:pointer">📂 Sicherungsdatei wählen<input type="file" id="restoreFile" accept=".json,application/json" hidden></label>
-          <div id="restoreInfo"></div></section>
-        ${uploadsPanelHTML()}
-        ${modsPanelHTML()}
+          <div id="restoreInfo"></div></section></div>
+        <div class="lp-tab" data-tab="upload">${uploadsPanelHTML()}</div>
+        <div class="lp-tab" data-tab="eigene">${modsPanelHTML()}</div>
         ${S.be.mode === "demo" ? `<p class="hint">Demo-Modus aktiv. <button type="button" class="link" data-resetdemo>Demo-Daten zurücksetzen</button></p>` : ""}
       </main>`;
-      bindLpTop(); bindModsPanel(); bindUploadsPanel(); bindRestore();
+      bindLpTop(); bindLpTabs("home"); bindModsPanel(); bindUploadsPanel(); bindRestore();
       $$("[data-cls]").forEach(b => b.onclick = () => { LP.cur = LP.classes.find(c => c.id === b.dataset.cls); LP.cards = false; render(); });
       $("#newCls").onsubmit = async e => {
         e.preventDefault();
@@ -1015,8 +1017,10 @@
           <button type="button" class="btn small" data-backup title="Speichert die ganze Klasse als Datei: Kinder, Bild-Passwörter, Sterne, Diplome, Garderobe, Arbeiten und Einstellungen">💾 Klasse sichern</button>
           <label class="hint" style="display:inline-flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="backupMods" checked> mit hochgeladenen Modulen</label>
           <button type="button" class="btn small danger" data-delcls>${LP.confirm === "cls" ? "Wirklich ganze Klasse löschen?" : "Klasse löschen"}</button></div></section>
-      ${livePanelHTML(c)}
-      <section class="panel"><h2>👀 Wer macht was?</h2><div id="whoNow"><p class="hint">Lädt …</p></div></section>
+      ${lpTabsNav("cls")}
+      <div class="lp-tab" data-tab="live">${livePanelHTML(c)}
+      <section class="panel"><h2>👀 Wer macht was?</h2><div id="whoNow"><p class="hint">Lädt …</p></div></section></div>
+      <div class="lp-tab" data-tab="kinder">
       <section class="panel"><h2>Kinder (${LP.kids.filter(k => !k.is_teacher).length}) + Lehrpersonen-Konto</h2>
         <p class="hint">Das Konto «${esc(CFG.TEACHER_NAME || "Lehrperson")}» steht in jeder Klasse zuoberst. Dort ist immer alles freigeschaltet: alle Module, Level, Diplome, Outfits, Emotes und das Chalet. Ideal zum Vorzeigen.</p>
         ${LP.kids.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Kind</th><th>Bild-Passwort</th>${actSubjects.map(s => `<th class="num">${esc(s.short)}</th>`).join("")}<th class="num">Total ★</th><th>Level</th><th></th></tr></thead><tbody>
@@ -1032,10 +1036,11 @@
       <form class="panel" id="addKids"><h2>Kinder hinzufügen</h2>
         <p class="hint">Ein Vorname pro Zeile. Bei gleichen Vornamen den Anfangsbuchstaben des Nachnamens dazuschreiben (z. B. «Lea M.»). Jedes Kind bekommt automatisch ein Bild-Passwort.</p>
         <label class="f" for="kidNames">Vornamen<textarea class="input" id="kidNames" placeholder="Anna&#10;Max&#10;Lea M."></textarea></label>
-        <div class="row"><button class="btn primary" type="submit">Hinzufügen</button></div></form>
-      ${teachersPanelHTML(c)}
-      ${accessPanelHTML(c)}
-      ${kidModsPanelHTML()}
+        <div class="row"><button class="btn primary" type="submit">Hinzufügen</button></div></form></div>
+      <div class="lp-tab" data-tab="module">${accessPanelHTML(c)}
+      ${kidModsPanelHTML()}</div>
+      <div class="lp-tab" data-tab="lehrp">${teachersPanelHTML(c)}</div>
+      <div class="lp-tab" data-tab="fortschritt">
       <section class="panel"><h2>Fortschritt pro Modul</h2>
         ${H.modules.length && LP.kids.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Kind</th>${H.modules.filter(m => !m.noStars).map(m => `<th class="num" title="${esc(m.title)}">${esc(m.title)}</th>`).join("")}</tr></thead><tbody>
           ${LP.kids.map(k => `<tr><td class="kid">${esc(k.first_name)}</td>${H.modules.filter(m => !m.noStars).map(m => {
@@ -1043,8 +1048,8 @@
             const team = [...new Set(LP.prog.filter(p => p.student_id === k.id && p.module_id === m.id).flatMap(p => p.team || []))];
             return `<td class="num" title="${team.length ? "Mit: " + esc(team.join(", ")) : ""}">${H.openEnded(m) ? "★ " + got : got + " / " + H.maxStars(m)}${team.length ? " 👥" : ""}</td>`;
           }).join("")}</tr>`).join("")}</tbody></table></div><p class="hint">👥 = im Team gelöst (Maus darüber zeigt mit wem).</p>` : `<p class="hint">Sobald Kinder Aufgaben lösen, siehst du hier ihre Sterne.</p>`}
-      </section></main>`;
-    bindLpTop();
+      </section></div></main>`;
+    bindLpTop(); bindLpTabs("cls");
     $("[data-allcls]").onclick = () => { LP.cur = null; LP.confirm = null; render(); };
     $("[data-cards]").onclick = () => { LP.cards = true; render(); };
     $("[data-backup]").onclick = async ev => { const b = ev.currentTarget, t = b.textContent; b.disabled = true; b.textContent = "Wird gesichert …";
@@ -1193,6 +1198,20 @@
       return all.length && all.every(b => have.has(b)) ? "fertig" : "arbeit"; }
     const mx = H.rawMax(m); return mx && own >= mx ? "fertig" : "arbeit";
   }
+  /* ---------- Menü im Lehrpersonen-Bereich: Reiter, es ist immer nur ein Bereich offen ---------- */
+  const LP_TABS = {
+    cls: [["live", "📢", "Live"], ["kinder", "👥", "Kinder"], ["module", "🧩", "Module"], ["fortschritt", "📊", "Fortschritt"], ["lehrp", "🧑‍🏫", "Lehrpersonen"]],
+    home: [["klassen", "🏫", "Klassen"], ["upload", "⬆️", "Module hochladen"], ["eigene", "✏️", "Eigene Module"]]
+  };
+  LP.tabs = LP.tabs || {};
+  const lpTabsNav = key => { const cur = LP.tabs[key] || LP_TABS[key][0][0];
+    return `<nav class="lp-tabs" role="tablist" aria-label="Bereiche">${LP_TABS[key].map(([id, ic, n]) => `<button type="button" role="tab" class="lp-tb${id === cur ? " on" : ""}" data-lptab="${key}:${id}" aria-selected="${id === cur}"><span aria-hidden="true">${ic}</span>${n}</button>`).join("")}</nav>`; };
+  function bindLpTabs(key) {
+    const show = id => { LP.tabs[key] = id; $$(".lp-tab").forEach(t => { t.hidden = t.dataset.tab !== id; }); $$(`[data-lptab^="${key}:"]`).forEach(b => { const on = b.dataset.lptab === key + ":" + id; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); }); };
+    show(LP.tabs[key] || LP_TABS[key][0][0]);
+    $$(`[data-lptab^="${key}:"]`).forEach(b => b.onclick = () => { show(b.dataset.lptab.split(":")[1]); window.scrollTo({ top: 0, behavior: "smooth" }); });
+  }
+
   /* ---------- Live-Steuerung: Pause und Nachricht von gLiTCh an die ganze Klasse ---------- */
   const LIVE_QUICK = [
     ["⏰ Zeit", ["Noch 10 Minuten! ⏰", "Noch 5 Minuten! ⏰", "Noch 2 Minuten, langsam fertig machen. ⏳", "Die Zeit ist um. Bitte aufhören. 🛑"]],
