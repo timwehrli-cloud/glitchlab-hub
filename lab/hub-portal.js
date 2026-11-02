@@ -680,7 +680,7 @@ function dashHTML(){
           <span class="pt-room-g glitch" role="img" aria-label="gLiTCh in seinem Zimmer"><span>${LIB.glitchSVG("happy", {outfit: p.outfit || {}})}</span></span>
           <div class="pt-room-say" id="ptSay"><b class="gname">gLiTCh</b>${esc(greet)}</div>
           <span class="pt-room-hint">Auf gLiTCh tippen und nach unten ziehen: Emote!</span></div>
-        <div class="pt-lvl" style="margin-top:16px"><span class="pt-ring">${li+1}</span><div><span>Level ${li+1} von ${L.length}</span><b>${esc(L[li].n)}</b><span>${nx ? `noch ${nx.s - T.stars} Sterne bis «${esc(nx.n)}»` : "Level 100 geschafft! Du bist eine echte Schweizer Legende."}</span></div>
+        <div class="pt-lvl" style="margin-top:16px"><span class="pt-ring">${li+1}</span><div><span>Level ${li+1} von ${L.length}</span><b>${esc(L[li].n)}</b><span>${nx ? `noch ${nx.s - T.stars} Sterne bis «${esc(nx.n)}»` : "Level 100 geschafft! Du bist die ultimative gLiTCh-Legende."}</span></div>
           <span class="pt-stars" aria-label="${T.stars} Sterne">★ ${T.stars}</span></div>
         <div class="pt-bar" aria-hidden="true"><i style="width:${Math.max(3, Math.min(100, pct))}%"></i></div>
       </div>

@@ -62,3 +62,4 @@ assert _a in page
 page = page.replace(_a, '<rect x="2" y="3" width="1" height="1" fill="${_sk.hi}"/><rect x="0" y="0" width="1" height="1" fill="#00E5FF"/>', 1)
 
 page = _lpfix(page)
+page = _lvfix(page)

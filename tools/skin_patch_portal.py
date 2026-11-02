@@ -51,3 +51,20 @@ def _lpfix(t):
     t = t.replace('Herr Wehrli', 'die Lehrperson').replace('Wehrli', 'Lehrperson')
     return t
 portal = _lpfix(portal)
+
+# ---------- Level: über alle Fächer, rund um gLiTCh (10 Ränge × I–X) ----------
+_RANKS = ["Pixel-Neuling", "gLiTCh-Beginner", "Bit-Entdecker", "gLiTCh-Kenner", "gLiTCh-Profi", "gLiTCh-Experte", "Pixel-Held", "gLiTCh-Master", "gLiTCh-Champion", "gLiTCh-Legende"]
+_ROM = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
+LEVEL_NAMES = [f"{_RANKS[i // 10]} {_ROM[i % 10]}" for i in range(100)]
+LEVEL_NAMES[99] = "Ultimative gLiTCh-Legende"
+portal = portal.replace('"Level 100 geschafft! Du bist eine echte Schweizer Legende."', '"Level 100 geschafft! Du bist die ultimative gLiTCh-Legende."')
+def _lvfix(t):
+    import re as _re
+    i = t.index("const LEVELS = ["); j = t.index("];", i)
+    block = t[i:j]; k = [0]
+    def sub(m):
+        n = LEVEL_NAMES[k[0]] if k[0] < 100 else m.group(1); k[0] += 1
+        return '{n:"' + n + '"'
+    block = _re.sub(r'\{n:"([^"]*)"', sub, block)
+    t = t[:i] + block + t[j:]
+    return t.replace("Mit diesem Cape bin ich eine echte Schweizer Legende.", "Mit diesem Cape bin ich eine echte gLiTCh-Legende.")
