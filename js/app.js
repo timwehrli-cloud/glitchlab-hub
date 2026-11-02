@@ -47,7 +47,14 @@
 
   /* ---------- Sterne ---------- */
   const progOf = (modId, actId) => (S.me?.progress || []).find(p => p.module_id === modId && p.activity_id === actId) || null;
-  const actStars = (m, x) => { const st = progOf(m.id, x.id)?.stars || 0; return x.maxStars == null ? st : Math.min(x.maxStars, st); };
+  /* Status, den die Lehrperson pro Kind setzt: "offen" | "arbeit" | "fertig" (fertig = alle Belohnungen des Moduls) */
+  const LAB_FULL = 130;   // so viele Sterne zählt ein Lab-Modul, wenn die Lehrperson es abschliesst
+  const STATUS = [["offen", "Offen"], ["arbeit", "In Bearbeitung"], ["fertig", "Abgeschlossen"]];
+  const lpStatOf = (prog, kidId, m) => ((prog.find(p => (!kidId || p.student_id === kidId) && p.module_id === m.id && p.activity_id === "lp-status") || {}).data || {}).status || "";
+  const lpStat = m => lpStatOf(S.me?.progress || [], null, m);
+  const labBadges = m => m.kind === "lab" ? GD.BADGES.filter(b => (b.mod || "prompt") === m.lab).map(b => b.id) : [];
+  const fullAct = (x, st) => x.maxStars == null ? Math.max(st, LAB_FULL) : x.maxStars;
+  const actStars = (m, x) => { const st = progOf(m.id, x.id)?.stars || 0; if (lpStat(m) === "fertig") return fullAct(x, st); return x.maxStars == null ? st : Math.min(x.maxStars, st); };
   const modStars = m => m.activities.reduce((a, x) => a + actStars(m, x), 0);
   /* Nur für das Lehrpersonen-Konto (z. B. Jeopardy): für Kinder unsichtbar */
   const visMod = m => !m.lpOnly || isLP();
@@ -58,8 +65,10 @@
     + (S.me?.progress || []).filter(p => p.module_id === "test").reduce((a, p) => a + p.stars, 0);   // Test-Modus der Lehrperson
   const GD = window.GL_DATA || { LEVELS: [{ n: "Start", s: 0 }], BADGES: [], OUTFITS: [] };
   const levelOf = st => { let i = 0; GD.LEVELS.forEach((l, k) => { if (st >= l.s) i = k; }); return i; };
-  const myBadges = () => new Set((S.me?.progress || []).flatMap(p => (p.data && Array.isArray(p.data.badges)) ? p.data.badges : []));
-  const upBadges = mid => new Set((S.me?.progress || []).filter(p => p.module_id === mid).flatMap(p => (p.data && Array.isArray(p.data.badges)) ? p.data.badges : []));
+  const lpDoneMods = () => H.modules.filter(m => lpStat(m) === "fertig");
+  const myBadges = () => new Set((S.me?.progress || []).flatMap(p => (p.data && Array.isArray(p.data.badges)) ? p.data.badges : []).concat(lpDoneMods().flatMap(labBadges)));
+  const upBadges = mid => { const m = H.modules.find(x => x.id === mid), own = (S.me?.progress || []).filter(p => p.module_id === mid).flatMap(p => (p.data && Array.isArray(p.data.badges)) ? p.data.badges : []);
+    return new Set(m && m.upload && lpStat(m) === "fertig" ? own.concat((m.meta.dips || []).map(d => d.id)) : own); };
   const myMax = k => Math.max(0, ...(S.me?.progress || []).map(p => +(p.data && p.data[k]) || 0));
   const outfitOf = () => (S.me?.extras && S.me.extras.outfit) || {};
   /* gLiTCh eines Kindes so, wie es ausgerüstet ist (eigenes Outfit live, andere aus der Klassenliste) */
@@ -75,6 +84,7 @@
   const modSolved = m => { const st = modStars(m), mx = H.maxStars(m); return H.openEnded(m) || !mx ? st > 0 : st >= Math.ceil(mx / 2); };
   const modOpen = m => {
     if (m.soon) return false; if (isLP()) return true; if (m.lpOnly) return false;
+    if (lpStat(m) === "arbeit" || lpStat(m) === "fertig") return true;   // von der Lehrperson für dieses Kind gesetzt
     const set = modSet(m);
     if (set === "offen") return true; if (set === "zu") return false;
     if (set === "kette") { const p = modPrev(m); return !p || modSolved(p); }
@@ -98,7 +108,7 @@
     S.view = view; render(); window.scrollTo(0, 0);
   }
   function render() {
-    try { renderView(); }
+    try { const r = renderView(); if (r && r.catch) r.catch(err => { console.error(err); toast("Fehler: " + (err && err.message || err), "err", 9000); }); return r; }
     catch (err) {
       console.error(err);
       toast("Ups, gLiTCh hat sich verhaspelt: " + (err && err.message ? err.message : err) + ". Schick Herrn Wehrli ein Foto davon.", "err", 9000);
@@ -377,7 +387,7 @@
     const a = (H.modArt && H.modArt[m.id]) || { c: t.c, c2: t.c2, svg: (H.themeArt || {})[t.art] || "" };
     return `<button type="button" class="mod${open ? "" : " locked"}${lab ? " lab" : ""}" style="--c:${a.c}" data-mod="${esc(m.id)}" ${open ? "" : 'aria-disabled="true"'}>
       <span class="art-banner${open ? "" : " soon"}" style="--mc:${a.c};--mc2:${a.c2}">${a.svg}${open ? "" : `<span class="lock-pill">${m.soon ? "✨ Bald" : "🔒 Gesperrt"}</span>`}</span>
-      ${tag ? `<span class="mod-where">${esc(tag)}</span>` : ""}${lab ? `<span class="mod-tag">gLiTCh-Lab · Teamarbeit</span>` : ""}
+      ${tag ? `<span class="mod-where">${esc(tag)}</span>` : ""}${lab ? `<span class="mod-tag">gLiTCh-Lab · Teamarbeit</span>` : ""}${lpStat(m) === "fertig" ? `<span class="mod-stat done">✓ Abgeschlossen</span>` : lpStat(m) === "arbeit" ? `<span class="mod-stat">In Bearbeitung</span>` : ""}
       <h3>${esc(m.title)}</h3><p>${esc(open || m.soon ? (m.teaser || "") : lockTxt(m))}</p>
       ${lab || m.custom || m.kind === "frame" ? "" : `<div class="acts">${m.activities.map(x => { const p = progOf(m.id, x.id); return `<span class="act${p && p.stars > 0 ? " done" : ""}">${esc(x.title)}</span>`; }).join("")}</div>`}
       <div class="row"><span>${m.minutes ? `ca. ${m.minutes} Min.` : ""}</span>${H.openEnded(m) ? `<span class="stars">★ <b style="color:var(--ink)">${got}</b></span>` : starRow(got, max)}</div>
@@ -506,10 +516,11 @@
     context(lab) {
       const k = s => ({ id: s.id, n: s.first_name, c: s.color });
       const mods = {}; let labSum = 0;
-      H.modules.filter(m => m.kind === "lab").map(m => m.lab).forEach(l => {
-        const p = progOf("lab-" + l, "lab"); if (!p) return;
-        mods[l] = { stars: p.stars, badges: (p.data && p.data.badges) || [], fed: (p.data && p.data.fed) || 0, deaths: (p.data && p.data.deaths) || 0 };
-        labSum += p.stars;
+      H.modules.filter(m => m.kind === "lab").forEach(m => {
+        const l = m.lab, p = progOf(m.id, "lab"), done = lpStat(m) === "fertig"; if (!p && !done) return;
+        const d = (p && p.data) || {}, stars = done ? fullAct({ maxStars: null }, p ? p.stars : 0) : p.stars;
+        mods[l] = { stars, badges: [...new Set([...(d.badges || []), ...(done ? labBadges(m) : [])])], fed: d.fed || 0, deaths: d.deaths || 0 };
+        labSum += stars;
       });
       /* Hub-Module (ohne Lab) zählen als «geschafft», sobald es Sterne gab: z. B. für Emotes */
       const hubDone = H.modules.filter(m => m.kind !== "lab" && modStars(m) > 0).map(m => "hub:" + m.id);
@@ -560,6 +571,7 @@
       }).catch(err => toast(err.message, "err", 5000));
     },
     glitchSvg(mood) { return G.svg(mood || "happy", "#8B5CFF", { outfit: outfitOf(), calm: true }); },
+    checkCode(c) { return String(c) === String(CFG.TEACHER_PIN || "4313"); },
     upDone(moduleId) { window.GLHubBridge.score(moduleId, "fertig", 1); },
     exit() { labFlush(); const v = S.view, m = v.name === "module" && H.modules.find(x => x.id === v.id); go(m ? { name: "theme", id: m.theme } : { name: "home" }); },
     lib() { /* Daten liegen schon in js/glitch-data.js */ },
@@ -690,8 +702,8 @@
     // Klassen-Detail
     const c = LP.cur;
     [LP.kids, LP.prog] = await Promise.all([S.be.listStudents(c.id), S.be.classProgress(c.id)]);
-    const st = (kid, subj) => LP.prog.filter(p => p.student_id === kid && (!subj || (H.modules.find(m => m.id === p.module_id) || {}).subject === subj))
-      .reduce((a, p) => { const m = H.modules.find(x => x.id === p.module_id); const act = m && m.activities.find(x => x.id === p.activity_id); return a + (act && act.maxStars != null ? Math.min(p.stars, act.maxStars) : p.stars); }, 0);
+    const st = (kid, subj) => H.modules.filter(m => !subj || m.subject === subj).reduce((a, m) => a + kidModStars(LP.prog, kid, m), 0)
+      + (subj ? 0 : LP.prog.filter(p => p.student_id === kid && p.module_id === "test").reduce((a, p) => a + p.stars, 0));
     const actSubjects = H.subjects.filter(s => subjMods(s.id).length);
     if (LP.cards) {
       app.innerHTML = head + `<main class="wrap">
@@ -733,10 +745,11 @@
         <label class="f" for="kidNames">Vornamen<textarea class="input" id="kidNames" placeholder="Anna&#10;Max&#10;Lea M."></textarea></label>
         <div class="row"><button class="btn primary" type="submit">Hinzufügen</button></div></form>
       ${accessPanelHTML(c)}
+      ${kidModsPanelHTML()}
       <section class="panel"><h2>Fortschritt pro Modul</h2>
         ${H.modules.length && LP.kids.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Kind</th>${H.modules.map(m => `<th class="num" title="${esc(m.title)}">${esc(m.title)}</th>`).join("")}</tr></thead><tbody>
           ${LP.kids.map(k => `<tr><td class="kid">${esc(k.first_name)}</td>${H.modules.map(m => {
-            const got = m.activities.reduce((a, x) => { const v = (LP.prog.find(p => p.student_id === k.id && p.module_id === m.id && p.activity_id === x.id) || {}).stars || 0; return a + (x.maxStars == null ? v : Math.min(x.maxStars, v)); }, 0);
+            const got = kidModStars(LP.prog, k.id, m);
             const team = [...new Set(LP.prog.filter(p => p.student_id === k.id && p.module_id === m.id).flatMap(p => p.team || []))];
             return `<td class="num" title="${team.length ? "Mit: " + esc(team.join(", ")) : ""}">${H.openEnded(m) ? "★ " + got : got + " / " + H.maxStars(m)}${team.length ? " 👥" : ""}</td>`;
           }).join("")}</tr>`).join("")}</tbody></table></div><p class="hint">👥 = im Team gelöst (Maus darüber zeigt mit wem).</p>` : `<p class="hint">Sobald Kinder Aufgaben lösen, siehst du hier ihre Sterne.</p>`}
@@ -761,7 +774,7 @@
       const id = b.dataset.delkid; if (LP.confirm !== "d" + id) { LP.confirm = "d" + id; return render(); }
       await S.be.deleteStudent(id); LP.confirm = null; toast("Kind entfernt."); render();
     });
-    bindAccessPanel(c);
+    bindAccessPanel(c); bindKidModsPanel();
     $("#addKids").onsubmit = async e => {
       e.preventDefault();
       const names = $("#kidNames").value.split(/\n|,/).map(s => s.trim()).filter(Boolean);
@@ -815,6 +828,52 @@
   /* ---------- Module für diese Klasse freischalten ---------- */
   const ACCESS = [["", "Standard"], ["offen", "Offen"], ["kette", "Nach dem Modul davor"], ["zu", "Gesperrt"]];
   function stdTxt(m) { return m.soon ? "kommt bald" : m.req ? "Standard: " + m.req.txt : "Standard: offen"; }
+  /* ---------- Module pro Kind: Status setzen (Abgeschlossen = alle Belohnungen) ---------- */
+  function kidModStars(prog, kidId, m) {
+    const done = lpStatOf(prog, kidId, m) === "fertig";
+    return m.activities.reduce((a, x) => { const v = (prog.find(p => p.student_id === kidId && p.module_id === m.id && p.activity_id === x.id) || {}).stars || 0;
+      return a + (done ? fullAct(x, v) : x.maxStars == null ? v : Math.min(x.maxStars, v)); }, 0);
+  }
+  function autoStat(prog, kidId, m) {
+    const own = m.activities.reduce((a, x) => a + ((prog.find(p => p.student_id === kidId && p.module_id === m.id && p.activity_id === x.id) || {}).stars || 0), 0);
+    if (!own) return "offen";
+    if (m.kind === "lab") { const have = new Set(prog.filter(p => p.student_id === kidId && p.module_id === m.id).flatMap(p => (p.data && p.data.badges) || [])), all = labBadges(m);
+      return all.length && all.every(b => have.has(b)) ? "fertig" : "arbeit"; }
+    const mx = H.maxStars(m); return mx && own >= mx ? "fertig" : "arbeit";
+  }
+  function kidModsPanelHTML() {
+    const kids = LP.kids.filter(k => !k.is_teacher);
+    if (!kids.length) return "";
+    if (!kids.some(k => k.id === LP.kidSel)) LP.kidSel = kids[0].id;
+    const k = kids.find(x => x.id === LP.kidSel), subjects = H.subjects.filter(sj => H.modules.some(m => m.subject === sj.id && !m.soon && !m.lpOnly));
+    const row = m => { const set = lpStatOf(LP.prog, k.id, m), auto = autoStat(LP.prog, k.id, m), cur = set || auto, got = kidModStars(LP.prog, k.id, m);
+      return `<div class="km-r"><span class="acc-n"><b>${esc(m.title)}</b><small>${H.openEnded(m) ? "★ " + got : got + " / " + H.maxStars(m) + " ★"} · ${set ? "von dir gesetzt" : "automatisch"}</small></span>
+        <span class="km-seg" role="group" aria-label="Status von ${esc(m.title)}">${STATUS.map(([v, n]) => `<button type="button" class="km-b ${v}${cur === v ? " on" : ""}${cur === v && !set ? " auto" : ""}" data-kstat="${esc(m.id)}" data-v="${v}" aria-pressed="${cur === v}">${n}</button>`).join("")}</span>
+        ${set ? `<button type="button" class="link km-x" data-kstat="${esc(m.id)}" data-v="" title="Wieder automatisch (so, wie das Kind gearbeitet hat)">↺ automatisch</button>` : `<span class="km-x"></span>`}</div>`; };
+    return `<section class="panel" id="kidMods"><h2>Module pro Kind verwalten</h2>
+      <p class="hint"><b>Offen:</b> noch nicht begonnen. <b>In Bearbeitung:</b> das Modul ist für dieses Kind frei. <b>Abgeschlossen:</b> das Kind bekommt alle Belohnungen des Moduls, also alle Sterne (und damit die Level), alle Diplome und alles, was das Modul freischaltet (Outfits, Emotes, Zimmer). «↺ automatisch» nimmt deine Einstellung zurück. Die eigene Arbeit des Kindes bleibt immer erhalten.</p>
+      <div class="km-kids" role="tablist" aria-label="Kind wählen">${kids.map(x => `<button type="button" class="km-kid${x.id === k.id ? " on" : ""}" data-ksel="${x.id}" role="tab" aria-selected="${x.id === k.id}">${gl("normal", x.color, "still")}<span>${esc(x.first_name)}</span></button>`).join("")}</div>
+      <div class="km-all row"><span class="hint" style="margin:0">Alles auf einmal für ${esc(k.first_name)}:</span><button type="button" class="btn small" data-kall="fertig">Alle abschliessen</button><button type="button" class="btn small" data-kall="">Alle automatisch</button></div>
+      <div class="acc">${subjects.map(sj => `<div class="acc-s"><h3 style="--c:${sj.color}"><span>${esc(sj.short)}</span>${esc(sj.name)}</h3>
+        ${H.themes.filter(t => t.subject === sj.id && H.modules.some(m => m.theme === t.id && !m.soon && !m.lpOnly)).map(t => `<div class="acc-t"><small>${esc(t.title)}</small>
+          ${H.modules.filter(m => m.theme === t.id && !m.soon && !m.lpOnly).map(row).join("")}</div>`).join("")}</div>`).join("")}</div></section>`;
+  }
+  function bindKidModsPanel() {
+    const keep = async fn => { const y = window.scrollY; await fn(); await render(); window.scrollTo(0, y); };
+    $$("[data-ksel]").forEach(b => b.onclick = () => keep(async () => { LP.kidSel = b.dataset.ksel; }));
+    $$("[data-kstat]").forEach(b => b.onclick = () => keep(async () => {
+      const m = H.modules.find(x => x.id === b.dataset.kstat), k = LP.kids.find(x => x.id === LP.kidSel), v = b.dataset.v;
+      try { await S.be.setModStatus(k.id, m.id, v || null);
+        toast(v === "fertig" ? `«${m.title}» abgeschlossen: ${k.first_name} bekommt alle Belohnungen.` : v ? `«${m.title}» für ${k.first_name}: ${STATUS.find(s => s[0] === v)[1]}.` : `«${m.title}» für ${k.first_name} wieder automatisch.`);
+      } catch (err) { toast(err.message, "err"); }
+    }));
+    $$("[data-kall]").forEach(b => b.onclick = () => keep(async () => {
+      const k = LP.kids.find(x => x.id === LP.kidSel), v = b.dataset.kall;
+      try { for (const m of H.modules.filter(x => !x.soon && !x.lpOnly)) { if ((lpStatOf(LP.prog, k.id, m) || "") !== v) await S.be.setModStatus(k.id, m.id, v || null); }
+        toast(v ? `Alle Module für ${k.first_name} abgeschlossen.` : `Alle Module für ${k.first_name} wieder automatisch.`);
+      } catch (err) { toast(err.message, "err"); }
+    }));
+  }
   function accessPanelHTML(c) {
     const set = (c.settings && c.settings.mods) || {};
     const subjects = H.subjects.filter(sj => H.modules.some(m => m.subject === sj.id && !m.soon));

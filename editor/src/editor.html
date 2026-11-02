@@ -119,6 +119,20 @@ option,optgroup{background:var(--surface);color:var(--ink)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 /*@GLITCH_CSS@*/
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+.toggles{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin-bottom:14px}
+.tg{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--surface2);border:1.5px solid var(--line);cursor:pointer}
+.tg input{position:absolute;opacity:0;pointer-events:none}
+.tg i{flex:none;width:42px;height:24px;border-radius:99px;background:var(--line);position:relative;transition:background .15s}
+.tg i::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s}
+.tg input:checked + i{background:var(--teal)}
+.tg input:checked + i::after{transform:translateX(18px)}
+.tg input:focus-visible + i{outline:3px solid var(--teal);outline-offset:2px}
+.tg b{display:block;font-size:.95rem}.tg small{display:block;color:var(--muted);font-size:.78rem;line-height:1.3}
+.seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.seg button{all:unset;box-sizing:border-box;cursor:pointer;padding:10px 12px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface2);display:grid;gap:2px}
+.seg button b{font-size:.95rem}.seg button small{color:var(--muted);font-size:.78rem;line-height:1.3}
+.seg button.on{border-color:var(--teal);background:linear-gradient(135deg,rgba(46,230,214,.18),rgba(160,124,255,.14))}
+.seg button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 </style>
 
 <div class="wrap">
@@ -161,6 +175,13 @@ option,optgroup{background:var(--surface);color:var(--ink)}
       </select></label>
       <label class="f"><span>Ideen, Lernziele und Wünsche</span><textarea class="in" id="ideen" placeholder="z. B. Die Kinder sollen erklären können, wie ein Vulkan entsteht. Bitte ein Experiment mit Backpulver einbauen und die Vulkane in Italien erwähnen. Wenig Text, viele Bilder-Beschreibungen."></textarea></label>
       <div class="f"><span>Aufgabenarten</span><div class="chips" id="typen"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div><p class="eyebrow">Ablauf</p><h2>Funktionen und Freigabe</h2></div><p>Schalte ein oder aus, was das Modul anbietet. Das kannst du auch nach dem Erstellen noch ändern: Die Datei passt sich beim Herunterladen an.</p></div>
+      <div class="toggles" id="toggles"></div>
+      <div class="f"><span>Zwischen den Etappen</span><div class="seg" id="freigabe" role="radiogroup" aria-label="Freigabe zwischen den Etappen"></div></div>
+      <p class="hint" id="frHint"></p>
+      <label class="f" id="codeWrap"><span>Code zum Testen ohne Hub</span><input class="in" id="optCode" inputmode="numeric" maxlength="8" placeholder="1234" style="max-width:180px"></label>
     </div>
     <div class="foot"><span></span><button type="button" class="btn primary" data-goto="2">Weiter zum Material →</button></div>
   </section>

@@ -13,8 +13,10 @@
   /* gLiTCh so, wie das Kind ihn im Hub angezogen hat (ohne Hub: ohne Outfit) */
   const gsvg = mood => { try { const x = HUB && HUB.glitch && HUB.glitch(mood); if (x) return x; } catch (e) { /* ohne Hub */ } return G ? G.svg(mood, "#8B5CFF") : ""; };
   const gl = (mood, cls = "") => `<span class="glitch ${cls}">${gsvg(mood)}</span>`;
+  /* Schalter aus dem Editor: was das Modul anbietet und wie es zwischen den Etappen weitergeht */
+  const O = Object.assign({ tipps: true, vorlesen: true, lexikon: true, pdf: true, freigabe: "keine", code: "" }, M.opt || {});
   const ET = (M.etappen || []).filter(e => e && Array.isArray(e.aufgaben));
-  const LEX = (M.lexikon || []).filter(w => w && w.wort);
+  const LEX = O.lexikon ? (M.lexikon || []).filter(w => w && w.wort) : [];
   const DIP = (M.diplome || []).filter(d => d && d.id);
   const scorable = a => a && a.typ !== "info";
   const KEY = "glmod." + slug(M.titel || "modul");
@@ -24,7 +26,7 @@
   /* ---------- Speicherstand (im Hub fürs ganze Team, sonst nur auf diesem Gerät) ---------- */
   let S = null;
   try { S = HUB ? HUB.laden() : JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
-  S = Object.assign({ ans: {}, dips: [], lex: false, fertig: false }, S || {});
+  S = Object.assign({ ans: {}, dips: [], lex: false, fertig: false, gate: {}, selbst: {} }, S || {});
   const save = () => { try { if (HUB) HUB.speichern(S); else localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* voll */ } };
   const k = (e, t) => e + "-" + t;
   /* Sterne pro Aufgabe: Spiele geben mehr Sterne als eine einzelne Quizfrage */
@@ -38,6 +40,10 @@
   const total = () => ET.reduce((n, _, e) => n + etStars(e), 0);
   const totalMax = () => ET.reduce((n, _, e) => n + etMax(e), 0);
   const who = () => HUB && HUB.alle ? HUB.alle.join(" und ") : "";
+  /* Freigabe zwischen den Etappen: keine | selbst (Selbsteinschätzung) | lp (Code der Lehrperson) */
+  const gateNeeded = e => O.freigabe === "selbst" || (O.freigabe === "lp" && e < ET.length - 1);
+  const etUnlocked = e => e <= 0 || O.freigabe === "keine" || (etDone(e - 1) && (!gateNeeded(e - 1) || !!S.gate[e - 1]) && etUnlocked(e - 1));
+  const SELBST = [["super", "🤩", "Kann ich super"], ["gut", "🙂", "Kann ich gut"], ["teils", "🤔", "Teilweise"], ["hilfe", "😵‍💫", "Brauche noch Hilfe"]];
 
   /* ---------- Diplome ---------- */
   function dipOk(d) {
@@ -106,7 +112,7 @@
     const bub = $("#say"); if (bub) { bub.classList.remove("pop"); void bub.offsetWidth; bub.classList.add("pop"); }
     clearTimeout(sayT); if (ms) sayT = setTimeout(() => { const x = B[view.b]; say(x ? `Baustein ${view.b + 1}: ${short(ET[x.e].aufgaben[x.t] || x.erkl[0] || {})}. ${TIPS_START}` : "", "normal"); }, ms);
   }
-  const TIPS_START = "Brauchst du Hilfe? Tippe auf «💡 Tipp».";
+  const TIPS_START = O.tipps ? "Brauchst du Hilfe? Tippe auf «💡 Tipp»." : "";
   function frame() {
     app.innerHTML = `<header class="lab-top">
         <button type="button" class="menu-btn" id="menuBtn" aria-haspopup="true" aria-expanded="false">☰ Menü</button>
@@ -118,6 +124,7 @@
         ${LEX.length ? `<button type="button" data-go="lex">📖 Lexikon <small>${LEX.length} Fachwörter</small></button>` : ""}
         ${DIP.length ? `<button type="button" data-go="dip">🏅 Diplome <small>${S.dips.length} von ${DIP.length}</small></button>` : ""}
         ${(M.links || []).length ? `<button type="button" data-go="links">🔗 Links</button>` : ""}
+        ${O.pdf ? `<button type="button" data-go="pdf">📄 Zusammenfassung als PDF</button>` : ""}
         <button type="button" data-go="ziel">🏁 Ziel</button>
         ${HUB ? `<button type="button" data-go="exit">← Zurück zum Hub</button>` : ""}
       </div>
@@ -126,13 +133,14 @@
     const mb = $("#menuBtn"), mn = $("#menu");
     mb.onclick = () => { mn.hidden = !mn.hidden; mb.setAttribute("aria-expanded", String(!mn.hidden)); };
     document.addEventListener("click", ev => { if (!mn.hidden && !mn.contains(ev.target) && ev.target !== mb) { mn.hidden = true; mb.setAttribute("aria-expanded", "false"); } });
-    $$("[data-go]", mn).forEach(b => b.onclick = () => { mn.hidden = true; const g = b.dataset.go; if (g === "lex") showLex(); if (g === "dip") showDips(); if (g === "links") showLinks(); if (g === "ziel") goB(B.length); if (g === "exit" && HUB) HUB.beenden(); });
-    $("#bigG").onclick = () => { const x = B[view.b], a = x && ET[x.e].aufgaben[x.t]; say(a ? (a.tipp || TIPS[a.typ] || "Du schaffst das!") : "Hoi! Ich bin gLiTCh.", "wink", 7000); };
+    $$("[data-go]", mn).forEach(b => b.onclick = () => { mn.hidden = true; const g = b.dataset.go; if (g === "lex") showLex(); if (g === "dip") showDips(); if (g === "links") showLinks(); if (g === "ziel") goB(B.length); if (g === "pdf") summaryPdf(); if (g === "exit" && HUB) HUB.beenden(); });
+    $("#bigG").onclick = () => { const x = B[view.b], a = x && ET[x.e].aufgaben[x.t]; say(a && O.tipps ? (a.tipp || TIPS[a.typ] || "Du schaffst das!") : a ? "Du schaffst das! Lies nochmals genau." : "Hoi! Ich bin gLiTCh.", "wink", 7000); };
   }
   function paintTabs() {
     let lastE = -1;
     $("#tabs").innerHTML = B.map((x, i) => { const a = ET[x.e].aufgaben[x.t] || x.erkl[0] || {}, sep = x.e !== lastE; lastE = x.e;
-      return `${sep ? `<span class="tab-sep" title="${esc(ET[x.e].titel)}">${esc(ET[x.e].emoji || "")}</span>` : ""}<button type="button" class="tab${i === view.b ? " cur" : ""}${bDone(i) ? " done" : ""}" data-b="${i}" aria-current="${i === view.b ? "step" : "false"}"><b>${bDone(i) ? "✓" : i + 1}</b><span>${esc(short(a))}</span></button>`; }).join("")
+      const lock = !etUnlocked(x.e);
+      return `${sep ? `<span class="tab-sep" title="${esc(ET[x.e].titel)}">${esc(ET[x.e].emoji || "")}</span>` : ""}<button type="button" class="tab${i === view.b ? " cur" : ""}${bDone(i) ? " done" : ""}${lock ? " locked" : ""}" data-b="${i}" aria-current="${i === view.b ? "step" : "false"}"${lock ? ' aria-disabled="true"' : ""}><b>${lock ? "🔒" : bDone(i) ? "✓" : i + 1}</b><span>${esc(short(a))}</span></button>`; }).join("")
       + `<button type="button" class="tab ziel${view.b >= B.length ? " cur" : ""}" data-b="${B.length}"><b>🏁</b><span>Ziel</span></button>`;
     $$("[data-b]", $("#tabs")).forEach(b => b.onclick = () => goB(+b.dataset.b));
     const cur = $(".tab.cur"); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "center" });
@@ -144,17 +152,58 @@
       ${DIP.length ? `<div class="side-card"><small class="cap">Diplome: ${esc(M.titel || "")}</small><div class="hexes">${DIP.map(d => `<button type="button" class="hex${S.dips.includes(d.id) ? " got" : ""}" data-dip="${esc(d.id)}" title="${esc(d.name)}">${S.dips.includes(d.id) ? esc(d.emoji || "🏅") : "🔒"}</button>`).join("")}</div>
         <p class="side-note">Tippt ein Diplom an, dann verrät gLiTCh, wie ihr es bekommt.</p></div>` : ""}
       <div class="side-card"><div class="prog-h"><b>Fortschritt</b><span>${dn} / ${B.length}</span></div><div class="pbar"><i style="width:${B.length ? Math.round(dn / B.length * 100) : 0}%"></i></div>
-        ${ET.map((E, e) => `<div class="et-row${etDone(e) ? " ok" : ""}"><span>${esc(E.emoji || "⭐")}</span><span>${esc(E.titel)}</span><small>${etDone(e) ? "✓" : `★ ${etStars(e)}/${etMax(e)}`}</small></div>`).join("")}</div>
+        ${ET.map((E, e) => { const se = S.selbst[e] && SELBST.find(x => x[0] === S.selbst[e].w);
+          return `<div class="et-row${etDone(e) ? " ok" : ""}${etUnlocked(e) ? "" : " lock"}"><span>${etUnlocked(e) ? esc(E.emoji || "⭐") : "🔒"}</span><span>${esc(E.titel)}</span><small>${se ? se[1] + " " : ""}${etDone(e) ? (gateNeeded(e) && !S.gate[e] ? (O.freigabe === "lp" ? "✓ · Freigabe fehlt" : "✓ · Einschätzung fehlt") : "✓") : `★ ${etStars(e)}/${etMax(e)}`}</small></div>`; }).join("")}
+        ${O.freigabe !== "keine" ? `<p class="side-note">${O.freigabe === "lp" ? "🔐 Die nächste Etappe gibt eure Lehrperson mit ihrem Code frei." : "🪞 Nach jeder Etappe schätzt ihr euch selbst ein."}</p>` : ""}</div>
       ${LEX.length ? `<div class="side-card"><div class="prog-h"><b>📖 Fachwörter</b><span>${(S.words || []).length} / ${LEX.length}</span></div><p class="side-note">Wörter mit gepunkteter Linie antippen: gLiTCh erklärt sie.</p><button type="button" class="btn small" data-golex>Lexikon öffnen</button></div>` : ""}`;
     $$("[data-dip]", sd).forEach(b => b.onclick = () => { const d = DIP.find(x => x.id === b.dataset.dip); say(S.dips.includes(d.id) ? `${d.emoji || "🏅"} **${d.name}**: geschafft! ${d.beschreibung || ""}` : `${d.emoji || "🏅"} **${d.name}**: ${d.beschreibung || "Löst die Bausteine, dann bekommt ihr es."}`, S.dips.includes(d.id) ? "cool" : "wink", 7000); });
     const gl2 = $("[data-golex]", sd); if (gl2) gl2.onclick = () => showLex();
   }
-  function goB(i) { view.b = Math.max(0, Math.min(B.length, i)); paintTabs(); stage(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function goB(i) {
+    i = Math.max(0, Math.min(B.length, i));
+    const x = B[i];
+    if (x && !etUnlocked(x.e)) {
+      let p = 0; while (p < x.e && etUnlocked(p + 1)) p++;   // letzte offene Etappe
+      if (etDone(p) && gateNeeded(p) && !S.gate[p]) return gateDlg(p);
+      return say(`🔒 Zuerst Etappe ${p + 1} «${ET[p].titel}» fertig machen${gateNeeded(p) ? (O.freigabe === "lp" ? " und von der Lehrperson freigeben lassen" : " und euch selbst einschätzen") : ""}.`, "hmm", 7000);
+    }
+    view.b = i; paintTabs(); stage(); window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  /* ---------- Freigabe-Fenster nach einer Etappe ---------- */
+  function gateDlg(e, then) {
+    if (!gateNeeded(e) || S.gate[e]) { if (then) then(); return; }
+    const E = ET[e], nextI = B.findIndex(y => y.e === e + 1);
+    const pass = () => { S.gate[e] = true; save(); paintTabs(); paintSide(); if (then) then(); else if (nextI >= 0) goB(nextI); else goB(B.length); };
+    if (O.freigabe === "selbst") {
+      const ov = dlg(`<h2>🪞 Selbsteinschätzung</h2><div class="hero">${gl("wink")}<div class="bubble"><b>gLiTCh</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Wie gut kannst du das jetzt?</p></div></div></div>
+        <div class="selbst" role="radiogroup" aria-label="Selbsteinschätzung">${SELBST.map(([v, ic, n]) => `<button type="button" class="sb" data-sb="${v}" role="radio" aria-checked="false"><span>${ic}</span>${esc(n)}</button>`).join("")}</div>
+        <label class="f"><span>Das nehme ich mit (ein Satz, freiwillig)</span><textarea class="in" id="sbTxt" style="min-height:60px" placeholder="z. B. Ich weiss jetzt, dass …"></textarea></label>`);
+      const ok = $("[data-x]", ov); ok.textContent = "Speichern und weiter →"; ok.disabled = true;
+      let w = (S.selbst[e] || {}).w || "";
+      const mark = () => { $$("[data-sb]", ov).forEach(b => { b.classList.toggle("on", b.dataset.sb === w); b.setAttribute("aria-checked", String(b.dataset.sb === w)); }); ok.disabled = !w; };
+      $$("[data-sb]", ov).forEach(b => b.onclick = () => { w = b.dataset.sb; mark(); }); mark();
+      ok.onclick = () => { if (!w) return; S.selbst[e] = { w, t: $("#sbTxt", ov).value.trim().slice(0, 300), at: new Date().toISOString() }; ov.remove(); say(w === "hilfe" ? "Gut, dass du das sagst! Frag deine Lehrperson oder schau nochmals in «gLiTCh erklärt»." : "Danke! Weiter geht's.", w === "hilfe" ? "hmm" : "happy", 6000); pass(); };
+      return;
+    }
+    let code = "";
+    const ov = dlg(`<h2>🔐 Freigabe durch die Lehrperson</h2><div class="hero">${gl("cool")}<div class="bubble"><b>gLiTCh</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Zeigt eure Arbeit eurer Lehrperson. Sie gibt mit ihrem Code die nächste Etappe frei.</p></div></div></div>
+      <div class="pin"><div class="pin-dots" id="pinD" aria-live="polite"></div><div class="pin-pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button type="button" data-pn="${n}">${n}</button>`).join("")}<button type="button" data-pn="del" aria-label="Löschen">⌫</button><button type="button" data-pn="0">0</button><button type="button" class="go" data-pn="ok">OK</button></div><p class="err" id="pinE" role="alert"></p></div>`);
+    $("[data-x]", ov).textContent = "Später";
+    const paint = () => { $("#pinD", ov).textContent = code ? "●".repeat(code.length) : "Code eingeben"; };
+    const check = () => {
+      let ok = false; try { ok = HUB && HUB.pruefeCode ? !!HUB.pruefeCode(code) : code === String(O.code || "1234"); } catch (err) { ok = false; }
+      if (ok) { ov.remove(); confetti(30); say("Freigegeben! Weiter zur nächsten Etappe.", "cool", 6000); pass(); }
+      else { code = ""; paint(); $("#pinE", ov).textContent = "Falscher Code. Nochmals versuchen."; const p = $(".pin", ov); p.classList.remove("shake"); void p.offsetWidth; p.classList.add("shake"); }
+    };
+    $$("[data-pn]", ov).forEach(b => b.onclick = () => { const v = b.dataset.pn; $("#pinE", ov).textContent = "";
+      if (v === "del") code = code.slice(0, -1); else if (v === "ok") return check(); else if (code.length < 8) code += v; paint(); });
+    paint();
+  }
   function readAloud(text) {
     try { const u = new SpeechSynthesisUtterance(String(text).replace(/\*\*/g, "")); u.lang = "de-CH"; u.rate = .95; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { say("Vorlesen geht auf diesem Gerät leider nicht.", "sad", 4000); }
   }
   function erklHTML(list, cls = "") {
-    return list.map((a, n) => `<div class="erkl ${cls}"><div class="erkl-h">${gl("normal", "mini")}<b>gLiTCh erklärt</b>${a.titel ? `<span>· ${esc(a.titel)}</span>` : ""}<button type="button" class="btn small" data-read="${n}">🔊 Vorlesen</button></div><div class="txt">${rich(a.text || "")}</div></div>`).join("");
+    return list.map((a, n) => `<div class="erkl ${cls}"><div class="erkl-h">${gl("normal", "mini")}<b>gLiTCh erklärt</b>${a.titel ? `<span>· ${esc(a.titel)}</span>` : ""}${O.vorlesen ? `<button type="button" class="btn small" data-read="${n}">🔊 Vorlesen</button>` : ""}</div><div class="txt">${rich(a.text || "")}</div></div>`).join("");
   }
   function stage() {
     const sg = $("#stage");
@@ -168,9 +217,9 @@
       ${x.info ? `<div class="nav"><button type="button" class="btn" data-prev ${view.b ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${view.b === B.length - 1 ? "Zum Ziel 🏁" : "Weiter →"}</button></div>` : `<div id="task"></div>`}
       ${x.nach ? `<div id="nach" ${bDone(view.b) ? "" : "hidden"}>${erklHTML(x.nach, "nach")}</div>` : ""}
     </div>`;
-    $$("[data-read]", sg).forEach((b, n) => b.onclick = () => { const all = [...x.erkl, ...(x.nach || [])]; readAloud((all[n] || {}).text || ""); });
+    $$("[data-read]", sg).forEach(b => b.onclick = () => { const all = [...x.erkl, ...(x.nach || [])]; readAloud((all[+b.dataset.read + (b.closest(".nach") ? x.erkl.length : 0)] || {}).text || ""); });
     $$(".erkl .lex", sg).forEach(b => b.onclick = () => showLex(b.dataset.lex));
-    if (x.info) { S.ans[k(x.e, "seen")] = { seen: true }; save(); checkDips(); paintSide(); $("[data-prev]").onclick = () => goB(view.b - 1); $("[data-next]").onclick = () => goB(view.b + 1); }
+    if (x.info) { const wasSeen = etDone(x.e); S.ans[k(x.e, "seen")] = { seen: true }; save(); checkDips(); paintSide(); if (!wasSeen && etDone(x.e)) paintTabs(); $("[data-prev]").onclick = () => goB(view.b - 1); $("[data-next]").onclick = () => goB(view.b + 1); }
     else { view.e = x.e; view.t = x.t; renderTask(); }
     if (first && posInE === 1 && !bDone(view.b)) say(E.intro || `Etappe ${x.e + 1}: ${E.titel}. Los geht's!`, "happy", 9000);
     else say(`${a ? KIND[a.typ] : "Info"}: ${posInE} von ${nInE} in dieser Etappe. ${TIPS_START}`, "normal");
@@ -181,8 +230,11 @@
       <h1>${all ? "Geschafft! 🎉" : "Fast am Ziel"}</h1>
       <div class="ziel-hero">${gl(all ? "cool" : "wink", "huge")}<div><p class="ziel-stars">★ ${st} <small>von ${mx}</small></p><p>${esc(all ? (M.schluss || "Super, ihr habt alles geschafft!") : "Löst die offenen Bausteine (ohne ✓ in der Leiste oben), dann seid ihr am Ziel.")}</p></div></div>
       ${DIP.length ? `<h3>Diplome</h3><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e" aria-hidden="true">${esc(d.emoji || "🏅")}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>` : ""}
+      ${O.freigabe === "selbst" && Object.keys(S.selbst).length ? `<h3>Eure Selbsteinschätzung</h3><div class="selbst-list">${ET.map((E, e) => { const se = S.selbst[e], x = se && SELBST.find(y => y[0] === se.w); return x ? `<div><span>${x[1]}</span><b>${esc(E.titel)}</b><small>${esc(x[2])}${se.t ? " · «" + esc(se.t) + "»" : ""}</small></div>` : ""; }).join("")}</div>` : ""}
+      ${O.pdf ? `<div class="pdf-box"><span>📄</span><div><b>Zusammenfassung als PDF</b><small>Alles Wichtige aus dem Modul${LEX.length ? ", die Fachwörter" : ""} und eure Sterne zum Aufbewahren.</small></div><button type="button" class="btn" data-pdf>Herunterladen</button></div>` : ""}
       <div class="nav"><button type="button" class="btn" data-prev>← Zurück</button>${HUB ? `<button type="button" class="btn primary" data-exit>Zurück zum Hub</button>` : ""}</div></div>`;
     $("[data-prev]").onclick = () => goB(B.length - 1);
+    const pb = $("[data-pdf]"); if (pb) pb.onclick = () => summaryPdf(pb);
     const ex = $("[data-exit]"); if (ex) ex.onclick = () => HUB.beenden();
     say(all ? (M.schluss || "Ihr habt alles geschafft!") : "Noch nicht ganz! Schaut, welche Bausteine noch kein ✓ haben.", all ? "cool" : "wink");
     if (all) confetti(40);
@@ -196,7 +248,7 @@
     save(); if (ok) { report(e); confetti(); }
     checkDips(); paintSide(); paintTabs();
     const nach = $("#nach"); if (ok && nach) nach.hidden = false;
-    if (ok && !wasDone && etDone(e)) setTimeout(() => say(`${ET[e].lob || "Etappe geschafft!"} ⭐`, "cool", 9000), 900);
+    if (ok && !wasDone && etDone(e)) { setTimeout(() => say(`${ET[e].lob || "Etappe geschafft!"} ⭐`, "cool", 9000), 900); if (gateNeeded(e) && !S.gate[e]) setTimeout(() => { if (!document.querySelector(".ov")) gateDlg(e, () => {}); }, 2200); }
   }
   function fb(ok, text) {
     const f = document.createElement("div"); f.className = "fb " + (ok ? "ok" : "bad");
@@ -206,7 +258,7 @@
     $$(".lex", f).forEach(b => b.onclick = () => showLex(b.dataset.lex));
     const x = B[view.b], a = x && ET[x.e].aufgaben[x.t];
     if (ok) say(PRAISE[Math.floor(Math.random() * PRAISE.length)] + (a && wert(a) > 1 ? " Spiel gemeistert!" : ""), "happy", 5000);
-    else say(a && a.tipp ? `Kleiner Tipp: ${a.tipp}` : (TIPS[a && a.typ] || "Versuch es nochmal!"), "hmm", 9000);
+    else say(!O.tipps ? "Versuch es nochmal!" : a && a.tipp ? `Kleiner Tipp: ${a.tipp}` : (TIPS[a && a.typ] || "Versuch es nochmal!"), "hmm", 9000);
   }
   function renderTask() {
     const { e, t } = view, A = ET[e].aufgaben, a = A[t], key = k(e, t), st = S.ans[key] || {};
@@ -276,9 +328,9 @@
         </div><div class="poster" id="gePv"></div></div><p class="hintline" id="geInfo"></p><button type="button" class="btn primary" data-check>Fertig gestaltet</button>`;
     }
     if (a.typ === "schreiben") body = `<h3>${rich(a.auftrag).replace(/^<p>|<\/p>$/g, "")}</h3><textarea class="in" id="wr" placeholder="Schreibe hier …">${esc(st.v || "")}</textarea><p style="color:var(--muted);margin:6px 0" id="wc"></p><button type="button" class="btn primary" data-check>Abgeben</button>`;
-    $("#task").innerHTML = `<div class="task"><div class="task-h"><span class="kind">${KIND[a.typ] || "Aufgabe"}${stars}</span><button type="button" class="tipbtn" data-tip>💡 Tipp von gLiTCh</button></div>${body}</div>
+    $("#task").innerHTML = `<div class="task"><div class="task-h"><span class="kind">${KIND[a.typ] || "Aufgabe"}${stars}</span>${O.tipps ? `<button type="button" class="tipbtn" data-tip>💡 Tipp von gLiTCh</button>` : ""}</div>${body}</div>
       <div class="nav"><button type="button" class="btn" data-prev ${view.b ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${last ? "Zum Ziel 🏁" : "Weiter →"}</button></div>`;
-    $("[data-tip]").onclick = () => say(a.tipp || TIPS[a.typ] || "Lies nochmals in «gLiTCh erklärt» nach!", "wink", 10000);
+    if ($("[data-tip]")) $("[data-tip]").onclick = () => say(a.tipp || TIPS[a.typ] || "Lies nochmals in «gLiTCh erklärt» nach!", "wink", 10000);
     $$("#task .lex").forEach(b => b.onclick = () => showLex(b.dataset.lex));
     if (a.typ === "info") { S.ans[key] = { ok: false, seen: true }; if (!etMax(e)) S.ans[k(e, "seen")] = { seen: true }; save(); }
     if (st.ok && a.typ !== "info") fb(true, a.erklaerung);
@@ -354,10 +406,49 @@
     $("[data-prev]").onclick = () => goB(view.b - 1);
     $("[data-next]").onclick = () => goB(view.b + 1);
   }
+  /* ---------- Zusammenfassung als PDF ---------- */
+  const plain = t => String(t || "").replace(/\*\*/g, "").replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, "").replace(/[ \t]+/g, " ").trim();
+  function loadJsPdf() { return window.jspdf ? Promise.resolve() : new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"; sc.onload = ok; sc.onerror = () => no(new Error("PDF-Bibliothek nicht erreichbar")); document.head.appendChild(sc); }); }
+  async function summaryPdf(btn) {
+    const t0 = btn ? btn.textContent : ""; if (btn) { btn.disabled = true; btn.textContent = "PDF wird erstellt …"; }
+    try {
+      await loadJsPdf();
+      const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" }), W = 210, X = 18, MW = W - 2 * X; let y = 20;
+      const col = (M.farbe && /^#[0-9a-f]{6}$/i.test(M.farbe)) ? M.farbe : "#7B4CEF", rgb = [1, 3, 5].map(i => parseInt(col.slice(i, i + 2), 16));
+      const need = h => { if (y + h > 280) { doc.addPage(); y = 20; } };
+      const text = (t, size = 10.5, style = "normal", color = [30, 24, 50], gap = 1.5) => { doc.setFont("helvetica", style); doc.setFontSize(size); doc.setTextColor(...color);
+        doc.splitTextToSize(plain(t), MW).forEach(l => { need(size * .45); doc.text(l, X, y); y += size * .42 + .6; }); y += gap; };
+      doc.setFillColor(...rgb); doc.rect(0, 0, W, 34, "F");
+      doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.text(doc.splitTextToSize(plain(M.titel || "Modul"), MW)[0], X, 16);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10.5); doc.text(plain(`Zusammenfassung · ${M.fachname || ""}${who() ? " · " + who() : ""} · ${new Date().toLocaleDateString("de-CH")}`), X, 25);
+      y = 44;
+      text(`Sterne: ${total()} von ${totalMax()}   ·   Diplome: ${S.dips.length} von ${DIP.length}`, 11, "bold", rgb, 3);
+      if (M.beschreibung) text(M.beschreibung, 10.5, "italic", [90, 82, 120], 4);
+      ET.forEach((E, e) => {
+        need(20); doc.setDrawColor(...rgb); doc.setLineWidth(.6); doc.line(X, y, X + MW, y); y += 6;
+        text(`Etappe ${e + 1}: ${E.titel}`, 14, "bold", [20, 10, 50], 1);
+        text(`${etDone(e) ? "Geschafft" : "Noch offen"} · ${etStars(e)} von ${etMax(e)} Sternen`, 9.5, "normal", [110, 100, 140], 2);
+        if (E.ziel) text("Ziel: " + E.ziel, 10.5, "italic", [60, 50, 90], 2);
+        E.aufgaben.filter(a => !scorable(a)).forEach(a => { if (a.titel) text(a.titel, 11, "bold", [40, 30, 70], .5); text(a.text, 10.5); });
+        const se = S.selbst[e], x = se && SELBST.find(z => z[0] === se.w);
+        if (x) text(`Meine Selbsteinschätzung: ${x[2]}${se.t ? " – " + se.t : ""}`, 10.5, "bold", [31, 157, 104], 3);
+      });
+      if (LEX.length) { need(20); doc.setDrawColor(...rgb); doc.line(X, y, X + MW, y); y += 6; text("Fachwörter", 14, "bold", [20, 10, 50], 2);
+        LEX.slice().sort((a, b) => a.wort.localeCompare(b.wort, "de")).forEach(w => { text(w.wort, 10.5, "bold", [40, 30, 70], 0); text(w.erklaerung, 10, "normal", [60, 55, 80], 1.5); }); }
+      const got = DIP.filter(d => S.dips.includes(d.id));
+      if (got.length) { need(16); text("Meine Diplome", 14, "bold", [20, 10, 50], 2); got.forEach(d => text(`${d.name}${d.beschreibung ? ": " + d.beschreibung : ""}`, 10.5)); }
+      const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFontSize(8.5); doc.setTextColor(150, 140, 170); doc.text(`gLiTCh-Lab · Seite ${i} von ${n}`, W - X, 290, { align: "right" }); }
+      doc.save(`Zusammenfassung-${slug(M.titel || "modul") || "modul"}.pdf`);
+      say("Deine Zusammenfassung ist bereit! 📄", "cool", 5000);
+    } catch (err) { say("Das PDF ging gerade nicht. Probiert es später nochmals.", "sad", 6000); }
+    if (btn) { btn.disabled = false; btn.textContent = t0; }
+  }
   function start() {
     frame();
     let i = B.findIndex((_, n) => !bDone(n)); if (i < 0) i = B.length;
+    let gateE = -1; if (B[i] && !etUnlocked(B[i].e)) { const e = B[i].e; let p = 0; while (p < e && etUnlocked(p + 1)) p++; gateE = p; i = B.map(y => y.e).lastIndexOf(p); }
     view.b = i; paintTabs(); paintSide(); stage();
+    if (gateE >= 0 && etDone(gateE)) setTimeout(() => gateDlg(gateE), 600);
     if (!Object.keys(S.ans).length) say(M.intro || M.beschreibung || "Hoi! Los geht's!", "happy", 10000);
     checkDips();
   }

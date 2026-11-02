@@ -193,3 +193,31 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
 .poster p{margin:0;white-space:pre-wrap;word-break:break-word}
 .pst{position:absolute;right:10px;top:6px;font-size:2.6rem;transform:rotate(12deg)}
 @media (max-width:600px){.connect,.maker{grid-template-columns:1fr}}
+/* Freigabe zwischen Etappen, Selbsteinschätzung, PDF */
+.tab.locked{opacity:.5;cursor:not-allowed}
+.tab.locked b{background:#ECE7F8!important;border-color:var(--line)!important}
+.et-row.lock{opacity:.55}
+.selbst{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:14px 0}
+.sb{all:unset;box-sizing:border-box;cursor:pointer;display:grid;justify-items:center;gap:4px;padding:12px 8px;border-radius:16px;border:2px solid var(--line);background:var(--surface2);font-weight:800;font-size:.9rem;text-align:center}
+.sb span{font-size:2rem;line-height:1}
+.sb:hover{border-color:var(--accent)}
+.sb.on{border-color:var(--dark);background:#FFF3C4;box-shadow:3px 3px 0 var(--dark)}
+.sb:focus-visible,.pin-pad button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.pin{display:grid;justify-items:center;gap:10px;margin:14px 0 4px}
+.pin-dots{font:800 1.4rem/1 ui-monospace,monospace;letter-spacing:.3em;min-height:1.6rem;color:var(--muted)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,64px);gap:8px}
+.pin-pad button{all:unset;box-sizing:border-box;cursor:pointer;height:56px;border-radius:14px;border:2px solid var(--dark);background:#fff;font:800 1.3rem/1 system-ui,sans-serif;display:grid;place-items:center;box-shadow:2px 2px 0 var(--dark)}
+.pin-pad button:active{transform:translate(2px,2px);box-shadow:none}
+.pin-pad .go{background:var(--ok);color:#fff}
+.pin .err{color:var(--bad);font-weight:700;min-height:1.2em;margin:0}
+.pin.shake{animation:pinShake .4s}
+@keyframes pinShake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.selbst-list{display:grid;gap:6px;margin:6px 0 14px}
+.selbst-list div{display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center;padding:8px 12px;border-radius:12px;background:var(--surface2);border:1.5px solid var(--line)}
+.selbst-list span{grid-row:span 2;font-size:1.6rem}
+.selbst-list small{color:var(--muted)}
+.pdf-box{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;padding:12px 14px;border-radius:16px;background:#EEF9FB;border:2px solid var(--teal)}
+.pdf-box > span{font-size:1.8rem}
+.pdf-box div{flex:1;min-width:180px;display:grid}
+.pdf-box small{color:var(--muted)}
+@media (prefers-reduced-motion: reduce){.pin.shake{animation:none}}

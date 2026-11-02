@@ -265,6 +265,8 @@ declare tok uuid; s public.students; kids public.students[] := '{}'; cls uuid; n
 begin
   if p_tokens is null or array_length(p_tokens, 1) is null or array_length(p_tokens, 1) > 6 then
     raise exception 'TEAM_UNGUELTIG'; end if;
+  -- Status und Test-Modus setzt nur die Lehrperson
+  if p_activity = 'lp-status' or p_module = 'test' then raise exception 'NICHT_ERLAUBT'; end if;
   foreach tok in array p_tokens loop
     s := public._kid_from_token(tok);
     if cls is null then cls := s.class_id; elsif cls <> s.class_id then raise exception 'TEAM_UNGUELTIG'; end if;

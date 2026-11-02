@@ -521,3 +521,23 @@ footer.foot { text-align: center; padding-block: 8px 28px; }
 .corner-btn:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
 .corner-say { pointer-events: auto; max-width: 220px; margin: 0 0 18px; background: #14062E; color: #fff; border: 2px solid #FF2BD6; border-radius: 14px; padding: 8px 12px; font-weight: 700; font-size: .9rem; box-shadow: 3px 3px 0 #00E5FF; }
 @media (prefers-reduced-motion: reduce) { .corner-btn svg { animation: none; } }
+
+/* ---------- Module pro Kind (Lehrperson) ---------- */
+.km-kids{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
+.km-kid{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:6px;padding:4px 12px 4px 4px;border-radius:99px;background:var(--surface);border:1.5px solid color-mix(in srgb,var(--accent) 25%,transparent);font-weight:700;font-size:14px}
+.km-kid .glitch{width:30px;height:30px}
+.km-kid.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.km-kid:focus-visible,.km-b:focus-visible{outline:3px solid #FFC21A;outline-offset:2px}
+.km-all{gap:8px;align-items:center;margin-bottom:12px}
+.km-r{display:grid;grid-template-columns:minmax(0,1fr) auto 92px;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;background:var(--surface);border:1px solid color-mix(in srgb,var(--accent) 22%,transparent)}
+.km-seg{display:inline-flex;border-radius:10px;overflow:hidden;border:1.5px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.km-b{all:unset;box-sizing:border-box;cursor:pointer;padding:6px 10px;font-size:13px;font-weight:700;color:var(--muted);background:transparent}
+.km-b + .km-b{border-left:1.5px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.km-b.on.offen{background:#E9E4F7;color:#3B2F66}
+.km-b.on.arbeit{background:#FFE08A;color:#5A3D00}
+.km-b.on.fertig{background:#1F9D68;color:#fff}
+.km-b.on.auto{opacity:.8;background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.25) 0 4px,transparent 4px 8px)}
+.km-x{font-size:12px;justify-self:end}
+@media (max-width:640px){.km-r{grid-template-columns:1fr}.km-x{justify-self:start}}
+.mod-stat{justify-self:start;font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;background:#FFE08A;color:#5A3D00}
+.mod-stat.done{background:#1F9D68;color:#fff}

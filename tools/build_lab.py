@@ -248,6 +248,7 @@ rep("""  if (li < x.lv){ const b = ov.querySelector(`[data-pt-emote="${id}"]`);"
 # Diplome zählen: nur echte Diplome (keine Hub-Merker wie «hub:mi-start»)
 portal = portal.replace("T.badges.size", "LIB.BADGES.filter(b=>T.badges.has(b.id)).length")
 exec(open(pathlib.Path(__file__).with_name("upload_patch_portal.py"), encoding="utf-8").read())
+exec(open(pathlib.Path(__file__).with_name("wall_patch_portal.py"), encoding="utf-8").read())
 (out_dir / "hub-portal.js").write_text(portal.strip() + "\n", encoding="utf-8")
 
 # ---------- Seite zusammensetzen ----------

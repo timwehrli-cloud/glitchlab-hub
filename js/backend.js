@@ -129,6 +129,10 @@
       await this.q(this.sb.from("work").delete().eq("student_id", studentId));
       await this.q(this.sb.from("extras").delete().eq("student_id", studentId));
     }
+    setModStatus(studentId, moduleId, status) {
+      if (!status) return this.q(this.sb.from("progress").delete().eq("student_id", studentId).eq("module_id", moduleId).eq("activity_id", "lp-status"));
+      return this.q(this.sb.from("progress").upsert({ student_id: studentId, module_id: moduleId, activity_id: "lp-status", stars: 0, data: { status, at: new Date().toISOString() } }));
+    }
     testUnlock(studentId, stars, badges) {
       return this.q(this.sb.from("progress").upsert({ student_id: studentId, module_id: "test", activity_id: "alles", stars, data: { badges, fed: 7, deaths: 1 } }));
     }
@@ -309,6 +313,11 @@
       this.db.progress = this.db.progress.filter(p => p.student_id !== studentId);
       this.db.work = this.db.work.filter(w => w.student_id !== studentId);
       delete this.db.extras[studentId]; this.save();
+    }
+    async setModStatus(studentId, moduleId, status) {
+      this.db.progress = this.db.progress.filter(p => !(p.student_id === studentId && p.module_id === moduleId && p.activity_id === "lp-status"));
+      if (status) this.db.progress.push({ student_id: studentId, module_id: moduleId, activity_id: "lp-status", stars: 0, data: { status, at: new Date().toISOString() }, team: [], updated_at: new Date().toISOString() });
+      this.save(); return this.wait(true);
     }
     async testUnlock(studentId, stars, badges) {
       this.db.progress = this.db.progress.filter(p => !(p.student_id === studentId && p.module_id === "test"));

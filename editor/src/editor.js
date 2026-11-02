@@ -25,9 +25,11 @@
   /* ---------- Entwurf (bleibt in diesem Browser) ---------- */
   const KEY = "gle.draft.v1";
   const fresh = () => ({ typenV2: true, titel: "", fach: "nmg", hubThema: "", hubNeu: "", klasse: "6", minuten: "45", etappen: "4", rahmen: "auto", ideen: "", typen: TYPES.map(t => t[0]), material: [], links: "", belIdeen: "",
-    diplome: [], outfits: [], emotes: [], zimmer: [], hintergruende: [], plan: null, inhalt: [], step: 1 });
+    diplome: [], outfits: [], emotes: [], zimmer: [], hintergruende: [], plan: null, inhalt: [], step: 1, opt: freshOpt() });
+  const freshOpt = () => ({ tipps: true, vorlesen: true, lexikon: true, pdf: true, freigabe: "keine", code: "" });
   let D = fresh();
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === "object") D = Object.assign(fresh(), s); } catch (e) { /* kein Speicher */ }
+  D.opt = Object.assign(freshOpt(), D.opt || {});
   if (!D.typenV2) { D.typen = [...new Set([...D.typen, "mehrfach", "memory", "sortieren", "zeitmaschine", "raetsel", "schaetzen", "gestalten"])]; D.typenV2 = true; }
   let saveT = null;
   const save = () => { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) { try { localStorage.setItem(KEY, JSON.stringify(Object.assign({}, D, { material: D.material.map(m => Object.assign({}, m, { text: m.text.slice(0, 20000) })) }))); } catch (e2) { /* zu gross */ } } }, 400); };
@@ -78,7 +80,25 @@
     $("#hubThema").onchange = e => { D.hubThema = e.target.value; $("#neuWrap").hidden = D.hubThema !== "__neu"; save(); };
     paintThemes();
     $("#typen").innerHTML = TYPES.map(([v, n]) => `<label class="chip"><input type="checkbox" value="${v}"${D.typen.includes(v) ? " checked" : ""}> ${esc(n)}</label>`).join("");
+    paintOpts();
     $$("#typen input").forEach(c => c.onchange = () => { D.typen = $$("#typen input:checked").map(x => x.value); if (!D.typen.length) { c.checked = true; D.typen = [c.value]; toast("Mindestens eine Aufgabenart muss gewählt sein."); } save(); });
+  }
+
+  /* ---------- Funktionen und Freigabe ---------- */
+  const TOGGLES = [["tipps", "💡 Tipps von gLiTCh", "Tipp-Knopf bei jeder Aufgabe und Hilfe bei Fehlern"], ["vorlesen", "🔊 Vorlesen", "«gLiTCh erklärt» lässt sich vorlesen"],
+    ["lexikon", "📖 Fachwörter-Lexikon", "Schwierige Wörter antippen, gLiTCh erklärt sie"], ["pdf", "📄 Zusammenfassung als PDF", "Die Kinder laden am Schluss alles Wichtige als PDF herunter"]];
+  const FREI = [["keine", "Keine Freigabe", "Die Kinder gehen frei von Etappe zu Etappe."], ["selbst", "🪞 Selbsteinschätzung", "Nach jeder Etappe schätzen sich die Kinder ein (4 Stufen und ein Satz). Erst dann geht die nächste auf."],
+    ["lp", "🔐 Freigabe mit LP-Code", "Nach jeder Etappe gibt die Lehrperson mit ihrem Code frei. Im Hub gilt dein Freigabe-Code aus den Hub-Einstellungen."]];
+  function paintOpts() {
+    const O = D.opt;
+    $("#toggles").innerHTML = TOGGLES.map(([k, n, d]) => `<label class="tg"><input type="checkbox" data-opt="${k}"${O[k] ? " checked" : ""}><i aria-hidden="true"></i><span><b>${esc(n)}</b><small>${esc(d)}</small></span></label>`).join("");
+    $$("[data-opt]").forEach(c => c.onchange = () => { O[c.dataset.opt] = c.checked; save(); if (D.step === 4) renderResult(); });
+    $("#freigabe").innerHTML = FREI.map(([v, n, d]) => `<button type="button" role="radio" aria-checked="${O.freigabe === v}" class="${O.freigabe === v ? "on" : ""}" data-fr="${v}"><b>${esc(n)}</b><small>${esc(d)}</small></button>`).join("");
+    $$("[data-fr]").forEach(b => b.onclick = () => { O.freigabe = b.dataset.fr; save(); paintOpts(); if (D.step === 4) renderResult(); });
+    $("#codeWrap").hidden = O.freigabe !== "lp";
+    $("#frHint").textContent = O.freigabe === "lp" ? "Im Hub prüft gLiTCh den Freigabe-Code der Lehrperson. Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Hub geöffnet wird (leer = 1234)." : "";
+    const c = $("#optCode"); c.value = O.code || ""; c.oninput = () => { O.code = c.value.replace(/\D/g, "").slice(0, 8); save(); };
+    c.onchange = () => { c.value = O.code; if (D.step === 4) renderResult(); };
   }
 
   /* ---------- 2 Material ---------- */
@@ -395,7 +415,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
       catch (e) { rows = [{ t: `Etappe ${i + 1}`, st: "err" }]; progRows(rows); $("#genErr").textContent = errMsg(e); }
       ctl = null; $("#btnGen").disabled = false; renderResult();
     });
-    if (ready) { const html = buildModule(); const pv = $("#pv"); if (pv.dataset.sig !== String(html.length) + D.plan.titel) { pv.srcdoc = html; pv.dataset.sig = String(html.length) + D.plan.titel; } pv.hidden = false; $("#pvEmpty").hidden = true; $("#pvName").textContent = slug(D.plan.titel) + ".html"; }
+    if (ready) { const html = buildModule(); const pv = $("#pv"); if (pv.dataset.sig !== String(html.length) + D.plan.titel + JSON.stringify(D.opt)) { pv.srcdoc = html; pv.dataset.sig = String(html.length) + D.plan.titel + JSON.stringify(D.opt); } pv.hidden = false; $("#pvEmpty").hidden = true; $("#pvName").textContent = slug(D.plan.titel) + ".html"; }
     else { $("#pv").hidden = true; $("#pvEmpty").hidden = false; }
     $("#btnDl").disabled = !ready;
   }
@@ -418,7 +438,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
   function buildModule() {
     const P = D.plan, j = o => JSON.stringify(o).replace(/</g, "\\u003c");
     const mod = { titel: P.titel, beschreibung: P.beschreibung, emoji: P.emoji, farbe: P.farbe, intro: P.intro, schluss: P.schluss, fachname: fachName(), fachkurz: ({ mi: "M&I", nmg: "NMG", de: "DE", ma: "MA", en: "EN", fr: "FR", sp: "SPORT", mg: "GAMES" })[D.fach] || "",
-      etappen: D.inhalt, lexikon: P.lexikon, diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, bedingung: d.bedingung })), links: linkList() };
+      etappen: D.inhalt, lexikon: P.lexikon, opt: Object.assign({}, D.opt), diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, bedingung: d.bedingung })), links: linkList() };
     const T = id => document.getElementById(id).textContent;
     const SC = "<" + "/script>";
     return `<!doctype html>

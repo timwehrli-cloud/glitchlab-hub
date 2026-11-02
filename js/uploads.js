@@ -178,7 +178,7 @@ sterne:function(a,n){if(B&&B.score)B.score(C.mid,String(a),Number(n)||0)},
 badge:function(n){if(B&&B.upBadge)B.upBadge(C.mid,String(n))},
 speichern:function(o){try{localStorage.setItem(C.key,JSON.stringify(o))}catch(e){}},
 laden:function(){try{return JSON.parse(localStorage.getItem(C.key))}catch(e){return null}},
-fertig:function(){if(B&&B.upDone)B.upDone(C.mid)},beenden:function(){if(B&&B.exit)B.exit()},
+fertig:function(){if(B&&B.upDone)B.upDone(C.mid)},pruefeCode:function(c){try{return !!(B&&B.checkCode&&B.checkCode(String(c)))}catch(e){return false}},beenden:function(){if(B&&B.exit)B.exit()},
 glitch:function(m){try{return B&&B.glitchSvg?B.glitchSvg(m):null}catch(e){return null}}};
 api.stars=api.sterne;api.score=api.sterne;api.save=api.speichern;api.load=api.laden;api.done=api.fertig;api.exit=api.beenden;window.GLHub=api;})();<\/script>`;
     if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, m0 => m0 + api);
