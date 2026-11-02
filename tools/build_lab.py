@@ -254,6 +254,7 @@ exec(open(pathlib.Path(__file__).with_name("upload_patch_portal.py"), encoding="
 exec(open(pathlib.Path(__file__).with_name("wall_patch_portal.py"), encoding="utf-8").read())
 exec(open(pathlib.Path(__file__).with_name("skin_patch_portal.py"), encoding="utf-8").read())
 exec(open(pathlib.Path(__file__).with_name("overview_patch_portal.py"), encoding="utf-8").read())
+exec(open(pathlib.Path(__file__).with_name("prestige_patch_portal.py"), encoding="utf-8").read())
 (out_dir / "hub-portal.js").write_text(portal.strip() + "\n", encoding="utf-8")
 
 # ---------- Seite zusammensetzen ----------
@@ -282,6 +283,7 @@ html.hub-home .pt-card.pt-home{margin:0}
 </style></head>""", 1)
 exec(open(pathlib.Path(__file__).with_name("lex_patch.py"), encoding="utf-8").read())
 exec(open(pathlib.Path(__file__).with_name("upload_patch_page.py"), encoding="utf-8").read())
+exec(open(pathlib.Path(__file__).with_name("prestige_patch_page.py"), encoding="utf-8").read())
 page = re.sub(r"<title>[^<]*</title>", "<title>gLiTCh-Lab · Glitchlab</title>", page, count=1)
 (out_dir / "index.html").write_text(page, encoding="utf-8")
 print("ok", len(page), len(portal))

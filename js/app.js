@@ -65,7 +65,8 @@
     + (S.me?.progress || []).filter(p => p.module_id === "test").reduce((a, p) => a + p.stars, 0);   // Test-Modus der Lehrperson
   const GD = window.GL_DATA || { LEVELS: [{ n: "Start", s: 0 }], BADGES: [], OUTFITS: [] };
   /* Level nach oben offen: ab Level 100 alle 30 Sterne ein weiteres Level */
-  const lvEnsure = n => { const L = GD.LEVELS; while (L.length >= 100 && L.length < n) { const k = L.length - 99; L.push({ n: "gLiTCh-Legende +" + k, s: L[99].s + k * 30 }); } };
+  const lvEnsure = n => { const L = GD.LEVELS; while (L.length >= 100 && L.length < n) { const k = L.length - 99; L.push({ n: window.GL_PRESTIGE ? GL_PRESTIGE.lvName(k) : "gLiTCh-Legende +" + k, s: L[99].s + k * 30 }); } };
+  const prestigeNow = () => window.GL_PRESTIGE ? GL_PRESTIGE.of(allStars(), GD.LEVELS[99].s) : 0;
   const levelOf = st => { const L = GD.LEVELS; if (L.length >= 100 && st >= L[99].s) lvEnsure(100 + Math.floor((st - L[99].s) / 30) + 2); let i = 0; L.forEach((l, k) => { if (st >= l.s) i = k; }); return i; };
   const lpDoneMods = () => H.modules.filter(m => lpStat(m) === "fertig");
   const myBadges = () => new Set((S.me?.progress || []).flatMap(p => (p.data && Array.isArray(p.data.badges)) ? p.data.badges : []).concat(lpDoneMods().flatMap(labBadges)));
@@ -297,8 +298,27 @@
     return { custom: out, earned };
   };
   if (window.GLGlitch && GLGlitch.addSkins) GLGlitch.addSkins(GAME_REW.map(g => ({ id: "hs_" + g.mod.slice(3), n: g.skin.n, base: g.skin.base })));
-  const builtinExtras = () => { const lp = isLP(), ge = gameExtras(lp);
-    return { bgs: BUILTIN_BGS.map(({ done, ...b }) => Object.assign({ badge: "hb:" + b.id }, b)), earned: BUILTIN_BGS.filter(b => lp || b.done()).map(b => "hb:" + b.id).concat(ge.earned), custom: ge.custom }; };
+  /* ---------- Prestige (ab Level 100): pro Rang Hintergrund, Diplom, Beschwörungs-Emote, animierter Skin ---------- */
+  const prestigeExtras = lp => {
+    const P = window.GL_PRESTIGE, out = { bgs: [], dips: [], mods: [], emotes: [], skins: [] }, earned = [];
+    if (!P) return { custom: out, earned };
+    const have = lp ? 99 : (S.me ? prestigeNow() : 0);
+    out.mods.push({ id: "prestige", n: "Prestige", c: "#FFC21A", emoji: "🏆" });
+    P.RANKS.forEach((R, i) => {
+      const k = i + 1, badge = "hp:" + k, req = `${P.label(k)} erreichen (ab ${GD.LEVELS[99].s + k * P.STEP} ★)`;
+      if (have >= k) earned.push(badge, "hd:prestige:" + k);
+      out.bgs.push({ id: "bg_p" + k, badge, n: R.bg.n, ic: R.ic, wand: R.bg.wand, boden: R.bg.boden, svg: R.bg.svg, reqTxt: req });
+      out.dips.push({ id: "hd:prestige:" + k, n: R.dip.n, d: req.replace(" erreichen", " erreicht"), emoji: R.dip.emoji, wand: R.dip.wand, mod: "Prestige", modId: "prestige", c: R.c });
+      out.emotes.push(Object.assign({ id: "pe_" + k, badge, mod: "Prestige", reqTxt: req }, R.emote));
+      const sh = window.GLGlitch ? GLGlitch.shades(R.skin.base) : {};
+      out.skins.push({ id: "ps_" + k, badge, mod: "Prestige", n: R.skin.n, base: R.skin.base, fx: R.skin.fx, light: sh.light, dark: sh.dark, hi: sh.hi, reqTxt: req });
+    });
+    return { custom: out, earned };
+  };
+  if (window.GL_PRESTIGE && window.GLGlitch && GLGlitch.addSkins) GLGlitch.addSkins(GL_PRESTIGE.RANKS.map((R, i) => ({ id: "ps_" + (i + 1), n: R.skin.n, base: R.skin.base, fx: R.skin.fx })));
+  const builtinExtras = () => { const lp = isLP(), ge = gameExtras(lp), pe = prestigeExtras(lp);
+    ["dips", "mods", "emotes", "skins"].forEach(k => { ge.custom[k] = (ge.custom[k] || []).concat(pe.custom[k]); }); ge.earned = ge.earned.concat(pe.earned);
+    return { bgs: BUILTIN_BGS.map(({ done, ...b }) => Object.assign({ badge: "hb:" + b.id }, b)).concat(pe.custom.bgs), earned: BUILTIN_BGS.filter(b => lp || b.done()).map(b => "hb:" + b.id).concat(ge.earned), custom: ge.custom }; };
 
   /* ---------- gLiTCh streicheln: mit Finger oder Maus hin und her über gLiTCh fahren ---------- */
   const PET_LINES = ["Hihi! Das kitzelt!", "Mehr! Mein Code schnurrt!", "Oh, so lieb!", "Bzzzt … das tut gut!", "Pixel-Kuschelzeit!"];
@@ -757,7 +777,7 @@
       ["dips", "mods", "emotes", "skins", "room"].forEach(k => { up.custom[k] = (bi.custom[k] || []).concat(up.custom[k] || []); });
       mods.hub.badges = [...new Set([...mods.hub.badges, ...up.earned, ...bi.earned])];
       if (isLP()) {   // Lehrpersonen-Konto: höchstes Level, alle Diplome, alles freigeschaltet
-        mods.hub.stars = GD.LEVELS[99].s + 1;
+        mods.hub.stars = GD.LEVELS[99].s + (window.GL_PRESTIGE ? 10 * GL_PRESTIGE.STEP : 0) + 1;   // zeigt auch Prestige X
         mods.hub.badges = [...new Set([...mods.hub.badges, ...GD.BADGES.map(b => b.id), ...H.modules.map(m => "hub:" + m.id)])];
         mods.hub.fed = 99; mods.hub.deaths = 9;
       }

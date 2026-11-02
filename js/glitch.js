@@ -70,7 +70,7 @@
     const blush = mood === "love" ? r(1, 7, 2, 2, "#FF4F7B") + r(11, 7, 2, 2, "#FF4F7B") : "";
     const glitchy = opts.calm ? "" : `<rect class="gp gp1" x="-1" y="3" width="1" height="1" fill="#00E5FF"/><rect class="gp gp2" x="15" y="8" width="1" height="1" fill="#FF2BD6"/><rect class="gp gp3" x="13" y="-1" width="1" height="1" fill="#FFC21A"/>
       <g class="gc" fill="#00E5FF">${body()}</g><g class="gm" fill="#FF2BD6">${body()}</g>`;
-    return `<svg viewBox="-2 -2 18 18" shape-rendering="crispEdges" aria-hidden="true" style="--d:-${d}s">
+    return `<svg viewBox="-2 -2 18 18" shape-rendering="crispEdges" aria-hidden="true"${s.fx ? ` class="skfx skfx-${s.fx}"` : ""} style="--d:-${d}s;--skc:${s.base}">
       ${glitchy}
       <g class="gb">${body(shade)}${r(2, 3, 1, 1, s.hi)}${r(0, 0, 1, 1, "#00E5FF")}${r(13, 0, 1, 1, "#FF2BD6")}</g>
       <g class="ge">${EYES[e]}</g><g>${MOUTH[m]}</g>${blush}${outfit(opts.outfit)}

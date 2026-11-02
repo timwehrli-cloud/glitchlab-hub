@@ -710,7 +710,7 @@ function dashHTML(){
           <span class="pt-room-g glitch" role="img" aria-label="gLiTCh in seinem Zimmer"><span>${LIB.glitchSVG("happy", {outfit: p.outfit || {}})}</span></span>
           <div class="pt-room-say" id="ptSay"><b class="gname">gLiTCh</b>${esc(greet)}</div>
           <span class="pt-room-hint">Auf gLiTCh tippen und nach unten ziehen: Emote!</span></div>
-        <div class="pt-lvl" style="margin-top:16px"><span class="pt-ring">${li+1}</span><div><span>${li < 100 ? `Level ${li+1} von 100` : `Level ${li+1} · über 100!`}</span><b>${esc(L[li].n)}</b><span>${nx ? `noch ${nx.s - T.stars} Sterne bis «${esc(nx.n)}»` : "Level 100 geschafft! Du bist die ultimative gLiTCh-Legende."}</span></div>
+        <div class="pt-lvl" style="margin-top:16px"><span class="pt-ring"${prestigeRing(T)}>${li+1}</span><div><span>${li < 100 ? `Level ${li+1} von 100` : prestigeSub(T, li)}</span><b>${esc(L[li].n)}</b><span>${nx ? `noch ${nx.s - T.stars} Sterne bis «${esc(nx.n)}»` : "Level 100 geschafft! Du bist die ultimative gLiTCh-Legende."}</span></div>
           <span class="pt-stars" title="Deine Sterne" aria-label="${T.stars} Sterne"><i aria-hidden="true">★</i>${T.stars}</span></div>
         <div class="pt-bar" aria-hidden="true"><i style="width:${Math.max(3, Math.min(100, pct))}%"></i></div>
       </div>
@@ -989,15 +989,38 @@ function pickEmote(id){
   const g = ov.querySelector(".pt-room-g"); setTimeout(()=>window.GLAB_R.playEmote(g, id), again ? 0 : 150);
 }
 
+/* ---- Prestige (ab Level 100, Daten aus js/prestige.js im Glitchlab) ---- */
+const prestigeP = () => window.GLAB_P || (()=>{ try { return window.parent !== window && window.parent.GL_PRESTIGE || null; } catch(e){ return null; } })();
+function prestigeOfT(T){ const P = prestigeP(); return P ? P.of(T.stars, LIB.LEVELS[99].s) : 0; }
+function prestigeSub(T, li){
+  const P = prestigeP(); if (!P) return `Level ${li+1} · über 100!`;
+  const base = LIB.LEVELS[99].s, p = P.of(T.stars, base);
+  if (!p) return `Level ${li+1} · noch ${base + P.STEP - T.stars} ★ bis Prestige I`;
+  return `Prestige-Rang ${P.roman(Math.min(p, 10))}${p > 10 ? " ★" + (p - 9) : ""} · Stufe ${((li - 99) % 10) + 1} von 10`;
+}
+function prestigeRing(T){ const P = prestigeP(), p = prestigeOfT(T); if (!P || !p) return ""; const c = P.RANKS[Math.min(p, 10) - 1].c; return ` style="border-color:${c};box-shadow:0 0 14px ${c}, inset 0 0 8px ${c}"`; }
+function prestigeRows(T){
+  const P = prestigeP(); if (!P) return "";
+  const base = LIB.LEVELS[99].s, have = P.of(T.stars, base);
+  return `<li class="pt-lv-row pt-lv-ph"><span class="pt-lv-n">🏆</span><div><b>Prestige</b><small>Ab Level 100 gibt es alle ${P.STEP} Sterne einen neuen Rang. Die Sterne bleiben alle erhalten.</small></div><span aria-hidden="true"></span></li>`
+    + P.RANKS.map((R, i)=>{ const k = i + 1, got = have >= k, cls = got ? "done" : k === have + 1 ? "cur" : "next";
+      const gifts = [`<span class="pt-gift"><i>${R.ic}</i>Hintergrund «${esc(R.bg.n)}»</span>`, `<span class="pt-gift"><i>${R.dip.emoji}</i>Diplom</span>`,
+        `<span class="pt-gift"><i>${R.emote.ic}</i>Emote «${esc(R.emote.n)}»</span>`, `<span class="pt-gift"><i class="glitch">${LIB.glitchSVG("normal", {outfit:{skin:"ps_" + k}})}</i>Skin «${esc(R.skin.n)}»</span>`];
+      return `<li class="pt-lv-row pt-lv-pp ${cls}" style="--pc:${R.c}"><span class="pt-lv-n">${P.roman(k)}</span><div><b>${esc(P.label(k))}</b><small>ab ${base + k * P.STEP} ★</small><div class="pt-gifts">${gifts.join("")}</div></div><span aria-hidden="true">${got ? "✓" : cls === "cur" ? "★" : "🔒"}</span></li>`; }).join("")
+    + `<li class="pt-lv-row pt-lv-ph"><span class="pt-lv-n">X+</span><div><b>Und danach?</b><small>Alle weiteren ${P.STEP} Sterne gibt es einen Zusatzstern: Regenbogen ★2, ★3 …</small></div><span aria-hidden="true">✨</span></li>`;
+}
+(function(){ if (document.getElementById("ppCss")) return; const st = document.createElement("style"); st.id = "ppCss";
+  st.textContent = ".pt-lv-pp{border-left:4px solid var(--pc)!important}.pt-lv-pp .pt-lv-n{background:var(--pc)!important;color:#14062E!important}.pt-lv-ph{background:rgba(255,194,26,.1)!important}.pt-lv-ph b{color:#FFC21A}";
+  (document.head || document.documentElement).appendChild(st); })();
 /* ---- Alle Level ---- */
 function levelsHTML(){
   const s = student(D.me), T = totalsFor(s.id), li = LIB.levelOf(T.stars), L = LIB.LEVELS, RR = window.GLAB_R;
   return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptLvT">
-    <div class="wd-head"><div><small>${esc(s.n)} · ★ ${T.stars}</small><h2 id="ptLvT">Alle Level</h2><p>Sterne aus allen Modulen und Fächern zählen zusammen. Bis Level 100 bringt fast jedes Level eine Belohnung. Danach geht es offen weiter: alle 30 Sterne ein Level. Gegenstände aus der Schweiz gibt es für die Diplome aus «Entdeckungsreise Schweiz».</p></div>
+    <div class="wd-head"><div><small>${esc(s.n)} · ★ ${T.stars}</small><h2 id="ptLvT">Alle Level</h2><p>Sterne aus allen Modulen und Fächern zählen zusammen. Bis Level 100 bringt fast jedes Level eine Belohnung. Danach beginnt Prestige: alle 300 Sterne ein neuer Rang (I bis X) mit animiertem Hintergrund, Diplom, Beschwörungs-Emote und animiertem Skin. Gegenstände aus der Schweiz gibt es für die Diplome aus «Entdeckungsreise Schweiz».</p></div>
       <button type="button" class="btn" data-pt="lv-close">Fertig</button></div>
-    <ol class="pt-lv-list">${L.map((l,k)=>{
+    <ol class="pt-lv-list">${L.slice(0, 100).map((l,k)=>{
       const gifts = LIB.OUTFITS.filter(o=>o.lv === k).map(o=>`<span class="pt-gift"><i class="glitch">${LIB.glitchSVG("normal", {outfit:{[o.slot]:o.id}})}</i>${esc(o.n)}</span>`).concat(RR.rewardsAt(k).map(r=>`<span class="pt-gift"><i>${r.ic}</i>${esc(r.n)}</span>`));
-      return `<li class="pt-lv-row ${k < li ? "done" : k === li ? "cur" : "next"}"><span class="pt-lv-n">${k+1}</span><div><b>${esc(l.n)}</b><small>${k ? `ab ${l.s} ★` : "Start"}</small><div class="pt-gifts">${gifts.join("") || `<span class="pt-gift">Futter für gLiTCh im Modul</span>`}</div></div><span aria-hidden="true">${k < li ? "✓" : k === li ? "★" : "🔒"}</span></li>`; }).join("")}${LV_TEASER}</ol></div>`;
+      return `<li class="pt-lv-row ${k < li ? "done" : k === li ? "cur" : "next"}"><span class="pt-lv-n">${k+1}</span><div><b>${esc(l.n)}</b><small>${k ? `ab ${l.s} ★` : "Start"}</small><div class="pt-gifts">${gifts.join("") || `<span class="pt-gift">Futter für gLiTCh im Modul</span>`}</div></div><span aria-hidden="true">${k < li ? "✓" : k === li ? "★" : "🔒"}</span></li>`; }).join("")}${prestigeRows(T)}</ol></div>`;
 }
 const LV_TEASER = "";
 function openLevels(){
