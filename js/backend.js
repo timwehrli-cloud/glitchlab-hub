@@ -92,7 +92,7 @@
     deleteUpload(id) { return this.q(this.sb.from("teacher_uploads").delete().eq("id", id)); }
 
     /* Lehrperson */
-    async teacher() { const { data } = await this.sb.auth.getSession(); return data.session ? { email: data.session.user.email } : null; }
+    async teacher() { const { data } = await this.sb.auth.getSession(); return data.session ? { id: data.session.user.id, email: data.session.user.email } : null; }
     async teacherSignIn(email, pw) {
       const { error } = await this.sb.auth.signInWithPassword({ email, password: pw });
       if (error) throw new Error(error.message.includes("Invalid") ? "E-Mail oder Passwort stimmt nicht." : error.message);
@@ -104,7 +104,11 @@
     }
     async teacherSignOut() { await this.sb.auth.signOut(); }
     async q(p) { const { data, error } = await p; if (error) throw new Error(error.message); return data; }
-    listClasses() { return this.q(this.sb.from("classes").select("id,name,code,settings,created_at").order("created_at")); }
+    listClasses() { return this.q(this.sb.from("classes").select("id,name,code,settings,created_at,teacher_id").order("created_at")); }
+    /* Weitere Lehrpersonen mit eigenem Konto (per Mailadresse) */
+    listMembers(classId) { return this.q(this.sb.from("class_members").select("email,added_at").eq("class_id", classId).order("added_at")); }
+    addMember(classId, email) { return this.q(this.sb.from("class_members").insert({ class_id: classId, email: String(email).trim().toLowerCase() })); }
+    removeMember(classId, email) { return this.q(this.sb.from("class_members").delete().eq("class_id", classId).eq("email", email)); }
     saveClassSettings(id, settings) { return this.q(this.sb.from("classes").update({ settings: settings || {} }).eq("id", id)); }
     /* Wer macht was? Der zuletzt gemeldete Ort jedes Kindes (aus den Extras) */
     async classNow(ids) { if (!ids.length) return []; const r = await this.q(this.sb.from("extras").select("student_id,now:data->now").in("student_id", ids)); return (r || []).map(x => ({ student_id: x.student_id, now: x.now || null })); }
@@ -324,11 +328,14 @@
       this.save();
     }
 
-    async teacher() { return this.db.teacher; }
+    async teacher() { return this.db.teacher ? Object.assign({ id: "demo" }, this.db.teacher) : null; }
+    async listMembers(classId) { return (this.db.members || []).filter(m => m.class_id === classId); }
+    async addMember(classId, email) { this.db.members = this.db.members || []; email = String(email).trim().toLowerCase(); if (this.db.members.some(m => m.class_id === classId && m.email === email)) throw new Error("Diese Mailadresse ist schon dabei."); this.db.members.push({ class_id: classId, email, added_at: new Date().toISOString() }); this.save(); }
+    async removeMember(classId, email) { this.db.members = (this.db.members || []).filter(m => !(m.class_id === classId && m.email === email)); this.save(); }
     async teacherSignIn(email) { this.db.teacher = { email: email || "demo@glitchlab" }; this.save(); }
     async teacherSignUp(email) { await this.teacherSignIn(email); return "ok"; }
     async teacherSignOut() { this.db.teacher = null; this.save(); }
-    async listClasses() { return this.wait(this.db.classes.map(({ teacher, ...c }) => Object.assign({ settings: {} }, c))); }
+    async listClasses() { return this.wait(this.db.classes.map(({ teacher, ...c }) => Object.assign({ settings: {}, teacher_id: "demo" }, c))); }
     async classNow(ids) { let d = null; try { d = JSON.parse(localStorage.getItem(this.key)); } catch (e) { /* egal */ } const ex = (d || this.db).extras || {}; return ids.map(id => ({ student_id: id, now: (ex[id] || {}).now || null })); }
     async saveClassSettings(id, settings) { const c = this.db.classes.find(x => x.id === id); if (c) { c.settings = settings || {}; this.save(); } }
     async createClass(name) {

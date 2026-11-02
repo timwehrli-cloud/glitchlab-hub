@@ -915,7 +915,7 @@
      ================================================================= */
   const LP = { classes: [], cur: null, kids: [], prog: [], cards: false, confirm: null, mods: [], ups: [], edit: null };
   async function viewTeacher() {
-    const who = await S.be.teacher();
+    const who = await S.be.teacher(); LP.who = who;
     const head = `<header class="top"><div class="wrap">
       <button type="button" class="brand" data-exit>${brandLogo("cool", "Lehrpersonen")}</button>
       <div class="top-r">${clsChip("Lehrpersonen")}${who ? `<span class="hint">${esc(who.email)}</span><button type="button" class="btn small" data-signout>Abmelden</button>` : ""}
@@ -956,7 +956,7 @@
         ${lpTabsNav("home")}
         <div class="lp-tab" data-tab="klassen">
         <div class="sec-h"><h1 style="font-size:30px">Deine Klassen</h1><p>Jede Klasse hat einen eigenen Klassencode.</p></div>
-        ${LP.classes.length ? `<div class="classes">${LP.classes.map(c => `<button type="button" class="cls" data-cls="${c.id}"><h3>${esc(c.name)}</h3><span class="code-pill">${esc(c.code)}</span></button>`).join("")}</div>`
+        ${LP.classes.length ? `<div class="classes">${LP.classes.map(c => `<button type="button" class="cls" data-cls="${c.id}"><h3>${esc(c.name)}${isOwner(c) ? "" : ` <small class="shared-tag">geteilt</small>`}</h3><span class="code-pill">${esc(c.code)}</span></button>`).join("")}</div>`
           : `<div class="empty-box">${gl("wink", "#8B5CFF")}<div><h2>Noch keine Klasse</h2><p>Leg unten deine erste Klasse an.</p></div></div>`}
         <form class="panel" id="newCls"><h2>Neue Klasse</h2>
           <div class="row"><input class="input" id="clsName" placeholder="z. B. 6i Gartenhof" maxlength="40" required style="flex:1;min-width:200px"><button class="btn primary" type="submit">Klasse anlegen</button></div>
@@ -989,6 +989,8 @@
     // Klassen-Detail
     const c = LP.cur;
     [LP.kids, LP.prog] = await Promise.all([S.be.listStudents(c.id), S.be.classProgress(c.id)]);
+    try { LP.members = S.be.listMembers ? await S.be.listMembers(c.id) : []; } catch (e) { LP.members = null; }   // null = Tabelle fehlt noch (schema.sql)
+    const owner = isOwner(c);
     const st = (kid, subj) => H.modules.filter(m => !subj || m.subject === subj).reduce((a, m) => a + kidModStars(LP.prog, kid, m), 0)
       + (subj ? 0 : LP.prog.filter(p => p.student_id === kid && p.module_id === "test").reduce((a, p) => a + p.stars, 0));
     const actSubjects = H.subjects.filter(s => subjMods(s.id).length);
@@ -1016,7 +1018,7 @@
         <div class="row"><button type="button" class="btn small" data-cards ${LP.kids.length ? "" : "disabled"}>Login-Karten zeigen</button>
           <button type="button" class="btn small" data-backup title="Speichert die ganze Klasse als Datei: Kinder, Bild-Passwörter, Sterne, Diplome, Garderobe, Arbeiten und Einstellungen">💾 Klasse sichern</button>
           <label class="hint" style="display:inline-flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="backupMods" checked> mit hochgeladenen Modulen</label>
-          <button type="button" class="btn small danger" data-delcls>${LP.confirm === "cls" ? "Wirklich ganze Klasse löschen?" : "Klasse löschen"}</button></div></section>
+          ${owner ? `<button type="button" class="btn small danger" data-delcls>${LP.confirm === "cls" ? "Wirklich ganze Klasse löschen?" : "Klasse löschen"}</button>` : `<span class="hint">Geteilte Klasse: Löschen kann nur, wer sie angelegt hat.</span>`}</div></section>
       ${lpTabsNav("cls")}
       <div class="lp-tab" data-tab="live">${livePanelHTML(c)}
       <section class="panel"><h2>👀 Wer macht was?</h2><div id="whoNow"><p class="hint">Lädt …</p></div></section></div>
@@ -1061,7 +1063,7 @@
         toast(`Klasse «${c.name}» gesichert: ${data.students.filter(k => !k.is_teacher).length} Kinder, ${data.progress.length} Spielstände.`, "star", 5000);
       } catch (err) { toast("Sichern ging nicht: " + (err.message || err), "err", 6000); }
       b.disabled = false; b.textContent = t; };
-    $("[data-delcls]").onclick = async () => {
+    const delBtn = $("[data-delcls]"); if (delBtn) delBtn.onclick = async () => {
       if (LP.confirm !== "cls") { LP.confirm = "cls"; return render(); }
       await S.be.deleteClass(c.id); LP.cur = null; LP.confirm = null; toast("Klasse gelöscht."); render();
     };
@@ -1078,7 +1080,7 @@
       const id = b.dataset.delkid; if (LP.confirm !== "d" + id) { LP.confirm = "d" + id; return render(); }
       await S.be.deleteStudent(id); LP.confirm = null; toast("Kind entfernt."); render();
     });
-    bindAccessPanel(c); bindKidModsPanel(); bindTeachersPanel(c); bindLivePanel(c); bindWho();
+    bindAccessPanel(c); bindKidModsPanel(); bindTeachersPanel(c); bindLivePanel(c); bindWho(); bindMembers(c);
     $("#addKids").onsubmit = async e => {
       e.preventDefault();
       const names = $("#kidNames").value.split(/\n|,/).map(s => s.trim()).filter(Boolean);
@@ -1157,9 +1159,41 @@
   const ACCESS = [["", "Standard"], ["offen", "Offen"], ["kette", "Nach dem Modul davor"], ["zu", "Gesperrt"]];
   function stdTxt(m) { return m.soon ? "kommt bald" : m.req ? "Standard: " + m.req.txt : "Standard: offen"; }
   /* ---------- Weitere Lehrpersonen der Klasse: eigene Freigabe-Codes ---------- */
+  const isOwner = c => !c || !c.teacher_id || !LP.who || !LP.who.id || c.teacher_id === LP.who.id;
+  function membersHTML(c) {
+    const own = isOwner(c), M = LP.members;
+    if (M === null) return `<div class="mem-box"><h3>Mit eigenem Konto (Mailadresse)</h3><p class="hint">Damit das geht, muss die Datenbank einmal erweitert werden: In Supabase im SQL-Editor den ganzen Inhalt von «supabase/schema.sql» ausführen. Danach diese Seite neu laden.</p></div>`;
+    return `<div class="mem-box"><h3>Mit eigenem Konto (Mailadresse)</h3>
+      <p class="hint">${own ? "Füge eine Lehrperson mit ihrer Mailadresse hinzu. Sie meldet sich damit im Glitchlab unter «Für Lehrpersonen» an (oder erstellt dort ein Konto mit genau dieser Adresse und bestätigt sie). Danach sieht sie diese Klasse unter «Deine Klassen» und kann alles verwalten wie du. Nur löschen kann die Klasse niemand ausser dir. Sie bekommt automatisch auch einen Freigabe-Code."
+        : "Diese Klasse wurde mit dir geteilt. Du kannst sie verwalten wie die Lehrperson, die sie angelegt hat. Löschen und Lehrpersonen hinzufügen kann nur sie."}</p>
+      ${M.length ? `<div class="tch-list">${M.map(m => `<div class="tch"><span class="tch-n"><b>${esc(m.email)}</b><small>mit eigenem Konto${LP.who && LP.who.email && LP.who.email.toLowerCase() === m.email ? " · das bist du" : ""}</small></span><span></span>
+        <span class="acts-cell">${own ? `<button type="button" class="btn small danger" data-mdel="${esc(m.email)}">${LP.confirm === "m" + m.email ? "Sicher?" : "Entfernen"}</button>` : ""}</span></div>`).join("")}</div>` : `<p class="hint">Noch niemand mit eigenem Konto.</p>`}
+      ${own ? `<form class="row" id="memAdd" style="margin-top:10px"><input class="input" id="memMail" type="email" placeholder="mail@schule.ch" maxlength="200" required autocomplete="off" style="flex:1;min-width:200px">
+        <input class="input" id="memName" placeholder="Name (freiwillig), z. B. Frau Muster" maxlength="40" style="flex:1;min-width:160px">
+        <button class="btn primary" type="submit">Per Mail hinzufügen</button></form>` : ""}</div>`;
+  }
+  function bindMembers(c) {
+    const f = $("#memAdd");
+    if (f) f.onsubmit = async e => { e.preventDefault();
+      const mail = $("#memMail").value.trim().toLowerCase(), name = $("#memName").value.trim().slice(0, 40) || mail.split("@")[0];
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) return toast("Bitte eine gültige Mailadresse eingeben.", "err");
+      if (LP.who && LP.who.email && LP.who.email.toLowerCase() === mail) return toast("Das ist deine eigene Adresse.", "err");
+      try {
+        await S.be.addMember(c.id, mail);
+        const list = coTeachers(c.settings).slice(), taken = [mainCode()].concat(list.map(t => String(t.code)));
+        let code = (list.find(t => t.email === mail) || {}).code;
+        if (!code) { code = newTeacherCode(taken); list.push({ id: Math.random().toString(36).slice(2, 10), name, code, email: mail }); const settings = Object.assign({}, c.settings || {}, { teachers: list }); await S.be.saveClassSettings(c.id, settings); c.settings = settings; }
+        toast(`${mail} hinzugefügt. Freigabe-Code: ${code}`, "star", 6000); render();
+      } catch (err) { toast(/duplicate|23505|schon/i.test(err.message || "") ? "Diese Mailadresse ist schon dabei." : err.message, "err", 6000); } };
+    $$("[data-mdel]").forEach(b => b.onclick = async () => { const mail = b.dataset.mdel; if (LP.confirm !== "m" + mail) { LP.confirm = "m" + mail; return render(); }
+      try { await S.be.removeMember(c.id, mail); const settings = Object.assign({}, c.settings || {}, { teachers: coTeachers(c.settings).filter(t => t.email !== mail) }); await S.be.saveClassSettings(c.id, settings); c.settings = settings; LP.confirm = null; toast(`${mail} entfernt.`); render(); }
+      catch (err) { toast(err.message, "err", 6000); } });
+  }
   function teachersPanelHTML(c) {
     const list = coTeachers(c.settings);
     return `<section class="panel" id="lpTeachers"><h2>Lehrpersonen dieser Klasse</h2>
+      ${membersHTML(c)}
+      <h3 style="margin-top:18px">Freigabe-Codes</h3>
       <p class="hint">Alle hier können den Kindern mit ihrem eigenen Freigabe-Code die nächste Etappe freigeben: im gLiTCh-Lab und in hochgeladenen Modulen mit «Freigabe mit LP-Code». Die Codes gelten nur in dieser Klasse.</p>
       <div class="tch-list">
         <div class="tch main"><span class="tch-n"><b>${esc(CFG.TEACHER_NAME || "Du")}</b><small>Hauptlehrperson · dein Code aus den Einstellungen</small></span><span class="tch-code">${esc(mainCode())}</span><span></span></div>

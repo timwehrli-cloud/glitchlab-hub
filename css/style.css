@@ -734,3 +734,6 @@ body.has-sitebg::after { opacity: .25; }
 .lp-tb.on { background: #8B5CFF; color: #fff; border-color: #B79CFF; box-shadow: 0 6px 18px rgba(139,92,255,.35); }
 .lp-tb:focus-visible { outline: 3px solid #FFC21A; outline-offset: 2px; }
 .lp-tab[hidden] { display: none !important; }
+.mem-box { padding: 12px 14px; border-radius: 16px; background: rgba(139,92,255,.1); border: 1px solid rgba(139,92,255,.35); }
+.mem-box h3 { margin: 0 0 6px; }
+.shared-tag { font: 700 11px/1 var(--f-pixel); padding: 3px 7px; border-radius: 999px; background: rgba(0,229,255,.18); color: #7FF2FF; vertical-align: middle; }

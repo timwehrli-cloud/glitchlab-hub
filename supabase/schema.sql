@@ -102,6 +102,31 @@ create table if not exists public.teacher_uploads (
   updated_at  timestamptz not null default now()
 );
 
+-- Weitere Lehrpersonen mit eigenem Konto: per Mailadresse zu einer Klasse hinzugefügt.
+-- Sie sehen und verwalten die Klasse wie die Besitzerin (nur löschen darf die Klasse, wer sie angelegt hat).
+create table if not exists public.class_members (
+  class_id    uuid not null references public.classes on delete cascade,
+  email       text not null check (email = lower(trim(email)) and position('@' in email) > 1 and length(email) <= 200),
+  added_at    timestamptz not null default now(),
+  primary key (class_id, email)
+);
+
+-- Darf die angemeldete Lehrperson diese Klasse verwalten? (Besitzerin oder bestätigte Mailadresse in class_members)
+create or replace function public._can_teach(p_class uuid)
+returns boolean language sql security definer set search_path = public stable as $$
+  select exists (select 1 from public.classes c where c.id = p_class and c.teacher_id = auth.uid())
+      or exists (select 1 from public.class_members m join auth.users u on lower(u.email) = m.email
+                  where m.class_id = p_class and u.id = auth.uid() and u.email_confirmed_at is not null);
+$$;
+-- Alle Lehrpersonen-Konten einer Klasse (für die Module, die sie für die Kinder hochgeladen haben)
+create or replace function public._class_teacher_ids(p_class uuid)
+returns setof uuid language sql security definer set search_path = public stable as $$
+  select c.teacher_id from public.classes c where c.id = p_class
+  union
+  select u.id from public.class_members m join auth.users u on lower(u.email) = m.email
+   where m.class_id = p_class and u.email_confirmed_at is not null;
+$$;
+
 -- ---------- Zugriffsregeln (Row Level Security) ----------
 alter table public.classes  enable row level security;
 alter table public.students enable row level security;
@@ -118,41 +143,70 @@ create policy "LP: eigene Module" on public.teacher_modules
   using (teacher_id = auth.uid()) with check (teacher_id = auth.uid());
 alter table public.extras   enable row level security;
 alter table public.work     enable row level security;
+alter table public.class_members enable row level security;
+
+drop policy if exists "LP: Lehrpersonen der Klasse lesen" on public.class_members;
+create policy "LP: Lehrpersonen der Klasse lesen" on public.class_members
+  for select to authenticated using (public._can_teach(class_id));
+drop policy if exists "LP: Lehrpersonen hinzufügen" on public.class_members;
+create policy "LP: Lehrpersonen hinzufügen" on public.class_members
+  for insert to authenticated with check (exists (select 1 from public.classes c where c.id = class_id and c.teacher_id = auth.uid()));
+drop policy if exists "LP: Lehrpersonen entfernen" on public.class_members;
+create policy "LP: Lehrpersonen entfernen" on public.class_members
+  for delete to authenticated using (exists (select 1 from public.classes c where c.id = class_id and c.teacher_id = auth.uid())
+    or email = lower(coalesce(current_setting('request.jwt.claims', true)::jsonb ->> 'email', '')));
 
 drop policy if exists "LP: Extras eigener Klassen" on public.extras;
 create policy "LP: Extras eigener Klassen" on public.extras
   for all to authenticated
   using (exists (select 1 from public.students s join public.classes c on c.id = s.class_id
-                 where s.id = student_id and c.teacher_id = auth.uid()))
+                 where s.id = student_id and public._can_teach(c.id)))
   with check (exists (select 1 from public.students s join public.classes c on c.id = s.class_id
-                 where s.id = student_id and c.teacher_id = auth.uid()));
+                 where s.id = student_id and public._can_teach(c.id)));
 
 drop policy if exists "LP: Arbeiten eigener Klassen" on public.work;
 create policy "LP: Arbeiten eigener Klassen" on public.work
   for all to authenticated
   using (exists (select 1 from public.students s join public.classes c on c.id = s.class_id
-                 where s.id = student_id and c.teacher_id = auth.uid()))
+                 where s.id = student_id and public._can_teach(c.id)))
   with check (exists (select 1 from public.students s join public.classes c on c.id = s.class_id
-                 where s.id = student_id and c.teacher_id = auth.uid()));
+                 where s.id = student_id and public._can_teach(c.id)));
 
 drop policy if exists "LP: eigene Klassen" on public.classes;
-create policy "LP: eigene Klassen" on public.classes
-  for all to authenticated
-  using (teacher_id = auth.uid()) with check (teacher_id = auth.uid());
+drop policy if exists "LP: Klassen lesen" on public.classes;
+create policy "LP: Klassen lesen" on public.classes
+  for select to authenticated using (teacher_id = auth.uid() or public._can_teach(id));
+drop policy if exists "LP: Klassen anlegen" on public.classes;
+create policy "LP: Klassen anlegen" on public.classes
+  for insert to authenticated with check (teacher_id = auth.uid());
+drop policy if exists "LP: Klassen ändern" on public.classes;
+create policy "LP: Klassen ändern" on public.classes
+  for update to authenticated using (teacher_id = auth.uid() or public._can_teach(id)) with check (teacher_id = auth.uid() or public._can_teach(id));
+drop policy if exists "LP: Klassen löschen" on public.classes;
+create policy "LP: Klassen löschen" on public.classes
+  for delete to authenticated using (teacher_id = auth.uid());
+-- Die Besitzerin einer Klasse kann nicht von jemand anderem geändert werden
+create or replace function public._keep_class_owner() returns trigger language plpgsql as $$
+begin
+  if new.teacher_id is distinct from old.teacher_id and old.teacher_id is distinct from auth.uid() then new.teacher_id := old.teacher_id; end if;
+  return new;
+end $$;
+drop trigger if exists keep_class_owner on public.classes;
+create trigger keep_class_owner before update on public.classes for each row execute function public._keep_class_owner();
 
 drop policy if exists "LP: Kinder eigener Klassen" on public.students;
 create policy "LP: Kinder eigener Klassen" on public.students
   for all to authenticated
-  using (exists (select 1 from public.classes c where c.id = class_id and c.teacher_id = auth.uid()))
-  with check (exists (select 1 from public.classes c where c.id = class_id and c.teacher_id = auth.uid()));
+  using (public._can_teach(class_id))
+  with check (public._can_teach(class_id));
 
 drop policy if exists "LP: Fortschritt eigener Klassen" on public.progress;
 create policy "LP: Fortschritt eigener Klassen" on public.progress
   for all to authenticated
   using (exists (select 1 from public.students s join public.classes c on c.id = s.class_id
-                 where s.id = student_id and c.teacher_id = auth.uid()))
+                 where s.id = student_id and public._can_teach(c.id)))
   with check (exists (select 1 from public.students s join public.classes c on c.id = s.class_id
-                 where s.id = student_id and c.teacher_id = auth.uid()));
+                 where s.id = student_id and public._can_teach(c.id)));
 -- sessions: absichtlich keine Regel → nur über die Funktionen erreichbar.
 
 -- ---------- Lehrpersonen-Konto pro Klasse (automatisch) ----------
@@ -344,8 +398,8 @@ declare s public.students;
 begin
   s := public._kid_from_token(p_token);
   return coalesce((select json_agg(json_build_object('id', m.id, 'data', m.data) order by m.created_at)
-    from public.teacher_modules m join public.classes c on c.teacher_id = m.teacher_id
-    where c.id = s.class_id and m.published), '[]'::json);
+    from public.teacher_modules m
+    where m.teacher_id in (select public._class_teacher_ids(s.class_id)) and m.published), '[]'::json);
 end $$;
 
 -- Hochgeladene Module: Liste (ohne Datei) und die Datei selbst
@@ -355,16 +409,16 @@ declare s public.students;
 begin
   s := public._kid_from_token(p_token);
   return coalesce((select json_agg(json_build_object('id', u.id, 'meta', u.meta) order by u.created_at)
-    from public.teacher_uploads u join public.classes c on c.teacher_id = u.teacher_id
-    where c.id = s.class_id and u.published), '[]'::json);
+    from public.teacher_uploads u
+    where u.teacher_id in (select public._class_teacher_ids(s.class_id)) and u.published), '[]'::json);
 end $$;
 create or replace function public.kid_upload_html(p_token uuid, p_id uuid)
 returns text language plpgsql security definer set search_path = public as $$
 declare s public.students; h text;
 begin
   s := public._kid_from_token(p_token);
-  select u.html into h from public.teacher_uploads u join public.classes c on c.teacher_id = u.teacher_id
-    where c.id = s.class_id and u.id = p_id and u.published;
+  select u.html into h from public.teacher_uploads u
+    where u.teacher_id in (select public._class_teacher_ids(s.class_id)) and u.id = p_id and u.published;
   if h is null then raise exception 'MODUL_FEHLT'; end if;
   return h;
 end $$;
@@ -373,9 +427,9 @@ end $$;
 -- Tabellen: nur angemeldete Lehrpersonen (die Regeln oben zeigen ihnen nur ihre eigenen Klassen).
 -- Kinder (anon) kommen nie direkt an Tabellen, nur über die kid_*-Funktionen.
 grant select, insert, update, delete on public.classes, public.students, public.progress, public.extras, public.work,
-  public.teacher_modules, public.teacher_uploads to authenticated;
+  public.teacher_modules, public.teacher_uploads, public.class_members to authenticated;
 revoke all on public.classes, public.students, public.sessions, public.progress, public.extras, public.work,
-  public.teacher_modules, public.teacher_uploads from anon;
+  public.teacher_modules, public.teacher_uploads, public.class_members from anon;
 revoke all on function public._kid_from_token(uuid) from public, anon, authenticated;
 grant execute on function public.kid_class(text)                         to anon, authenticated;
 grant execute on function public.kid_login(text, uuid, text)             to anon, authenticated;
