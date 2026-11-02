@@ -79,6 +79,11 @@
   const lpName = k => k && k.is_teacher ? (CFG.TEACHER_NAME || "Lehrperson") : (k ? k.first_name : "");
   const nameFix = k => { if (k && k.is_teacher) k.first_name = CFG.TEACHER_NAME || "Lehrperson"; return k; };
   /* Freischaltung pro Klasse (Lehrpersonen-Bereich): offen, zu, kette (nach dem Modul davor) oder Standard */
+  /* Freigabe-Codes: deiner (Einstellungen) und die der weiteren Lehrpersonen dieser Klasse */
+  const mainCode = () => String(CFG.TEACHER_PIN || "4313");
+  const coTeachers = st => ((st || {}).teachers || []).filter(t => t && t.code);
+  const classCodes = () => [mainCode()].concat(coTeachers(S.me?.class_settings).map(t => String(t.code)));
+  const newTeacherCode = taken => { let c; do { c = Array.from({ length: 4 }, () => 1 + Math.floor(Math.random() * 9)).join(""); } while (taken.includes(c)); return c; };
   const modSet = m => ((S.me?.class_settings || {}).mods || {})[m.id] || "";
   const modPrev = m => { const list = H.modules.filter(x => x.theme === m.theme && !x.soon); const i = list.findIndex(x => x.id === m.id); return i > 0 ? list[i - 1] : null; };
   const modSolved = m => { const st = modStars(m), mx = H.maxStars(m); return H.openEnded(m) || !mx ? st > 0 : st >= Math.ceil(mx / 2); };
@@ -535,7 +540,7 @@
       }
       return {
         me: k(S.me.student), team: S.team.map(t => k(t.student)), className: S.me.class_name || "",
-        code: String(CFG.TEACHER_PIN || "4313"), teacher: CFG.TEACHER_NAME_DATIV || "Herrn Wehrli", quiz: [],
+        code: mainCode(), codes: classCodes().slice(1), teacher: CFG.TEACHER_NAME_DATIV || "Herrn Wehrli", quiz: [],
         group: initials(), mods, extras: S.me.extras || {}, workKey, custom: up.custom
       };
     },
@@ -571,7 +576,7 @@
       }).catch(err => toast(err.message, "err", 5000));
     },
     glitchSvg(mood) { return G.svg(mood || "happy", "#8B5CFF", { outfit: outfitOf(), calm: true }); },
-    checkCode(c) { return String(c) === String(CFG.TEACHER_PIN || "4313"); },
+    checkCode(c) { return classCodes().includes(String(c).trim()); },
     upDone(moduleId) { window.GLHubBridge.score(moduleId, "fertig", 1); },
     exit() { labFlush(); const v = S.view, m = v.name === "module" && H.modules.find(x => x.id === v.id); go(m ? { name: "theme", id: m.theme } : { name: "home" }); },
     lib() { /* Daten liegen schon in js/glitch-data.js */ },
@@ -684,7 +689,9 @@
         ${LP.classes.length ? `<div class="classes">${LP.classes.map(c => `<button type="button" class="cls" data-cls="${c.id}"><h3>${esc(c.name)}</h3><span class="code-pill">${esc(c.code)}</span></button>`).join("")}</div>`
           : `<div class="empty-box">${gl("wink", "#8B5CFF")}<div><h2>Noch keine Klasse</h2><p>Leg unten deine erste Klasse an.</p></div></div>`}
         <form class="panel" id="newCls"><h2>Neue Klasse</h2>
-          <div class="row"><input class="input" id="clsName" placeholder="z. B. 6i Gartenhof" maxlength="40" required style="flex:1;min-width:200px"><button class="btn primary" type="submit">Klasse anlegen</button></div></form>
+          <div class="row"><input class="input" id="clsName" placeholder="z. B. 6i Gartenhof" maxlength="40" required style="flex:1;min-width:200px"><button class="btn primary" type="submit">Klasse anlegen</button></div>
+          <label class="f" for="clsTeachers" style="margin-top:12px">Weitere Lehrpersonen (freiwillig, ein Name pro Zeile)<textarea class="input" id="clsTeachers" placeholder="Frau Muster&#10;Herr Beispiel" style="min-height:64px"></textarea></label>
+          <p class="hint" style="margin:0">Jede weitere Lehrperson bekommt einen eigenen Freigabe-Code. Damit gibt sie den Kindern in den Modulen die nächste Etappe frei, genau wie du mit deinem Code.</p></form>
         ${uploadsPanelHTML()}
         ${modsPanelHTML()}
         ${S.be.mode === "demo" ? `<p class="hint">Demo-Modus aktiv. <button type="button" class="link" data-resetdemo>Demo-Daten zurücksetzen</button></p>` : ""}
@@ -693,7 +700,13 @@
       $$("[data-cls]").forEach(b => b.onclick = () => { LP.cur = LP.classes.find(c => c.id === b.dataset.cls); LP.cards = false; render(); });
       $("#newCls").onsubmit = async e => {
         e.preventDefault();
-        try { LP.cur = await S.be.createClass($("#clsName").value); LP.cards = false; toast(`Klasse angelegt. Code: ${LP.cur.code}`); render(); }
+        try {
+          const names = $("#clsTeachers").value.split(/\n|,/).map(x => x.trim().slice(0, 40)).filter(Boolean);
+          LP.cur = await S.be.createClass($("#clsName").value); LP.cards = false;
+          if (names.length) { const taken = [mainCode()], teachers = names.map(n => { const code = newTeacherCode(taken); taken.push(code); return { id: Math.random().toString(36).slice(2, 10), name: n, code }; });
+            const settings = Object.assign({}, LP.cur.settings || {}, { teachers }); await S.be.saveClassSettings(LP.cur.id, settings); LP.cur.settings = settings; }
+          toast(`Klasse angelegt. Code: ${LP.cur.code}${names.length ? ` · ${names.length} weitere ${names.length === 1 ? "Lehrperson" : "Lehrpersonen"}` : ""}`); render();
+        }
         catch (err) { toast(err.message, "err"); }
       };
       const rd = $("[data-resetdemo]"); if (rd) rd.onclick = () => { S.be.resetDemo(); store.del("glhub.token"); S.token = ""; S.me = null; S.team = []; saveTeam(); toast("Demo zurückgesetzt."); render(); };
@@ -744,6 +757,7 @@
         <p class="hint">Ein Vorname pro Zeile. Bei gleichen Vornamen den Anfangsbuchstaben des Nachnamens dazuschreiben (z. B. «Lea M.»). Jedes Kind bekommt automatisch ein Bild-Passwort.</p>
         <label class="f" for="kidNames">Vornamen<textarea class="input" id="kidNames" placeholder="Anna&#10;Max&#10;Lea M."></textarea></label>
         <div class="row"><button class="btn primary" type="submit">Hinzufügen</button></div></form>
+      ${teachersPanelHTML(c)}
       ${accessPanelHTML(c)}
       ${kidModsPanelHTML()}
       <section class="panel"><h2>Fortschritt pro Modul</h2>
@@ -774,7 +788,7 @@
       const id = b.dataset.delkid; if (LP.confirm !== "d" + id) { LP.confirm = "d" + id; return render(); }
       await S.be.deleteStudent(id); LP.confirm = null; toast("Kind entfernt."); render();
     });
-    bindAccessPanel(c); bindKidModsPanel();
+    bindAccessPanel(c); bindKidModsPanel(); bindTeachersPanel(c);
     $("#addKids").onsubmit = async e => {
       e.preventDefault();
       const names = $("#kidNames").value.split(/\n|,/).map(s => s.trim()).filter(Boolean);
@@ -828,6 +842,35 @@
   /* ---------- Module für diese Klasse freischalten ---------- */
   const ACCESS = [["", "Standard"], ["offen", "Offen"], ["kette", "Nach dem Modul davor"], ["zu", "Gesperrt"]];
   function stdTxt(m) { return m.soon ? "kommt bald" : m.req ? "Standard: " + m.req.txt : "Standard: offen"; }
+  /* ---------- Weitere Lehrpersonen der Klasse: eigene Freigabe-Codes ---------- */
+  function teachersPanelHTML(c) {
+    const list = coTeachers(c.settings);
+    return `<section class="panel" id="lpTeachers"><h2>Lehrpersonen dieser Klasse</h2>
+      <p class="hint">Alle hier können den Kindern mit ihrem eigenen Freigabe-Code die nächste Etappe freigeben: im gLiTCh-Lab und in hochgeladenen Modulen mit «Freigabe mit LP-Code». Die Codes gelten nur in dieser Klasse.</p>
+      <div class="tch-list">
+        <div class="tch main"><span class="tch-n"><b>${esc(CFG.TEACHER_NAME || "Du")}</b><small>Hauptlehrperson · dein Code aus den Einstellungen</small></span><span class="tch-code">${esc(mainCode())}</span><span></span></div>
+        ${list.map(t => `<div class="tch"><span class="tch-n"><b>${esc(t.name)}</b><small>Weitere Lehrperson</small></span><span class="tch-code">${esc(t.code)}</span>
+          <span class="acts-cell"><button type="button" class="btn small" data-tnew="${esc(t.id)}">Neuer Code</button><button type="button" class="btn small danger" data-tdel="${esc(t.id)}">${LP.confirm === "t" + t.id ? "Sicher?" : "Entfernen"}</button></span></div>`).join("")}
+      </div>
+      <form class="row" id="tchAdd" style="margin-top:12px"><input class="input" id="tchName" placeholder="Name, z. B. Frau Muster" maxlength="40" required style="flex:1;min-width:180px">
+        <input class="input" id="tchCode" placeholder="Code (leer = automatisch)" inputmode="numeric" pattern="[1-9]{4,8}" title="4 bis 8 Ziffern von 1 bis 9" maxlength="8" style="width:200px">
+        <button class="btn primary" type="submit">Lehrperson hinzufügen</button></form></section>`;
+  }
+  function bindTeachersPanel(c) {
+    const store = async (teachers, msg) => { const settings = Object.assign({}, c.settings || {}, { teachers });
+      try { await S.be.saveClassSettings(c.id, settings); c.settings = settings; LP.confirm = null; toast(msg); render(); } catch (err) { toast(err.message, "err"); } };
+    const list = () => coTeachers(c.settings).slice(), taken = () => [mainCode()].concat(list().map(t => String(t.code)));
+    $("#tchAdd").onsubmit = e => { e.preventDefault();
+      const name = $("#tchName").value.trim().slice(0, 40), want = $("#tchCode").value.trim(); if (!name) return;
+      if (want && !/^[1-9]{4,8}$/.test(want)) return toast("Der Code braucht 4 bis 8 Ziffern von 1 bis 9.", "err");
+      if (want && taken().includes(want)) return toast("Diesen Code hat schon jemand in dieser Klasse. Nimm einen anderen.", "err");
+      const code = want || newTeacherCode(taken());
+      store(list().concat({ id: Math.random().toString(36).slice(2, 10), name, code }), `${name} hinzugefügt. Freigabe-Code: ${code}`); };
+    $$("[data-tnew]").forEach(b => b.onclick = () => { const l = list(), t = l.find(x => x.id === b.dataset.tnew); if (!t) return;
+      t.code = newTeacherCode(taken()); store(l, `Neuer Code für ${t.name}: ${t.code}`); });
+    $$("[data-tdel]").forEach(b => b.onclick = () => { const id = b.dataset.tdel; if (LP.confirm !== "t" + id) { LP.confirm = "t" + id; return render(); }
+      const t = list().find(x => x.id === id); store(list().filter(x => x.id !== id), `${t ? t.name : "Lehrperson"} entfernt. Ihr Code gilt nicht mehr.`); });
+  }
   /* ---------- Module pro Kind: Status setzen (Abgeschlossen = alle Belohnungen) ---------- */
   function kidModStars(prog, kidId, m) {
     const done = lpStatOf(prog, kidId, m) === "fertig";

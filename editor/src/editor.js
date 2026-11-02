@@ -88,7 +88,7 @@
   const TOGGLES = [["tipps", "💡 Tipps von gLiTCh", "Tipp-Knopf bei jeder Aufgabe und Hilfe bei Fehlern"], ["vorlesen", "🔊 Vorlesen", "«gLiTCh erklärt» lässt sich vorlesen"],
     ["lexikon", "📖 Fachwörter-Lexikon", "Schwierige Wörter antippen, gLiTCh erklärt sie"], ["pdf", "📄 Zusammenfassung als PDF", "Die Kinder laden am Schluss alles Wichtige als PDF herunter"]];
   const FREI = [["keine", "Keine Freigabe", "Die Kinder gehen frei von Etappe zu Etappe."], ["selbst", "🪞 Selbsteinschätzung", "Nach jeder Etappe schätzen sich die Kinder ein (4 Stufen und ein Satz). Erst dann geht die nächste auf."],
-    ["lp", "🔐 Freigabe mit LP-Code", "Nach jeder Etappe gibt die Lehrperson mit ihrem Code frei. Im Hub gilt dein Freigabe-Code aus den Hub-Einstellungen."]];
+    ["lp", "🔐 Freigabe mit LP-Code", "Nach jeder Etappe gibt die Lehrperson mit ihrem Code frei. Im Hub gilt der Code jeder Lehrperson der Klasse."]];
   function paintOpts() {
     const O = D.opt;
     $("#toggles").innerHTML = TOGGLES.map(([k, n, d]) => `<label class="tg"><input type="checkbox" data-opt="${k}"${O[k] ? " checked" : ""}><i aria-hidden="true"></i><span><b>${esc(n)}</b><small>${esc(d)}</small></span></label>`).join("");
@@ -96,7 +96,7 @@
     $("#freigabe").innerHTML = FREI.map(([v, n, d]) => `<button type="button" role="radio" aria-checked="${O.freigabe === v}" class="${O.freigabe === v ? "on" : ""}" data-fr="${v}"><b>${esc(n)}</b><small>${esc(d)}</small></button>`).join("");
     $$("[data-fr]").forEach(b => b.onclick = () => { O.freigabe = b.dataset.fr; save(); paintOpts(); if (D.step === 4) renderResult(); });
     $("#codeWrap").hidden = O.freigabe !== "lp";
-    $("#frHint").textContent = O.freigabe === "lp" ? "Im Hub prüft gLiTCh den Freigabe-Code der Lehrperson. Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Hub geöffnet wird (leer = 1234)." : "";
+    $("#frHint").textContent = O.freigabe === "lp" ? "Im Hub gilt der Freigabe-Code jeder Lehrperson der Klasse (deiner und die der weiteren Lehrpersonen). Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Hub geöffnet wird (leer = 1234)." : "";
     const c = $("#optCode"); c.value = O.code || ""; c.oninput = () => { O.code = c.value.replace(/\D/g, "").slice(0, 8); save(); };
     c.onchange = () => { c.value = O.code; if (D.step === 4) renderResult(); };
   }

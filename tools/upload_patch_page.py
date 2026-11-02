@@ -39,3 +39,13 @@ function playEmoteCustom(el, e){
 function playEmote(el, id){
   const cuE = ((window.GLAB_CUSTOM && window.GLAB_CUSTOM.emotes) || []).find(x=>x.id === id); if (cuE) return playEmoteCustom(el, cuE);
 ''')
+
+
+# Mehrere Lehrpersonen: alle Freigabe-Codes der Klasse gelten (GLAB_CODE_OK aus hub-portal.js)
+for _w in ("ge", "fn", "ki"):
+    _a = 'if (v.toLowerCase() !== (X.code || "4313").toLowerCase()){ document.getElementById("%sErr")' % _w
+    assert _a in page, _w
+    page = page.replace(_a, 'if (!(window.GLAB_CODE_OK ? GLAB_CODE_OK(v, X.code) : v.toLowerCase() === (X.code || "4313").toLowerCase())){ document.getElementById("%sErr")' % _w)
+_a = 'const pwOK = v => v.trim().toUpperCase() === String(window.GLAB && GLAB.code ? GLAB.code() : PASSWORT).toUpperCase();'
+assert _a in page
+page = page.replace(_a, 'const pwOK = v => window.GLAB_CODE_OK ? GLAB_CODE_OK(v, window.GLAB && GLAB.code ? GLAB.code() : PASSWORT) : v.trim().toUpperCase() === String(window.GLAB && GLAB.code ? GLAB.code() : PASSWORT).toUpperCase();')

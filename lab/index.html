@@ -5299,7 +5299,7 @@ function present(gi){
 }
 function approve(gi){
   const v = (document.getElementById("geCode").value || "").trim();
-  if (v.toLowerCase() !== (X.code || "4313").toLowerCase()){ document.getElementById("geErr").textContent = "Falscher Code."; sfx("err"); return; }
+  if (!(window.GLAB_CODE_OK ? GLAB_CODE_OK(v, X.code) : v.toLowerCase() === (X.code || "4313").toLowerCase())){ document.getElementById("geErr").textContent = "Falscher Code."; sfx("err"); return; }
   approved["g"+gi] = true; document.getElementById("gePres").remove(); bank(); sfx("done");
   if (window.GLAB_R && window.GLAB_R.burst){ const r = document.getElementById("geMain").getBoundingClientRect(); window.GLAB_R.burst(r.left + r.width/2, r.top + 80, ["#FFC21A","#FF2BD6","#00E5FF","#3CFF7A"], 30, 140); }
   say(M.hub && gi < hubN() ? `Länderakte ${M.hub.lands[gi].n} freigegeben: Stempel im Reisepass! +5 ★` : `Etappe «${GROUPS[gi]}» freigegeben! +5 ★`, "love");
@@ -6291,7 +6291,7 @@ function present(gid){
 }
 function approve(gid){
   const v = (document.getElementById("fnCode").value || "").trim();
-  if (v.toLowerCase() !== (X.code || "4313").toLowerCase()){ document.getElementById("fnErr").textContent = "Falscher Code."; sfx("err"); return; }
+  if (!(window.GLAB_CODE_OK ? GLAB_CODE_OK(v, X.code) : v.toLowerCase() === (X.code || "4313").toLowerCase())){ document.getElementById("fnErr").textContent = "Falscher Code."; sfx("err"); return; }
   approved[gid] = true; document.getElementById("fnPres").remove(); bank(); sfx("done");
   if (window.GLAB_R) { const r = document.getElementById("fnMain").getBoundingClientRect(); window.GLAB_R.burst && window.GLAB_R.burst(r.left + r.width/2, r.top + 80, ["#FFC21A","#FF2BD6","#00E5FF","#3CFF7A"], 30, 140); }
   say(`Etappe «${GROUPS.find(g=>g.id===gid).name}» freigegeben!${st2(" +5 ★")}${isBonus() && GROUPS.every(g=>approved[g.id]) ? ` Fall gelöst: +${CASE_BONUS} ★ Bonus!` : ""}`, "love");
@@ -6659,7 +6659,7 @@ function present(gid){
 }
 function approve(gid){
   const v = (document.getElementById("kiCode").value || "").trim();
-  if (v.toLowerCase() !== (X.code || "4313").toLowerCase()){ document.getElementById("kiErr").textContent = "Falscher Code."; sfx("err"); return; }
+  if (!(window.GLAB_CODE_OK ? GLAB_CODE_OK(v, X.code) : v.toLowerCase() === (X.code || "4313").toLowerCase())){ document.getElementById("kiErr").textContent = "Falscher Code."; sfx("err"); return; }
   approved[gid] = true; document.getElementById("kiPres").remove(); bank(); sfx("done");
   if (window.GLAB_R && window.GLAB_R.burst){ const r = document.getElementById("kiMain").getBoundingClientRect(); window.GLAB_R.burst(r.left + r.width/2, r.top + 80, ["#FFC21A","#FF2BD6","#00E5FF","#3CFF7A"], 30, 140); }
   say(`Etappe «${GROUPS.find(g=>g.id===gid).name}» freigegeben! +5 ★`, "love");
@@ -7754,7 +7754,7 @@ function toast(msg){
   if ($("#buddy") && !$("#splash") && !$("#lp") && !$("#a4ov")){ glitchSay((bad ? "Error 404! " : "") + msg, bad ? "shock" : "happy", 4600); return; }
   const el = $("#toast"); el.textContent = msg; el.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove("show"), 3000);
 }
-const pwOK = v => v.trim().toUpperCase() === String(window.GLAB && GLAB.code ? GLAB.code() : PASSWORT).toUpperCase();
+const pwOK = v => window.GLAB_CODE_OK ? GLAB_CODE_OK(v, window.GLAB && GLAB.code ? GLAB.code() : PASSWORT) : v.trim().toUpperCase() === String(window.GLAB && GLAB.code ? GLAB.code() : PASSWORT).toUpperCase();
 
 /* ================= Kopf: Teile + Aktionen ================= */
 function renderTabs(){

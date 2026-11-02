@@ -541,3 +541,11 @@ footer.foot { text-align: center; padding-block: 8px 28px; }
 @media (max-width:640px){.km-r{grid-template-columns:1fr}.km-x{justify-self:start}}
 .mod-stat{justify-self:start;font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;background:#FFE08A;color:#5A3D00}
 .mod-stat.done{background:#1F9D68;color:#fff}
+
+/* ---------- Weitere Lehrpersonen ---------- */
+.tch-list{display:grid;gap:8px}
+.tch{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--surface);border:1px solid color-mix(in srgb,var(--accent) 22%,transparent)}
+.tch.main{border-color:color-mix(in srgb,#FFC21A 60%,transparent)}
+.tch-n{display:flex;flex-direction:column;min-width:0}.tch-n small{color:var(--muted)}
+.tch-code{font:800 20px/1 ui-monospace,Menlo,monospace;letter-spacing:.15em;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--accent) 14%,transparent)}
+@media (max-width:560px){.tch{grid-template-columns:1fr auto}.tch .acts-cell{grid-column:1/-1}}

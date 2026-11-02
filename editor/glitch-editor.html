@@ -821,7 +821,7 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
     save(); if (ok) { report(e); confetti(); }
     checkDips(); paintSide(); paintTabs();
     const nach = $("#nach"); if (ok && nach) nach.hidden = false;
-    if (ok && !wasDone && etDone(e)) { setTimeout(() => say(`${ET[e].lob || "Etappe geschafft!"} ⭐`, "cool", 9000), 900); if (gateNeeded(e) && !S.gate[e]) setTimeout(() => { if (!document.querySelector(".ov")) gateDlg(e, () => {}); }, 2200); }
+    if (ok && !wasDone && etDone(e)) { setTimeout(() => say(`${ET[e].lob || "Etappe geschafft!"} ⭐`, "cool", 9000), 900); if (gateNeeded(e) && !S.gate[e]) { const when = () => { if (S.gate[e]) return; if (document.querySelector(".ov")) return setTimeout(when, 500); gateDlg(e); }; setTimeout(when, 2200); } }
   }
   function fb(ok, text) {
     const f = document.createElement("div"); f.className = "fb " + (ok ? "ok" : "bad");
@@ -1230,7 +1230,7 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
   const TOGGLES = [["tipps", "💡 Tipps von gLiTCh", "Tipp-Knopf bei jeder Aufgabe und Hilfe bei Fehlern"], ["vorlesen", "🔊 Vorlesen", "«gLiTCh erklärt» lässt sich vorlesen"],
     ["lexikon", "📖 Fachwörter-Lexikon", "Schwierige Wörter antippen, gLiTCh erklärt sie"], ["pdf", "📄 Zusammenfassung als PDF", "Die Kinder laden am Schluss alles Wichtige als PDF herunter"]];
   const FREI = [["keine", "Keine Freigabe", "Die Kinder gehen frei von Etappe zu Etappe."], ["selbst", "🪞 Selbsteinschätzung", "Nach jeder Etappe schätzen sich die Kinder ein (4 Stufen und ein Satz). Erst dann geht die nächste auf."],
-    ["lp", "🔐 Freigabe mit LP-Code", "Nach jeder Etappe gibt die Lehrperson mit ihrem Code frei. Im Hub gilt dein Freigabe-Code aus den Hub-Einstellungen."]];
+    ["lp", "🔐 Freigabe mit LP-Code", "Nach jeder Etappe gibt die Lehrperson mit ihrem Code frei. Im Hub gilt der Code jeder Lehrperson der Klasse."]];
   function paintOpts() {
     const O = D.opt;
     $("#toggles").innerHTML = TOGGLES.map(([k, n, d]) => `<label class="tg"><input type="checkbox" data-opt="${k}"${O[k] ? " checked" : ""}><i aria-hidden="true"></i><span><b>${esc(n)}</b><small>${esc(d)}</small></span></label>`).join("");
@@ -1238,7 +1238,7 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
     $("#freigabe").innerHTML = FREI.map(([v, n, d]) => `<button type="button" role="radio" aria-checked="${O.freigabe === v}" class="${O.freigabe === v ? "on" : ""}" data-fr="${v}"><b>${esc(n)}</b><small>${esc(d)}</small></button>`).join("");
     $$("[data-fr]").forEach(b => b.onclick = () => { O.freigabe = b.dataset.fr; save(); paintOpts(); if (D.step === 4) renderResult(); });
     $("#codeWrap").hidden = O.freigabe !== "lp";
-    $("#frHint").textContent = O.freigabe === "lp" ? "Im Hub prüft gLiTCh den Freigabe-Code der Lehrperson. Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Hub geöffnet wird (leer = 1234)." : "";
+    $("#frHint").textContent = O.freigabe === "lp" ? "Im Hub gilt der Freigabe-Code jeder Lehrperson der Klasse (deiner und die der weiteren Lehrpersonen). Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Hub geöffnet wird (leer = 1234)." : "";
     const c = $("#optCode"); c.value = O.code || ""; c.oninput = () => { O.code = c.value.replace(/\D/g, "").slice(0, 8); save(); };
     c.onchange = () => { c.value = O.code; if (D.step === 4) renderResult(); };
   }

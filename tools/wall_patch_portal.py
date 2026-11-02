@@ -124,3 +124,11 @@ a = "  CU.dips.forEach(b=>{ if (!BADGES.some(x=>x.id === b.id)) BADGES.push("
 assert a in portal
 portal = portal.replace(a, """  BADGES.forEach((b, k)=>{ if (!b.art) BADGES[k] = Object.assign({}, b, {art: MI_WALL[b.id] ? `<svg viewBox="0 0 20 20" aria-hidden="true">${MI_WALL[b.id]}</svg>` : dipArt("🏅", "#7B4CEF")}); });
 """ + a, 1)
+
+# ---------- Mehrere Lehrpersonen: jeder Freigabe-Code der Klasse gilt ----------
+a = '''  D.cls = {id:"hub", name: ctx.className, code: ctx.code, rev:0, students: [ctx.me].concat(ctx.team), groups:{}, kiQuiz: ctx.quiz || []};'''
+assert a in portal
+portal = portal.replace(a, a + '''
+  window.GLAB_EXTRA_CODES = (ctx.codes || []).map(String);''', 1)
+portal = portal.replace("let D = {cls:null, prog:{}, me:null};", '''let D = {cls:null, prog:{}, me:null};
+window.GLAB_CODE_OK = (v, primary) => { const x = String(v || "").trim().toLowerCase(); return !!x && [primary || "4313"].concat(window.GLAB_EXTRA_CODES || []).some(c => String(c).trim().toLowerCase() === x); };''', 1)
