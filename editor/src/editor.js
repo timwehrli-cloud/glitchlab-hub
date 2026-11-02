@@ -8,7 +8,7 @@
   const gl = (id, mood) => { const el = document.getElementById(id); if (el && G) el.innerHTML = G.svg(mood, "#8B5CFF"); };
   gl("mastG", "happy"); gl("sayG", "wink"); gl("pvG", "sleep");
 
-  /* ---------- Hub-Struktur (gleich wie im Glitchlab-Hub) ---------- */
+  /* ---------- Glitchlab-Struktur (gleich wie im Glitchlab) ---------- */
   const SUBJ = [["mi", "Medien & Informatik"], ["nmg", "Natur, Mensch, Gesellschaft"], ["de", "Deutsch"], ["ma", "Mathematik"], ["en", "Englisch"], ["fr", "Französisch"], ["sp", "Sport"], ["mg", "Minigames"]];
   const THEMES = { mi: ["Start mit gLiTCh", "KI & Prompts", "Medien durchschauen"], nmg: ["Entdeckungsreise Schweiz", "Die Römer"], de: ["Gespräche führen"] };
   /* Aufgabenarten = alle Spiele aus den NMG- und M&I-Modulen, die sich mit Inhalten füllen lassen */
@@ -161,7 +161,7 @@
     ["lexikon", "📖 Fachwörter-Lexikon", "Schwierige Wörter antippen, gLiTCh erklärt sie"], ["pdf", "📄 Zusammenfassung als PDF", "Die Kinder laden am Schluss alles Wichtige als PDF herunter"]];
   const FREI = [["keine", "Keine Freigabe", "Die Kinder gehen frei von Etappe zu Etappe."], ["selbst", "🪞 Selbsteinschätzung", "Die Kinder schätzen sich ein (4 Stufen und ein Satz)."],
     ["praes", "🎤 Präsentation", "Wie im M&I-Lab: Die Gruppe präsentiert die Etappe mit Stichworten, Fachwörtern und ihrem Produkt, auch im Vollbild."],
-    ["lp", "🔐 Freigabe mit LP-Code", "Die Lehrperson gibt mit ihrem Code frei. Im Hub gilt der Code jeder Lehrperson der Klasse."]];
+    ["lp", "🔐 Freigabe mit LP-Code", "Die Lehrperson gibt mit ihrem Code frei. Im Glitchlab gilt der Code jeder Lehrperson der Klasse."]];
   function paintOpts() {
     const O = D.opt;
     $("#toggles").innerHTML = TOGGLES.map(([k, n, d]) => `<label class="tg"><input type="checkbox" data-opt="${k}"${O[k] ? " checked" : ""}><i aria-hidden="true"></i><span><b>${esc(n)}</b><small>${esc(d)}</small></span></label>`).join("");
@@ -173,7 +173,7 @@
       if (v === "keine") O.gates = []; else O.gates = G.includes(v) ? G.filter(x => x !== v) : ["selbst", "praes", "lp"].filter(x => x === v || G.includes(x));
       save(); paintOpts(); if (D.step === 4) renderResult(); });
     $("#codeWrap").hidden = !G.includes("lp");
-    $("#frHint").textContent = (G.length > 1 ? `Nach jeder Etappe in dieser Reihenfolge: ${G.map(g => ({ selbst: "Selbsteinschätzung", praes: "Präsentation", lp: "LP-Code" })[g]).join(" → ")}. ` : G.length ? "" : "Wähle eine, zwei oder alle drei Freigaben. ") + (G.includes("lp") ? "Im Hub gilt der Freigabe-Code jeder Lehrperson der Klasse (deiner und die der weiteren Lehrpersonen). Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Hub geöffnet wird (leer = 1234)." : "");
+    $("#frHint").textContent = (G.length > 1 ? `Nach jeder Etappe in dieser Reihenfolge: ${G.map(g => ({ selbst: "Selbsteinschätzung", praes: "Präsentation", lp: "LP-Code" })[g]).join(" → ")}. ` : G.length ? "" : "Wähle eine, zwei oder alle drei Freigaben. ") + (G.includes("lp") ? "Im Glitchlab gilt der Freigabe-Code jeder Lehrperson der Klasse (deiner und die der weiteren Lehrpersonen). Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Glitchlab geöffnet wird (leer = 1234)." : "");
     const c = $("#optCode"); c.value = O.code || ""; c.oninput = () => { O.code = c.value.replace(/\D/g, "").slice(0, 8); save(); };
     c.onchange = () => { c.value = O.code; if (D.step === 4) renderResult(); };
   }
@@ -181,7 +181,7 @@
   /* ---------- Maskottchen ---------- */
   function paintMascot() {
     const ms = D.opt.mascot, own = ms.pix ? GLMascot.pixel(ms.pix, ms.pal) : "";
-    const L = [["glitch", "gLiTCh", "Das Pixel-Maskottchen des Hubs, mit Outfit und Skin des Kindes.", G ? `<span class="glitch">${G.svg("happy", "#8B5CFF")}</span>` : ""],
+    const L = [["glitch", "gLiTCh", "Das Pixel-Maskottchen des Glitchlabs, mit Outfit und Skin des Kindes.", G ? `<span class="glitch">${G.svg("happy", "#8B5CFF")}</span>` : ""],
       ["fenni", "Fenni", "Der Wüstenfuchs aus dem Wüsten-Game.", GLMascot.fenni()],
       ["eigen", ms.typ === "eigen" && ms.name ? ms.name : "Eigenes", own ? "Dein eigenes Maskottchen. Beschreibung ändern und neu generieren geht jederzeit." : "Beschreibe es, gLiTCh zeichnet es als Pixel-Figur.", own || '<span style="font-size:28px">✨</span>']];
     $("#masOpts").innerHTML = L.map(([v, n, d, pic]) => `<button type="button" class="mas${ms.typ === v ? " on" : ""}" role="radio" aria-checked="${ms.typ === v}" data-mas="${v}"><span class="pic">${pic}</span><span><b>${esc(n)}</b><small>${esc(d)}</small></span></button>`).join("");
@@ -262,7 +262,7 @@ Gib NUR JSON zurück: {"name":"…","palette":{"a":"#rrggbb", …},"pixel":["...
 
   /* ---------- 3 Belohnungen ---------- */
   const CATS = [
-    { k: "diplome", n: "Diplome", ic: "🏅", d: "Auszeichnungen im Modul. Im Hub hängen sie als Gegenstand an gLiTChs Wand (10 Plätze), im gleichen Stil wie die NMG- und M&I-Diplome. Wähle pro Diplom, was an der Wand hängt. Sie können auch Extras freischalten." },
+    { k: "diplome", n: "Diplome", ic: "🏅", d: "Auszeichnungen im Modul. Im Glitchlab hängen sie als Gegenstand an gLiTChs Wand (10 Plätze), im gleichen Stil wie die NMG- und M&I-Diplome. Wähle pro Diplom, was an der Wand hängt. Sie können auch Extras freischalten." },
     { k: "outfits", n: "Outfits für gLiTCh", ic: "👕", d: "Kleider und Accessoires für die Garderobe." },
     { k: "emotes", n: "Emotes", ic: "✨", d: "Kleine Animationen, die gLiTCh vorführt." },
     { k: "zimmer", n: "Zimmer-Gegenstände", ic: "🛋️", d: "Möbel und Deko für gLiTChs Zimmer." },
@@ -331,7 +331,7 @@ Gib NUR JSON zurück: {"name":"…","palette":{"a":"#rrggbb", …},"pixel":["...
   function context() {
     const L = linkList();
     const MS = D.opt.mascot, MN = GLMascot.nameOf(MS), mNote = MS.typ === "glitch" ? "" : `\n\nWICHTIG: In diesem Modul spricht nicht gLiTCh, sondern das Maskottchen «${MN}»${MS.typ === "fenni" ? " (ein freundlicher Wüstenfuchs)" : MS.desc ? ` (${MS.desc.trim().slice(0, 200)})` : ""}. Überall, wo unten gLiTCh steht, schreibst du in den Texten «${MN}» und lässt ${MN} sprechen.`;
-    return `Du bist gLiTCh, das freundliche Pixel-Maskottchen des «Glitchlab-Hub», einer Lernplattform einer Schweizer Primarschule. Du baust Lernmodule im Stil der gLiTCh-Lab-Module für NMG und Medien & Informatik: eine Rahmengeschichte, mehrere Etappen wie Missionen, gLiTCh spricht die Kinder in einer Sprechblase an, kurze Infotexte, abwechslungsreiche Aufgaben, Fachwörter im Lexikon, Diplome als Belohnung.${mNote}
+    return `Du bist gLiTCh, das freundliche Pixel-Maskottchen des «Glitchlab», einer Lernplattform einer Schweizer Primarschule. Du baust Lernmodule im Stil der gLiTCh-Lab-Module für NMG und Medien & Informatik: eine Rahmengeschichte, mehrere Etappen wie Missionen, gLiTCh spricht die Kinder in einer Sprechblase an, kurze Infotexte, abwechslungsreiche Aufgaben, Fachwörter im Lexikon, Diplome als Belohnung.${mNote}
 
 MODUL
 - Thema: ${D.titel.trim() || "(noch kein Titel)"}
@@ -579,10 +579,10 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
     const rows = [["outfits", "👕 Outfits"], ["emotes", "✨ Emotes"], ["zimmer", "🛋️ Zimmer"], ["hintergruende", "🖼️ Hintergründe"], ["skins", "🎨 Skins"]].map(([k, n]) => m.extras[k].length ? `<h2>${n}</h2><ul>${m.extras[k].map(x => `<li>${esc((x.emoji ? x.emoji + " " : "") + x.name)} · <small>${esc(x.freischalten === "sofort" ? "sofort" : "ab Level " + x.freischalten.slice(6))}</small></li>`).join("")}</ul>` : "").join("");
     return `<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(m.titel)}</title>
-<!-- Belohnungs-Paket aus dem gLiTCh-Editor. In den Glitchlab-Hub hochladen: Lehrpersonen → «Module hochladen». -->
+<!-- Belohnungs-Paket aus dem gLiTCh-Editor. Ins Glitchlab hochladen: Lehrpersonen → «Module hochladen». -->
 <script type="application/json" id="glitchlab-modul">${j(m)}${SC}
 <style>body{font:16px/1.5 system-ui,sans-serif;background:#14062E;color:#F3EEFF;max-width:720px;margin:0 auto;padding:24px}h1{margin:0 0 4px}small{color:#B9B2D0}h2{font-size:1.05rem;margin:18px 0 6px}li{margin:4px 0}.hint{background:#2A1466;border-radius:12px;padding:12px 14px}</style></head>
-<body><h1>🎁 ${esc(m.titel)}</h1><p>${esc(m.beschreibung || "Belohnungen für gLiTCh.")}</p><p class="hint">Diese Datei im Glitchlab-Hub unter Lehrpersonen → «Module hochladen» hineinziehen. Die Belohnungen erscheinen bei den Kindern, sobald sie das Level erreichen.</p>${rows}</body></html>`;
+<body><h1>🎁 ${esc(m.titel)}</h1><p>${esc(m.beschreibung || "Belohnungen für gLiTCh.")}</p><p class="hint">Diese Datei im Glitchlab unter Lehrpersonen → «Module hochladen» hineinziehen. Die Belohnungen erscheinen bei den Kindern, sobald sie das Level erreichen.</p>${rows}</body></html>`;
   }
   function renderAddon() {
     const m = addonManifest(), n = ["outfits", "emotes", "zimmer", "hintergruende", "skins"].reduce((a, k) => a + m.extras[k].length, 0);
@@ -593,7 +593,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
   $("#btnAddon").onclick = async () => {
     const html = buildAddon(), name = (slug(D.addonName) || "belohnungs-paket") + ".html";
     let dl = null; try { dl = await claude.use("downloads"); } catch (e) { dl = null; }
-    if (dl) { try { await dl.save({ filename: name, data: new Blob([html], { type: "text/html" }) }); toast(`«${name}» gespeichert. Jetzt im Hub hochladen.`); return; } catch (e) { if (e && e.code === "declined") return; } }
+    if (dl) { try { await dl.save({ filename: name, data: new Blob([html], { type: "text/html" }) }); toast(`«${name}» gespeichert. Jetzt im Glitchlab hochladen.`); return; } catch (e) { if (e && e.code === "declined") return; } }
     const u = URL.createObjectURL(new Blob([html], { type: "text/html" })), a = document.createElement("a"); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
   };
   function manifest() {
@@ -625,7 +625,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(P.titel)}</title>
-<!-- Erstellt mit dem gLiTCh-Editor. In den Glitchlab-Hub hochladen: Lehrpersonen → «Module hochladen». -->
+<!-- Erstellt mit dem gLiTCh-Editor. Ins Glitchlab hochladen: Lehrpersonen → «Module hochladen». -->
 <script type="application/json" id="glitchlab-modul">${j(manifest())}${SC}
 <style>${T("rt-gcss")}
 ${T("rt-css")}</style>
@@ -709,7 +709,7 @@ ${T("rt-css")}</style>
   $("#btnDl").onclick = async () => {
     const html = buildModule(), name = (slug(D.plan.titel) || "modul") + ".html";
     let dl = null; try { dl = await claude.use("downloads"); } catch (e) { dl = null; }
-    if (dl) { try { await dl.save({ filename: name, data: new Blob([html], { type: "text/html" }) }); toast(`«${name}» gespeichert. Jetzt im Hub hochladen.`); return; } catch (e) { if (e && e.code === "declined") return; } }
+    if (dl) { try { await dl.save({ filename: name, data: new Blob([html], { type: "text/html" }) }); toast(`«${name}» gespeichert. Jetzt im Glitchlab hochladen.`); return; } catch (e) { if (e && e.code === "declined") return; } }
     $("#btnCopy").hidden = false; $("#dlHint").textContent = "Herunterladen geht hier nicht. Tippe auf «Code kopieren», füge ihn in eine leere Textdatei ein und speichere sie als «" + name + "».";
   };
   $("#btnCopy").onclick = async () => { try { await navigator.clipboard.writeText(buildModule()); toast("Code kopiert."); } catch (e) { toast("Kopieren ging nicht. Versuch es in einem anderen Browser."); } };

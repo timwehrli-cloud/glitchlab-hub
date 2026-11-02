@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
-/* Layout: Werkbank mit Schritt-Leiste oben (1 Grundlagen · 2 Material · 3 Belohnungen · 4 Erstellen), darunter je ein Arbeitsbereich. Immer dunkel: Lila, Türkis, Schwarz wie der Glitchlab-Hub. */
+/* Layout: Werkbank mit Schritt-Leiste oben (1 Grundlagen · 2 Material · 3 Belohnungen · 4 Erstellen), darunter je ein Arbeitsbereich. Immer dunkel: Lila, Türkis, Schwarz wie der Glitchlab. */
 :root{
   --bg:#07040F; --surface:#120A24; --surface2:#1B1036; --line:#33245E; --ink:#F3EDFF; --muted:#A598C6;
   --accent:#A07CFF; --teal:#2EE6D6; --pink:#FF2BD6; --gold:#FFC21A; --ok:#3CFF7A; --bad:#FF5A6E;
@@ -166,7 +166,7 @@ option,optgroup{background:var(--surface);color:var(--ink)}
   <header class="mast">
     <span class="glitch" id="mastG"></span>
     <div class="mast-t"><h1>gLiTCh-Editor<em>MODUL-WERKSTATT</em></h1>
-      <p>Thema, Ideen und Material eingeben, Belohnungen wählen, gLiTCh baut daraus ein Modul im Stil der NMG- und M&amp;I-Labs. Am Ende ziehst du die Datei in den Glitchlab-Hub.</p></div>
+      <p>Thema, Ideen und Material eingeben, Belohnungen wählen, gLiTCh baut daraus ein Modul im Stil der NMG- und M&amp;I-Labs. Am Ende ziehst du die Datei ins Glitchlab.</p></div>
     <div class="row"><button type="button" class="btn small ghost" id="btnNew">Neues Modul</button></div>
   </header>
 
@@ -180,16 +180,16 @@ option,optgroup{background:var(--surface);color:var(--ink)}
   <!-- 1 Grundlagen -->
   <section class="pane" data-pane="1">
     <div class="card">
-      <div class="card-h"><div><p class="eyebrow">Was möchtest du erstellen?</p><h2>Modul oder Belohnungs-Paket</h2></div><p>Ein Belohnungs-Paket (Addon) bringt Outfits, Skins, Emotes, Zimmer-Gegenstände und Hintergründe für höhere Level, ganz ohne Aufgaben. Du lädst es im Hub wie ein Modul hoch.</p></div>
+      <div class="card-h"><div><p class="eyebrow">Was möchtest du erstellen?</p><h2>Modul oder Belohnungs-Paket</h2></div><p>Ein Belohnungs-Paket (Addon) bringt Outfits, Skins, Emotes, Zimmer-Gegenstände und Hintergründe für höhere Level, ganz ohne Aufgaben. Du lädst es im Glitchlab wie ein Modul hoch.</p></div>
       <div class="seg" id="artSeg" role="radiogroup" aria-label="Was erstellen"><button type="button" data-art="modul" role="radio"><b>📘 Lernmodul</b><small>Etappen, Aufgaben, Diplome und Belohnungen</small></button><button type="button" data-art="addon" role="radio"><b>🎁 Belohnungs-Paket (Addon)</b><small>Nur Belohnungen, freigeschaltet über Level</small></button></div>
     </div>
     <div class="card mod-only">
-      <div class="card-h"><div><p class="eyebrow">Schritt 1</p><h2>Worum geht es?</h2></div><p>Je genauer, desto besser passt das Modul. Fach und Thema bestimmen, wo das Modul im Hub erscheint.</p></div>
+      <div class="card-h"><div><p class="eyebrow">Schritt 1</p><h2>Worum geht es?</h2></div><p>Je genauer, desto besser passt das Modul. Fach und Thema bestimmen, wo das Modul im Glitchlab erscheint.</p></div>
       <label class="f"><span>Thema des Moduls</span><input class="in" id="titel" maxlength="60" placeholder="z. B. Vulkane und Erdbeben"></label>
       <div class="grid3">
         <label class="f"><span>Fach</span><select class="in" id="fach"></select></label>
-        <label class="f"><span>Thema im Hub</span><select class="in" id="hubThema"></select></label>
-        <label class="f" id="neuWrap"><span>Neues Hub-Thema</span><input class="in" id="hubNeu" maxlength="50" placeholder="z. B. Naturgewalten"></label>
+        <label class="f"><span>Thema im Glitchlab</span><select class="in" id="hubThema"></select></label>
+        <label class="f" id="neuWrap"><span>Neues Glitchlab-Thema</span><input class="in" id="hubNeu" maxlength="50" placeholder="z. B. Naturgewalten"></label>
       </div>
       <div class="grid3">
         <label class="f"><span>Schulstufe</span><select class="in" id="klasse"></select></label>
@@ -218,10 +218,10 @@ option,optgroup{background:var(--surface);color:var(--ink)}
       <div class="toggles" id="toggles"></div>
       <div class="f"><span>Zwischen den Etappen</span><div class="seg" id="freigabe" role="group" aria-label="Freigabe zwischen den Etappen: keine oder eine bis drei kombinieren"></div></div>
       <p class="hint" id="frHint"></p>
-      <label class="f" id="codeWrap"><span>Code zum Testen ohne Hub</span><input class="in" id="optCode" inputmode="numeric" maxlength="8" placeholder="1234" style="max-width:180px"></label>
+      <label class="f" id="codeWrap"><span>Code zum Testen ohne Glitchlab</span><input class="in" id="optCode" inputmode="numeric" maxlength="8" placeholder="1234" style="max-width:180px"></label>
     </div>
     <div class="card mod-only" id="masCard">
-      <div class="card-h"><div><p class="eyebrow">Maskottchen</p><h2>Wer führt durchs Modul?</h2></div><p>Das Maskottchen erklärt, gibt Tipps und lobt. gLiTCh trägt im Hub das Outfit und den Skin des Kindes. Mit einem anderen Maskottchen erscheint gLiTCh nicht zusätzlich in der Ecke.</p></div>
+      <div class="card-h"><div><p class="eyebrow">Maskottchen</p><h2>Wer führt durchs Modul?</h2></div><p>Das Maskottchen erklärt, gibt Tipps und lobt. gLiTCh trägt im Glitchlab das Outfit und den Skin des Kindes. Mit einem anderen Maskottchen erscheint gLiTCh nicht zusätzlich in der Ecke.</p></div>
       <div class="mas-opts" id="masOpts" role="radiogroup" aria-label="Maskottchen"></div>
       <div id="masOwn" hidden>
         <label class="f"><span>Beschreibe dein Maskottchen</span><textarea class="in" id="masDesc" style="min-height:64px" maxlength="400" placeholder="z. B. Eine kleine Lava-Echse mit Helm, orange und rot, frech und neugierig"></textarea></label>
@@ -250,7 +250,7 @@ option,optgroup{background:var(--surface);color:var(--ink)}
   <!-- 3 Belohnungen -->
   <section class="pane" data-pane="3" hidden>
     <div class="card">
-      <div class="card-h"><div><p class="eyebrow">Schritt 3</p><h2>Diplome und Extras</h2></div><p>Diplome sind die Achievements (Auszeichnungen) im Modul. Outfits, Emotes, Zimmer-Gegenstände und Hintergründe erscheinen nach dem Hochladen in gLiTChs Zimmer im Hub. Bei jedem Extra legst du fest, wann es frei wird.</p></div>
+      <div class="card-h"><div><p class="eyebrow">Schritt 3</p><h2>Diplome und Extras</h2></div><p>Diplome sind die Achievements (Auszeichnungen) im Modul. Outfits, Emotes, Zimmer-Gegenstände und Hintergründe erscheinen nach dem Hochladen in gLiTChs Zimmer im Glitchlab. Bei jedem Extra legst du fest, wann es frei wird.</p></div>
       <label class="f"><span>Eigene Ideen für Belohnungen (freiwillig)</span><textarea class="in" id="belIdeen" style="min-height:70px" placeholder="z. B. ein Lava-Helm für gLiTCh, ein Emote, bei dem gLiTCh explodiert, ein Vulkan-Zimmer als Hintergrund"></textarea></label>
       <div class="row"><button type="button" class="btn teal" id="sugAll">✨ Alles vorschlagen lassen</button><span class="hint" id="sugMsg">Vorschläge ergänzen die Listen. Du kannst alles ändern oder löschen.</span></div>
     </div>
@@ -261,7 +261,7 @@ option,optgroup{background:var(--surface);color:var(--ink)}
   <!-- 4 Erstellen -->
   <section class="pane" data-pane="4" hidden>
     <div class="card addon-only" style="max-width:760px">
-      <div class="card-h"><div><p class="eyebrow">Schritt 4</p><h2>Paket herunterladen</h2></div><p>Die Datei ziehst du im Glitchlab-Hub unter Lehrpersonen → «Module hochladen» ins Feld. Die Belohnungen erscheinen dann bei allen Kindern deiner Klassen, sobald sie das Level erreichen.</p></div>
+      <div class="card-h"><div><p class="eyebrow">Schritt 4</p><h2>Paket herunterladen</h2></div><p>Die Datei ziehst du im Glitchlab unter Lehrpersonen → «Module hochladen» ins Feld. Die Belohnungen erscheinen dann bei allen Kindern deiner Klassen, sobald sie das Level erreichen.</p></div>
       <div id="addonSum"></div>
       <div class="row" style="margin-top:10px"><button type="button" class="btn teal" id="btnAddon">⬇ Belohnungs-Paket herunterladen (.html)</button></div>
     </div>
@@ -276,7 +276,7 @@ option,optgroup{background:var(--surface);color:var(--ink)}
         <div id="result" hidden>
           <div class="list" id="ets"></div>
           <div class="row" style="margin-top:10px"><button type="button" class="btn teal" id="btnDl">⬇ Modul herunterladen (.html)</button><button type="button" class="btn" id="btnPdf">📄 Übersicht als PDF (mit Lösungen)</button><button type="button" class="btn" id="btnCopy" hidden>Code kopieren</button></div>
-          <p class="hint" id="dlHint">Die Datei ziehst du im Glitchlab-Hub unter Lehrpersonen → «Module hochladen» ins Feld.</p>
+          <p class="hint" id="dlHint">Die Datei ziehst du im Glitchlab unter Lehrpersonen → «Module hochladen» ins Feld.</p>
         </div>
       </div>
       <div class="preview"><div class="preview-bar"><i></i><i></i><i></i><span id="pvName">Vorschau</span></div>

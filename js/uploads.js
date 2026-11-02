@@ -1,5 +1,5 @@
 /* =====================================================================
-   Glitchlab-Hub · hochgeladene HTML-Module der Lehrperson
+   Glitchlab · hochgeladene HTML-Module der Lehrperson
    Die Lehrperson zieht eine fertige HTML-Datei in den Lehrpersonen-Bereich.
    Optional steckt in der Datei ein «Steckbrief» (Manifest) als JSON:
 
@@ -123,7 +123,7 @@
     ${[0, 1, 2, 3, 4, 5].map(k => `<rect class="ma-twinkle" style="animation-delay:${k * .4}s" x="${12 + k * 26}" y="${8 + (k * 17) % 50}" width="2" height="2" fill="#fff" opacity=".7"/>`).join("")}
     <g class="ma-bob">${emojiText(emoji || "🧩", 80, 42, 34)}</g></svg>`;
 
-  /* ---------- Module im Hub anmelden ---------- */
+  /* ---------- Module im Glitchlab anmelden ---------- */
   H.registerUploads = list => {
     H.modules = H.modules.filter(m => !m.upload);
     H.themes = H.themes.filter(t => !t.up);
@@ -149,7 +149,7 @@
       };
       H.modules.push(m); H.UPLOADS.push(m);
     });
-    /* Outfits aus den Modulen auch im Hub zeichnen (Namensliste, Team, Banner) */
+    /* Outfits aus den Modulen auch im Glitchlab zeichnen (Namensliste, Team, Banner) */
     if (window.GL_DATA && Array.isArray(window.GL_DATA.OUTFITS)) {
       const own = H.uploadExtras(() => 0, () => new Set(), true).custom.outfits;
       window.GL_DATA.OUTFITS = window.GL_DATA.OUTFITS.filter(o => !String(o.id).startsWith("up_")).concat(own.map(o => ({ id: o.id, slot: o.slot, n: o.n, svg: o.svg })));
@@ -203,10 +203,10 @@ api.stars=api.sterne;api.score=api.sterne;api.save=api.speichern;api.load=api.la
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vulkane</title>
 <!--
-  ================= Glitchlab-Hub · Modul-Vorlage =================
-  So wird aus einer HTML-Datei ein Modul im Glitchlab-Hub:
+  ================= Glitchlab · Modul-Vorlage =================
+  So wird aus einer HTML-Datei ein Modul im Glitchlab:
   1. Alles muss in DIESER einen Datei stecken (Bilder als data:-Links oder SVG).
-  2. Den Steckbrief unten anpassen. Er sagt dem Hub: Titel, Fach, Thema,
+  2. Den Steckbrief unten anpassen. Er sagt dem Glitchlab: Titel, Fach, Thema,
      welche Aufgaben es Sterne gibt und welche Extras man freischaltet.
   3. Im Lehrpersonen-Bereich die Datei ins Feld «Module hochladen» ziehen.
 
@@ -221,7 +221,7 @@ api.stars=api.sterne;api.score=api.sterne;api.save=api.speichern;api.load=api.la
     "fertig"     wenn alle Sterne des Moduls gesammelt sind
     "badge:NAME" wenn das Modul GLHub.badge("NAME") aufruft
 
-  Diplome: Jedes Diplom hängt im Hub als Bild an gLiTChs Wand (10 Plätze).
+  Diplome: Jedes Diplom hängt im Glitchlab als Bild an gLiTChs Wand (10 Plätze).
            Das Modul vergibt es mit GLHub.badge("ID").
   Plätze für Outfits: kopf, augen, mund, hals, fuesse, hand, haustier
   Plätze im Zimmer:   links, rechts, wand, teppich, deko, decke
@@ -229,7 +229,7 @@ api.stars=api.sterne;api.score=api.sterne;api.save=api.speichern;api.load=api.la
   Statt "emoji" kann man auch "svg" angeben (Pixel-Zeichnung ohne <svg>-Hülle):
     Outfit: Koordinaten von gLiTCh (-2 bis 16),  Zimmer: 160 × 100
 
-  Im Modul gibt es window.GLHub (nur im Hub, beim Testen am PC fehlt es):
+  Im Modul gibt es window.GLHub (nur im Glitchlab, beim Testen am PC fehlt es):
     GLHub.ich / GLHub.team        Namen der Kinder, die gerade arbeiten
     GLHub.sterne("quiz", 3)       Sterne für eine Aufgabe aus dem Steckbrief
                                   (alle im Team bekommen sie, das Beste zählt)
@@ -237,7 +237,7 @@ api.stars=api.sterne;api.score=api.sterne;api.save=api.speichern;api.load=api.la
     GLHub.speichern({...})        Arbeit speichern (geht auf alle Geräte des Teams)
     GLHub.laden()                 gespeicherte Arbeit holen (oder null)
     GLHub.fertig()                «Fertig» melden: 1 Stern
-    GLHub.beenden()               zurück in den Hub
+    GLHub.beenden()               zurück ins Glitchlab
   ================================================================
 -->
 <script type="application/json" id="glitchlab-modul">
@@ -290,8 +290,8 @@ api.stars=api.sterne;api.score=api.sterne;api.save=api.speichern;api.load=api.la
   <button onclick="window.GLHub && GLHub.fertig()">Fertig!</button>
 </div>
 <script>
-  const hub = window.GLHub;   // fehlt beim Testen ausserhalb des Hubs
-  document.getElementById("hallo").textContent = hub ? "Hoi " + hub.alle.join(" und ") + "!" : "Testmodus (ohne Hub)";
+  const hub = window.GLHub;   // fehlt beim Testen ausserhalb des Glitchlabs
+  document.getElementById("hallo").textContent = hub ? "Hoi " + hub.alle.join(" und ") + "!" : "Testmodus (ohne Glitchlab)";
   const stand = (hub && hub.laden()) || { richtig: 0 };
   function antwort(ok) {
     document.getElementById("msg").textContent = ok ? "Richtig!" : "Leider falsch.";

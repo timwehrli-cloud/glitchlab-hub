@@ -82,7 +82,7 @@ window.GLAB_PET = (g, on) => { try { const sp = g.querySelector(":scope > span")
 # ---------- Level-Anzeigen: bis 100 «x von 100», danach offen ----------
 for _a, _b in [('<span>Level ${li+1} von ${L.length}</span>', '<span>${li < 100 ? `Level ${li+1} von 100` : `Level ${li+1} · über 100!`}</span>'),
                ('`${li+1} / ${L.length}`', '(li < 100 ? `${li+1} / 100` : `${li+1} ★`)'),
-               ('<h2 id="ptLvT">Alle ${L.length} Level</h2><p>Sterne aus allen Fächern im Hub zählen zusammen. Jedes Level bringt eine Belohnung.</p>',
+               ('<h2 id="ptLvT">Alle ${L.length} Level</h2><p>Sterne aus allen Fächern im Glitchlab zählen zusammen. Jedes Level bringt eine Belohnung.</p>',
                 '<h2 id="ptLvT">Alle Level</h2><p>Sterne aus allen Modulen und Fächern zählen zusammen. Bis Level 100 bringt fast jedes Level eine Belohnung. Danach geht es offen weiter: alle 30 Sterne ein Level. Gegenstände aus der Schweiz gibt es für die Diplome aus «Entdeckungsreise Schweiz».</p>')]:
     assert _a in portal, _a
     portal = portal.replace(_a, _b, 1)

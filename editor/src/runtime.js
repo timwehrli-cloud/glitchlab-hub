@@ -2,7 +2,7 @@
    Daten: window.MODUL = { titel, beschreibung, emoji, farbe, intro, schluss,
      etappen:[{titel, ziel, emoji, intro, lob, aufgaben:[…]}], lexikon:[{wort, erklaerung}],
      diplome:[{id, name, emoji, beschreibung, bedingung}], links:[{titel, url}] }
-   Im Glitchlab-Hub gibt es window.GLHub (Sterne, Diplome, Speichern). */
+   Im Glitchlab gibt es window.GLHub (Sterne, Diplome, Speichern). */
 (function () {
   "use strict";
   const M = window.MODUL || {}, HUB = window.GLHub || null, G = window.GLGlitch;
@@ -10,13 +10,13 @@
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   const slug = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, " ").trim();
-  /* gLiTCh so, wie das Kind ihn im Hub angezogen hat (ohne Hub: ohne Outfit) */
+  /* gLiTCh so, wie das Kind ihn im Glitchlab angezogen hat (ohne Glitchlab: ohne Outfit) */
   /* Maskottchen aus dem Editor: gLiTCh (Standard), Fenni oder ein eigenes */
   const MAS = (M.opt && M.opt.mascot) || { typ: "glitch" }, NAME = window.GLMascot ? GLMascot.nameOf(MAS) : "gLiTCh";
   const MSVG = window.GLMascot ? GLMascot.svg(MAS) : null;
   const nm = t => MSVG ? String(t ?? "").replace(/gLiTChs/g, NAME + "s").replace(/gLiTCh/g, NAME) : t;
   if (MSVG) document.documentElement.classList.add("own-mascot");
-  const gsvg = mood => { if (MSVG) return MSVG; try { const x = HUB && HUB.glitch && HUB.glitch(mood); if (x) return x; } catch (e) { /* ohne Hub */ } return G ? G.svg(mood, "#8B5CFF") : ""; };
+  const gsvg = mood => { if (MSVG) return MSVG; try { const x = HUB && HUB.glitch && HUB.glitch(mood); if (x) return x; } catch (e) { /* ohne Glitchlab */ } return G ? G.svg(mood, "#8B5CFF") : ""; };
   const gl = (mood, cls = "") => `<span class="glitch ${cls}">${gsvg(mood)}</span>`;
   /* Schalter aus dem Editor: was das Modul anbietet und wie es zwischen den Etappen weitergeht */
   const O = Object.assign({ tipps: true, vorlesen: true, lexikon: true, pdf: true, freigabe: "keine", code: "" }, M.opt || {});
@@ -29,7 +29,7 @@
   document.documentElement.style.setProperty("--mc", /^#[0-9a-f]{3,8}$/i.test(M.farbe || "") ? M.farbe : "#A07CFF");
   document.title = M.titel || "gLiTCh-Modul";
 
-  /* ---------- Speicherstand (im Hub fürs ganze Team, sonst nur auf diesem Gerät) ---------- */
+  /* ---------- Speicherstand (im Glitchlab fürs ganze Team, sonst nur auf diesem Gerät) ---------- */
   let S = null;
   try { S = HUB ? HUB.laden() : JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
   S = Object.assign({ ans: {}, dips: [], lex: false, fertig: false, gate: {}, selbst: {} }, S || {});
@@ -149,7 +149,7 @@
         ${(M.links || []).length ? `<button type="button" data-go="links">🔗 Links</button>` : ""}
         ${O.pdf ? `<button type="button" data-go="pdf">📄 Zusammenfassung als PDF</button>` : ""}
         <button type="button" data-go="ziel">🏁 Ziel</button>
-        ${HUB ? `<button type="button" data-go="exit">← Zurück zum Hub</button>` : ""}
+        ${HUB ? `<button type="button" data-go="exit">← Zurück zum Glitchlab</button>` : ""}
       </div>
       <nav class="tabs" id="tabs" aria-label="Bausteine"></nav>
       <main class="lab-grid"><section class="stage" id="stage"></section><aside class="side" id="side"></aside></main>`;
@@ -282,7 +282,7 @@
       ${DIP.length ? `<h3>Diplome</h3><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e wall" aria-hidden="true">${wall(d)}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>` : ""}
       ${GATES.includes("selbst") && Object.keys(S.selbst).length ? `<h3>Eure Selbsteinschätzung</h3><div class="selbst-list">${ET.map((E, e) => { const se = S.selbst[e], x = se && SELBST.find(y => y[0] === se.w); return x ? `<div><span>${x[1]}</span><b>${esc(E.titel)}</b><small>${esc(x[2])}${se.t ? " · «" + esc(se.t) + "»" : ""}</small></div>` : ""; }).join("")}</div>` : ""}
       ${O.pdf ? `<div class="pdf-box"><span>📄</span><div><b>Zusammenfassung als PDF</b><small>Alles Wichtige aus dem Modul${LEX.length ? ", die Fachwörter" : ""} und eure Sterne zum Aufbewahren.</small></div><button type="button" class="btn" data-pdf>Herunterladen</button></div>` : ""}
-      <div class="nav"><button type="button" class="btn" data-prev>← Zurück</button>${HUB ? `<button type="button" class="btn primary" data-exit>Zurück zum Hub</button>` : ""}</div></div>`;
+      <div class="nav"><button type="button" class="btn" data-prev>← Zurück</button>${HUB ? `<button type="button" class="btn primary" data-exit>Zurück zum Glitchlab</button>` : ""}</div></div>`;
     $("[data-prev]").onclick = () => goB(B.length - 1);
     const pb = $("[data-pdf]"); if (pb) pb.onclick = () => summaryPdf(pb);
     const ex = $("[data-exit]"); if (ex) ex.onclick = () => HUB.beenden();
@@ -680,7 +680,7 @@
     if (word) { const w = LEX.find(x => x.wort === word); if (w) { $("#ll", ov).insertAdjacentHTML("beforebegin", `<div class="bubble" style="margin-bottom:12px"><b>${esc(w.wort)}</b><p>${esc(w.erklaerung)}</p></div>`); } }
   }
   function showDips() { dlg(`<h2>🏅 Diplome</h2><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e wall" aria-hidden="true">${wall(d)}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>`); }
-  function showDip(d) { confetti(40); setTimeout(() => { const h = document.querySelector(".ov .hero"); if (h) h.insertAdjacentHTML("afterend", `<div class="dip-new">${wall(d)}</div>`); }, 0); showMsg("cool", `🏅 **Neues Diplom: ${d.name}!**\n\n${d.beschreibung || ""}${HUB ? "\n\nSchaut im Hub in eurem Zimmer: Vielleicht gibt es dort etwas Neues." : ""}`, "Juhui!"); }
+  function showDip(d) { confetti(40); setTimeout(() => { const h = document.querySelector(".ov .hero"); if (h) h.insertAdjacentHTML("afterend", `<div class="dip-new">${wall(d)}</div>`); }, 0); showMsg("cool", `🏅 **Neues Diplom: ${d.name}!**\n\n${d.beschreibung || ""}${HUB ? "\n\nSchaut im Glitchlab in eurem Zimmer: Vielleicht gibt es dort etwas Neues." : ""}`, "Juhui!"); }
   function showLinks() { dlg(`<h2>🔗 Links</h2><ul class="links">${(M.links || []).map(l => `<li><a href="${esc(/^https?:\/\//i.test(l.url) ? l.url : "#")}" target="_blank" rel="noopener">${esc(l.titel || l.url)}</a>${l.titel ? `<br><small>${esc(l.url)}</small>` : ""}</li>`).join("")}</ul>`); }
   function confetti(n = 18) {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;

@@ -1,4 +1,4 @@
-# Glitchlab-Hub
+# Glitchlab
 
 Die Lernplattform mit gLiTCh: Startseite mit dem Maskottchen, Fächer (M&I, NMG, Deutsch, Mathematik) und darin die Module.
 Kinder haben eigene Konten, die in Klassen eingeteilt sind. Der Fortschritt (Sterne) ist auf jedem Gerät gleich.
@@ -21,7 +21,7 @@ Ab jetzt gehen alle Sterne an das ganze Team (bis 4 Kinder pro Gerät). Mit dem 
 **Sterne gehen nie verloren:** Wer eine Aufgabe wiederholt, behält immer das beste Resultat.
 
 **gLiTChs Zimmer:** Auf der Startseite auf «gLiTChs Zimmer» tippen. Dort gibt es Garderobe, Zimmer, Emotes,
-Diplome und alle Level. Sterne aus **allen Fächern** zählen zusammen. Das Outfit trägt gLiTCh überall im Hub.
+Diplome und alle Level. Sterne aus **allen Fächern** zählen zusammen. Das Outfit trägt gLiTCh überall im Glitchlab.
 Hier rüstet man alles aus: Outfits, Zimmer-Gegenstände, Hintergrund und Emotes.
 
 **Emotes** gibt es nicht über Level, sondern über Module: «Hopp Schwiiz!» und «W» hat man von Anfang an, jedes weitere
@@ -56,7 +56,7 @@ Die Gruppe ist mit den Namen des Teams schon ausgefüllt.
 - Die Arbeit der Gruppe (z. B. der Prompt) wird alle paar Sekunden gespeichert, und zwar für jedes Teammitglied.
   Arbeitet Anna nächste Woche auf ihrem eigenen iPad weiter, findet sie den neuesten Stand.
 - Der **Freigabe-Code** für die Etappen ist `4313`. Ändern kannst du ihn in `js/config.js` (`TEACHER_PIN`).
-- Das Bilder-Quiz mit eigenen Fotos aus dem alten Lab ist noch nicht im Hub. «KI-Bild oder echt?» läuft ohne diesen Teil.
+- Das Bilder-Quiz mit eigenen Fotos aus dem alten Lab ist noch nicht im Glitchlab. «KI-Bild oder echt?» läuft ohne diesen Teil.
 
 ## So funktioniert es für dich (Lehrperson)
 
@@ -78,7 +78,7 @@ Unten auf «Für Lehrpersonen» tippen und mit E-Mail und Passwort anmelden. Dor
 
 ## Spiele aus eigenen Artefakten
 
-Im Ordner `games/` liegen fertige Spiele, die im Hub im Rahmen laufen. Mit «✓ Fertig» oben bekommen die Kinder 1 Stern:
+Im Ordner `games/` liegen fertige Spiele, die im Glitchlab im Rahmen laufen. Mit «✓ Fertig» oben bekommen die Kinder 1 Stern:
 
 | Fach · Thema | Spiel | Ordner |
 | --- | --- | --- |
@@ -88,7 +88,7 @@ Im Ordner `games/` liegen fertige Spiele, die im Hub im Rahmen laufen. Mit «✓
 
 ## Module hochladen (HTML-Dateien)
 
-Im Lehrpersonen-Bereich gibt es das Feld **«Module hochladen»**. Zieh eine fertige HTML-Datei hinein, zum Beispiel aus dem gLiTCh-Editor. Der Hub liest den **Steckbrief**, einen kleinen JSON-Block (eine Datenliste in Textform) in der Datei: `<script type="application/json" id="glitchlab-modul">`. Daraus übernimmt er Titel, Fach, Thema, Aufgaben mit Sternen und die Extras.
+Im Lehrpersonen-Bereich gibt es das Feld **«Module hochladen»**. Zieh eine fertige HTML-Datei hinein, zum Beispiel aus dem gLiTCh-Editor. Das Glitchlab liest den **Steckbrief**, einen kleinen JSON-Block (eine Datenliste in Textform) in der Datei: `<script type="application/json" id="glitchlab-modul">`. Daraus übernimmt er Titel, Fach, Thema, Aufgaben mit Sternen und die Extras.
 
 - **Extras:** Outfits, Emotes, Zimmer-Gegenstände und Hintergründe. Nach dem Hochladen erscheinen sie im Zimmer von gLiTCh. Freigeschaltet werden sie im Modul, je nach Bedingung: `sofort`, `start`, `sterne:5`, `fertig` oder `badge:NAME`.
 - **Im Modul** gibt es `window.GLHub` mit `sterne(aufgabe, n)`, `badge(name)`, `speichern(obj)`, `laden()`, `fertig()` und `beenden()`. Sterne bekommen alle im Team, die Arbeit wird auf alle Geräte synchronisiert (abgeglichen).
@@ -106,7 +106,7 @@ Der Ordner `editor/` enthält den **gLiTCh-Editor**, ein eigenes Artefakt in cla
 
 ## Einrichtung (ca. 30 Minuten, einmalig)
 
-Ohne Einrichtung läuft der Hub im **Demo-Modus**: Alles bleibt nur auf dem jeweiligen Gerät.
+Ohne Einrichtung läuft das Glitchlab im **Demo-Modus**: Alles bleibt nur auf dem jeweiligen Gerät.
 Für echte Konten braucht es die zwei Gratis-Dienste.
 
 ### Schritt 1: Datenbank bei Supabase
@@ -153,7 +153,7 @@ Für echte Konten braucht es die zwei Gratis-Dienste.
 
 ### Schritt 4 (empfohlen): Datenbank in den Ferien wachhalten
 
-Supabase pausiert Gratis-Projekte, wenn eine Woche lang niemand den Hub benutzt (z. B. in den Ferien).
+Supabase pausiert Gratis-Projekte, wenn eine Woche lang niemand das Glitchlab benutzt (z. B. in den Ferien).
 Die Daten bleiben erhalten. Du kannst das Projekt im Supabase-Dashboard mit **Resume project** wieder starten.
 
 Bequemer: Die Datei `.github/workflows/wachhalten.yml` fragt alle 3 Tage kurz bei der Datenbank an.
@@ -188,7 +188,7 @@ Ein Thema ohne Module zeigt «Bald».
 Das Modul bekommt `api.award(aufgabe, sterne, daten)`. Damit gehen die Sterne an alle Kinder im Team.
 Die `id` eines Moduls und seiner Aufgaben nie mehr ändern, sonst passen die gespeicherten Sterne nicht mehr.
 
-Mit Claude Code geht das am schnellsten: «Baue das Modul X für den Glitchlab-Hub nach der Vorlage in js/modules.js».
+Mit Claude Code geht das am schnellsten: «Baue das Modul X für das Glitchlab nach der Vorlage in js/modules.js».
 
 ## Dateien
 
@@ -205,7 +205,7 @@ Mit Claude Code geht das am schnellsten: «Baue das Modul X für den Glitchlab-H
 | `lab/index.html` | Das gLiTCh-Lab (Prompt-Labor, Fake-News-Detektiv, KI-Bild, Zimmer) |
 | `lab/hub-portal.js` | Brücke zwischen Lab und Hub (wer arbeitet, Sterne, Speichern) |
 | `tools/build_lab.py` | Baut `lab/` neu aus dem gLiTCh-Lab «NMG Schweiz» (+ M&I-Module aus dem älteren Lab) |
-| `games/wueste/`, `games/dschungel/`, `games/tundra/`, `games/lava/` | Die Abenteuer-Games (Deutsch · Gespräche führen) mit Brücke zum Hub |
+| `games/wueste/`, `games/dschungel/`, `games/tundra/`, `games/lava/` | Die Abenteuer-Games (Deutsch · Gespräche führen) mit Brücke zum Glitchlab |
 | `tools/build_games.py` | Baut ein Game neu: `python3 tools/build_games.py <datei.html> dschungel` (oder wueste, tundra, lava) |
 | `tools/bump_version.py` | Vor jedem Hochladen ausführen: neue Versionsnummer, damit Browser sofort die neuen Dateien laden |
 | `js/uploads.js` | Hochgeladene HTML-Module: Steckbrief lesen, Extras, Schnittstelle `GLHub`, Vorlage |

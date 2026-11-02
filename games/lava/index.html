@@ -592,7 +592,7 @@ pre.sum{white-space:pre-wrap;font-family:var(--body);font-size:14px;background:v
 </head>
 <body>
 <script>
-/* Brücke zum Glitchlab-Hub (Teil 1): Spielstand pro Team */
+/* Brücke zum Glitchlab (Teil 1): Spielstand pro Team */
 (function(){ var HB = null; try { HB = window.parent !== window && window.parent.GLHubBridge; } catch(e){}
   if (!HB) return; var ctx = HB.context("lava"); window.__GLCTX = ctx; var K = ctx.workKey("lava");
   var gi = Storage.prototype.getItem, si = Storage.prototype.setItem;
@@ -1501,7 +1501,7 @@ window.__WG = { get S(){ return S; }, get G(){ return G; }, save: save, render: 
 </script>
 
 <script>
-/* Brücke zum Glitchlab-Hub (Teil 2): Namen vorausfüllen und Sterne melden */
+/* Brücke zum Glitchlab (Teil 2): Namen vorausfüllen und Sterne melden */
 (function(){ var HB = null; try { HB = window.parent !== window && window.parent.GLHubBridge; } catch(e){}
   var ctx = window.__GLCTX; if (!HB || !ctx) return;
   var W = window.__WG; if (!W) return;

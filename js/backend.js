@@ -1,5 +1,5 @@
 /* =====================================================================
-   Glitchlab-Hub · Datenspeicher
+   Glitchlab · Datenspeicher
    Zwei Varianten mit derselben Schnittstelle:
    - SupabaseBackend: echte Online-Datenbank (alle Geräte gleich)
    - DemoBackend:     nur dieses Gerät (localStorage), zum Ausprobieren

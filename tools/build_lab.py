@@ -1,11 +1,11 @@
-"""Baut lab/index.html und lab/hub-portal.js für den Glitchlab-Hub.
+"""Baut lab/index.html und lab/hub-portal.js für das Glitchlab.
 
 Aufruf: python3 tools/build_lab.py <gLiTCh-Lab-NMG-Schweiz.html> <gLiTCh-Lab-NMG.html (alt)>
 
 - Grundlage ist das gLiTCh-Lab «NMG Schweiz» (8 Schweiz-Module, Schweizer Outfits, Chalet-Zimmer).
 - Aus dem älteren gLiTCh-Lab kommen die M&I-Module (Prompt-Labor, Fake-News, KI-Bild) in die
   Modulliste und das Pixel-Zimmer als zweiter Hintergrund.
-- Das alte «Portal» (Konten, AirDrop-Dateien, Lehrperson) wird durch eine Brücke zum Hub ersetzt."""
+- Das alte «Portal» (Konten, AirDrop-Dateien, Lehrperson) wird durch eine Brücke zum Glitchlab ersetzt."""
 import re, sys, pathlib
 src = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
 old = pathlib.Path(sys.argv[2]).read_text(encoding="utf-8")
@@ -72,11 +72,11 @@ rep("const MODULES = [\n", "const MODULES = [\n" + mi)
 a = portal.index("const PKEY = "); b = portal.index("const MODULES = [")
 portal = portal[:a] + portal[b:]
 a = portal.index("let D = lsGet(PKEY)"); b = portal.index("const OUTFIT_MAP")
-portal = portal[:a] + r'''/* ===== Brücke zum Glitchlab-Hub =====
-   Der Hub liefert Kind, Team, Sterne und Extras. Alles wird dort gespeichert. */
+portal = portal[:a] + r'''/* ===== Brücke zum Glitchlab =====
+   Das Glitchlab liefert Kind, Team, Sterne und Extras. Alles wird dort gespeichert. */
 const HB = (()=>{ try { return window.parent !== window && window.parent.GLHubBridge ? window.parent.GLHubBridge : null; } catch(e){ return null; } })();
 const MODE0 = (location.hash || "#lobby").slice(1);
-/* Prompt-Labor: Teil 1 und Teil 2 sind im Hub zwei Module (gleiche Arbeit, eigene Ansicht) */
+/* Prompt-Labor: Teil 1 und Teil 2 sind im Glitchlab zwei Module (gleiche Arbeit, eigene Ansicht) */
 window.GLAB_PART = HB ? (MODE0 === "prompt2" ? 2 : MODE0 === "prompt" ? 1 : 0) : 0;
 const MODE = MODE0 === "prompt2" ? "prompt" : MODE0;
 const LAB_MODS = ["prompt","fakenews","kibilder"].concat(MODULES.filter(m=>!["prompt","fakenews","kibilder"].includes(m.id) && m.live).map(m=>m.id));
@@ -176,7 +176,7 @@ a = portal.index("function render(){"); b = portal.index("function setupHTML(){"
 portal = portal[:a] + r'''function render(){
   if (!LIB) return;
   if (curMod){ if (window.GLAB_ONCLOSE) try { window.GLAB_ONCLOSE(); } catch(e){} return; }
-  if (!ctx){ portalEl.innerHTML = `<div class="pt-card" style="margin-top:40px"><h2>Bitte über den Glitchlab-Hub öffnen</h2><p>Diese Seite gehört zum Glitchlab-Hub. Öffne zuerst den Hub und melde dich dort an.</p></div>`; return; }
+  if (!ctx){ portalEl.innerHTML = `<div class="pt-card" style="margin-top:40px"><h2>Bitte über das Glitchlab öffnen</h2><p>Diese Seite gehört zum Glitchlab. Öffne zuerst das Glitchlab und melde dich dort an.</p></div>`; return; }
   portalEl.innerHTML = dashHTML();
   sayHide();
   if (MODE === "home") homeHooks();
@@ -184,7 +184,7 @@ portal = portal[:a] + r'''function render(){
 ''' + portal[b:]
 portal, n = re.subn(r"Deine Lernwelt f[^$`<]*", "gLiTChs Zimmer", portal, count=1); assert n == 1
 rep('''  return topHTML(`<span class="pt-chip" style="--c:${colorOf(s.id)}"><i aria-hidden="true">${esc(s.n.charAt(0).toUpperCase())}</i>${esc(s.n)}</span><button type="button" class="pt-btn small" data-pt="logout">Abmelden</button>`)''',
-    '''  return (MODE === "home" ? "" : topHTML(`<span class="pt-chip" style="--c:${colorOf(s.id)}"><i aria-hidden="true">${esc(s.n.charAt(0).toUpperCase())}</i>${esc(s.n)}</span><button type="button" class="pt-btn small primary" data-pt="hub">← Zurück zum Hub</button>`))''')
+    '''  return (MODE === "home" ? "" : topHTML(`<span class="pt-chip" style="--c:${colorOf(s.id)}"><i aria-hidden="true">${esc(s.n.charAt(0).toUpperCase())}</i>${esc(s.n)}</span><button type="button" class="pt-btn small primary" data-pt="hub">← Zurück zum Glitchlab</button>`))''')
 m = re.search(r"\n    <h2 class=\"pt-h\">Module</h2>.*?(?=`;\n}\nfunction railBtn)", portal, re.S); assert m, "Modulliste nicht gefunden"
 portal = portal[:m.start()] + portal[m.end():]
 rep('''  const greet = T.stars === 0 ?''', '''  const team = D.cls.students.map(x=>x.n), who = team.length > 1 ? team.slice(0, -1).join(", ") + " und " + team[team.length-1] : s.n;
@@ -192,7 +192,7 @@ rep('''  const greet = T.stars === 0 ?''', '''  const team = D.cls.students.map(
 rep('''  if (a === "logo"){''', '''  if (a === "hub"){ return GLAB.exit(); }
   if (a === "bg-pixel" || a === "bg-chalet"){ return pickBg(a.slice(3)); }
   if (a === "logo"){''')
-rep('''<p>Sterne aus allen Modulen zählen zusammen. Jedes Level bringt eine Belohnung.</p>''', '''<p>Sterne aus allen Fächern im Hub zählen zusammen. Jedes Level bringt eine Belohnung.</p>''')
+rep('''<p>Sterne aus allen Modulen zählen zusammen. Jedes Level bringt eine Belohnung.</p>''', '''<p>Sterne aus allen Fächern im Glitchlab zählen zusammen. Jedes Level bringt eine Belohnung.</p>''')
 
 # Hintergrund-Auswahl im Dialog «Zimmer einrichten»
 rep('''    <div class="pt-room" style="margin-top:14px">${RR.roomSVG(items)}''', '''    ${bgHTML(T)}
@@ -210,8 +210,8 @@ function pickBg(id){
 }
 function roomHTML(){''')
 
-# ---------- Startseiten-Modus (#home): gLiTChs Zimmer direkt im Hub ----------
-rep("""function railBtn(act, ic, n, sub, isNew, c, k){""", """/* Im Hub eingebettet: Höhe melden und Fenster (Garderobe usw.) gross machen */
+# ---------- Startseiten-Modus (#home): gLiTChs Zimmer direkt im Glitchlab ----------
+rep("""function railBtn(act, ic, n, sub, isNew, c, k){""", """/* Im Glitchlab eingebettet: Höhe melden und Fenster (Garderobe usw.) gross machen */
 let homeHooked = false;
 function homeHooks(){
   if (homeHooked || !HB) return; homeHooked = true;
@@ -248,7 +248,7 @@ rep("""${RR.EMOTES.map(x=>{ const open = li >= x.lv, on = (p.emote || "w") === x
 rep("""esc(x.d)) : `ab Level ${x.lv+1}`}</small>""", """esc(x.d)) : esc(emoteReq(x))}</small>""")
 rep("""  if (li < x.lv){ const b = ov.querySelector(`[data-pt-emote="${id}"]`);""", """  if (!emoteOpen(x, totalsFor(D.me))){ const b = ov.querySelector(`[data-pt-emote="${id}"]`);""")
 
-# Diplome zählen: nur echte Diplome (keine Hub-Merker wie «hub:mi-start»)
+# Diplome zählen: nur echte Diplome (keine Glitchlab-Merker wie «hub:mi-start»)
 portal = portal.replace("T.badges.size", "LIB.BADGES.filter(b=>T.badges.has(b.id)).length")
 exec(open(pathlib.Path(__file__).with_name("upload_patch_portal.py"), encoding="utf-8").read())
 exec(open(pathlib.Path(__file__).with_name("wall_patch_portal.py"), encoding="utf-8").read())
@@ -281,6 +281,6 @@ html.hub-home .pt-card.pt-home{margin:0}
 </style></head>""", 1)
 exec(open(pathlib.Path(__file__).with_name("lex_patch.py"), encoding="utf-8").read())
 exec(open(pathlib.Path(__file__).with_name("upload_patch_page.py"), encoding="utf-8").read())
-page = re.sub(r"<title>[^<]*</title>", "<title>gLiTCh-Lab · Glitchlab-Hub</title>", page, count=1)
+page = re.sub(r"<title>[^<]*</title>", "<title>gLiTCh-Lab · Glitchlab</title>", page, count=1)
 (out_dir / "index.html").write_text(page, encoding="utf-8")
 print("ok", len(page), len(portal))

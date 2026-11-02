@@ -1,5 +1,5 @@
 /* =====================================================================
-   Glitchlab-Hub · eigene Module der Lehrperson (aus dem Modul-Editor)
+   Glitchlab · eigene Module der Lehrperson (aus dem Modul-Editor)
    Ein eigenes Modul ist reine Daten (kein Code):
    { title, teaser, subject, theme, newTheme:{title, art}, art, minutes,
      items: [ {type:"info", title, text}
@@ -33,7 +33,7 @@
   const artOf = key => H.ART_CHOICES.find(a => a.key === key) || H.ART_CHOICES[0];
   H.scorable = d => (d.items || []).filter(i => i.type !== "info");
 
-  /* Veröffentlichte Module (Liste aus der Datenbank) im Hub anmelden */
+  /* Veröffentlichte Module (Liste aus der Datenbank) im Glitchlab anmelden */
   H.registerCustom = list => {
     H.modules = H.modules.filter(m => !m.custom);
     H.themes = H.themes.filter(t => !t.custom);

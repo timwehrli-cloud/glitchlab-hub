@@ -1,6 +1,6 @@
 /* =====================================================================
-   Glitchlab-Hub · App
-   Ansichten: Klassencode → Name → Bild-PIN → Hub (Fächer) → Fach → Modul
+   Glitchlab · App
+   Ansichten: Klassencode → Name → Bild-PIN → Glitchlab (Fächer) → Fach → Modul
               + Teampartner auf demselben Gerät + Lehrpersonen-Bereich
    ===================================================================== */
 (async function () {
@@ -223,7 +223,7 @@
   }
   /* ---------- Logo: gLiTCh mit animiertem Glitch-Schriftzug ---------- */
   const brandLogo = (mood, sub) => `<span class="brand-g" aria-hidden="true"><span class="glitch">${G.svg(mood, "#8B5CFF", { outfit: S.me ? outfitOf() : {}, lp: isLP() })}</span><i class="brand-spark s1"></i><i class="brand-spark s2"></i></span>
-    <span class="brand-t"><b class="logo-word" data-t="Glitchlab-Hub"><span class="lw-a">Glitch</span><span class="lw-b">lab</span><span class="lw-c">-Hub</span></b><small>${esc(sub)}</small></span>`;
+    <span class="brand-t"><b class="logo-word" data-t="Glitchlab"><span class="lw-a">Glitch</span><span class="lw-b">lab</span></b><small>${esc(sub)}</small></span>`;
   /* ---------- Navigation ---------- */
   function go(view) {
     if (S.cleanup) { try { S.cleanup(); } catch (e) { /* egal */ } S.cleanup = null; }
@@ -284,7 +284,7 @@
      ================================================================= */
   function viewCode() {
     app.innerHTML = `<main class="wrap gate"><form class="card" id="codeForm" autocomplete="off">
-      <div class="gate-head">${gl("wink", "#8B5CFF")}<div><p class="eyebrow">Glitchlab-Hub</p><h1>Hoi! Ich bin gLiTCh.</h1><p>Gib den Klassencode ein. Du findest ihn auf deiner Login-Karte.</p></div></div>
+      <div class="gate-head">${gl("wink", "#8B5CFF")}<div><p class="eyebrow">Glitchlab</p><h1>Hoi! Ich bin gLiTCh.</h1><p>Gib den Klassencode ein. Du findest ihn auf deiner Login-Karte.</p></div></div>
       <label class="f" for="codeIn">Klassencode<input class="input code" id="codeIn" placeholder="z. B. PIXEL-4821" value="${esc(S.code)}" autocapitalize="characters" spellcheck="false"></label>
       <p class="err" id="codeErr" role="alert"></p>
       <button class="btn primary" type="submit">Weiter</button>
@@ -575,7 +575,7 @@
   /* =================================================================
      5b) gLiTCh-Lab: Module und gLiTChs Zimmer (lab/index.html)
      Die Lab-Seite läuft in einem Rahmen und spricht über window.GLHubBridge
-     mit dem Hub: wer arbeitet, Sterne, Diplome, Outfit und gespeicherte Arbeit.
+     mit dem Glitchlab: wer arbeitet, Sterne, Diplome, Outfit und gespeicherte Arbeit.
      ================================================================= */
   const tokensAll = () => [S.token, ...S.team.map(t => t.token)];
   const teamSig = () => [S.me.student.id, ...S.team.map(t => t.student.id)].sort().join("_");
@@ -712,7 +712,7 @@
     overlay(on) {
       const f = document.getElementById("roomFrame"); if (!f) return;
       f.classList.toggle("full", on); document.body.style.overflow = on ? "hidden" : "";
-      /* Sicherheitsnetz: Ist im Zimmer kein Fenster mehr offen, gibt der Hub die Seite wieder frei (sonst wären die Fächer blockiert) */
+      /* Sicherheitsnetz: Ist im Zimmer kein Fenster mehr offen, gibt das Glitchlab die Seite wieder frei (sonst wären die Fächer blockiert) */
       clearInterval(ovTimer);
       if (on) ovTimer = setInterval(() => {
         const fr = document.getElementById("roomFrame"); if (!fr || !fr.classList.contains("full")) return clearInterval(ovTimer);
@@ -730,7 +730,7 @@
     const names = [S.me.student, ...S.team.map(t => t.student)];
     document.body.classList.add("in-lab");
     app.innerHTML = `<div class="labshell">
-      <div class="labbar"><button type="button" class="btn small" data-labback>← ${m ? esc((H.themes.find(t => t.id === m.theme) || {}).title || "Zurück") : "Hub"}</button>
+      <div class="labbar"><button type="button" class="btn small" data-labback>← ${m ? esc((H.themes.find(t => t.id === m.theme) || {}).title || "Zurück") : "Glitchlab"}</button>
         <b class="labtitle">${esc(m ? m.title : "gLiTChs Zimmer")}</b>
         <span class="labwho">${names.map(k => `<span class="chip">${kidG("normal", k, "still")}${esc(k.first_name)}</span>`).join("")}</span>
         ${m && (m.upload || m.doneBtn) ? `<button type="button" class="btn small primary" data-updone title="Gibt 1 Stern">✓ Fertig</button>` : ""}
@@ -944,7 +944,7 @@
       const f = inp.files && inp.files[0]; inp.value = ""; if (!f) return;
       let b = null; try { b = JSON.parse(await f.text()); } catch (e) { b = null; }
       const box = $("#restoreInfo");
-      if (!b || b.format !== "glitchlab-klasse" || !b.cls || !Array.isArray(b.students)) { box.innerHTML = `<p class="err">Diese Datei ist keine Klassen-Sicherung aus dem Glitchlab-Hub.</p>`; return; }
+      if (!b || b.format !== "glitchlab-klasse" || !b.cls || !Array.isArray(b.students)) { box.innerHTML = `<p class="err">Diese Datei ist keine Klassen-Sicherung aus dem Glitchlab.</p>`; return; }
       const kids = b.students.filter(k => !k.is_teacher), taken = LP.classes.some(x => x.code === b.cls.code);
       box.innerHTML = `<div class="restore-card"><b>${esc(b.cls.name)}</b><small>Gesichert am ${esc(new Date(b.saved_at).toLocaleString("de-CH"))} · ${kids.length} Kinder · ${(b.progress || []).length} Spielstände${(b.uploads || []).length ? ` · ${b.uploads.length} hochgeladene Module` : ""}</small>
         <p class="hint" style="margin:6px 0">${taken ? `Eine Klasse mit dem Code ${esc(b.cls.code)} gibt es schon. Die wiederhergestellte Klasse bekommt einen neuen Klassencode.` : `Die Klasse bekommt wieder den Code <b>${esc(b.cls.code)}</b>, wenn er noch frei ist.`}</p>
@@ -978,7 +978,7 @@
       x.lineWidth = 6; x.strokeStyle = "#7B4CEF"; x.stroke();
       x.save(); rr(4, 4, cv.width - 8, 130, 40); x.clip(); const gr = x.createLinearGradient(0, 0, cv.width, 0); gr.addColorStop(0, "#2A1466"); gr.addColorStop(1, "#7B4CEF"); x.fillStyle = gr; x.fillRect(4, 4, cv.width - 8, 130); x.restore();
       if (gimg) x.drawImage(gimg, 30, 18, 100, 100);
-      x.fillStyle = "#FFFFFF"; x.font = "800 34px system-ui, -apple-system, Segoe UI, sans-serif"; x.fillText("Glitchlab-Hub", 145, 62);
+      x.fillStyle = "#FFFFFF"; x.font = "800 34px system-ui, -apple-system, Segoe UI, sans-serif"; x.fillText("Glitchlab", 145, 62);
       x.font = "600 24px system-ui, sans-serif"; x.fillStyle = "#D9CCFF"; x.fillText(c.name, 145, 100);
       x.fillStyle = k.color || "#7B4CEF"; x.beginPath(); x.arc(cv.width - 70, 68, 26, 0, Math.PI * 2); x.fill();
       x.fillStyle = "#14062E"; x.font = "900 64px system-ui, sans-serif"; x.fillText(k.first_name, 40, 222);
@@ -1168,7 +1168,7 @@
     const subjName = id => (H.subjects.find(s => s.id === id) || {}).short || "–";
     return `<section class="panel"><div class="row" style="justify-content:space-between"><h2>Module hochladen</h2>
         <span class="row">${CFG.EDITOR_URL ? `<a class="btn small primary" href="${esc(CFG.EDITOR_URL)}" target="_blank" rel="noopener">✨ Im gLiTCh-Editor erstellen</a>` : ""}<button type="button" class="btn small" data-uptpl>📄 Vorlage herunterladen</button></span></div>
-      <p class="hint">Zieh fertige HTML-Module oder Belohnungs-Pakete (Addons mit Belohnungen für höhere Level) hierher, zum Beispiel aus dem gLiTCh-Editor. Outfits, Emotes, Zimmer-Gegenstände und Hintergründe aus dem Steckbrief der Datei werden im Hub verfügbar. Die Kinder schalten sie im Modul frei.</p>
+      <p class="hint">Zieh fertige HTML-Module oder Belohnungs-Pakete (Addons mit Belohnungen für höhere Level) hierher, zum Beispiel aus dem gLiTCh-Editor. Outfits, Emotes, Zimmer-Gegenstände und Hintergründe aus dem Steckbrief der Datei werden im Glitchlab verfügbar. Die Kinder schalten sie im Modul frei.</p>
       <label class="dropzone" id="upDrop" tabindex="0">
         <input type="file" id="upFile" accept=".html,.htm,text/html" multiple hidden>
         <span class="dz-ic" aria-hidden="true">⬇️</span><b>HTML-Datei hierher ziehen</b><span class="hint">oder tippen zum Auswählen · max. 8 MB pro Datei</span>
@@ -1367,7 +1367,7 @@
      Start
      ================================================================= */
   try { S.be = await window.GLBackend.create(); }
-  catch (e) { app.innerHTML = `<main class="wrap gate"><div class="card"><h1>Keine Verbindung</h1><p>Der Hub kann die Datenbank gerade nicht laden. Prüf das Internet und lade die Seite neu.</p></div></main>`; return; }
+  catch (e) { app.innerHTML = `<main class="wrap gate"><div class="card"><h1>Keine Verbindung</h1><p>Das Glitchlab kann die Datenbank gerade nicht laden. Prüf das Internet und lade die Seite neu.</p></div></main>`; return; }
   /* Rückkehr vom Bestätigungslink in der E-Mail (Supabase hängt Daten an die Adresse an) */
   const authHash = new URLSearchParams((location.hash || "").replace(/^#/, "") + "&" + (location.search || "").replace(/^\?/, ""));
   if (authHash.get("access_token") || authHash.get("type") === "signup" || authHash.get("code") || authHash.get("error")) {

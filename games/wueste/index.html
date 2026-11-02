@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <script>
-/* Brücke zum Glitchlab-Hub (Teil 1): Spielstand pro Team */
+/* Brücke zum Glitchlab (Teil 1): Spielstand pro Team */
 (function(){ var HB = null; try { HB = window.parent !== window && window.parent.GLHubBridge; } catch(e){}
   if (!HB) return; var ctx = HB.context("wueste"); window.__GLCTX = ctx; var K = ctx.workKey("wueste");
   var gi = Storage.prototype.getItem, si = Storage.prototype.setItem;
@@ -1590,7 +1590,7 @@ window.__WG = { get S(){ return S; }, get G(){ return G; }, save: save, render: 
 </script>
 
 <script>
-/* Brücke zum Glitchlab-Hub (Teil 2): Namen vorausfüllen und Sterne melden */
+/* Brücke zum Glitchlab (Teil 2): Namen vorausfüllen und Sterne melden */
 (function(){ var HB = null; try { HB = window.parent !== window && window.parent.GLHubBridge; } catch(e){}
   var ctx = window.__GLCTX; if (!HB || !ctx) return;
   var W = window.__WG; if (!W) return;

@@ -1,5 +1,5 @@
 /* =====================================================================
-   Glitchlab-Hub · animierte Pixel-Szenen für die Fächer-Auswahl
+   Glitchlab · animierte Pixel-Szenen für die Fächer-Auswahl
    Jede Szene ist ein SVG (160 × 80) im Pixel-Stil von gLiTCh.
    Die Bewegungen stehen in css/style.css unter «Fächer-Szenen».
    ===================================================================== */

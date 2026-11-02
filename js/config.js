@@ -1,8 +1,8 @@
 /* =====================================================================
-   Glitchlab-Hub · Einstellungen
+   Glitchlab · Einstellungen
    Hier trägst du nach der Einrichtung die zwei Werte aus Supabase ein
    (Supabase → Project Settings → API). Solange beide leer sind, läuft
-   der Hub im Demo-Modus: Alles wird nur auf diesem Gerät gespeichert.
+   das Glitchlab im Demo-Modus: Alles wird nur auf diesem Gerät gespeichert.
    ===================================================================== */
 window.GL_CONFIG = {
   SUPABASE_URL: "https://twhwcypheyfivroawfkx.supabase.co",        // z. B. "https://abcdefgh.supabase.co"

@@ -51,17 +51,17 @@ const now = () => Date.now();
 function lsGet(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }
 function lsSet(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
 
-/* ===== Brücke zum Glitchlab-Hub =====
-   Der Hub liefert Kind, Team, Sterne und Extras. Alles wird dort gespeichert. */
+/* ===== Brücke zum Glitchlab =====
+   Das Glitchlab liefert Kind, Team, Sterne und Extras. Alles wird dort gespeichert. */
 const HB = (()=>{ try { return window.parent !== window && window.parent.GLHubBridge ? window.parent.GLHubBridge : null; } catch(e){ return null; } })();
 const MODE0 = (location.hash || "#lobby").slice(1);
-/* Prompt-Labor: Teil 1 und Teil 2 sind im Hub zwei Module (gleiche Arbeit, eigene Ansicht) */
+/* Prompt-Labor: Teil 1 und Teil 2 sind im Glitchlab zwei Module (gleiche Arbeit, eigene Ansicht) */
 window.GLAB_PART = HB ? (MODE0 === "prompt2" ? 2 : MODE0 === "prompt" ? 1 : 0) : 0;
 const MODE = MODE0 === "prompt2" ? "prompt" : MODE0;
 const LAB_MODS = ["prompt","fakenews","kibilder"].concat(MODULES.filter(m=>!["prompt","fakenews","kibilder"].includes(m.id) && m.live).map(m=>m.id));
 const curMod = LAB_MODS.includes(MODE) ? MODE : null;
 const ctx = HB ? HB.context(curMod) : null;
-/* Extras aus hochgeladenen Modulen (vom Hub geliefert). Jedes Extra hat ein «badge»: das bekommt man, wenn die Bedingung im Modul erfüllt ist. */
+/* Extras aus hochgeladenen Modulen (vom Glitchlab geliefert). Jedes Extra hat ein «badge»: das bekommt man, wenn die Bedingung im Modul erfüllt ist. */
 const CU = window.GLAB_CUSTOM = Object.assign({outfits:[], emotes:[], room:[], bgs:[], dips:[], mods:[]}, (ctx && ctx.custom) || {});
 /* Hochgeladene Module erscheinen in der Diplom-Übersicht (ihre Diplome hängen an der Wand wie alle anderen) */
 CU.mods.forEach(m=>{ if (!MODULES.some(x=>x.id === m.id)) MODULES.push({id:m.id, n:m.n, d:"", c:m.c || "#8B5CFF", c2:"#1A0B3A", live:false, i:`<text x="12" y="13" font-size="15" text-anchor="middle" dominant-baseline="central" stroke="none" fill="currentColor">${String(m.emoji || "🧩").replace(/[<>&"]/g, "")}</text>`}); });
@@ -659,7 +659,7 @@ function sayHide(){ clearTimeout(sayT); const el = document.getElementById("ptSa
 function render(){
   if (!LIB) return;
   if (curMod){ if (window.GLAB_ONCLOSE) try { window.GLAB_ONCLOSE(); } catch(e){} return; }
-  if (!ctx){ portalEl.innerHTML = `<div class="pt-card" style="margin-top:40px"><h2>Bitte über den Glitchlab-Hub öffnen</h2><p>Diese Seite gehört zum Glitchlab-Hub. Öffne zuerst den Hub und melde dich dort an.</p></div>`; return; }
+  if (!ctx){ portalEl.innerHTML = `<div class="pt-card" style="margin-top:40px"><h2>Bitte über das Glitchlab öffnen</h2><p>Diese Seite gehört zum Glitchlab. Öffne zuerst das Glitchlab und melde dich dort an.</p></div>`; return; }
   portalEl.innerHTML = dashHTML();
   sayHide();
   if (MODE === "home") homeHooks();
@@ -703,7 +703,7 @@ function dashHTML(){
     return `<button type="button" class="pt-dip on" data-pt-badge="${b.id}" style="left:${pos.left}%; top:${pos.top}%; width:${pos.w}%; rotate:${pos.r}deg" aria-label="Diplom ${esc(b.n)}">${b.art ? `<span class="pt-wall">${b.art}</span>` : `<svg viewBox="0 0 24 24" aria-hidden="true">${b.i}</svg>`}</button>`; }).join("");
   const team = D.cls.students.map(x=>x.n), who = team.length > 1 ? team.slice(0, -1).join(", ") + " und " + team[team.length-1] : s.n;
   const greet = MODE === "home" ? (team.length > 1 ? `Hoi ${who}! Ihr arbeitet als Team: Alle Sterne bekommt ihr gemeinsam.` : T.stars === 0 ? `Hoi ${s.n}! Willkommen in meinem Zimmer. Wähle unten ein Fach, dann sammeln wir Sterne.` : `Hoi ${s.n}! Schön, dass du da bist. Wohin geht's heute?`) : T.stars === 0 ? `Willkommen in meinem Zimmer, ${s.n}! Starte ein Modul, dann sammeln wir Sterne.` : `Hey ${s.n}! Schön, dass du da bist. Wohin geht's heute?`;
-  return (MODE === "home" ? "" : topHTML(`<span class="pt-chip" style="--c:${colorOf(s.id)}"><i aria-hidden="true">${esc(s.n.charAt(0).toUpperCase())}</i>${esc(s.n)}</span><button type="button" class="pt-btn small primary" data-pt="hub">← Zurück zum Hub</button>`))
+  return (MODE === "home" ? "" : topHTML(`<span class="pt-chip" style="--c:${colorOf(s.id)}"><i aria-hidden="true">${esc(s.n.charAt(0).toUpperCase())}</i>${esc(s.n)}</span><button type="button" class="pt-btn small primary" data-pt="hub">← Zurück zum Glitchlab</button>`))
   + `<div class="pt-card pt-dark pt-home">
       <div class="pt-home-main">
         <div class="pt-room" id="ptRoom">${RR.roomSVG(items)}${dips}
@@ -724,7 +724,7 @@ function dashHTML(){
         ${railBtn("sound", window.GLAB_R.soundOn() ? "🔊" : "🔇", "Ton", window.GLAB_R.soundOn() ? "an" : "aus", false, "#FF7A00", 5)}
       </nav></div>`;
 }
-/* Im Hub eingebettet: Höhe melden und Fenster (Garderobe usw.) gross machen */
+/* Im Glitchlab eingebettet: Höhe melden und Fenster (Garderobe usw.) gross machen */
 let homeHooked = false;
 function homeHooks(){
   if (homeHooked || !HB) return; homeHooked = true;

@@ -5,10 +5,10 @@ def urep(a, b, count=1):
     n = portal.count(a); assert n == count, f"{n}x statt {count}: {a[:70]!r}"
     portal = portal.replace(a, b)
 
-# 1) Daten vom Hub übernehmen
+# 1) Daten vom Glitchlab übernehmen
 urep("const ctx = HB ? HB.context(curMod) : null;\n",
 '''const ctx = HB ? HB.context(curMod) : null;
-/* Extras aus hochgeladenen Modulen (vom Hub geliefert). Jedes Extra hat ein «badge»: das bekommt man, wenn die Bedingung im Modul erfüllt ist. */
+/* Extras aus hochgeladenen Modulen (vom Glitchlab geliefert). Jedes Extra hat ein «badge»: das bekommt man, wenn die Bedingung im Modul erfüllt ist. */
 const CU = window.GLAB_CUSTOM = Object.assign({outfits:[], emotes:[], room:[], bgs:[], dips:[], mods:[]}, (ctx && ctx.custom) || {});
 /* Hochgeladene Module erscheinen in der Diplom-Übersicht (ihre Diplome hängen an der Wand wie alle anderen) */
 CU.mods.forEach(m=>{ if (!MODULES.some(x=>x.id === m.id)) MODULES.push({id:m.id, n:m.n, d:"", c:m.c || "#8B5CFF", c2:"#1A0B3A", live:false, i:`<text x="12" y="13" font-size="15" text-anchor="middle" dominant-baseline="central" stroke="none" fill="currentColor">${String(m.emoji || "🧩").replace(/[<>&"]/g, "")}</text>`}); });

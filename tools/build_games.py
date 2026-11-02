@@ -1,7 +1,7 @@
-"""Baut games/<spiel>/index.html aus einem Abenteuer-Game (Einzeldatei) und hängt eine kleine Brücke zum Hub an.
+"""Baut games/<spiel>/index.html aus einem Abenteuer-Game (Einzeldatei) und hängt eine kleine Brücke zum Glitchlab an.
 Aufruf: python3 tools/build_games.py <game.html> [wueste|dschungel|tundra|lava]
 - Der Spielstand wird pro Team gespeichert (statt fix im Browser).
-- Die Gruppe wird mit den Namen aus dem Hub vorausgefüllt.
+- Die Gruppe wird mit den Namen aus dem Glitchlab vorausgefüllt.
 - Pro Level gibt es bis zu 10 Sterne (Wasserstand / 10)."""
 import sys, pathlib
 src = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
@@ -13,7 +13,7 @@ assert K2 in src and K1 in src, "Speicher-Schlüssel nicht gefunden"
 out = pathlib.Path(__file__).resolve().parent.parent / "games" / GAME
 out.mkdir(parents=True, exist_ok=True)
 pre = """<script>
-/* Brücke zum Glitchlab-Hub (Teil 1): Spielstand pro Team */
+/* Brücke zum Glitchlab (Teil 1): Spielstand pro Team */
 (function(){ var HB = null; try { HB = window.parent !== window && window.parent.GLHubBridge; } catch(e){}
   if (!HB) return; var ctx = HB.context("@G"); window.__GLCTX = ctx; var K = ctx.workKey("@G");
   var gi = Storage.prototype.getItem, si = Storage.prototype.setItem;
@@ -24,7 +24,7 @@ pre = """<script>
 </script>
 """
 post = """<script>
-/* Brücke zum Glitchlab-Hub (Teil 2): Namen vorausfüllen und Sterne melden */
+/* Brücke zum Glitchlab (Teil 2): Namen vorausfüllen und Sterne melden */
 (function(){ var HB = null; try { HB = window.parent !== window && window.parent.GLHubBridge; } catch(e){}
   var ctx = window.__GLCTX; if (!HB || !ctx) return;
   var W = window.__WG; if (!W) return;

@@ -1,5 +1,5 @@
 /* =====================================================================
-   Glitchlab-Hub · animierte Bilder für Themen und Module (120 × 60, Pixel-Stil)
+   Glitchlab · animierte Bilder für Themen und Module (120 × 60, Pixel-Stil)
    Die Bilder der gLiTCh-Lab-Module stammen 1:1 aus dem alten Lab (MOD_ART),
    die neuen Themen-Bilder sind im gleichen Stil gezeichnet.
    Bewegungen: «Modul-Bilder» in css/style.css (Klassen ma-…).

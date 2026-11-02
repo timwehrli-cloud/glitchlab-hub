@@ -51,7 +51,7 @@ assert _a in page
 page = page.replace(_a, 'const pwOK = v => window.GLAB_CODE_OK ? GLAB_CODE_OK(v, window.GLAB && GLAB.code ? GLAB.code() : PASSWORT) : v.trim().toUpperCase() === String(window.GLAB && GLAB.code ? GLAB.code() : PASSWORT).toUpperCase();')
 
 
-# Skin von gLiTCh (Garderobe im Hub): Schattierungen aus GLAB_SKINS, Lehrpersonen immer Gold
+# Skin von gLiTCh (Garderobe im Glitchlab): Schattierungen aus GLAB_SKINS, Lehrpersonen immer Gold
 _a = 'const shade = y => y<=3 ? "#B79CFF" : y>=11 ? "#6A3FE0" : "#8B5CFF";'
 assert _a in page
 page = page.replace(_a, '''const _L = window.GLAB_SKINS || [], _id = (opts.outfit && opts.outfit.skin) || window.GLAB_CUR_SKIN;
@@ -65,7 +65,7 @@ page = _lpfix(page)
 page = _lvfix(page)
 
 
-# Prompt-Labor im Hub: Teil 1 und Teil 2 als eigene Module (je nur ihr Reiter)
+# Prompt-Labor im Glitchlab: Teil 1 und Teil 2 als eigene Module (je nur ihr Reiter)
 _a = 'mode = o.mode==="verbessern" && o.unlocked2 ? "verbessern" : "bauen"; unlocked2 = !!o.unlocked2; }\n} catch(e) {}'
 assert _a in page
 page = page.replace(_a, _a + '''

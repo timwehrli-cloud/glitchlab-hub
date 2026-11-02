@@ -1,5 +1,5 @@
 /* =====================================================================
-   Glitchlab-Hub · Fächer und Module
+   Glitchlab · Fächer und Module
    ---------------------------------------------------------------------
    Ein neues Modul wird so eingebaut (eigene Datei in /modules oder hier):
 
@@ -46,7 +46,7 @@
   /* Themen: Jedes Fach ist in Themen gegliedert, jedes Modul gehört zu einem Thema.
      art = Name des Bildes in js/module-art.js, c/c2 = Farbverlauf dahinter. */
   H.themes = [
-    { id: "mi-start", subject: "mi", title: "Start mit gLiTCh", teaser: "So funktioniert der Hub: Sterne, Teamarbeit und dein Bild-Passwort.", art: "hallo", c: "#8B5CFF", c2: "#3A1D7A" },
+    { id: "mi-start", subject: "mi", title: "Start mit gLiTCh", teaser: "So funktioniert das Glitchlab: Sterne, Teamarbeit und dein Bild-Passwort.", art: "hallo", c: "#8B5CFF", c2: "#3A1D7A" },
     { id: "mi-ki", subject: "mi", title: "KI & Prompts", teaser: "Mit einem Prompt eine eigene App für die Klasse erfinden, testen und verbessern.", art: "prompt", c: "#7B4CEF", c2: "#2A1466" },
     { id: "mi-medien", subject: "mi", title: "Medien durchschauen", teaser: "Fake News entlarven und KI-Bilder von echten Fotos unterscheiden.", art: "fakenews", c: "#DD4646", c2: "#5A1414" },
     { id: "nmg-schweiz", subject: "nmg", title: "Entdeckungsreise Schweiz", teaser: "Kantone, Berge, Flüsse und Städte: Wir reisen quer durch die Schweiz.", art: "schweiz", c: "#4FB3E8", c2: "#0B3E5A" },
@@ -91,9 +91,9 @@
 
   H.registerModule({
     id: "mi-start", subject: "mi", theme: "mi-start", title: "Hallo gLiTCh!", minutes: 5,
-    teaser: "Lerne den Hub kennen: Sterne, Team und dein Bild-Passwort.",
+    teaser: "Lerne das Glitchlab kennen: Sterne, Team und dein Bild-Passwort.",
     activities: [
-      { id: "quiz", title: "Hub-Quiz", maxStars: 3 },
+      { id: "quiz", title: "Glitchlab-Quiz", maxStars: 3 },
       { id: "team", title: "Team-Check", maxStars: 1 }
     ],
     mount(el, api) {
