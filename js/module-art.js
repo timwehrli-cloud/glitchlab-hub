@@ -96,8 +96,7 @@ const MOD_ART = {
     ${[8, 30, 58, 84, 104].map((x, k) => `<g class="ma-pop p${(k % 3) + 1}">${r(x, 0, 2, 26 + (k % 3) * 6, "#3CC48A")}${r(x - 3, 20 + (k % 3) * 6, 8, 3, "#5FDC9F")}</g>`).join("")}
     ${r(0, 36, 22, 10, "#1F9D68")}${r(96, 34, 24, 12, "#1F9D68")}${r(40, 40, 30, 8, "#2BB57A")}
     <g class="ma-bob">${r(70, 18, 8, 10, "#E53935")}${r(70, 16, 6, 3, "#E53935")}${r(76, 17, 3, 2, "#FFC21A")}${r(71, 17, 2, 1, "#fff")}${r(68, 22, 3, 6, "#2E6BE6")}${r(72, 28, 3, 6, "#FFC21A")}</g>
-    <g class="ma-twinkle">${r(20, 14, 2, 2, "#FFE680")}${r(50, 24, 2, 2, "#FFE680")}${r(92, 12, 2, 2, "#FFE680")}${r(110, 26, 2, 2, "#FFE680")}</g>
-    <text x="60" y="56" font-size="6" font-weight="700" font-family="monospace" text-anchor="middle" fill="#fff" class="ma-label">BALD</text>`);
+    <g class="ma-twinkle">${r(20, 14, 2, 2, "#FFE680")}${r(50, 24, 2, 2, "#FFE680")}${r(92, 12, 2, 2, "#FFE680")}${r(110, 26, 2, 2, "#FFE680")}</g>`);
 
   /* ---- neu: Tundra (Schnee, Eisberg, Polarlicht, Schneeflocken) ---- */
   const tundra = svg(`
@@ -106,8 +105,19 @@ const MOD_ART = {
     <path d="M0 44 L20 34 L34 40 L52 26 L70 40 L88 32 L120 42 L120 60 L0 60 Z" fill="#DDEBF7" shape-rendering="geometricPrecision"/>
     ${r(0, 50, 120, 10, "#FFFFFF")}${r(52, 26, 4, 4, "#FFFFFF")}
     <g class="ma-bob">${r(86, 40, 12, 9, "#FFFFFF")}${r(88, 38, 3, 3, "#FFFFFF")}${r(95, 38, 3, 3, "#FFFFFF")}${r(89, 43, 2, 2, "#14062E")}${r(94, 43, 2, 2, "#14062E")}${r(91, 46, 3, 1, "#14062E")}</g>
-    <g class="ma-twinkle">${r(10, 22, 2, 2, "#fff")}${r(30, 28, 2, 2, "#fff")}${r(70, 20, 2, 2, "#fff")}${r(104, 26, 2, 2, "#fff")}${r(44, 18, 2, 2, "#fff")}</g>
-    <text x="40" y="56" font-size="6" font-weight="700" font-family="monospace" text-anchor="middle" fill="#2563D9" class="ma-label">BALD</text>`);
+    <g class="ma-twinkle">${r(10, 22, 2, 2, "#fff")}${r(30, 28, 2, 2, "#fff")}${r(70, 20, 2, 2, "#fff")}${r(104, 26, 2, 2, "#fff")}${r(44, 18, 2, 2, "#fff")}</g>`);
+
+  /* ---- neu: Lava (Vulkan, Lavaströme, Glut, Eiskristall) ---- */
+  const lava = svg(`
+    ${r(0, 0, 120, 60, "#2A0A12")}${r(0, 0, 120, 14, "#4A1020")}
+    <path d="M30 60 L52 18 L68 18 L90 60 Z" fill="#4A2A26" shape-rendering="geometricPrecision"/>
+    <path d="M52 18 L68 18 L64 24 L56 24 Z" fill="#FF6A00" shape-rendering="geometricPrecision"/>
+    <g class="ma-wave">${r(57, 24, 3, 14, "#FF6A00")}${r(56, 38, 3, 8, "#FFC21A")}${r(63, 26, 2, 18, "#FF8A1F")}${r(62, 44, 3, 10, "#FF6A00")}</g>
+    <g class="ma-pop p1">${r(54, 8, 4, 4, "#FFC21A")}</g><g class="ma-pop p2">${r(62, 4, 3, 3, "#FF6A00")}</g><g class="ma-pop p3">${r(68, 10, 3, 3, "#FFC21A")}</g>
+    ${r(0, 52, 120, 8, "#1A0508")}<g class="ma-wave w2">${r(0, 54, 30, 2, "#FF6A00")}${r(88, 55, 32, 2, "#FF6A00")}</g>
+    <g class="ma-coin" style="transform-origin:100px 26px">${r(97, 20, 6, 12, "#9EE3FF")}${r(95, 24, 10, 4, "#9EE3FF")}${r(99, 22, 2, 4, "#FFFFFF")}</g>
+    <g class="ma-twinkle">${r(12, 18, 2, 2, "#FFC21A")}${r(24, 30, 2, 2, "#FF8A1F")}${r(108, 44, 2, 2, "#FFC21A")}</g>
+    ${MINI_G(8, 38, 1)}`);
 
   H.modArt = {
     "mi-start": { c: "#8B5CFF", c2: "#3A1D7A", svg: hallo },
@@ -116,7 +126,8 @@ const MOD_ART = {
     "lab-kibilder": { c: "#00B3C7", c2: "#0B3E5A", svg: MOD_ART.kibilder },
     "de-wueste": { c: "#F2C14E", c2: "#B5651D", svg: wueste },
     "de-dschungel": { c: "#2BB57A", c2: "#0B3D24", svg: dschungel },
-    "de-tundra": { c: "#5B8CFF", c2: "#0B1D3A", svg: tundra }
+    "de-tundra": { c: "#5B8CFF", c2: "#0B1D3A", svg: tundra },
+    "de-lava": { c: "#FF6A00", c2: "#2A0A12", svg: lava }
   };
   /* Bilder der Schweiz-Module (aus dem gLiTCh-Lab «NMG Schweiz») */
   ((window.GL_DATA && window.GL_DATA.LABMODS) || []).forEach(m => {
@@ -125,6 +136,6 @@ const MOD_ART = {
   H.themeArt = {
     hallo, prompt: MOD_ART.prompt, fakenews: MOD_ART.fakenews, kibilder: MOD_ART.kibilder,
     datenspuren: MOD_ART.datenspuren, werbung: MOD_ART.werbung, netiquette: MOD_ART.netiquette,
-    schweiz, roemer, gespraech, wueste, dschungel, tundra
+    schweiz, roemer, gespraech, wueste, dschungel, tundra, lava
   };
 })();

@@ -40,6 +40,8 @@ Das **Chalet** als Zimmer-Hintergrund wird frei, sobald die «Alte Eidgenossensc
 ## Deutsch · Gespräche führen
 
 Das **Wüsten-Game** mit seinen 3 Levels. Pro Level gibt es bis zu 10 Sterne (Wasserstand ÷ 10).
+
+Dazu kommen **Dschungel-Game** und **Tundra-Game** (je 3 Levels) und das **Lava-Game** (1 Level, Heimtraining allein). Jedes Game hat Diplome (Level mit 6+ Sternen, Meister = alle Tanks voll), ein Emote (Hälfte in Level 1), einen Hintergrund (alle Level gespielt) und einen Skin (90 % der Sterne). Die Belohnungen stehen in `js/app.js` (GAME_REW und BUILTIN_BGS).
 Die Gruppe ist mit den Namen des Teams schon ausgefüllt. **Dschungel-Game** und **Tundra-Game** sind als «Bald» vorbereitet.
 
 ## Module aus dem gLiTCh-Lab (M&I)
@@ -203,8 +205,8 @@ Mit Claude Code geht das am schnellsten: «Baue das Modul X für den Glitchlab-H
 | `lab/index.html` | Das gLiTCh-Lab (Prompt-Labor, Fake-News-Detektiv, KI-Bild, Zimmer) |
 | `lab/hub-portal.js` | Brücke zwischen Lab und Hub (wer arbeitet, Sterne, Speichern) |
 | `tools/build_lab.py` | Baut `lab/` neu aus dem gLiTCh-Lab «NMG Schweiz» (+ M&I-Module aus dem älteren Lab) |
-| `games/wueste/index.html` | Das Wüsten-Game (Deutsch · Gespräche führen) mit Brücke zum Hub |
-| `tools/build_games.py` | Baut `games/wueste/` neu aus einer neuen Version des Wüsten-Games |
+| `games/wueste/`, `games/dschungel/`, `games/tundra/`, `games/lava/` | Die Abenteuer-Games (Deutsch · Gespräche führen) mit Brücke zum Hub |
+| `tools/build_games.py` | Baut ein Game neu: `python3 tools/build_games.py <datei.html> dschungel` (oder wueste, tundra, lava) |
 | `js/uploads.js` | Hochgeladene HTML-Module: Steckbrief lesen, Extras, Schnittstelle `GLHub`, Vorlage |
 | `js/custom-modules.js` | Eigene Module aus dem Modul-Editor (Spieler für die Kinder) |
 | `supabase/schema.sql` | Datenbank-Tabellen und Sicherheitsregeln |

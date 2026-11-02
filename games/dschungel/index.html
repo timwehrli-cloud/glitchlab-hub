@@ -1,0 +1,1568 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Dschungel-Game</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=VT323&display=swap">
+<style>
+/* Layout: Seitenleiste mit Menü und senkrechtem Heilkraft-Tank, rechts eine Spielkarte pro Schritt; Maskottchen Tuki fix oben rechts */
+:root{
+  --bg:#d9e8c4; --bg2:#c2dba6; --surface:#f7fbef; --ink:#1f2a1d; --muted:#566a4c; --line:#bfd6a2;
+  --accent:#2f8a5d; --accent-ink:#ffffff; --sun:#d0582a; --e1:#d0582a; --e2:#2f8a5d; --e3:#6b4fc9; --e4:#c43d55;
+  --good:#2f8a3d; --warn:#b5651d; --chip:#e8f2d8; --shadow:0 2px 0 #9fbf7f;
+  --ill-sky:#d4ecc8; --ill-sand:#6aa84f; --ill-sand2:#3f7d3a; --ill-rock:#7a5230; --ill-rock2:#4f3420; --ill-sun:#f6c234; --ill-water:#3a8fc0; --ill-dark:#14261a; --ill-ink:#1f2a1d; --ill-snake:#3d7a2a;
+  --display:"Bungee","Arial Black",system-ui,sans-serif; --body:"Atkinson Hyperlegible",system-ui,-apple-system,sans-serif; --hud:"VT323",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1d14; --bg2:#15291b; --surface:#1b2f21; --ink:#e6f2dc; --muted:#a3bc98; --line:#2f4a35;
+  --accent:#5fd39a; --accent-ink:#10202a; --sun:#f39a62; --e1:#f39a62; --e2:#5fd39a; --e3:#a68cff; --e4:#ff7a90;
+  --good:#6fd17c; --warn:#f0b060; --chip:#24402c; --shadow:0 2px 0 #08120b; color-scheme:dark;
+  --ill-sky:#1e3a2a; --ill-sand:#3f7d3a; --ill-sand2:#2a5a28; --ill-rock:#5a3d24; --ill-rock2:#3a2716; --ill-sun:#f1e4a6; --ill-water:#3f9ad0; --ill-dark:#08120b; --ill-ink:#e6f2dc; --ill-snake:#6fbf4a}}
+:root[data-theme="dark"]{
+  --bg:#0f1d14; --bg2:#15291b; --surface:#1b2f21; --ink:#e6f2dc; --muted:#a3bc98; --line:#2f4a35;
+  --accent:#5fd39a; --accent-ink:#10202a; --sun:#f39a62; --e1:#f39a62; --e2:#5fd39a; --e3:#a68cff; --e4:#ff7a90;
+  --good:#6fd17c; --warn:#f0b060; --chip:#24402c; --shadow:0 2px 0 #08120b; color-scheme:dark;
+  --ill-sky:#1e3a2a; --ill-sand:#3f7d3a; --ill-sand2:#2a5a28; --ill-rock:#5a3d24; --ill-rock2:#3a2716; --ill-sun:#f1e4a6; --ill-water:#3f9ad0; --ill-dark:#08120b; --ill-ink:#e6f2dc; --ill-snake:#6fbf4a}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  background-image:radial-gradient(ellipse 120% 40% at 50% 105%,var(--bg2),transparent 70%);background-attachment:fixed}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.app{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;align-self:start;height:100vh;height:100dvh;overflow-y:auto;background:var(--surface);border-right:2.5px solid var(--ink);padding-block:16px calc(14px + env(safe-area-inset-bottom,0px));padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:14px;display:flex;flex-direction:column;gap:12px;z-index:35}
+.mainwrap{min-width:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 110px}
+.mainwrap main{max-width:860px;margin:0 auto}
+.sgrp{display:flex;flex-direction:column;gap:1px;border:2px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg);font-size:14px;color:var(--muted)}
+.sgrp b{font-size:16px;color:var(--ink)}.sgrp-lv{font-family:var(--hud);font-size:17px;color:var(--sun)}
+.side-body{display:grid;grid-template-columns:56px minmax(0,1fr);gap:8px;flex:none}
+.side-tank{display:flex}
+.side-foot{display:flex;flex-direction:column;gap:8px;border-top:2px solid var(--line);padding-top:10px}
+.side-foot .footbtns button{border:0;background:none;color:var(--muted);font-family:var(--hud);font-size:18px;text-decoration:underline;padding:0}
+.side-src{font-family:var(--hud);font-size:15px;color:var(--muted)}
+.menu{display:flex;flex-direction:column;gap:2px}
+.menu-et{margin-bottom:6px}
+.menu-et h4{font-family:var(--hud);font-size:16px;font-weight:400;color:var(--c);margin:0 0 2px;letter-spacing:.03em;text-transform:uppercase;line-height:1.1}
+.menu-item{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:none;padding:4px 8px;border-radius:8px;font-size:15px;color:var(--ink);min-height:32px}
+.menu-item .dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;flex:none;color:var(--muted);background:var(--surface)}
+.menu-item.done .dot{background:var(--good);border-color:var(--good);color:#fff}
+.menu-item.now{background:var(--c);color:var(--accent-ink);font-weight:700;box-shadow:var(--shadow)}
+.menu-item.now .dot{border-color:var(--accent-ink);background:transparent;color:var(--accent-ink)}
+.menu-item.locked{color:var(--muted);opacity:.6;cursor:not-allowed}
+.menu-item.open .dot{border-color:var(--c);border-style:dashed}
+.menu-item.done:hover{background:color-mix(in srgb,var(--c) 14%,transparent)}
+.menu-item.gate{font-size:13px;color:var(--muted)}.menu-item.gate.now{color:var(--accent-ink)}
+.menubtn{display:none;align-items:center;gap:6px;border:2px solid var(--ink);background:var(--surface);border-radius:10px;padding:6px 12px;font-weight:700;box-shadow:var(--shadow)}
+.hud-title{display:flex;flex-direction:column;line-height:1.1}
+.hud-et{font-family:var(--hud);font-size:19px;color:var(--c)}
+.hud-name{font-family:var(--display);font-size:clamp(20px,3vw,28px)}
+.hud .wtank{display:none}
+.scrim{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 45%,transparent);z-index:34}
+@media (max-width:900px){
+ .app{display:block}
+ .side{position:fixed;top:0;bottom:0;left:0;height:auto;width:min(300px,86vw);transform:translateX(-105%);transition:transform .25s ease;box-shadow:6px 0 24px rgba(0,0,0,.25)}
+ .side.open{transform:none}
+ .menubtn{display:inline-flex}
+ .hud .wtank{display:flex;flex-basis:100%;max-width:none;order:3}
+}
+
+/* HUD */
+.hud{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding-right:100px;min-height:84px;max-width:860px;margin:0 auto}
+.logo{font-family:var(--display);font-size:clamp(20px,4vw,28px);letter-spacing:.02em;line-height:1;color:var(--ink)}
+.logo small{display:block;font-family:var(--hud);font-size:18px;color:var(--muted);letter-spacing:.04em}
+.tank{display:flex;align-items:center;gap:8px;font-family:var(--hud);font-size:20px}
+.tank-bar{width:150px;height:18px;border:2px solid var(--ink);border-radius:4px;overflow:hidden;background:var(--surface);position:relative}
+.tank-fill{height:100%;background:repeating-linear-gradient(90deg,var(--accent) 0 10px,color-mix(in srgb,var(--accent) 80%,#fff) 10px 12px);transition:width .8s ease}
+.etappen{display:flex;gap:6px}
+.et{font-family:var(--hud);font-size:18px;padding:0 8px;border:2px solid var(--line);border-radius:4px;color:var(--muted);background:var(--surface)}
+.et.on{border-color:var(--ec);color:var(--ink);background:color-mix(in srgb,var(--ec) 18%,var(--surface))}
+.et.done{border-color:var(--ec);background:var(--ec);color:var(--accent-ink)}
+.grp{font-family:var(--hud);font-size:20px;color:var(--muted)}
+
+/* Fenni */
+.fenni{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:20;width:80px;height:80px;border:0;background:none;padding:0}
+.fenni svg{width:80px;height:80px;image-rendering:pixelated;animation:bob 2.4s ease-in-out infinite;transform-origin:50% 100%}
+.fenni.happy svg{animation:hop .5s ease 2}
+.fenni.dig svg{animation:dig 1.6s ease forwards}
+@keyframes bob{50%{transform:translateY(-3px)}}
+@keyframes hop{50%{transform:translateY(-12px) rotate(-6deg)}}
+@keyframes dig{40%{transform:translateY(60px) scaleY(.4);opacity:0}60%{transform:translateY(60px);opacity:0}100%{transform:none;opacity:1}}
+.bubble{position:fixed;top:calc(100px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:20;max-width:min(300px,calc(100vw - 32px));background:var(--surface);border:2px solid var(--ink);border-radius:10px;padding:10px 12px;font-size:15px;box-shadow:var(--shadow)}
+.bubble::before{content:"";position:absolute;top:-9px;right:30px;width:14px;height:14px;background:var(--surface);border-left:2px solid var(--ink);border-top:2px solid var(--ink);transform:rotate(45deg)}
+.bubble b{font-family:var(--hud);font-size:19px;font-weight:400;color:var(--sun)}
+.heart{position:fixed;z-index:21;pointer-events:none;font-family:var(--hud);font-size:26px;color:var(--e4);animation:up 1.2s ease-out forwards}
+@keyframes up{to{transform:translateY(-60px);opacity:0}}
+
+/* Card */
+.card{background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:clamp(18px,4vw,32px);box-shadow:4px 4px 0 var(--ec,var(--ink));margin-top:14px}
+.eyebrow{font-family:var(--hud);font-size:20px;color:var(--ec,var(--sun));letter-spacing:.04em;text-transform:uppercase}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,5vw,40px);line-height:1.1;margin:4px 0 12px}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(20px,3.6vw,26px);line-height:1.15;margin:4px 0 10px}
+h3{font-size:19px;margin:0 0 6px}
+p{margin:0 0 12px;max-width:65ch}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.box{border:2px dashed var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.box.solid{border-style:solid}
+.task{display:inline-block;font-family:var(--hud);font-size:18px;background:var(--chip);border-radius:4px;padding:0 8px;color:var(--muted)}
+
+.btn{border:2px solid var(--ink);background:var(--surface);border-radius:10px;padding:10px 18px;font-weight:700;box-shadow:var(--shadow);min-height:48px}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.primary{background:var(--ec,var(--accent));color:var(--accent-ink);border-color:var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.btn.small{min-height:38px;padding:6px 12px;font-size:15px}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap}
+.hint{font-size:15px;color:var(--muted)}
+
+input[type=text],input[type=password],textarea,select{width:100%;border:2px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px;min-height:46px}
+textarea{min-height:96px;resize:vertical}
+label{font-weight:700;display:block;margin-bottom:4px}
+
+/* briefing */
+.briefing{font-family:var(--hud);font-size:23px;line-height:1.3;background:var(--ink);color:var(--surface);border-radius:10px;padding:16px 18px;position:relative;overflow:hidden}
+.briefing p{max-width:none;margin:0 0 8px}
+.briefing .sp{color:var(--sun)}
+
+/* options */
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;border:2px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 14px;min-height:48px}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 16%,var(--surface))}
+.opt.wrong{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,var(--surface));text-decoration:line-through;opacity:.8}
+.fb{font-size:15px;margin-top:6px}
+.fb.ok{color:var(--good)} .fb.no{color:var(--warn)}
+
+/* flip cards */
+.flip{perspective:800px;border:0;background:none;padding:0;min-height:130px;text-align:left}
+.flip-in{position:relative;width:100%;height:100%;min-height:130px;transition:transform .5s;transform-style:preserve-3d}
+.flip.open .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border:2px solid var(--ink);border-radius:10px;padding:12px;display:flex;flex-direction:column;justify-content:center;background:var(--chip)}
+.face.back{transform:rotateY(180deg);background:var(--surface);font-size:15px}
+.face .w{font-family:var(--display);font-size:18px;line-height:1.15}
+.face .art{font-family:var(--hud);font-size:18px;color:var(--muted)}
+.flip,.flip-in{min-height:236px}
+.face .ill{aspect-ratio:12/7;height:auto;max-height:none}
+.face{justify-content:flex-start;gap:4px}
+.face.back{justify-content:center}
+.ill{width:100%;height:auto;max-height:96px;display:block;border-radius:6px;background:var(--ill-sky);margin-bottom:4px}
+.ill *{transform-box:fill-box;transform-origin:center}
+.ill .sand{fill:var(--ill-sand)} .ill .sand2{fill:var(--ill-sand2)} .ill .rock{fill:var(--ill-rock)} .ill .rock2{fill:var(--ill-rock2)}
+.ill .sun{fill:var(--ill-sun)} .ill .water{fill:var(--ill-water)} .ill .dark{fill:var(--ill-dark)} .ill .ink{fill:var(--ill-ink)}
+.ill .snake{fill:none;stroke:var(--ill-snake);stroke-width:5;stroke-linecap:round}
+.ill .wind{fill:none;stroke:var(--ill-sand2);stroke-width:3;stroke-linecap:round;stroke-dasharray:18 12}
+.ill .path{fill:none;stroke:var(--ill-ink);stroke-width:2;stroke-dasharray:3 4}
+.a-pulse{animation:pulse 2.6s ease-in-out infinite}
+.a-shim{animation:shim 1.8s ease-in-out infinite}
+.a-wind{animation:wind 1.2s linear infinite}
+.a-wind.s2{animation-duration:.9s}
+.a-drift{animation:drift 2.4s ease-in-out infinite}
+.a-drop{animation:drop 1.4s ease-in infinite}
+.a-drop.d2{animation-delay:.45s}.a-drop.d3{animation-delay:.9s}
+.a-ripple{animation:ripple 1.8s ease-out infinite}
+.a-walk{animation:walk 5s linear infinite}
+.a-blink{animation:blink 3.2s step-end infinite}
+.a-slither{animation:slither 1.4s linear infinite}
+.a-tongue{animation:tongue 1.1s steps(2) infinite}
+.a-sway{animation:sway 2.8s ease-in-out infinite}
+.a-flag{animation:flag 1s ease-in-out infinite;transform-origin:0 50%}
+.a-bob{animation:bob 1.6s ease-in-out infinite}
+.a-roll{animation:roll 3.5s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.15)}}
+@keyframes shim{50%{transform:translateY(-3px);opacity:.4}}
+@keyframes wind{to{stroke-dashoffset:-60}}
+@keyframes drift{50%{transform:translateX(8px)}}
+@keyframes drop{0%{transform:translateY(-6px);opacity:0}20%{opacity:1}100%{transform:translateY(16px);opacity:0}}
+@keyframes ripple{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.6);opacity:0}}
+@keyframes walk{0%{transform:translateX(-40px)}100%{transform:translateX(40px)}}
+@keyframes blink{0%,88%{transform:scaleY(1)}90%,96%{transform:scaleY(.1)}}
+@keyframes slither{to{stroke-dashoffset:-40}}
+@keyframes tongue{50%{transform:scaleX(0)}}
+@keyframes sway{50%{transform:rotate(-8deg)}}
+@keyframes flag{50%{transform:skewY(10deg) scaleX(.85)}}
+@keyframes roll{0%,100%{transform:translateX(0) rotate(0)}50%{transform:translateX(14px) rotate(180deg)}}
+.pcard{display:flex;flex-direction:column;gap:6px;cursor:pointer}
+.pcard .ill{max-height:none;aspect-ratio:12/7;height:auto;margin:0}
+.pcard .more{font-family:var(--hud);font-size:17px;font-weight:400;color:#6b5636}
+.pop-ill{max-height:170px;margin-bottom:10px}
+.pc{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+.pc .box h3{display:flex;gap:8px;align-items:center}
+.pc .plus{border-color:var(--good)} .pc .minus{border-color:var(--warn)}
+.pc .plus h3{color:var(--good)} .pc .minus h3{color:var(--warn)}
+.a-spin{animation:spin 8s linear infinite}
+.a-flap{animation:flap .5s ease-in-out infinite}
+.a-fly{animation:fly 3s ease-in-out infinite}
+.a-lift{animation:lift 1.6s ease-in-out infinite}
+.a-needle{animation:needle 2.2s ease-in-out infinite;transform-origin:50% 50%}
+.a-glow{animation:glow 1.8s ease-in-out infinite}
+.a-talk{animation:talk 2.4s step-end infinite}
+.a-talk.t2{animation-delay:1.2s}
+.a-dash{animation:dashx .5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes flap{50%{transform:scaleY(.3)}}
+@keyframes fly{50%{transform:translate(14px,-6px)}}
+@keyframes lift{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes needle{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(18deg)}}
+@keyframes glow{50%{opacity:.25}}
+@keyframes talk{0%{opacity:1}50%{opacity:0}}
+@keyframes dashx{to{transform:translateX(-14px);opacity:0}}
+.connect{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 clamp(36px,8vw,90px);margin-top:8px}
+.clines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:2}
+.ccol{display:flex;flex-direction:column;gap:8px;justify-content:space-around;min-width:0}
+.cob{border:2px solid var(--ink);background:var(--chip);border-radius:10px;padding:8px;text-align:left;font-weight:700;font-size:15px;display:flex;flex-direction:column;gap:4px}
+.cob .ill{max-height:64px;margin:0}
+.cpw{display:flex;align-items:center;gap:8px;border:2px solid #8b7a5c;background:linear-gradient(#e9dcbf,#d8c6a0);color:#3a2c18;border-radius:6px;padding:4px 8px;text-align:left;font-weight:700;font-size:14px;line-height:1.2;min-height:44px}
+.cpw .ill{width:48px;height:28px;flex:none;margin:0;border-radius:4px}
+.cob.sel{outline:4px solid var(--ec);outline-offset:2px;animation:pulse 1.2s ease-in-out infinite}
+.cob.linked,.cpw.linked{border-color:var(--ink);box-shadow:0 0 0 2px var(--ec)}
+.cl{fill:none;stroke-width:4;stroke-linecap:round;stroke-dasharray:600;stroke-dashoffset:0;animation:drawl .7s ease-out}
+.cl.ok{stroke:var(--good)} .cl.no{stroke:var(--warn)}
+.cd.ok{fill:var(--good)} .cd.no{fill:var(--warn)}
+.still .cl{animation:none}
+@keyframes drawl{from{stroke-dashoffset:600}}
+@media (max-width:520px){.cpw .ill{display:none}.cob .ill{max-height:48px}}
+.lab-ic{display:flex;align-items:center;gap:10px}.lab-ic .ill{width:60px;height:35px;flex:none;margin:0;border-radius:4px}
+.power.pcard.sel .ill{outline:2px solid var(--ec)}
+/* Superkraft-Animationen */
+.k-pop,.k-pling{transform-origin:center;transform-box:fill-box}
+.k-pop{animation:kpop 2.6s ease-out infinite}
+@keyframes kpop{0%,40%{transform:scale(0) rotate(-8deg);opacity:0}52%{transform:scale(1.35) rotate(-8deg);opacity:1}60%,88%{transform:scale(1) rotate(-8deg);opacity:1}100%{transform:scale(1.1) rotate(-8deg);opacity:0}}
+.k-twinkle{animation:ktw 1.6s ease-in-out infinite}
+@keyframes ktw{0%,100%{transform:scale(.2) rotate(0);opacity:0}50%{transform:scale(1.2) rotate(45deg);opacity:1}}
+.k-cape{animation:kcape .8s ease-in-out infinite;transform-origin:30% 0%}
+.k-flutter{animation:kflut .25s ease-in-out infinite;transform-origin:30% 0%}
+@keyframes kcape{50%{transform:skewX(-10deg)}}
+@keyframes kflut{50%{transform:skewX(-22deg) scaleY(.85)}}
+.k-scent{animation:kscent 1s linear infinite}
+@keyframes kscent{to{stroke-dashoffset:24}}
+.k-throb{animation:kthrob 1s ease-in-out infinite}
+@keyframes kthrob{50%{transform:scale(1.15)}}
+.k-sniff{animation:ksniff 1s ease-in-out infinite}
+@keyframes ksniff{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-2px) rotate(8deg)}50%{transform:translateY(0) rotate(0)}75%{transform:translateY(-2px) rotate(8deg)}}
+.k-scroll{animation:kscroll 4s linear infinite}
+.k-scroll-slow{animation:kscroll 7s linear infinite}
+.k-scroll-fast{animation:kscroll 1.1s linear infinite}
+@keyframes kscroll{to{transform:translateX(-120px)}}
+.k-speed{animation:kspeed .6s linear infinite}
+.k-speed-fast{animation:kspeed .3s linear infinite}
+@keyframes kspeed{0%{transform:translateX(10px);opacity:1}100%{transform:translateX(-14px);opacity:0}}
+.k-hover{animation:khover 1.4s ease-in-out infinite}
+@keyframes khover{50%{transform:translateX(-5px)}}
+.k-flapbird{animation:kflap .35s ease-in-out infinite}
+@keyframes kflap{50%{transform:scaleY(-.6)}}
+.k-bounce{animation:kbounce 1.2s ease-in-out infinite}
+@keyframes kbounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}55%{transform:translateY(0) scaleY(.92)}}
+.k-nod{animation:knod 1.4s ease-in-out infinite;transform-origin:20% 80%}
+@keyframes knod{50%{transform:rotate(-5deg)}}
+.k-talk1{animation:ktalk1 3s ease-out infinite}
+.k-talk2{animation:ktalk2 3s ease-out infinite}
+@keyframes ktalk1{0%{transform:scale(0);opacity:0}8%{transform:scale(1.2);opacity:1}14%,42%{transform:scale(1);opacity:1}50%,100%{transform:scale(0);opacity:0}}
+@keyframes ktalk2{0%,50%{transform:scale(0);opacity:0}58%{transform:scale(1.2);opacity:1}64%,92%{transform:scale(1);opacity:1}100%{transform:scale(0);opacity:0}}
+.k-float{animation:kfloat 1.8s ease-out infinite}
+@keyframes kfloat{0%{transform:translateY(0) scale(.5);opacity:0}30%{opacity:1}100%{transform:translateY(-18px) scale(1.2);opacity:0}}
+.k-shake{animation:kshake 1.6s linear infinite}
+@keyframes kshake{0%,45%,60%,100%{transform:translate(0,0)}48%{transform:translate(-2px,1px)}52%{transform:translate(2px,-1px)}56%{transform:translate(-1px,1px)}}
+.k-lift{animation:klift 1.6s cubic-bezier(.5,0,.5,1) infinite}
+@keyframes klift{0%,100%{transform:translateY(0)}30%{transform:translateY(-14px) rotate(-6deg)}46%{transform:translateY(2px) rotate(0)}52%{transform:translateY(0)}}
+.k-puff{animation:kpuff 1.6s ease-out infinite}
+@keyframes kpuff{0%,44%{transform:scale(0);opacity:0}50%{transform:scale(1);opacity:.9}80%,100%{transform:scale(2.2);opacity:0}}
+.k-chip{animation:kchip 1.6s ease-out infinite}.k-chip2{animation:kchip2 1.6s ease-out infinite}
+@keyframes kchip{0%,46%{transform:translate(0,0);opacity:0}50%{opacity:1}80%,100%{transform:translate(-10px,-14px);opacity:0}}
+@keyframes kchip2{0%,46%{transform:translate(0,0);opacity:0}50%{opacity:1}80%,100%{transform:translate(10px,-14px);opacity:0}}
+.k-draw{stroke-dasharray:4 4;animation:kdraw 3s linear infinite}
+@keyframes kdraw{0%{opacity:0;stroke-dashoffset:40}10%{opacity:1}100%{stroke-dashoffset:0}}
+.k-pin{animation:kpin 3s ease-in infinite;transform-origin:50% 100%}
+@keyframes kpin{0%,55%{transform:translateY(-30px);opacity:0}70%{transform:translateY(0) scaleY(.8);opacity:1}78%{transform:translateY(-4px)}85%,100%{transform:translateY(0);opacity:1}}
+.k-compass{animation:kcomp 3s ease-in-out infinite}
+@keyframes kcomp{0%{transform:rotate(0)}40%{transform:rotate(700deg)}55%{transform:rotate(690deg)}65%,100%{transform:rotate(675deg)}}
+.k-sweep{animation:ksweep 3s ease-in-out infinite}
+@keyframes ksweep{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(14deg)}}
+.k-glow2{animation:kglow2 1.2s ease-in-out infinite}
+@keyframes kglow2{50%{transform:scale(1.6);opacity:.15}}
+.k-batfly{animation:kbat 3s ease-in-out infinite}
+@keyframes kbat{0%,100%{transform:translate(0,0)}25%{transform:translate(-12px,6px)}50%{transform:translate(4px,-4px)}75%{transform:translate(10px,6px)}}
+.k-run{animation:krun .3s ease-in-out infinite}
+@keyframes krun{50%{transform:translateY(-3px)}}
+.k-shield{animation:kshield 2.4s ease-out infinite}
+@keyframes kshield{0%,38%{transform:scale(.9);opacity:.15}45%{transform:scale(1.15);opacity:.9}70%,100%{transform:scale(1);opacity:.3}}
+.k-lunge{animation:klunge 2.4s cubic-bezier(.6,0,.4,1) infinite}
+@keyframes klunge{0%,25%{transform:translateX(0)}42%{transform:translateX(-30px)}50%{transform:translateX(-26px) rotate(8deg)}70%,100%{transform:translateX(0) rotate(0)}}
+.k-dizzy{animation:kdizzy 2.4s linear infinite}
+@keyframes kdizzy{0%,48%{opacity:0;transform:rotate(0)}55%{opacity:1}90%{opacity:1;transform:rotate(360deg)}100%{opacity:0;transform:rotate(400deg)}}
+.k-pling{animation:kpling 2.4s ease-out infinite}
+@keyframes kpling{0%,40%{transform:scale(0) rotate(-8deg);opacity:0}46%{transform:scale(1.4) rotate(-8deg);opacity:1}54%,80%{transform:scale(1) rotate(-8deg);opacity:1}92%,100%{opacity:0}}
+.k-spinrays{animation:spin 3s linear infinite}
+.k-ray{animation:kray .5s linear infinite}
+@keyframes kray{to{stroke-dashoffset:12}}
+.k-ice{animation:kice 1.6s ease-in-out infinite}
+@keyframes kice{50%{transform:scale(1.08);opacity:.75}}
+.k-orbit{animation:spin 5s linear infinite}
+.k-slosh{animation:kslosh 1.2s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes kslosh{50%{transform:skewY(4deg)}}
+.pcard:hover .ill,.pcard:focus-visible .ill{filter:saturate(1.3) brightness(1.05)}
+.recbox{border:2px solid var(--e4);border-radius:10px;padding:12px 16px;background:color-mix(in srgb,var(--e4) 10%,var(--surface))}.recbox h3{color:var(--e4)}
+/* Levelwahl */
+.lvgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.lvcard{position:relative;display:flex;flex-direction:column;gap:6px;text-align:left;border:2px solid var(--ink);border-radius:12px;padding:10px;background:var(--surface);box-shadow:4px 4px 0 var(--lc);transition:transform .15s}
+.lvcard:not([disabled]):hover{transform:translateY(-3px)}
+.lvcard.cur{outline:3px solid var(--lc);outline-offset:2px}
+.lvcard .ill{aspect-ratio:12/7;height:auto;max-height:none;margin:0}
+.lvcard.locked{cursor:not-allowed}.lvcard.locked .ill{filter:grayscale(1) brightness(.7)}.lvcard.locked>span:not(.lock){opacity:.6}
+.lvtop{display:flex;justify-content:space-between;align-items:center}
+.lvn{font-family:var(--hud);font-size:20px;color:var(--lc)}
+.lvstars{color:var(--sun);font-size:18px;letter-spacing:2px}
+.lvname{font-family:var(--display);font-size:19px;line-height:1.15}
+.lvteaser{font-size:15px;color:var(--muted)}
+.lvstate{font-weight:700;font-size:15px;color:var(--lc);margin-top:auto;padding-top:8px;border-top:2px dashed var(--line);min-height:52px;display:flex;align-items:center}
+.lvname{min-height:2.3em;display:flex;align-items:flex-end}
+.lvteaser{min-height:2.8em}
+.lock{position:absolute;top:34px;left:50%;transform:translateX(-50%);background:var(--surface);border:2px solid var(--ink);border-radius:50%;width:58px;height:58px;display:grid;place-items:center}
+.footbtns{display:flex;gap:16px}
+/* Level-2/3-Animationen */
+.a-spinslow{animation:spin 3s linear infinite}
+.a-sink{animation:asink 3s ease-in-out infinite}
+@keyframes asink{0%,100%{transform:translateY(-4px)}50%{transform:translateY(10px)}}
+.a-wobble{animation:awob 1.6s ease-in-out infinite}
+@keyframes awob{25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.a-fall{animation:afall 1.5s ease-in infinite}
+@keyframes afall{0%{transform:translateY(-10px) rotate(0);opacity:0}15%{opacity:1}85%{transform:translateY(46px) rotate(200deg);opacity:1}100%{transform:translateY(48px) rotate(220deg);opacity:0}}
+.a-bounce-x{animation:abx 1.2s ease-in-out infinite}
+@keyframes abx{50%{transform:translateX(5px)}}
+.a-flicker{animation:aflick .25s ease-in-out infinite alternate;transform-origin:50% 100%}
+@keyframes aflick{to{transform:scaleY(1.18) scaleX(.9) skewX(4deg)}}
+.a-crawl{animation:acrawl 2.4s ease-in-out infinite}
+@keyframes acrawl{50%{transform:translateX(-10px)}}
+.a-sting{animation:asting 1.2s ease-in-out infinite}
+@keyframes asting{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(-30deg)}80%{transform:rotate(10deg)}}
+.a-runaway{animation:arun 2.8s linear infinite}
+@keyframes arun{0%{transform:translateX(-30px)}100%{transform:translateX(80px)}}
+.a-step{animation:astep 2.4s ease-out infinite;opacity:0}
+@keyframes astep{0%{opacity:0;transform:scale(.4)}10%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0}}
+.a-mirage{animation:amir 3s ease-in-out infinite}
+@keyframes amir{0%,100%{opacity:.15;transform:skewX(-6deg)}50%{opacity:.95;transform:skewX(6deg)}}
+.a-dry{animation:adry 3s ease-in infinite}
+@keyframes adry{0%{transform:scale(1);opacity:1}80%,100%{transform:scale(.1);opacity:0}}
+.k-draw2{animation:kdraw2 4s linear infinite}
+@keyframes kdraw2{0%{stroke-dashoffset:140;opacity:0}5%{opacity:1}100%{stroke-dashoffset:0}}
+.a-walkin{animation:awalkin 3s ease-in-out infinite}
+@keyframes awalkin{0%{transform:translateX(40px)}50%,100%{transform:translateX(0)}}
+.winscene{width:100%;max-width:560px;aspect-ratio:24/11;height:auto;max-height:none;border-radius:12px;border:2px solid var(--ink)}
+.k-river{animation:kriver .8s linear infinite}@keyframes kriver{to{stroke-dashoffset:-16}}
+.k-fountain{animation:kfount .6s ease-in-out infinite alternate;transform-origin:50% 100%}@keyframes kfount{to{transform:scaleY(1.2) scaleX(1.1)}}
+/* Wegweiser, Auftrag, Glossar, NEU */
+.path{display:flex;align-items:center;gap:0;overflow-x:auto;padding:6px 2px 8px;margin-top:4px;scrollbar-width:thin}
+.pstep{flex:none;font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;border:2px solid var(--line);color:var(--muted);background:var(--surface);white-space:nowrap}
+.pstep.done{border-color:var(--good);color:var(--good)}
+.pstep.now{border-color:var(--ink);background:var(--ec);color:var(--accent-ink);box-shadow:var(--shadow)}
+.pstep.gate{padding:4px 6px;display:inline-grid;place-items:center}
+.pline{flex:none;width:12px;height:2px;background:var(--line)}
+.todo{border:2px solid var(--ec);border-radius:12px;background:color-mix(in srgb,var(--ec) 9%,var(--surface));padding:10px 14px 10px;margin:0 0 16px}
+.todo-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.todo-h span:first-child{font-family:var(--hud);font-size:21px;color:var(--ec);letter-spacing:.03em}
+.todo .who{font-size:13px;font-weight:700;background:var(--ec);color:var(--accent-ink);border-radius:999px;padding:2px 10px}
+.todo ol{margin:0;padding-left:22px}.todo li{margin:2px 0}
+.gl{text-decoration:underline;text-decoration-style:dotted;text-decoration-color:var(--sun);text-decoration-thickness:2.5px;text-underline-offset:3px;cursor:help;border-radius:3px}
+.gl:hover,.gl:focus-visible{background:color-mix(in srgb,var(--sun) 22%,transparent)}
+.briefing .gl{text-decoration-color:var(--sun)}
+.glw{display:inline-block;font-weight:700;color:var(--ink);background:color-mix(in srgb,var(--sun) 25%,transparent);border-radius:4px;padding:0 5px;margin-right:2px}
+.bspeak{display:inline-block;margin-top:6px;border:2px solid var(--ink);background:var(--chip);border-radius:8px;padding:2px 8px;font-size:13px;font-weight:700}
+.neu{position:absolute;top:-9px;left:-8px;z-index:1;background:#c43d55;color:#fff;font-family:var(--display);font-size:11px;padding:2px 7px;border-radius:6px;border:2px solid var(--ink);transform:rotate(-6deg);animation:kthrob 1.4s ease-in-out infinite}
+.mute{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:700;color:var(--muted)}
+.mute[aria-pressed="true"]{border-color:var(--ink);color:var(--ink)}
+/* neue Kraft-Animationen */
+.k-swirl{animation:spin 1.4s linear infinite}
+.k-rise{animation:krise 2.4s ease-out infinite;transform-origin:50% 100%}
+@keyframes krise{0%,20%{transform:scaleY(0)}60%,100%{transform:scaleY(1)}}
+.k-grow{animation:kgrow 2.6s cubic-bezier(.5,1.6,.5,1) infinite;transform-origin:50% 100%}
+@keyframes kgrow{0%,15%{transform:scale(.7)}45%,85%{transform:scale(1.7)}100%{transform:scale(.7)}}
+.k-flee{animation:kflee 2s ease-in infinite}
+@keyframes kflee{0%{transform:translateX(-14px)}100%{transform:translateX(30px);opacity:0}}
+.k-phase{animation:kphase 3s ease-in-out infinite}
+@keyframes kphase{0%{transform:translateX(-36px);opacity:1}40%{opacity:1}50%{transform:translateX(0);opacity:.25}60%{opacity:1}100%{transform:translateX(36px);opacity:1}}
+.k-fake{animation:kfake 3s ease-in-out infinite}
+@keyframes kfake{0%,30%{opacity:1}60%,100%{opacity:.08}}
+.k-fakex{animation:kfakex 3s ease-out infinite}
+@keyframes kfakex{0%,35%{transform:scale(0);opacity:0}48%{transform:scale(1.3);opacity:1}60%,90%{transform:scale(1);opacity:1}100%{opacity:0}}
+.k-invis{animation:kinvis 3s ease-in-out infinite}
+@keyframes kinvis{0%,20%,100%{opacity:1}45%,75%{opacity:.06}}
+.spk-wrap{margin-top:20px}
+.spk-person{margin-top:12px}.spk-person h3{margin-bottom:6px}
+.spk-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.spk{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:150px;border:2px solid var(--ink);border-radius:12px;padding:8px;text-align:center;color:#fff8ea;background:repeating-linear-gradient(45deg,#6b4fc9 0 10px,#5b40b0 10px 20px);box-shadow:var(--shadow)}
+.spk .spk-q{font-family:var(--display);font-size:44px;line-height:1;color:#f6b434}
+.spk .spk-pl{font-family:var(--hud);font-size:18px}
+.spk .spk-hint{font-size:12px;opacity:.85}
+.spk.open{background:var(--surface);color:var(--ink);justify-content:flex-start;text-align:left;align-items:stretch}
+.spk.open .ill{aspect-ratio:12/7;height:auto;max-height:none;margin:0}
+.spk.open .spk-pl{color:var(--ec)}
+.spk-t{font-weight:700;font-size:15px;line-height:1.2}
+.spk-w{font-size:14px;color:var(--muted);line-height:1.35}
+.spk.flipin{animation:spkflip .45s ease-out}
+@keyframes spkflip{0%{transform:perspective(600px) rotateY(90deg)}100%{transform:perspective(600px) rotateY(0)}}
+@media (max-width:560px){.spk-row{grid-template-columns:1fr}}
+.gsum{width:100%;max-width:640px;text-align:left;border:2px dashed var(--ink);border-radius:12px;padding:12px 14px;background:var(--bg)}
+.gs-h{font-family:var(--hud);font-size:21px;color:var(--ec)}
+.gs-name{font-size:14px;color:var(--muted);margin-bottom:6px}
+.gs-t{width:100%;border-collapse:collapse;font-size:14px}
+.gs-t th{width:34%;text-align:left;vertical-align:top;padding:6px 8px 6px 0;border-bottom:1px solid var(--line);font-weight:700}
+.gs-t td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.gs-chip{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:700;margin:1px 0}
+.gs-chip.ok{background:color-mix(in srgb,var(--good) 20%,transparent);color:var(--good)}
+.gs-chip.mid{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.gs-chip.no{background:color-mix(in srgb,#d64545 18%,transparent);color:#c43d3d}
+.gs-line{margin-top:4px}.gs-small{color:var(--muted);font-size:13px}
+.gs-ask{margin-top:10px;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,var(--sun) 16%,transparent);font-size:14px}
+.redobox{margin-top:12px;padding:10px 12px;border:2px solid var(--e4);border-radius:10px;background:color-mix(in srgb,var(--e4) 8%,var(--surface))}
+.redonote{border:2px solid var(--e4);border-radius:12px;background:color-mix(in srgb,var(--e4) 10%,var(--surface));padding:10px 14px;margin:0 0 12px;color:var(--ink)}
+.redonote b{color:var(--e4)}
+.redotext{margin-top:6px;font-size:17px}.redotext .redo-by{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+/* Wassertank */
+.wtank{position:relative;display:flex;align-items:center;gap:8px;flex:1 1 280px;min-width:0;max-width:460px}
+.wt-drop{width:24px;height:30px;flex:none;animation:kbounce 2.4s ease-in-out infinite}
+.wt-glass{position:relative;flex:1;min-width:0;height:30px;border:2.5px solid var(--ink);border-radius:999px;background:color-mix(in srgb,var(--bg2) 60%,var(--surface));overflow:hidden;box-shadow:inset 0 2px 0 rgba(0,0,0,.08)}
+.wt-water{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(180deg,#b9f27a 0%,#45b649 55%,#2b8a36 100%);transition:width 1.1s cubic-bezier(.3,1.2,.4,1);overflow:visible}
+.wt-water::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(120deg,rgba(255,255,255,.18) 0 6px,transparent 6px 16px);animation:wtflow 1.4s linear infinite}
+.wt-water::after{content:"";position:absolute;top:-4px;bottom:-4px;right:-7px;width:12px;background:radial-gradient(circle at 0 50%,#57c25c 5px,transparent 5.5px) 0 0/12px 10px repeat-y;animation:wtwave .9s linear infinite}
+@keyframes wtflow{to{background-position:32px 0}}
+@keyframes wtwave{to{background-position:0 10px}}
+.wt-bub{position:absolute;bottom:-4px;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.75);animation:wtbub 2.2s ease-in infinite}
+.wt-bub.b1{left:15%}.wt-bub.b2{left:40%;animation-delay:.6s}.wt-bub.b3{left:65%;animation-delay:1.2s;width:3px;height:3px}.wt-bub.b4{left:85%;animation-delay:1.7s}
+@keyframes wtbub{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(-26px);opacity:0}}
+.wt-shine{position:absolute;left:8px;right:8px;top:3px;height:4px;border-radius:999px;background:rgba(255,255,255,.45);pointer-events:none}
+.wt-mark{position:absolute;top:0;bottom:0;left:var(--p);width:0;border-left:2px dashed color-mix(in srgb,var(--ink) 35%,transparent)}
+.wt-mark:last-of-type{border-left:0}
+.wt-mark b{position:absolute;top:50%;right:3px;transform:translateY(-50%);font-family:var(--hud);font-size:13px;font-weight:400;line-height:1;color:var(--ink);opacity:.55}
+.wt-mark.done b{color:#fff;opacity:1;text-shadow:0 1px 0 rgba(0,0,0,.3)}
+.wt-num{font-family:var(--hud);font-size:22px;min-width:46px;color:var(--ink)}
+.wt-num small{font-size:16px}
+.wtank.wt-splash .wt-glass{animation:wtsplash .6s ease-out}
+@keyframes wtsplash{30%{transform:scale(1.06,1.18)}60%{transform:scale(.98,.95)}}
+.wt-plus{position:fixed;z-index:30;pointer-events:none;font-family:var(--display);font-size:16px;color:#45b649;-webkit-text-stroke:1px #fff;animation:wtplus 1.3s ease-out forwards}
+@keyframes wtplus{0%{transform:translateY(0) scale(.6);opacity:0}20%{transform:translateY(-6px) scale(1.2);opacity:1}100%{transform:translateY(-34px) scale(1);opacity:0}}
+.wtank.wt-big .wt-glass{height:44px}
+.wtank.wt-big .wt-drop{width:32px;height:40px}
+.wtank.wt-big .wt-num{font-size:34px;min-width:70px}
+.wtank.wt-big .wt-mark b{font-size:18px}
+.wtank.wt-big .wt-bub{width:6px;height:6px}
+@media (prefers-reduced-motion:reduce){.wt-water,.wt-water::before,.wt-water::after,.wt-bub,.wt-drop{animation:none;transition:none}}
+.fenni{width:88px;height:88px}.fenni svg{width:88px;height:88px}
+.f-eyes{animation:fblink 4.5s step-end infinite;transform-box:fill-box;transform-origin:center}
+@keyframes fblink{0%,92%,100%{transform:scaleY(1)}94%,97%{transform:scaleY(.15)}}
+.fenni.happy .f-blush{opacity:1;transition:opacity .2s}
+/* senkrechter Tank */
+.side-tank .wtank{height:100%}
+.wtank.wt-v{flex-direction:column-reverse;align-items:center;justify-content:flex-end;max-width:none;width:100%;gap:6px;flex:none}
+.wt-v .wt-glass{flex:1;width:38px;min-height:280px;max-height:520px;border-radius:20px}
+.wt-v .wt-water{inset:auto 0 0 0;width:auto;height:0;transition:height 1.1s cubic-bezier(.3,1.2,.4,1);background:linear-gradient(90deg,#b9f27a 0%,#45b649 55%,#2b8a36 100%)}
+.wt-v .wt-water::before{background:repeating-linear-gradient(30deg,rgba(255,255,255,.16) 0 6px,transparent 6px 16px);animation:wtflowv 1.6s linear infinite}
+@keyframes wtflowv{to{background-position:0 -32px}}
+.wt-v .wt-water::after{top:-6px;bottom:auto;left:0;right:0;width:auto;height:10px;background:radial-gradient(circle at 50% 100%,#b9f27a 5px,transparent 5.5px) 0 0/10px 10px repeat-x;animation:wtwavex 1s linear infinite}
+@keyframes wtwavex{to{background-position:10px 0}}
+.wt-v .wt-bub{bottom:2px;animation-name:wtbubv;animation-duration:3s}
+.wt-v .wt-bub.b1{left:20%}.wt-v .wt-bub.b2{left:55%}.wt-v .wt-bub.b3{left:35%}.wt-v .wt-bub.b4{left:70%}
+@keyframes wtbubv{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-140px);opacity:0}}
+.wt-v .wt-shine{left:5px;right:auto;top:10px;bottom:10px;width:5px;height:auto}
+.wt-v .wt-mark{left:0;right:0;top:auto;bottom:var(--p);width:auto;height:0;border-left:0;border-top:2px dashed color-mix(in srgb,var(--ink) 35%,transparent)}
+.wt-v .wt-mark:last-of-type{border-top:0}
+.wt-v .wt-mark b{top:3px;left:50%;right:auto;transform:translateX(-50%);font-size:13px}
+.wt-v .wt-num{min-width:0;text-align:center;font-size:24px}
+.wt-v .wt-drop{width:22px;height:28px}
+.fenni.dance svg{animation:fdance 1.25s ease-in-out 8}
+@keyframes fdance{0%{transform:translateY(0) rotate(0)}12%{transform:translateY(-10px) rotate(-12deg) scaleX(1.05)}25%{transform:translateY(0) rotate(0) scaleY(.92)}37%{transform:translateY(-10px) rotate(12deg) scaleX(1.05)}50%{transform:translateY(0) rotate(0) scaleY(.92)}62%{transform:translateX(-6px) rotate(-8deg)}75%{transform:translateX(6px) rotate(8deg)}87%{transform:translateY(-14px) scaleX(-1)}100%{transform:translateY(0) rotate(0)}}
+.fenni.dance .f-blush{opacity:1}
+.fnote{position:fixed;z-index:25;pointer-events:none;font-size:22px;font-weight:700;animation:fnote 1.6s ease-out forwards}
+@keyframes fnote{0%{transform:translate(0,0) scale(.6);opacity:0}20%{opacity:1}100%{transform:translate(-30px,-60px) rotate(-20deg) scale(1.2);opacity:0}}
+@media (prefers-reduced-motion:reduce){.fenni.dance svg{animation:none}.fnote{display:none}}
+.pin{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:300px;margin:0 auto}
+.pin-label{font-weight:700;font-size:15px;text-align:center}
+.pin-dots{display:flex;gap:12px}
+.pin-dots i{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--ink);background:transparent;transition:background .15s,transform .15s}
+.pin-dots i.on{background:var(--ink);transform:scale(1.1)}
+.pin-grid{display:grid;grid-template-columns:repeat(3,64px);gap:8px}
+.pin-grid button{height:56px;border:2px solid var(--ink);border-radius:12px;background:var(--surface);font-family:var(--hud);font-size:30px;line-height:1;box-shadow:var(--shadow);color:var(--ink)}
+.pin-grid button:active{transform:translateY(2px);box-shadow:none;background:var(--chip)}
+.pin-grid .pin-del{grid-column:1/-1;height:44px;font-family:var(--body);font-size:15px;font-weight:700}
+.pin.shake{animation:pinshake .4s}
+@keyframes pinshake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+/* zusätzliche Animationen */
+.k-bubble{animation:kbubble 1.8s ease-in infinite}
+@keyframes kbubble{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(-16px);opacity:0}}
+.k-climb{animation:kclimb 2.2s ease-in-out infinite}
+@keyframes kclimb{0%,100%{transform:translateY(6px)}50%{transform:translateY(-14px)}}
+.k-rain{animation:krain .45s linear infinite}
+@keyframes krain{from{transform:translate(0,-6px)}to{transform:translate(-3px,8px)}}
+.k-zap{animation:kzap 1.8s steps(1) infinite}
+@keyframes kzap{0%,100%{opacity:.3}40%,58%{opacity:1}}
+.k-zapbg{opacity:0;animation:kzapbg 1.8s steps(1) infinite}
+@keyframes kzapbg{42%,50%{opacity:.55}}
+.k-slip{animation:kslip 1.4s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes kslip{0%,100%{transform:rotate(0)}30%{transform:rotate(-20deg) translateX(-4px)}60%{transform:rotate(18deg) translateX(4px)}}
+.k-grow-vine{stroke-dasharray:90;animation:kgrowv 2.6s ease-out infinite}
+@keyframes kgrowv{0%{stroke-dashoffset:90}60%,100%{stroke-dashoffset:0}}
+.k-camo{animation:kcamo 3s ease-in-out infinite}
+@keyframes kcamo{0%,20%,100%{filter:none;opacity:1}45%,75%{filter:hue-rotate(160deg) saturate(.6);opacity:.35}}
+.k-snow{animation:ksnow 3s linear infinite}
+@keyframes ksnow{from{transform:translate(0,-10px)}to{transform:translate(-8px,14px)}}
+.k-aurora{animation:kaurora 4s ease-in-out infinite}
+@keyframes kaurora{0%,100%{transform:translateX(0) scaleY(1);opacity:.75}50%{transform:translateX(-6px) scaleY(1.25);opacity:1}}
+.k-heat{animation:kheat 1.2s ease-in-out infinite}
+@keyframes kheat{0%,100%{transform:translateY(0) scaleX(1);opacity:.6}50%{transform:translateY(-3px) scaleX(1.06);opacity:1}}
+.k-lavaflow{animation:klavaflow 2.4s linear infinite}
+@keyframes klavaflow{to{stroke-dashoffset:-40}}
+@media (prefers-reduced-motion:reduce){.flip-in{transition:none}.fenni svg{animation:none}.ill *{animation:none!important}.cl,.cob.sel{animation:none}}
+
+/* powers */
+.power{position:relative;text-align:left;border:2px solid #8b7a5c;background:linear-gradient(#e9dcbf,#d8c6a0);color:#3a2c18;border-radius:6px;padding:10px 12px;min-height:56px;font-weight:700;box-shadow:inset 0 -3px 0 #b8a37b}
+.power .num{position:absolute;top:-10px;right:-8px;width:30px;height:30px;border-radius:50%;background:var(--ec,var(--accent));color:var(--accent-ink);border:2px solid var(--ink);font-family:var(--hud);font-size:22px;line-height:24px;text-align:center}
+.power.sel{border-color:var(--ink);outline:3px solid var(--ec,var(--accent))}
+.power small{display:block;font-weight:400;font-size:14px;margin-top:2px}
+.obst{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:2px solid var(--line);background:var(--chip);border-radius:999px;padding:5px 12px;font-size:15px;min-height:36px}
+.chip.on{background:var(--ec,var(--accent));color:var(--accent-ink);border-color:var(--ink)}
+
+/* splash */
+.splash{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.splash p{margin-inline:auto}
+.big{font-family:var(--display);font-size:clamp(34px,8vw,64px);line-height:1;color:var(--ec)}
+.cover{background:var(--ink);color:var(--surface);border-radius:14px;padding:40px 20px;text-align:center}
+.cover h2{color:var(--sun)}
+
+/* timer */
+.timer{font-family:var(--hud);font-size:clamp(64px,16vw,120px);line-height:1;text-align:center;color:var(--ec)}
+.tl{height:14px;border:2px solid var(--ink);border-radius:4px;position:relative;overflow:hidden;background:var(--bg)}
+.tl i{position:absolute;inset:0 auto 0 0;background:var(--ec)}
+.tl b{position:absolute;top:-2px;bottom:-2px;left:50%;width:3px;background:var(--ink)}
+
+/* rating */
+.rate{display:flex;gap:6px;flex-wrap:wrap}
+.rate{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.rate button{--lc:#888;border:2px solid var(--lc);background:color-mix(in srgb,var(--lc) 14%,var(--surface));color:var(--ink);border-radius:8px;padding:6px 6px;font-size:14px;font-weight:700;min-height:52px;display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1.1}
+.rate .lv0{--lc:#d64545}.rate .lv1{--lc:#e8912c}.rate .lv2{--lc:#8fbf3a}.rate .lv3{--lc:#2f9a4a}
+.rate button.on{background:var(--lc);color:#fff;border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--lc) 40%,transparent);transform:scale(1.04)}
+.rate .drops{display:flex;gap:2px}.rate .drops i{width:7px;height:9px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:var(--lc)}
+.rate button.on .drops i{background:#fff}
+@media (max-width:420px){.rate button{font-size:12px}}
+
+details{border:2px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--bg)}
+details summary{font-weight:700;cursor:pointer;min-height:32px}
+ul.tight{margin:6px 0 0;padding-left:20px} ul.tight li{margin:2px 0}
+
+.foot{display:flex;justify-content:space-between;gap:10px;margin-top:28px;font-family:var(--hud);font-size:18px;color:var(--muted)}
+.foot button{border:0;background:none;color:var(--muted);font-family:var(--hud);font-size:18px;text-decoration:underline}
+.modal{position:fixed;inset:0;z-index:40;background:color-mix(in srgb,var(--ink) 55%,transparent);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .card{max-width:640px;width:100%;max-height:88vh;overflow:auto;margin:0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+td,th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.tw{overflow-x:auto}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-weight:700}
+pre.sum{white-space:pre-wrap;font-family:var(--body);font-size:14px;background:var(--bg);border:2px solid var(--line);border-radius:8px;padding:12px;max-height:280px;overflow:auto}
+.city{font-family:var(--hud);font-size:22px;line-height:1.1;white-space:pre;color:var(--accent);overflow-x:auto}
+</style>
+</head>
+<body>
+<script>
+/* Brücke zum Glitchlab-Hub (Teil 1): Spielstand pro Team */
+(function(){ var HB = null; try { HB = window.parent !== window && window.parent.GLHubBridge; } catch(e){}
+  if (!HB) return; var ctx = HB.context("dschungel"); window.__GLCTX = ctx; var K = ctx.workKey("dschungel");
+  var gi = Storage.prototype.getItem, si = Storage.prototype.setItem;
+  var map = function(k){ return k === "dschungelGame.v1" ? K : k === "dschungelGame.v1.old" ? K + ".alt" : k; };
+  Storage.prototype.getItem = function(k){ return gi.call(this, map(k)); };
+  Storage.prototype.setItem = function(k, v){ return si.call(this, map(k), v); };
+})();
+</script>
+
+
+
+<button class="fenni" id="fenni" aria-label="Tuki, der Tukan. Antippen zum Streicheln"></button>
+<div class="bubble" id="bubble" hidden></div>
+
+<div class="app">
+ <aside class="side" id="side" aria-label="Menü">
+  <div class="logo">Dschungel-Game<small>Mission Heilfrüchte</small></div>
+  <div class="sgrp" id="sgrp"></div>
+  <div class="side-body"><div class="side-tank" id="tankv"></div><nav class="menu" id="menu" aria-label="Fortschritt"></nav></div>
+  <div class="side-foot" id="sfoot"><span id="mutebox"></span><span class="footbtns"><button id="restartBtn" type="button">Neustart</button><button id="lpBtn" type="button">LP-Bereich</button></span><span class="side-src">Deutsch Sechs · Kapitel 2 B · Lernkontrolle</span></div>
+ </aside>
+ <div class="scrim" id="scrim" data-a="menuclose" hidden></div>
+ <div class="mainwrap">
+  <header class="hud" id="hud"></header>
+  <main id="main"></main>
+ </div>
+</div>
+<div id="modalRoot"></div>
+
+<script>
+(function(){
+const KEY="dschungelGame.v1.old";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- Inhalte ---------- */
+const STEPS=["start","levels","mission","woerter","kraefte","gate1","wahl","gate2","spick","gespraech","einigung","gate3","hoeren","tipps","ziel"];
+const ET_OF={start:0,levels:0,mission:1,woerter:1,kraefte:1,gate1:1,wahl:2,gate2:2,spick:3,gespraech:3,einigung:3,gate3:3,hoeren:4,tipps:4,ziel:4};
+const ETAPPEN=[null,{n:"Ankommen",c:"--e1",a:"Aufgabe 1"},{n:"Meine Wahl",c:"--e2",a:"Aufgabe 2"},{n:"Das Gespräch",c:"--e3",a:"Aufgabe 3a"},{n:"Rückmeldung",c:"--e4",a:"Aufgabe 3b + 3c"}];
+
+const HERO=(o={})=>`<g class="${o.cls||""}"><path class="${o.cape||"k-cape"}" d="M-5 -2 L-13 13 L4 10Z" fill="#c43d55"/><rect x="-5" y="-3" width="10" height="13" rx="3" fill="#6b4fc9"/><path d="M-3 10 v6 M3 10 v6" stroke="#2b1d3a" stroke-width="3" stroke-linecap="round"/>${o.arms||`<path d="M-5 1 l-4 6 M5 1 l4 6" stroke="#6b4fc9" stroke-width="3" stroke-linecap="round"/>`}<circle cx="0" cy="-8" r="6" fill="#6b4fc9"/><rect x="-1" y="-10.5" width="7" height="3.6" rx="1.6" fill="#7ef0e0"/>${o.shades?`<rect x="-1.5" y="-11" width="8" height="4" rx="1.5" fill="#1d1310"/>`:""}<text x="-2.4" y="6" font-size="6" font-family="Bungee,Arial Black,sans-serif" fill="#f6b434">S</text></g>`;
+const POP=(x,y,t,cls="k-pop",size=11)=>`<g transform="translate(${x} ${y})"><text class="${cls}" text-anchor="middle" font-size="${size}" font-family="Bungee,Arial Black,sans-serif" fill="#f6b434" stroke="#2b1d3a" stroke-width="1.6" paint-order="stroke">${t}</text></g>`;
+const SPARK=(x,y,d=0,c="#fff")=>`<g transform="translate(${x} ${y})"><path class="k-twinkle" style="animation-delay:${d}s" d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1Z" fill="${c}"/></g>`;
+/* ---------- Dschungel-Zeichnungen ---------- */
+const DUNES=`<path class="sand2" d="M0 55 Q30 48 60 55 T120 52 V70 H0Z"/><path class="sand" d="M0 61 Q40 55 80 61 T120 59 V70 H0Z"/>`;
+const LEAVES=`<path d="M-4 -4 Q20 4 12 24 Q4 10 -4 16Z M124 -4 Q100 6 108 26 Q114 12 124 18Z" fill="var(--ill-sand2)"/><path d="M-2 -2 Q12 6 6 16 Q2 8 -2 10Z M122 -2 Q108 6 114 18 Q118 8 122 12Z" fill="var(--ill-sand)"/>`;
+const TREE=(x,y=58,s=1)=>`<g transform="translate(${x} ${y}) scale(${s})"><rect x="-3" y="-30" width="6" height="30" fill="var(--ill-rock)"/><circle cx="0" cy="-34" r="12" fill="var(--ill-sand2)"/><circle cx="-9" cy="-28" r="8" fill="var(--ill-sand)"/><circle cx="9" cy="-29" r="8" fill="var(--ill-sand)"/></g>`;
+const FERN=(x,y,s=1)=>`<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 0 Q-6 -8 -12 -9 M0 0 Q-2 -10 -4 -16 M0 0 Q4 -10 6 -15 M0 0 Q7 -6 12 -8" stroke="var(--ill-sand2)" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>`;
+const VINE=(x,len=40,d=0)=>`<g class="a-sway" style="transform-origin:${x}px 0px;transform-box:view-box;animation-delay:${d}s"><path d="M${x} 0 q4 ${len/4} 0 ${len/2} q-4 ${len/4} 0 ${len/2}" stroke="#3f7d3a" stroke-width="2" fill="none"/><path d="M${x} ${len*0.3} l5 -2 l-1 5Z M${x} ${len*0.7} l-5 -2 l1 5Z" fill="#5aa64c"/></g>`;
+const MONKEY=(cls="")=>`<g class="${cls}"><path d="M6 6 q10 2 6 -8" stroke="#7a4a26" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="0" cy="4" rx="6" ry="7" fill="#8a5530"/><circle cx="0" cy="-6" r="5.5" fill="#8a5530"/><circle cx="-5" cy="-7" r="2" fill="#8a5530"/><circle cx="5" cy="-7" r="2" fill="#8a5530"/><ellipse cx="0" cy="-5" rx="3.6" ry="3" fill="#e2b98a"/><circle cx="-1.4" cy="-6" r=".8" fill="#1d1310"/><circle cx="1.4" cy="-6" r=".8" fill="#1d1310"/><ellipse cx="0" cy="5" rx="3.5" ry="4" fill="#c99566"/></g>`;
+const MOSQ=(d=0)=>`<g class="k-batfly" style="animation-delay:${d}s"><ellipse cx="0" cy="0" rx="3" ry="1.4" fill="#2b1d2a"/><g class="k-flapbird" style="animation-duration:.12s"><ellipse cx="-1" cy="-2.4" rx="2.4" ry="1.3" fill="#e4f4fb" opacity=".95"/></g><path d="M-3 0 l-3 1" stroke="#2b1d2a" stroke-width=".8"/><path d="M-1 1 l-1 2 M1 1 l1 2" stroke="#2b1d2a" stroke-width=".5"/></g>`;
+const FRUIT=(c="#f08a24",d=0)=>`<g class="a-bob" style="animation-delay:${d}s"><circle r="4" fill="${c}"/><path d="M0 -4 q2 -3 4 -2" stroke="#3f7d3a" stroke-width="1.4" fill="none"/><circle cx="-1.4" cy="-1.4" r="1" fill="#fff" opacity=".6"/></g>`;
+const CROC=`<path d="M-24 0 q10 -6 30 -4 l16 2 q4 2 0 4 l-16 2 q-20 2 -30 -4Z" fill="#4f7d34"/><circle cx="12" cy="-4" r="2.4" fill="#4f7d34"/><circle cx="12.5" cy="-4.4" r="1" fill="#f6d23c"/><path d="M8 0.4 l2 2 l2 -2 l2 2 l2 -2 l2 2 l2 -2" stroke="#fff" stroke-width=".9" fill="none"/><path d="M-20 -3 l3 -3 l3 3 l3 -3 l3 3 l3 -3" stroke="#3a5f26" stroke-width="1.2" fill="none"/>`;
+const JAGUAR=`<path d="M12 -2 q10 -2 8 -10" stroke="#e0a43a" stroke-width="2.6" fill="none" stroke-linecap="round"/><ellipse cx="0" cy="0" rx="13" ry="6" fill="#e0a43a"/><circle cx="-13" cy="-4" r="5.6" fill="#e0a43a"/><path d="M-17 -9 l1 -3 l2 2 M-10 -9 l-1 -3 l-2 2" fill="#e0a43a" stroke="#e0a43a" stroke-width="1.6"/><circle cx="-15" cy="-5" r=".9" fill="#1d1310"/><circle cx="-11" cy="-5" r=".9" fill="#1d1310"/><ellipse cx="-13.5" cy="-2" rx="1.2" ry=".8" fill="#5a2a1a"/>${[[-4,-2],[2,1],[6,-3],[-2,3],[9,1],[-7,1]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.4" fill="#6b3f16"/>`).join("")}<path d="M-8 5 v7 M-3 5 v7 M4 5 v7 M9 5 v7" stroke="#c98a2a" stroke-width="2.6" stroke-linecap="round"/>`;
+const RIVER=(y=42)=>`<rect x="0" y="${y}" width="120" height="${70-y}" fill="var(--ill-water)"/><g class="k-scroll"><path d="M0 ${y+6} ${Array.from({length:12},()=>"q5 -2.5 10 0 t10 0").join(" ")}" stroke="#bfefff" stroke-width="1.6" fill="none"/><path d="M-6 ${y+15} ${Array.from({length:12},()=>"q5 -2 10 0 t10 0").join(" ")}" stroke="#bfefff" stroke-width="1.2" fill="none" opacity=".7"/></g>`;
+const TEMPLE=`<g fill="#9a8a6a"><rect x="30" y="50" width="60" height="10"/><rect x="36" y="40" width="48" height="10"/><rect x="42" y="30" width="36" height="10"/><rect x="48" y="20" width="24" height="10"/></g><g stroke="#6f6248" stroke-width=".8"><path d="M30 55 h60 M36 45 h48 M42 35 h36 M48 25 h24 M44 50 v10 M60 40 v10 M52 30 v10 M68 30 v10 M76 50 v10"/></g><rect x="55" y="48" width="10" height="12" fill="#2b2118"/>`;
+const RAIN=`<g class="k-rain">${[8,22,36,50,64,78,92,106,15,43,71,99].map((x,i)=>`<path d="M${x} ${(i%4)*6} l-3 8" stroke="#bfefff" stroke-width="1.2" stroke-linecap="round"/>`).join("")}</g>`;
+const BOLT=(x=64,s=1)=>`<g transform="translate(${x} 0) scale(${s})"><path class="k-zap" d="M6 2 L-4 24 L4 24 L-8 50 L14 18 L5 18 L14 2Z" fill="#f6e04a" stroke="#fff6a8" stroke-width="1"/></g>`;
+const BAT=(d=0)=>`<g class="k-batfly" style="animation-delay:${d}s"><g class="k-flapbird"><path d="M-8 0 Q-4 -5 0 0 Q4 -5 8 0 Q4 2 0 3 Q-4 2 -8 0Z" fill="#a68cff"/></g><circle cx="0" cy="0" r="1.6" fill="#a68cff"/></g>`;
+
+/* Wörter Level 1 */
+let ILL=[
+ /* Dschungel */ `${LEAVES}${DUNES}${TREE(22)}${TREE(98,58,1.1)}${TREE(60,60,.8)}${VINE(42,34)}${VINE(80,28,.6)}${FERN(10,62)}${FERN(112,62,.8)}`,
+ /* Gewirr */ `${DUNES}${[8,22,36,50,64,78,92,106].map((x,i)=>VINE(x,30+(i%3)*12,i*.2)).join("")}<g class="a-sway" style="transform-origin:60px 70px;transform-box:view-box"><ellipse cx="30" cy="44" rx="16" ry="6" transform="rotate(-25 30 44)" fill="var(--ill-sand)"/><ellipse cx="90" cy="42" rx="16" ry="6" transform="rotate(25 90 42)" fill="var(--ill-sand2)"/><ellipse cx="60" cy="50" rx="14" ry="5" fill="var(--ill-sand)"/></g><text class="ink a-bob" x="56" y="28" font-family="VT323,monospace" font-size="20">?</text>`,
+ /* Sumpf */ `${DUNES}${FERN(14,60)}${FERN(106,60,.9)}<ellipse cx="60" cy="61" rx="38" ry="7" fill="#4b5f2a"/><ellipse cx="60" cy="61" rx="26" ry="4.4" fill="#62803a"/>${[[48,60,0],[64,62,.6],[74,59,1.2],[56,62,1.7]].map(([x,y,d])=>`<g transform="translate(${x} ${y})"><circle class="k-bubble" style="animation-delay:${d}s" r="1.8" fill="#a6c766"/></g>`).join("")}`,
+ /* versinken */ `${DUNES}<ellipse cx="60" cy="60" rx="34" ry="8" fill="#4b5f2a"/><g transform="translate(60 52)"><g class="a-sink"><g transform="translate(0 -6)">${HERO({arms:`<path d="M-5 0 l-5 -10 M5 0 l5 -10" stroke="#6b4fc9" stroke-width="3" stroke-linecap="round"/>`})}</g></g></g><path d="M24 60 Q60 72 96 60 V70 H24Z" fill="#4b5f2a"/>${POP(96,20,"HILFE!","k-pop",9)}`,
+ /* giftige Pflanzen */ `${DUNES}<g transform="translate(58 60)"><g class="a-sway" style="transform-origin:0 0;transform-box:view-box"><path d="M0 0 V-26" stroke="#3f7d3a" stroke-width="2.4"/><ellipse cx="-10" cy="-16" rx="10" ry="4.4" transform="rotate(-25 -10 -16)" fill="#8d3fb0"/><ellipse cx="10" cy="-22" rx="10" ry="4.4" transform="rotate(25 10 -22)" fill="#8d3fb0"/>${[[-12,-17],[-6,-15],[8,-23],[13,-21]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.2" fill="#e8f45a"/>`).join("")}<circle cx="0" cy="-28" r="4" fill="#e2412e"/></g></g><circle class="a-drop" cx="48" cy="46" r="1.8" fill="#c6e84a"/><circle class="a-drop d2" cx="68" cy="40" r="1.8" fill="#c6e84a"/><g transform="translate(96 30)"><g class="k-throb"><path d="M0 -9 L8 5 H-8Z" fill="#f6c234" stroke="#2b1d3a" stroke-width="1.2"/><rect x="-.9" y="-4" width="1.8" height="5" fill="#2b1d3a"/><rect x="-.9" y="2" width="1.8" height="1.6" fill="#2b1d3a"/></g></g>`,
+ /* Mücken */ `${DUNES}${FERN(16,60)}${FERN(104,60)}${[[40,26,0],[62,36,.5],[80,22,1],[52,46,1.5],[90,40,.3]].map(([x,y,d])=>`<g transform="translate(${x} ${y}) scale(1.5)">${MOSQ(d)}</g>`).join("")}${POP(100,12,"SSSS","k-pop",8)}`,
+ /* übertragen */ `${DUNES}<g transform="translate(96 52)"><rect x="-12" y="-14" width="24" height="16" fill="var(--ill-rock)"/><path d="M-15 -14 L0 -26 L15 -14Z" fill="var(--ill-rock2)"/><rect x="-3" y="-8" width="6" height="10" fill="#2b2118"/></g><g transform="translate(96 16)"><g class="k-throb"><rect x="-6" y="-2" width="12" height="4" fill="#e2412e"/><rect x="-2" y="-6" width="4" height="12" fill="#e2412e"/></g></g><path d="M14 40 Q50 18 84 36" stroke="var(--ill-ink)" stroke-width="1.4" stroke-dasharray="3 4" fill="none" class="k-scent"/><g transform="translate(46 30)"><g class="a-walk">${MOSQ(0)}</g></g>`,
+ /* Früchte */ `${LEAVES}${DUNES}<rect x="56" y="22" width="8" height="38" fill="var(--ill-rock)"/><circle cx="60" cy="20" r="20" fill="var(--ill-sand2)"/><circle cx="46" cy="26" r="10" fill="var(--ill-sand)"/><circle cx="74" cy="26" r="10" fill="var(--ill-sand)"/>${[[48,22,"#f08a24",0],[60,12,"#e2412e",.3],[72,22,"#f08a24",.6],[56,28,"#f6c234",.9],[68,30,"#e2412e",1.2]].map(([x,y,c,d])=>`<g transform="translate(${x} ${y})">${FRUIT(c,d)}</g>`).join("")}${SPARK(88,12,0)}${SPARK(32,14,.6)}`,
+ /* verteidigen */ `${LEAVES}<path d="M0 40 H120" stroke="var(--ill-rock)" stroke-width="5"/>${DUNES}<g transform="translate(76 34)">${FRUIT("#f08a24",0)}</g><g transform="translate(86 32)">${FRUIT("#e2412e",.4)}</g><g transform="translate(56 32)"><g class="a-bounce-x">${MONKEY("")}<path d="M-6 0 l-5 -8 M6 0 l5 -8" stroke="#8a5530" stroke-width="2.4" stroke-linecap="round"/></g></g>${POP(30,20,"MEINS!","k-pop",10)}`
+];
+/* Wörter Level 2 */
+const ILL2=[
+ /* Fluss */ `${RIVER(40)}<path class="sand" d="M0 36 Q30 32 60 37 T120 35 V42 H0Z"/>${TREE(14,38,.7)}${TREE(104,38,.8)}${FERN(40,40)}`,
+ /* Krokodile */ `${RIVER(36)}<path class="sand" d="M0 32 Q30 28 60 33 T120 31 V37 H0Z"/><g transform="translate(60 50)"><g class="k-nod">${CROC}</g></g><g transform="translate(24 60)"><g class="a-blink"><circle r="1.6" fill="#f6d23c"/><circle cx="6" r="1.6" fill="#f6d23c"/></g></g>${POP(96,20,"SCHNAPP!","k-pop",8)}`,
+ /* Strömung */ `${RIVER(30)}<g class="k-speed-fast"><path d="M20 44 h30 l-4 -3 M20 44 l26 3" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M60 56 h34 l-4 -3" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></g><g transform="translate(40 50)"><g class="a-runaway"><ellipse rx="6" ry="2.4" fill="#5aa64c" transform="rotate(-15)"/></g></g>`,
+ /* Hängebrücke */ `${RIVER(46)}<rect x="0" y="32" width="14" height="14" fill="var(--ill-sand)"/><rect x="106" y="32" width="14" height="14" fill="var(--ill-sand)"/><g class="a-sway" style="transform-origin:60px 30px;transform-box:view-box"><path d="M12 24 Q60 46 108 24" stroke="#8a5a2b" stroke-width="1.6" fill="none"/><path d="M12 32 Q60 52 108 32" stroke="#8a5a2b" stroke-width="1.6" fill="none"/>${[20,30,40,50,60,70,80,90,100].map(x=>{const y=32+16*(1-Math.pow((x-60)/48,2));return `<rect x="${x-3}" y="${y.toFixed(1)}" width="6" height="2.4" fill="#a87a45"/>`}).join("")}</g>`,
+ /* reissen */ `${RIVER(48)}<rect x="0" y="34" width="14" height="14" fill="var(--ill-sand)"/><rect x="106" y="34" width="14" height="14" fill="var(--ill-sand)"/><path d="M12 30 Q30 44 48 42" stroke="#8a5a2b" stroke-width="1.6" fill="none"/><path d="M108 30 Q90 44 72 42" stroke="#8a5a2b" stroke-width="1.6" fill="none"/>${[22,32,42].map(x=>`<rect x="${x-3}" y="38" width="6" height="2.4" fill="#a87a45"/>`).join("")}${[98,88,78].map(x=>`<rect x="${x-3}" y="38" width="6" height="2.4" fill="#a87a45"/>`).join("")}<g transform="translate(60 40)"><rect class="a-fall" x="-3" y="0" width="6" height="2.4" fill="#a87a45"/></g>${POP(60,20,"RATSCH!","k-pop",9)}`,
+ /* Gewitter */ `<rect width="120" height="70" fill="#3c4a5c"/><ellipse cx="30" cy="10" rx="30" ry="12" fill="#56647a"/><ellipse cx="86" cy="8" rx="36" ry="12" fill="#4a586e"/>${RAIN}${BOLT(70,.8)}<path class="sand2" d="M0 60 Q30 55 60 60 T120 58 V70 H0Z"/>`,
+ /* Blitz */ `<rect width="120" height="70" fill="#2b3446"/><rect class="k-zapbg" width="120" height="70" fill="#fff6a8"/>${BOLT(54,1.2)}${POP(96,24,"ZACK!")}<path class="sand2" d="M0 62 Q30 58 60 62 T120 60 V70 H0Z"/>`,
+ /* rutschig */ `${RAIN}<path d="M0 54 Q60 46 120 54 V70 H0Z" fill="#7a5a3a"/><ellipse cx="60" cy="56" rx="22" ry="3" fill="#bfefff" opacity=".6"/><g transform="translate(60 44)"><g class="k-slip">${HERO()}</g></g>${POP(96,20,"HUIII!","k-pop",9)}`,
+ /* Ufer */ `${RIVER(44)}<path class="sand" d="M0 30 Q40 26 70 34 Q86 40 96 46 H0Z"/>${TREE(16,32,.6)}<g transform="translate(44 30)">${HERO({cls:"k-bounce",arms:`<path d="M-5 1 l-4 6 M5 0 l5 -8" stroke="#6b4fc9" stroke-width="3" stroke-linecap="round"/>`})}</g><g transform="translate(62 38)"><path d="M-7 -4 h14 l-2 8 h-10Z" fill="#a87a45"/>${FRUIT("#f08a24",0)}</g>`
+];
+/* Wörter Level 3 */
+const ILL3=[
+ /* Tempel */ `${LEAVES}${DUNES}${TEMPLE}${VINE(40,30)}${VINE(82,26,.5)}${SPARK(60,10,0,"#f6c234")}`,
+ /* überwuchert */ `${DUNES}${TEMPLE}${[34,44,54,66,76,86].map((x,i)=>VINE(x,26+(i%3)*10,i*.25)).join("")}<g class="a-sway" style="transform-origin:60px 60px;transform-box:view-box"><ellipse cx="38" cy="46" rx="10" ry="4" fill="var(--ill-sand)"/><ellipse cx="82" cy="40" rx="10" ry="4" fill="var(--ill-sand2)"/><ellipse cx="60" cy="24" rx="12" ry="4" fill="var(--ill-sand)"/></g>`,
+ /* Falle */ `<rect y="40" width="120" height="30" fill="#9a8a6a"/><path d="M0 50 h120 M0 60 h120 M20 40 v10 M50 40 v10 M80 40 v10 M35 50 v10 M65 50 v10 M95 50 v10" stroke="#6f6248" stroke-width=".8"/><g class="k-fake"><rect x="44" y="50" width="32" height="10" fill="#2b2118"/></g><path d="M48 56 l4 -4 l4 4 l4 -4 l4 4 l4 -4 l4 4" stroke="#ccc" stroke-width="1" fill="none" class="k-fake"/><g transform="translate(60 24)"><g class="k-throb"><path d="M0 -9 L8 5 H-8Z" fill="#f6c234" stroke="#2b1d3a" stroke-width="1.2"/><rect x="-.9" y="-4" width="1.8" height="5" fill="#2b1d3a"/><rect x="-.9" y="2" width="1.8" height="1.6" fill="#2b1d3a"/></g></g>`,
+ /* Jaguar */ `${LEAVES}${DUNES}${FERN(14,60)}${FERN(108,60)}<g transform="translate(60 48)"><g class="a-crawl">${JAGUAR}</g></g>`,
+ /* bewachen */ `${DUNES}${TEMPLE}<g transform="translate(84 54) scale(.8)">${JAGUAR}</g><g transform="translate(73 47)"><g class="a-blink"><circle r="1" fill="#f6d23c"/></g></g>${POP(30,16,"HALT!","k-pop",10)}`,
+ /* Fledermäuse */ `<rect width="120" height="70" fill="#14261a"/><path d="M0 0 H120 V8 Q90 14 60 8 Q30 14 0 8Z" fill="#2b2118"/>${[[30,26,0],[62,18,.5],[88,32,1],[48,44,1.4]].map(([x,y,d])=>`<g transform="translate(${x} ${y}) scale(1.7)">${BAT(d)}</g>`).join("")}<g transform="translate(18 10)"><path d="M0 0 v6" stroke="#2b2118" stroke-width="1"/><g transform="translate(0 9) rotate(180)"><path d="M-6 0 Q-3 -4 0 0 Q3 -4 6 0 Q3 2 0 3 Q-3 2 -6 0Z" fill="#7b68c4"/></g></g>`,
+ /* Gänge */ `<rect width="120" height="70" fill="#2b2118"/><path d="M10 10 H110 V60 H10Z M24 22 H96 V48 H24Z M38 32 H82 V40 H38Z" stroke="#6f6248" stroke-width="5" fill="none"/><g transform="translate(16 26)"><path d="M0 8 v8" stroke="#8a5a2b" stroke-width="2"/><g class="a-flicker"><path d="M0 8 C-4 4 -1 0 0 -4 C1 0 4 4 0 8Z" fill="#f6b434"/></g><circle class="k-glow2" r="10" fill="#f6b434" opacity=".15"/></g>`,
+ /* verschlossen */ `<rect width="120" height="70" fill="#9a8a6a"/><path d="M0 20 h120 M0 44 h120 M30 0 v20 M90 0 v20 M14 20 v24 M106 20 v24" stroke="#6f6248" stroke-width=".8"/><rect x="38" y="16" width="44" height="54" rx="2" fill="#7a6b50" stroke="#55493a" stroke-width="2"/><path d="M60 16 v54" stroke="#55493a" stroke-width="1.4"/><g transform="translate(60 42)"><g class="k-throb"><rect x="-7" y="-2" width="14" height="11" rx="2" fill="#f6c234" stroke="#2b1d3a"/><path d="M-4 -2 V-6 a4 4 0 0 1 8 0 V-2" stroke="#2b1d3a" stroke-width="2" fill="none"/></g></g>`,
+ /* Goldfrucht */ `<rect width="120" height="70" fill="#2b2118"/><circle class="k-glow2" cx="60" cy="38" r="22" fill="#f6c234" opacity=".3"/><rect x="48" y="52" width="24" height="6" fill="#9a8a6a"/><g transform="translate(60 40) scale(2.2)">${FRUIT("#f6c234",0)}</g>${SPARK(40,22,0,"#fff6a8")}${SPARK(82,26,.5,"#fff6a8")}${SPARK(70,14,1,"#fff6a8")}${SPARK(46,48,1.3,"#fff6a8")}`
+];
+let BRIEF=[
+ "Funkspruch aus der Stadt …",
+ "Unsere Stadt liegt am Rand des Dschungels. Viele Menschen sind schwer krank.",
+ "Nur besondere Früchte aus dem Dschungel können die Krankheit heilen. Die Regierung der Stadt schickt dich los: Pflücke die Früchte und bring sie in die Stadt!",
+ "Der Dschungel ist ein Gewirr aus Bäumen und Pflanzen. Riesige Blätter versperren die Sicht, und bis zum Boden kommt kaum Licht. Der Boden ist sumpfig. Manche Pflanzen sind giftig. Überall fliegen Mücken, die Krankheiten übertragen.",
+ "Die Früchte wachsen hoch oben in den Bäumen. Dort leben Affen. Sie verteidigen ihre Früchte und greifen alle an, die ihnen zu nahe kommen.",
+ "Für deinen Auftrag darfst du drei Superkräfte wählen. Sie wirken während des ganzen Games."
+];
+let QUIZ=[
+ {q:"Warum musst du die Früchte holen?",o:["Die Menschen in der Stadt sind krank.","Die Stadt hat nichts mehr zu essen.","Die Affen brauchen Hilfe."],r:0},
+ {q:"Wo wachsen die Früchte?",o:["Am Boden im Sumpf.","Hoch oben in den Bäumen.","In einem Garten in der Stadt."],r:1},
+ {q:"Warum sind die Mücken gefährlich?",o:["Sie fressen die Früchte.","Sie übertragen Krankheiten.","Sie machen laute Geräusche."],r:1},
+ {q:"Was machen die Affen?",o:["Sie helfen dir beim Pflücken.","Sie schlafen den ganzen Tag.","Sie verteidigen die Früchte und greifen an."],r:2}
+];
+let WORDS=[
+ ["der Dschungel","Nomen","Ein dichter Wald in einem heissen, feuchten Land. Dort wachsen sehr viele Pflanzen."],
+ ["das Gewirr","Nomen","Viele Dinge sind durcheinander. Man kommt kaum durch."],
+ ["der Sumpf","Nomen","Nasser, weicher Boden. Man kann darin einsinken."],
+ ["versinken","Verb","Langsam nach unten gehen, bis man ganz drin ist. «Er versinkt im Sumpf.»"],
+ ["die giftigen Pflanzen","Nomen, Mehrzahl","Pflanzen mit Gift. Man darf sie nicht berühren."],
+ ["die Mücken","Nomen, Mehrzahl","Kleine Insekten, die stechen."],
+ ["übertragen","Verb","Etwas weitergeben. Mücken können Krankheiten übertragen."],
+ ["die Früchte","Nomen, Mehrzahl","Essbare Teile von Pflanzen, zum Beispiel Bananen oder Mangos."],
+ ["verteidigen","Verb","Etwas schützen, damit niemand es wegnimmt."]
+];
+let GAPS=[
+ ["Im ___ wachsen Bäume und Pflanzen ganz dicht.","der Dschungel","Dschungel"],
+ ["Pass auf! Im ___ kannst du einsinken.","der Sumpf","Sumpf"],
+ ["Die ___ stechen und machen krank.","die Mücken","Mücken"],
+ ["Die Affen ___ ihre Früchte.","verteidigen","verteidigen"],
+ ["Fass die ___ nicht an!","die giftigen Pflanzen","giftigen Pflanzen"],
+ ["Ohne Hilfe kann man im Sumpf ___.","versinken","versinken"]
+];
+const BASE_POWERS=[
+ {id:"sumpf",t:"Sümpfe erkennen",d:"Du siehst sofort, wo der Boden sumpfig und gefährlich ist."},
+ {id:"unsichtbar",t:"sich unsichtbar machen",d:"Niemand kann dich sehen, solange du willst."},
+ {id:"tiere",t:"mit Tieren sprechen",d:"Du kannst mit Tieren reden, zum Beispiel mit Affen oder Vögeln."},
+ {id:"schnell",t:"übernatürlich schnell sein",d:"Du rennst schneller als ein Auto."},
+ {id:"orient",t:"super Orientierungssinn",d:"Du weisst immer, wo du bist. Du verläufst dich nie."},
+ {id:"stark",t:"übernatürlich stark sein",d:"Du bist stärker als alle Menschen und hebst sogar Baumstämme."},
+ {id:"muecken",t:"vor Mücken geschützt sein",d:"Keine Mücke kann dich stechen."},
+ {id:"fliegen",t:"fliegen wie ein Vogel",d:"Du fliegst über den Dschungel und durch die Luft."},
+ {id:"klettern",t:"klettern wie ein Affe",d:"Du kletterst blitzschnell auf jeden Baum und schwingst an Lianen."},
+ {id:"dunkel",t:"im Dunkeln sehen",d:"Du siehst auch dort alles, wo kaum Licht hinkommt."}
+];
+const P=Object.fromEntries(BASE_POWERS.map(p=>[p.id,p]));
+let POWERS=BASE_POWERS.slice();
+let selObs=null;
+let OBST_ILL=[1,2,5,8];
+let OBST=[
+ {t:"Riesige Blätter und wenig Licht: Man sieht kaum etwas.",fit:["dunkel","orient","fliegen"]},
+ {t:"Der Boden ist sumpfig. Man kann versinken.",fit:["sumpf","fliegen","klettern"]},
+ {t:"Überall fliegen Mücken, die Krankheiten übertragen.",fit:["muecken","schnell","unsichtbar"]},
+ {t:"Die Früchte hängen hoch oben. Affen verteidigen sie.",fit:["klettern","fliegen","tiere","unsichtbar","stark"]}
+];
+const PILL={
+ sumpf:`${DUNES}<ellipse cx="80" cy="61" rx="30" ry="6" fill="#4b5f2a"/><ellipse cx="80" cy="61" rx="20" ry="3.6" fill="#62803a"/><g transform="translate(72 60)"><circle class="k-bubble" r="1.8" fill="#a6c766"/></g><g transform="translate(88 61)"><circle class="k-bubble" style="animation-delay:.7s" r="1.4" fill="#a6c766"/></g>
+  <g transform="translate(28 46)">${HERO()}</g><g transform="translate(31 37)"><circle class="k-glow2" r="6" fill="#7ef0e0" opacity=".6"/></g>
+  <path class="k-scent" d="M38 37 Q60 40 74 56" stroke="#7ef0e0" stroke-width="2" fill="none" stroke-dasharray="3 4"/>
+  <g transform="translate(80 40)"><g class="k-throb"><path d="M0 -9 L8 5 H-8Z" fill="#f6c234" stroke="#2b1d3a" stroke-width="1.2"/><rect x="-.9" y="-4" width="1.8" height="5" fill="#2b1d3a"/><rect x="-.9" y="2" width="1.8" height="1.6" fill="#2b1d3a"/></g></g>
+  ${POP(84,16,"SUMPF!","k-pop",10)}`,
+ unsichtbar:`${DUNES}${FERN(110,60)}<g transform="translate(36 46)"><g class="k-invis">${HERO()}</g></g><g transform="translate(36 46)"><path d="M-6 -14 a6 6 0 1 1 12 0 M-5 -3 h10 v13 h-10Z" fill="none" stroke="var(--ill-ink)" stroke-width="1" stroke-dasharray="2 2" opacity=".5"/></g>
+  <g transform="translate(86 46)">${MONKEY("k-sniff")}</g>
+  <g transform="translate(90 26)"><text class="a-bob" font-family="Bungee,Arial Black,sans-serif" font-size="12" fill="#f6b434" stroke="#2b1d3a" stroke-width="1.2" paint-order="stroke">??</text></g>`,
+ tiere:`${DUNES}<g transform="translate(26 46)">${HERO({cls:"k-bounce"})}</g><g transform="translate(88 48)">${MONKEY("k-nod")}</g><g transform="translate(100 42)">${FRUIT("#f08a24",0)}</g>
+  <g transform="translate(40 14)"><g class="k-talk1"><rect x="-14" y="-8" width="30" height="14" rx="6" fill="#fff" stroke="#2b1d3a" stroke-width="1"/><path d="M-6 6 l-4 6 l8 -6Z" fill="#fff"/><text x="1" y="2" text-anchor="middle" font-family="VT323,monospace" font-size="11" fill="#2b1d3a">Hallo!</text></g></g>
+  <g transform="translate(88 14)"><g class="k-talk2"><rect x="-24" y="-8" width="48" height="14" rx="6" fill="#fff" stroke="#2b1d3a" stroke-width="1"/><path d="M6 6 l4 6 l-10 -6Z" fill="#fff"/><text x="0" y="2" text-anchor="middle" font-family="VT323,monospace" font-size="10" fill="#2b1d3a">Nimm eine!</text></g></g>
+  <g transform="translate(60 32)"><text class="k-float" font-size="10" fill="#c43d55">♥</text></g>`,
+ schnell:`<g class="k-scroll-fast"><path class="sand" d="M0 58 H240 V70 H0Z"/>${[20,70,100,140,190,220].map(x=>FERN(x,58,1.1)).join("")}${[45,165].map(x=>`<rect x="${x}" y="28" width="5" height="30" fill="var(--ill-rock)"/><circle cx="${x+2.5}" cy="26" r="11" fill="var(--ill-sand2)"/>`).join("")}</g>
+  <g class="k-speed-fast"><rect x="10" y="24" width="26" height="2" rx="1" fill="var(--ill-ink)" opacity=".6"/><rect x="4" y="34" width="32" height="2" rx="1" fill="var(--ill-ink)" opacity=".6"/><rect x="14" y="44" width="22" height="2" rx="1" fill="var(--ill-ink)" opacity=".6"/></g>
+  <g transform="translate(40 58)"><circle class="k-puff" r="5" fill="#d9e8c4"/></g><g transform="translate(32 58)"><circle class="k-puff" style="animation-delay:.25s" r="4" fill="#d9e8c4"/></g>
+  <g transform="translate(60 42) rotate(14)"><g class="k-run">${HERO({cape:"k-flutter"})}</g></g>
+  ${POP(94,22,"ZOOM!")}`,
+ orient:`<rect x="6" y="6" width="108" height="58" rx="4" fill="#f3e3c3" stroke="#a06a28" stroke-width="1.5"/>
+  <path d="M14 18 l6 -6 l6 6Z M80 52 l5 -6 l5 6Z M60 14 q4 -4 8 0" fill="#c98f3e" stroke="#a06a28" stroke-width="1"/>
+  <path class="k-draw" d="M16 56 C30 30 46 60 58 40 S80 16 98 24" fill="none" stroke="#c43d55" stroke-width="2.2" stroke-dasharray="4 4" stroke-linecap="round"/>
+  <g transform="translate(98 22)"><g class="k-pin"><path d="M0 2 C-6 -4 -6 -12 0 -12 C6 -12 6 -4 0 2Z" fill="#c43d55"/><circle cy="-7" r="2" fill="#fff"/></g></g>
+  <g transform="translate(26 22)"><circle r="11" fill="#fff" stroke="#2b1d3a" stroke-width="1.5"/><text x="-2.5" y="-4" font-size="6" font-family="Bungee,sans-serif" fill="#2b1d3a">N</text><g class="k-compass"><path d="M0 -8 L2.5 0 L0 8 L-2.5 0Z" fill="#c43d55"/><path d="M0 0 L2.5 0 L0 8 L-2.5 0Z" fill="#2b1d3a"/></g></g>
+  ${POP(66,62,"HIER LANG!","k-pop",8)}`,
+ stark:`<g class="k-shake">${DUNES}<g transform="translate(60 48)">${HERO({arms:`<path d="M-5 0 l-5 -12 M5 0 l5 -12" stroke="#6b4fc9" stroke-width="3.4" stroke-linecap="round"/>`})}</g>
+  <g transform="translate(60 25)"><g class="k-lift"><rect x="-26" y="-5" width="52" height="10" rx="5" fill="var(--ill-rock)"/><ellipse cx="26" cy="0" rx="3" ry="5" fill="#c99566"/><path d="M-18 -2 h10 M0 2 h12" stroke="var(--ill-rock2)" stroke-width="1.2"/><path d="M-10 -5 l-4 -6 l3 1" stroke="#3f7d3a" stroke-width="1.6" fill="none"/></g></g>
+  <g transform="translate(46 64)"><circle class="k-puff" r="5" fill="#d9e8c4"/></g><g transform="translate(74 64)"><circle class="k-puff" style="animation-delay:.1s" r="5" fill="#d9e8c4"/></g>
+  </g>${POP(96,16,"WUMMS!")}`,
+ muecken:`${DUNES}${FERN(104,60)}<g transform="translate(40 46)">${HERO()}</g><g transform="translate(40 38)"><circle class="k-shield" r="17" fill="#c8f7a8" stroke="#3fb04a" stroke-width="2" opacity=".4"/></g>
+  <g transform="translate(70 24)">${MOSQ(0)}</g><g transform="translate(84 40)">${MOSQ(.6)}</g><g transform="translate(66 52)">${MOSQ(1.1)}</g>
+  <g transform="translate(60 32)"><g class="k-dizzy">${SPARK(-5,0,0,"#f6b434")}${SPARK(5,0,.3,"#f6b434")}</g></g>
+  ${POP(88,14,"BZZ-NEIN!","k-pling",8)}`,
+ fliegen:`<g class="k-scroll-slow"><g fill="#fff" opacity=".85"><ellipse cx="20" cy="14" rx="10" ry="4"/><ellipse cx="80" cy="10" rx="12" ry="4"/><ellipse cx="140" cy="14" rx="10" ry="4"/><ellipse cx="200" cy="10" rx="12" ry="4"/></g></g>
+  <g class="k-scroll"><path class="sand2" d="M0 56 Q30 46 60 56 T120 56 T180 56 T240 56 V70 H0Z"/></g>
+  <g class="k-speed"><rect x="18" y="28" width="16" height="2" rx="1" fill="var(--ill-ink)" opacity=".5"/><rect x="10" y="36" width="20" height="2" rx="1" fill="var(--ill-ink)" opacity=".5"/><rect x="20" y="44" width="12" height="2" rx="1" fill="var(--ill-ink)" opacity=".5"/></g>
+  <g transform="translate(64 36) rotate(-70)"><g class="k-hover">${HERO({cape:"k-flutter",arms:`<path d="M-4 -2 l-2 -10 M4 -2 l2 -10" stroke="#6b4fc9" stroke-width="3" stroke-linecap="round"/>`})}</g></g>
+  <g transform="translate(96 20)"><g class="k-flapbird"><path d="M-6 0 L0 3 L6 0 L0 5Z" fill="var(--ill-ink)"/></g></g>
+  ${POP(98,46,"WUSCH!","k-pop",10)}`,
+ klettern:`${DUNES}<rect x="54" y="0" width="12" height="62" fill="var(--ill-rock)"/><path d="M56 10 h8 M57 24 h7 M55 38 h9 M57 50 h7" stroke="var(--ill-rock2)" stroke-width="1.2"/>
+  <circle cx="60" cy="0" r="16" fill="var(--ill-sand2)"/><g transform="translate(74 10)">${FRUIT("#f08a24",0)}</g><g transform="translate(46 9)">${FRUIT("#e2412e",.4)}</g>
+  <g transform="translate(60 44)"><g class="k-climb">${HERO({arms:`<path d="M-5 -1 l-3 -9 M5 -1 l3 -9" stroke="#6b4fc9" stroke-width="3" stroke-linecap="round"/>`})}</g></g>
+  ${VINE(96,40)}${POP(26,24,"HOPP!")}`,
+ dunkel:`<rect width="120" height="70" fill="#0d0a18"/><path d="M0 70 V44 Q20 34 40 46 Q70 30 120 42 V70Z" fill="#2b1d3a"/>
+  <g style="transform-box:view-box;transform-origin:30px 34px" class="k-sweep"><path d="M30 34 L120 8 L120 54Z" fill="#fff6a8" opacity=".28"/></g>
+  <g transform="translate(92 50)"><path d="M-6 6 L0 -8 L6 6Z" fill="#7ef0e0"/><path d="M4 6 L9 -3 L12 6Z" fill="#a68cff"/></g>${SPARK(92,42,0,"#fff6a8")}${SPARK(102,46,.7,"#fff6a8")}
+  <g transform="translate(84 20)"><g class="k-batfly"><g class="k-flapbird"><path d="M-8 0 Q-4 -5 0 0 Q4 -5 8 0 Q4 2 0 3 Q-4 2 -8 0Z" fill="#a68cff"/></g></g></g>
+  <g transform="translate(26 46)">${HERO()}</g>
+  <g transform="translate(29 38)"><circle class="k-glow2" r="6" fill="#7ef0e0" opacity=".5"/></g>
+  ${POP(60,64,"ALLES KLAR!","k-pop",8)}`
+};
+let PROS={
+ sumpf:{p:["Du siehst sofort, wo der Boden sumpfig ist, und versinkst nicht.","Du findest einen sicheren Weg durch den Dschungel."],c:["Gegen die Mücken und die Affen hilft sie nicht.","Die Früchte oben in den Bäumen erreichst du damit nicht."]},
+ unsichtbar:{p:["Die Affen sehen dich nicht. Du kannst die Früchte heimlich pflücken.","Du kommst ungestört durch den Dschungel."],c:["Mücken finden dich trotzdem und stechen.","Du kannst trotzdem im Sumpf versinken."]},
+ tiere:{p:["Du bittest die Affen, dir ein paar Früchte zu geben.","Vögel zeigen dir den Weg durch das Gewirr."],c:["Mücken hören dir nicht zu.","Vielleicht wollen die Affen ihre Früchte trotzdem nicht teilen."]},
+ schnell:{p:["Du rennst über den Sumpf, bevor du einsinkst.","Du bringst die Früchte schnell in die Stadt."],c:["Im dichten Gewirr kannst du kaum rennen.","Auf die hohen Bäume kommst du damit nicht."]},
+ orient:{p:["Du verläufst dich nie, auch nicht im dunklen Gewirr.","Du findest den schnellsten Weg zurück in die Stadt."],c:["Du weisst nicht, wo der Boden sumpfig ist.","Gegen Mücken und Affen hilft sie nicht."]},
+ stark:{p:["Du schiebst umgestürzte Bäume und Äste zur Seite.","Die Affen haben Respekt vor dir."],c:["Im Sumpf hilft dir Kraft nicht.","Mücken kannst du nicht wegdrücken."]},
+ muecken:{p:["Die Mücken können dich nicht stechen. Du wirst nicht krank.","Du musst dich nicht ständig wehren und kommst schneller voran."],c:["Sie hilft nur gegen eine einzige Gefahr.","Die Affen und der Sumpf bleiben gefährlich."]},
+ fliegen:{p:["Du fliegst über den Sumpf und die giftigen Pflanzen.","Du erreichst die Früchte hoch oben in den Bäumen."],c:["Zwischen den vielen Ästen und Blättern kann man kaum fliegen.","Oben in den Bäumen warten die Affen und greifen an."]},
+ klettern:{p:["Du kletterst schnell zu den Früchten hoch oben.","Du schwingst an Lianen über den Sumpf."],c:["Oben in den Bäumen warten die Affen.","Gegen Mücken hilft sie nicht."]},
+ dunkel:{p:["Unter den riesigen Blättern siehst du trotzdem alles.","Du erkennst giftige Pflanzen früh genug."],c:["Die Mücken stechen dich trotzdem.","Die Früchte oben erreichst du damit nicht."]}
+};
+const LVL={
+ 1:null,
+ 2:{name:"Der Fluss der Krokodile",teaser:"Bringt die Heilfrüchte sicher über den Fluss.",stars:2,
+  sub:"Das ist ein neues Level. Diesen Funkspruch gibt es nicht im Buch.",
+  brief:["Funkspruch aus der Stadt …","Super, ihr habt die Heilfrüchte gepflückt! Jetzt müsst ihr sie schnell in die Stadt bringen.","Doch zwischen euch und der Stadt liegt ein breiter Fluss. Darin lauern Krokodile, und die Strömung ist sehr stark.","Die alte Hängebrücke ist gerissen. Am Himmel zieht ein Gewitter mit Blitzen auf, und der Regen macht alle Wege rutschig.","Wähle wieder drei Superkräfte. Sie wirken während des ganzen Games."],
+  quiz:[{q:"Was müsst ihr in die Stadt bringen?",o:["Die Heilfrüchte","Ein Krokodil","Wasser aus dem Fluss"],r:0},{q:"Was ist mit der Hängebrücke passiert?",o:["Sie ist ganz neu.","Sie ist gerissen.","Sie ist voller Affen."],r:1},{q:"Was lauert im Fluss?",o:["Fische","Krokodile","Mücken"],r:1},{q:"Was macht der Regen?",o:["Er macht die Wege rutschig.","Er macht den Fluss leer.","Er vertreibt die Krokodile."],r:0}],
+  words:[["der Fluss","Nomen","Viel Wasser, das in eine Richtung fliesst."],["die Krokodile","Nomen, Mehrzahl","Grosse Tiere mit vielen spitzen Zähnen. Sie leben im Wasser und an Land."],["die Strömung","Nomen","Das Wasser fliesst schnell in eine Richtung und zieht alles mit."],["die Hängebrücke","Nomen","Eine Brücke aus Seilen und Brettern. Sie hängt über einem Fluss."],["reissen","Verb","Kaputtgehen, weil zu stark gezogen wird. «Das Seil ist gerissen.»"],["das Gewitter","Nomen","Ein Unwetter mit Regen, Donner und Blitzen."],["der Blitz","Nomen","Ein heller, gefährlicher Strahl aus Strom am Himmel."],["rutschig","Adjektiv","Sehr glatt. Man kann leicht ausrutschen und hinfallen."],["das Ufer","Nomen","Der Rand von einem Fluss oder See."]],
+  ill:ILL2,
+  gaps:[["Das Wasser im ___ fliesst sehr schnell.","der Fluss","Fluss"],["Die ___ ist so stark, dass sie alles mitreisst.","die Strömung","Strömung"],["Über die ___ kommt man nicht mehr, sie ist kaputt.","die Hängebrücke","Hängebrücke"],["Das alte Seil ist ___.","reissen","gerissen"],["Bei einem ___ donnert und blitzt es.","das Gewitter","Gewitter"],["Nach dem Regen ist der Weg sehr ___.","rutschig","rutschig"]],
+  obst:[{t:"Im Fluss lauern Krokodile.",fit:["tiere","fliegen","unsichtbar","stark"]},{t:"Die Hängebrücke ist gerissen.",fit:["fliegen","klettern","stark"]},{t:"Ein Gewitter mit Blitzen zieht auf.",fit:["schnell","orient"]},{t:"Die Strömung reisst alles mit.",fit:["stark","fliegen"]}],
+  obstIll:[1,4,5,2],
+  pros:{
+   sumpf:{p:["Am Ufer erkennst du, wo der Boden weich und gefährlich ist.","Du findest eine feste Stelle, um den Fluss zu überqueren."],c:["Gegen Krokodile und Gewitter hilft sie nicht.","Über den Fluss kommst du damit nicht."]},
+   unsichtbar:{p:["Die Krokodile sehen dich nicht.","Du kannst leise am Ufer entlangschleichen."],c:["Krokodile spüren Bewegungen im Wasser trotzdem.","Gegen die Strömung und die Blitze hilft sie nicht."]},
+   tiere:{p:["Du bittest die Krokodile, dich durchzulassen.","Ein Vogel zeigt dir eine Stelle, wo der Fluss ruhig ist."],c:["Krokodile sind hungrig. Hören sie wirklich zu?","Gegen das Gewitter hilft sie nicht."]},
+   schnell:{p:["Du rennst über die kaputte Brücke, bevor sie ganz einstürzt.","Du bist schnell im Trockenen, wenn das Gewitter kommt."],c:["Auf dem rutschigen Boden fällst du beim Rennen hin.","Über Wasser kannst du nicht rennen."]},
+   orient:{p:["Du findest eine andere Stelle, um über den Fluss zu kommen.","Auch im Regen weisst du, wo die Stadt liegt."],c:["Krokodile und Strömung bleiben gefährlich.","Der Umweg kann sehr weit sein."]},
+   stark:{p:["Du schwimmst gegen die starke Strömung.","Du reparierst die Hängebrücke mit Baumstämmen."],c:["Gegen Blitze hilft Kraft nicht.","Ein Krokodil ist auch sehr stark."]},
+   muecken:{p:["Am Fluss gibt es viele Mücken. Sie stechen dich nicht.","Du wirst unterwegs nicht krank."],c:["Gegen Krokodile, Strömung und Gewitter hilft sie nicht.","Mücken sind in diesem Level nicht die grösste Gefahr."]},
+   fliegen:{p:["Du fliegst einfach über den Fluss und die Krokodile.","Die gerissene Brücke ist dir egal."],c:["Im Gewitter ist Fliegen sehr gefährlich.","Die schweren Früchte musst du trotzdem tragen."]},
+   klettern:{p:["Du kletterst an den Seilen der kaputten Brücke hinüber.","Bei Gefahr kletterst du schnell auf einen Baum."],c:["Im Gewitter sind hohe Bäume gefährlich, weil der Blitz einschlagen kann.","Gegen die Strömung hilft sie nicht."]},
+   dunkel:{p:["Wenn das Gewitter den Himmel dunkel macht, siehst du trotzdem alles.","Du siehst die Krokodile im trüben Wasser."],c:["Sehen allein bringt dich nicht über den Fluss.","Gegen Blitze hilft sie nicht."]}}},
+ 3:{name:"Der Tempel der Goldfrucht",teaser:"Findet die seltene Goldfrucht im alten Tempel.",stars:3,
+  sub:"Das ist das schwierigste Level. Diesen Funkspruch gibt es nicht im Buch.",
+  brief:["Notruf aus der Stadt …","Die Krankheit ist zurück! Diesmal helfen die normalen Früchte nicht mehr.","Nur die seltene Goldfrucht kann die Menschen heilen. Sie wächst in einem alten Tempel mitten im Dschungel. Der Tempel ist ganz überwuchert.","Doch der Tempel ist voller Gefahren: Im Boden sind versteckte Fallen. Ein Jaguar bewacht den Eingang. Die Gänge sind dunkel und voller Fledermäuse. Und die Goldfrucht liegt hinter einer schweren, verschlossenen Steintür.","Wähle drei Superkräfte für die schwierigste Mission!"],
+  quiz:[{q:"Warum braucht die Stadt die Goldfrucht?",o:["Die normalen Früchte helfen nicht mehr.","Die Goldfrucht ist besonders lecker.","Die Affen wollen sie haben."],r:0},{q:"Wo wächst die Goldfrucht?",o:["In einem alten Tempel","Am Ufer des Flusses","In der Stadt"],r:0},{q:"Wer bewacht den Eingang?",o:["Ein Affe","Ein Jaguar","Ein Krokodil"],r:1},{q:"Was ist im Boden versteckt?",o:["Gold","Wasser","Fallen"],r:2}],
+  words:[["der Tempel","Nomen","Ein altes, grosses Gebäude aus Stein. Früher wurde dort gebetet."],["überwuchert","Adjektiv","Ganz mit Pflanzen bedeckt. Man sieht kaum noch, was darunter ist."],["die Falle","Nomen","Etwas Verstecktes, das zuschnappt, wenn man hineintritt."],["der Jaguar","Nomen","Eine grosse, gefleckte Raubkatze aus dem Dschungel."],["bewachen","Verb","Aufpassen, dass niemand hineinkommt."],["die Fledermäuse","Nomen, Mehrzahl","Kleine Tiere mit Flügeln. Sie fliegen in der Nacht und hängen kopfüber."],["die Gänge","Nomen, Mehrzahl","Lange, schmale Wege in einem Gebäude."],["verschlossen","Adjektiv","Zu. Man kann nicht hinein."],["die Goldfrucht","Nomen","Eine seltene, goldene Frucht. Nur sie kann die Krankheit heilen."]],
+  ill:ILL3,
+  gaps:[["Der alte ___ ist ganz mit Pflanzen bedeckt.","der Tempel","Tempel"],["Pass auf, dass du nicht in eine ___ trittst!","die Falle","Falle"],["Ein ___ schleicht leise um den Tempel.","der Jaguar","Jaguar"],["Der Jaguar will den Eingang ___.","bewachen","bewachen"],["In den dunklen ___ hängen Fledermäuse.","die Gänge","Gängen"],["Die schwere Steintür ist ___.","verschlossen","verschlossen"]],
+  obst:[{t:"Im Boden sind versteckte Fallen.",fit:["fliegen","klettern","dunkel"]},{t:"Ein Jaguar bewacht den Eingang.",fit:["tiere","unsichtbar","schnell"]},{t:"Die Gänge sind dunkel und voller Fledermäuse.",fit:["dunkel","orient","tiere"]},{t:"Die Steintür ist schwer und verschlossen.",fit:["stark","klettern"]}],
+  obstIll:[2,4,5,7],
+  pros:{
+   sumpf:{p:["Rund um den Tempel ist Sumpf. Du kommst sicher hin.","Weichen Boden erkennst du sofort."],c:["Fallen im Steinboden erkennst du damit nicht sicher.","Gegen den Jaguar hilft sie nicht."]},
+   unsichtbar:{p:["Der Jaguar sieht dich nicht.","Du schleichst leise an den Fledermäusen vorbei."],c:["Ein Jaguar hat eine sehr gute Nase.","Die Fallen schnappen trotzdem zu."]},
+   tiere:{p:["Du bittest den Jaguar, dich durchzulassen.","Die Fledermäuse zeigen dir den Weg durch die Gänge."],c:["Hört der Jaguar wirklich zu?","Die Steintür bleibt verschlossen."]},
+   schnell:{p:["Du rennst am Jaguar vorbei.","Wenn eine Falle zuschnappt, bist du schon weg."],c:["In dunklen Gängen kannst du nicht schnell rennen.","Die Steintür geht davon nicht auf."]},
+   orient:{p:["Du findest den Weg durch die Gänge.","Du findest auch wieder hinaus."],c:["Fallen siehst du damit nicht.","Gegen den Jaguar hilft sie nicht."]},
+   stark:{p:["Du schiebst die schwere Steintür auf.","Der Jaguar hat Respekt vor dir."],c:["Gegen versteckte Fallen hilft Kraft nicht.","Im Dunkeln siehst du trotzdem nichts."]},
+   muecken:{p:["Im feuchten Tempel gibt es viele Mücken. Sie stechen dich nicht.","Du bleibst gesund."],c:["In diesem Level sind Mücken keine Hauptgefahr.","Gegen Fallen, Jaguar und Tür hilft sie nicht."]},
+   fliegen:{p:["Du fliegst über die Fallen im Boden.","Du kommst über den Jaguar hinweg."],c:["In engen Gängen kann man nicht fliegen.","Die Steintür bleibt zu."]},
+   klettern:{p:["Du kletterst an den Lianen hoch und findest einen anderen Eingang.","Du kletterst an der Wand entlang über die Fallen."],c:["Der Jaguar kann auch sehr gut klettern!","Im Dunkeln hilft sie wenig."]},
+   dunkel:{p:["In den dunklen Gängen siehst du alles.","Du siehst die Fallen am Boden."],c:["Gegen den Jaguar hilft sie nicht.","Die Steintür bleibt verschlossen."]}}}
+};
+LVL[1]={name:"Die Heilfrüchte",teaser:"Pflückt die Früchte, die die Krankheit heilen.",stars:1,sub:"Lest den Funkspruch. Auf dem Blatt «Das Dschungel-Game» findet ihr die ganze Beschreibung des Dschungels.",brief:BRIEF,quiz:QUIZ,words:WORDS,ill:ILL,gaps:GAPS,obst:OBST,obstIll:OBST_ILL,pros:PROS,cover:7,win:"Dank euren Superkräften sind die Heilfrüchte in der Stadt. Die Menschen werden wieder gesund."};
+LVL[2].cover=1;LVL[2].win="Die Heilfrüchte sind sicher über den Fluss und in der Stadt angekommen.";
+LVL[3].cover=0;LVL[3].win="Ihr habt die Goldfrucht gefunden. Die ganze Stadt wird wieder gesund!";
+function setLevel(n){const d=LVL[n];POWERS=BASE_POWERS.concat(d.extra||[]);BRIEF=d.brief;QUIZ=d.quiz;WORDS=d.words;ILL=d.ill;GAPS=d.gaps;OBST=d.obst;OBST_ILL=d.obstIll;PROS=d.pros}
+/* ---------- Zusatz-Superkräfte Level 2 und 3 ---------- */
+const EXTRA2=[
+ {id:"atmen",t:"unter Wasser atmen",d:"Du kannst so lange tauchen, wie du willst.",neu:true},
+ {id:"pflanzen",t:"Pflanzen wachsen lassen",d:"Mit einer Handbewegung lässt du Lianen und Bäume wachsen.",neu:true},
+ {id:"blitz",t:"vor Blitzen geschützt sein",d:"Kein Blitz kann dir etwas anhaben.",neu:true}
+];
+const EXTRA3=[
+ {id:"fallen",t:"versteckte Fallen spüren",d:"Du spürst jede Falle, bevor du hineintrittst.",neu:true},
+ {id:"tarnung",t:"sich tarnen wie ein Chamäleon",d:"Du nimmst die Farbe deiner Umgebung an.",neu:true},
+ {id:"zeit",t:"die Zeit anhalten",d:"Du kannst die Zeit für kurze Zeit stoppen. Alles andere steht still.",neu:true}
+];
+EXTRA2.concat(EXTRA3).forEach(p=>P[p.id]=p);
+Object.assign(PILL,{
+ atmen:`<rect width="120" height="70" fill="var(--ill-water)" opacity=".65"/><path d="M0 12 ${Array.from({length:6},()=>"q5 -3 10 0 t10 0").join(" ")}" stroke="#bfefff" stroke-width="1.6" fill="none"/>
+  <g transform="translate(50 42) rotate(-75)"><g class="k-hover">${HERO()}</g></g>${[0,.6,1.2].map((d,i)=>`<g transform="translate(${56+i*4} 34)"><circle class="k-bubble" style="animation-delay:${d}s" r="${1.6+i*.4}" fill="#e4f7ff"/></g>`).join("")}
+  <g transform="translate(96 58) scale(.7)"><g class="k-nod">${CROC}</g></g>${POP(92,22,"BLUBB!")}`,
+ pflanzen:`${RIVER(46)}<rect x="0" y="38" width="22" height="10" fill="var(--ill-sand)"/><rect x="98" y="38" width="22" height="10" fill="var(--ill-sand)"/>
+  <path class="k-grow-vine" d="M20 40 Q60 30 100 40" stroke="#3f9a3a" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+  <g transform="translate(14 34)">${HERO({arms:`<path d="M-5 1 l-4 6 M5 0 l9 -2" stroke="#6b4fc9" stroke-width="3" stroke-linecap="round"/>`})}</g>${SPARK(30,30,0,"#c8f7a8")}${SPARK(70,28,.6,"#c8f7a8")}${POP(64,16,"WACHS!")}`,
+ blitz:`<rect width="120" height="70" fill="#3c4a5c"/><ellipse cx="60" cy="6" rx="50" ry="12" fill="#56647a"/>${BOLT(46,.7)}<path class="sand2" d="M0 60 Q30 55 60 60 T120 58 V70 H0Z"/>
+  <g transform="translate(56 48)">${HERO()}</g><g transform="translate(56 40)"><circle class="k-shield" r="15" fill="#fff6a8" stroke="#f6e04a" stroke-width="2" opacity=".4"/></g>${POP(94,26,"ZACK!")}`,
+ fallen:`<rect y="40" width="120" height="30" fill="#9a8a6a"/><path d="M0 52 h120 M20 40 v12 M50 40 v12 M80 40 v12 M35 52 v18 M95 52 v18" stroke="#6f6248" stroke-width=".8"/>
+  <g class="k-fake"><rect x="66" y="52" width="28" height="9" fill="none" stroke="#e2412e" stroke-width="1.6" stroke-dasharray="3 2"/></g>
+  <g transform="translate(34 42)">${HERO()}</g><g transform="translate(37 33)"><circle class="k-glow2" r="6" fill="#7ef0e0" opacity=".6"/></g><path class="k-scent" d="M44 33 Q64 36 76 52" stroke="#7ef0e0" stroke-width="2" fill="none" stroke-dasharray="3 4"/>${POP(84,18,"FALLE!","k-pop",9)}`,
+ tarnung:`${LEAVES}${DUNES}${FERN(20,60)}${FERN(52,60,1.2)}<g transform="translate(40 46)"><g class="k-camo">${HERO()}</g></g>
+  <g transform="translate(92 50) scale(.75)"><g class="k-sniff">${JAGUAR}</g></g><g transform="translate(86 26)"><text class="a-bob" font-family="Bungee,Arial Black,sans-serif" font-size="12" fill="#f6b434" stroke="#2b1d3a" stroke-width="1.2" paint-order="stroke">??</text></g>`,
+ zeit:`${DUNES}<g transform="translate(26 22)"><circle r="12" fill="#fff" stroke="#2b1d3a" stroke-width="1.6"/><path d="M0 0 V-8 M0 0 L6 3" stroke="#2b1d3a" stroke-width="1.8" stroke-linecap="round"/><g class="k-throb"><circle r="14" fill="none" stroke="#7ef0e0" stroke-width="1.4"/></g></g>
+  <g transform="translate(84 20)"><circle r="6" fill="var(--ill-rock)"/><path d="M-8 -9 l2 2 M8 -9 l-2 2 M0 -11 v2" stroke="#7ef0e0" stroke-width="1.2"/></g>
+  <g transform="translate(70 46)"><g class="a-walkin">${HERO()}</g></g>${POP(96,58,"STOPP!","k-pop",9)}`
+});
+LVL[2].extra=EXTRA2;LVL[3].extra=EXTRA3;
+Object.assign(LVL[2].pros,{
+ atmen:{p:["Du tauchst unter der Strömung durch.","Wenn du ins Wasser fällst, ertrinkst du nicht."],c:["Unter Wasser sind die Krokodile!","Die Früchte werden nass und schwer."]},
+ pflanzen:{p:["Du lässt eine Liane über den Fluss wachsen und machst eine neue Brücke.","Dichte Blätter schützen dich vor dem Regen."],c:["Pflanzen wachsen vielleicht zu langsam.","Krokodile können eine Liane anknabbern."]},
+ blitz:{p:["Die Blitze im Gewitter können dir nichts anhaben.","Du kannst auch bei Sturm weitergehen."],c:["Gegen Krokodile und Strömung hilft sie nicht.","Der Regen macht den Boden trotzdem rutschig."]}
+});
+Object.assign(LVL[3].pros,{
+ fallen:{p:["Du spürst jede versteckte Falle.","Du gehst ganz sicher durch den Tempel."],c:["Gegen den Jaguar hilft sie nicht.","Die Steintür bleibt zu."]},
+ tarnung:{p:["Du siehst aus wie die Steine und Blätter. Der Jaguar bemerkt dich nicht.","Die Fledermäuse fliegen an dir vorbei."],c:["Der Jaguar riecht dich vielleicht trotzdem.","Gegen die Fallen hilft sie nicht."]},
+ zeit:{p:["Du hältst die Zeit an und gehst am Jaguar vorbei.","Eine Falle schnappt nicht zu, wenn die Zeit stillsteht."],c:["Die schwere Steintür bewegt sich trotzdem nicht.","Wie lange kannst du die Zeit anhalten? Das müsst ihr diskutieren!"]}
+});
+LVL[2].obst[0].fit.push("atmen");LVL[2].obst[1].fit.push("pflanzen");LVL[2].obst[2].fit.push("blitz","pflanzen");LVL[2].obst[3].fit.push("atmen","pflanzen");
+LVL[3].obst[0].fit.push("fallen","zeit");LVL[3].obst[1].fit.push("tarnung","zeit");LVL[3].obst[2].fit.push("tarnung");
+/* ---------- Wörter-Erklärungen (Tuki) ---------- */
+const GLOSS_LIST=[[["Dschungel"], "Ein dichter Wald in einem heissen, feuchten Land. Dort wachsen sehr viele Pflanzen."], [["Gewirr"], "Viele Dinge sind durcheinander. Man kommt kaum durch."], [["sumpfig", "Sumpf", "Sümpfe"], "Nasser, weicher Boden. Man kann darin einsinken."], [["versinken", "versinkst", "einsinken", "einsinkst"], "Langsam im Boden nach unten gehen."], [["giftig", "giftige", "giftigen"], "Mit Gift. Gift macht krank."], [["Mücken", "Mücke"], "Kleine Insekten, die stechen."], [["übertragen"], "Weitergeben. Mücken können Krankheiten übertragen."], [["Früchte", "Heilfrüchte"], "Essbare Teile von Pflanzen, zum Beispiel Bananen oder Mangos."], [["verteidigen", "verteidigt"], "Etwas schützen, damit niemand es wegnimmt."], [["Lianen", "Liane"], "Lange Pflanzen, die wie Seile von den Bäumen hängen."], [["Krankheit"], "Wenn man krank ist und nicht gesund."], [["heilen"], "Wieder gesund machen."], [["Krokodile", "Krokodil"], "Grosse Tiere mit vielen spitzen Zähnen. Sie leben im Wasser und an Land."], [["Strömung"], "Das Wasser fliesst schnell in eine Richtung und zieht alles mit."], [["Hängebrücke"], "Eine Brücke aus Seilen und Brettern über einem Fluss."], [["gerissen"], "Kaputtgegangen, weil zu stark gezogen wurde."], [["Gewitter"], "Ein Unwetter mit Regen, Donner und Blitzen."], [["Blitz", "Blitzen", "Blitze"], "Ein heller, gefährlicher Strahl aus Strom am Himmel."], [["rutschig"], "Sehr glatt. Man kann leicht ausrutschen."], [["Ufer"], "Der Rand von einem Fluss oder See."], [["Tempel"], "Ein altes, grosses Gebäude aus Stein."], [["überwuchert"], "Ganz mit Pflanzen bedeckt."], [["Fallen", "Falle"], "Etwas Verstecktes, das zuschnappt, wenn man hineintritt."], [["Jaguar"], "Eine grosse, gefleckte Raubkatze aus dem Dschungel."], [["bewacht", "bewachen"], "Aufpassen, dass niemand hineinkommt."], [["Fledermäuse"], "Kleine Tiere mit Flügeln. Sie fliegen in der Nacht."], [["verschlossen", "verschlossenen"], "Zu. Man kann nicht hinein."], [["Goldfrucht"], "Eine seltene, goldene Frucht. Nur sie kann die Krankheit heilen."], [["Chamäleon"], "Ein Tier, das seine Farbe ändern kann."], [["Eindringlinge"], "Fremde, die irgendwo hineingehen, wo sie nicht sein sollen."], [["Superkräfte", "Superkraft"], "Eine besondere Fähigkeit, die normale Menschen nicht haben. Wie bei einem Superhelden!"], [["Hindernis", "Hindernisse"], "Etwas, das dir im Weg ist. Du musst es schaffen, daran vorbeizukommen."], [["Orientierungssinn"], "Du weisst immer, wo du bist und wohin du gehen musst."], [["übernatürlich"], "Viel mehr, als ein Mensch normal kann. Fast wie Magie."], [["begründen", "begründet", "Begründung", "Begründungen", "begründe"], "Sagen, warum. Zum Beispiel mit «weil …» oder «denn …»."], [["Argument", "Argumente", "Argumenten"], "Ein Grund, warum etwas richtig oder gut ist."], [["Redemittel"], "Satzanfänge, die beim Sprechen helfen. Zum Beispiel «Ich finde, dass …»."], [["einigen", "einigt", "geeinigt", "Einigung"], "Am Ende wollen alle das Gleiche. Alle sind einverstanden."], [["Kompromiss"], "Jede Person gibt ein bisschen nach. So sind am Ende alle zufrieden."], [["widersprechen", "widersprecht", "widersprichst", "widersprochen"], "Sagen, dass man anderer Meinung ist."], [["zustimmen", "zugestimmt", "stimmst"], "Sagen, dass man gleicher Meinung ist."], [["nachfragen", "nachgefragt"], "Eine Frage stellen, weil man etwas genauer wissen will."], [["ergänzen", "ergänzt"], "Etwas Neues dazusagen, das noch fehlt."], [["Gesprächsregeln"], "Regeln, damit ein Gespräch fair ist. Zum Beispiel: einander ausreden lassen."], [["Rückmeldung"], "Man sagt jemandem, was gut war und was noch besser werden kann."], [["Aufnahme"], "Man nimmt das Gespräch auf, damit man es später nochmals anhören kann."], [["Mission"], "Ein wichtiger Auftrag."], [["Funkspruch"], "Eine Nachricht, die über Funk geschickt wird. Wie mit einem Walkie-Talkie."], [["Notruf"], "Eine Nachricht, wenn jemand ganz dringend Hilfe braucht."], [["Stufe", "Stufen"], "Ein Teil vom Spiel. Nach jeder Stufe gibt die Lehrperson frei."], [["Gefahren"], "Dinge, die gefährlich sind und dir schaden können."], [["lauern", "lauert"], "Versteckt warten, um plötzlich anzugreifen."], [["Vorteile"], "Das Gute an einer Sache."], [["Nachteile"], "Das Schlechte an einer Sache."], [["Regierung"], "Die Leute, die eine Stadt oder ein Land leiten und entscheiden."], [["Respekt"], "Man hat Achtung vor jemandem und ist vorsichtig."], [["beteiligt"], "Mitgemacht."], [["Beiträge", "Beiträgen"], "Das, was jemand im Gespräch sagt."], [["nachvollziehbar", "nachvollziehbaren"], "So, dass andere es gut verstehen können."], [["zielgerichtet"], "Man arbeitet auf das Ziel hin und schweift nicht ab."], [["kooperativ"], "Man arbeitet gut zusammen und hilft einander."], [["Lernkontrolle"], "Eine Prüfung. Man zeigt, was man gelernt hat."]];
+const GLOSS={};GLOSS_LIST.forEach(([fs,e])=>fs.forEach(f=>GLOSS[f.toLowerCase()]=e));
+const GLOSS_RE=new RegExp("(?<![\\p{L}])("+Object.keys(GLOSS).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")(?![\\p{L}])","giu");
+const GLOSS_SKIP=".gsum,.redonote,h1,textarea,input,select,option,svg,script,style,button,pre,.gl,.flip,.cover h2,.eyebrow,.lvcard,.timer";
+function glossify(root){
+ if(!root)return;
+ const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest(GLOSS_SKIP))return NodeFilter.FILTER_REJECT;GLOSS_RE.lastIndex=0;return GLOSS_RE.test(n.nodeValue)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});
+ const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+ nodes.forEach(n=>{const f=document.createDocumentFragment();let last=0;const t=n.nodeValue;GLOSS_RE.lastIndex=0;let m;
+  while((m=GLOSS_RE.exec(t))){f.appendChild(document.createTextNode(t.slice(last,m.index)));const sp=document.createElement("span");sp.className="gl";sp.tabIndex=0;sp.setAttribute("role","button");sp.dataset.w=m[0];sp.textContent=m[0];f.appendChild(sp);last=m.index+m[0].length}
+  f.appendChild(document.createTextNode(t.slice(last)));n.parentNode.replaceChild(f,n)});
+}
+function explain(word){
+ const e=GLOSS[word.toLowerCase()];if(!e)return;sfx("pop");hop();
+ say(`<span class="glw">${esc(word)}</span> ${esc(e)} <button class="bspeak" data-a="speak" data-t="${esc(word+". "+e)}">▶ Anhören</button>`,10000);
+}
+function glossHandler(ev){const g=ev.target.closest&&ev.target.closest(".gl");if(!g)return;ev.preventDefault();ev.stopPropagation();explain(g.dataset.w)}
+document.addEventListener("click",glossHandler,true);
+document.addEventListener("keydown",ev=>{if((ev.key==="Enter"||ev.key===" ")&&ev.target.classList&&ev.target.classList.contains("gl")){ev.preventDefault();explain(ev.target.dataset.w)}});
+
+/* ---------- Sounds ---------- */
+let AC=null;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){AC=null}}if(AC&&AC.state==="suspended")AC.resume();return AC}
+function tone(f,t0,d,type="sine",vol=.12,f2){const c=ac();if(!c)return;const o=c.createOscillator(),g=c.createGain(),t=c.currentTime+t0;o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.connect(g).connect(c.destination);o.start(t);o.stop(t+d+.05)}
+function sfx(n){if(G&&G.mute)return;try{switch(n){
+ case"click":tone(700,0,.06,"square",.05);break;
+ case"next":tone(392,0,.08,"triangle",.1);tone(587,.07,.12,"triangle",.1);break;
+ case"back":tone(587,0,.07,"triangle",.08);tone(392,.06,.1,"triangle",.08);break;
+ case"good":tone(523,0,.1,"triangle",.12);tone(659,.08,.1,"triangle",.12);tone(784,.16,.18,"triangle",.12);break;
+ case"bad":tone(260,0,.18,"sawtooth",.06,160);break;
+ case"pop":tone(600,0,.09,"sine",.12,1200);break;
+ case"open":tone(330,0,.16,"sine",.1,880);break;
+ case"select":tone(520,0,.05,"square",.05);tone(780,.05,.07,"square",.05);break;
+ case"fanfare":[523,659,784,1046].forEach((f,i)=>tone(f,i*.1,.22,"triangle",.12));break;
+ case"win":[523,659,784,1046,784,1046,1318].forEach((f,i)=>tone(f,i*.11,.26,"triangle",.12));break;
+ case"whoosh":tone(220,0,.35,"sine",.08,1400);break;
+}}catch(e){}}
+
+/* ---------- Wegweiser ---------- */
+const STEPINFO={
+ start:{l:"Anmelden",who:"Alle zusammen",todo:["Wählt einen Gruppennamen.","Schreibt eure Vornamen auf.","Tippt auf «Weiter zur Levelwahl»."]},
+ levels:{l:"Level",who:"Alle zusammen",todo:["Tippt auf ein Level.","Gesperrte Level öffnen sich, wenn ihr das Level davor geschafft habt."]},
+ mission:{l:"Funkspruch",who:"Alle zusammen",todo:["Lest den Funkspruch oder lasst ihn vorlesen.","Beantwortet die 4 Fragen.","Tippt auf «Weiter»."]},
+ woerter:{l:"Wörter",who:"Alle zusammen",todo:["Tippt jede Wortkarte an und lest die Erklärung.","Füllt die Lücken in den Sätzen.","Tippt auf «Weiter»."]},
+ kraefte:{l:"Superkräfte",who:"Alle zusammen",todo:["Tippt die Superkräfte an und lest Vor- und Nachteile.","Verbindet jedes Problem mit einer Superkraft.","Tippt auf «Weiter»."]},
+ gate1:{l:"Freigabe",gate:1},
+ wahl:{l:"Meine Wahl",who:"Jede Person allein",todo:["Eine Person nach der anderen ist dran.","Wähle 3 Superkräfte. Platz 1 ist für dich die wichtigste.","Schreibe zu jeder Kraft eine Begründung mit «weil».","Gib das iPad weiter."]},
+ gate2:{l:"Freigabe",gate:1},
+ spick:{l:"Vorbereiten",who:"Alle zusammen",todo:["Schaut kurz eure eigene Wahl an.","Lest, wie das Gespräch abläuft."]},
+ gespraech:{l:"Gespräch",who:"Alle zusammen",todo:["Startet die Aufnahme auf dem zweiten iPad.","Startet hier den Timer.","Stellt eure Wahl vor, begründet und fragt nach.","Einigt euch am Schluss auf 3 Superkräfte."]},
+ einigung:{l:"Einigung",who:"Alle zusammen",todo:["Tippt die 3 Superkräfte an, auf die ihr euch geeinigt habt.","Schreibt das beste Argument dazu.","Wählt, wie ihr euch geeinigt habt."]},
+ gate3:{l:"Freigabe",gate:1},
+ hoeren:{l:"Rückmeldung",who:"Alle zusammen",todo:["Hört die Aufnahme ganz an.","Bewertet die 5 Punkte gemeinsam.","Schreibt auf, was gut war und was ihr besser machen wollt."]},
+ tipps:{l:"Tipps",who:"Alle zusammen",todo:["Schreibt 2 Tipps für das nächste Gespräch."]},
+ ziel:{l:"Ziel",who:"Alle zusammen",todo:["Kopiert die Zusammenfassung.","Fügt sie in Pages ein.","Schickt sie per AirDrop an die Lehrperson."]}
+};
+function stepDone(sid){
+ const ms=members();
+ switch(sid){
+  case"start":return startOk();
+  case"levels":return true;
+  case"mission":return QUIZ.every((q,i)=>S.quiz[i]===q.r);
+  case"woerter":return GAPS.every((g,i)=>S.gaps[i]===g[1]);
+  case"kraefte":return OBST.every((o,i)=>!!S.obst[i]);
+  case"gate1":return !!S.approved.gate1;
+  case"wahl":return ms.length>0&&ms.every(m=>{const p=S.picks[m];return p&&p.rank.length===3&&p.rank.every(id=>reasonOk(p.why[id]))});
+  case"gate2":return !!S.approved.gate2;
+  case"spick":return true;
+  case"gespraech":return !!S.timerDone;
+  case"einigung":return R_OK.einigung();
+  case"gate3":return !!S.approved.gate3;
+  case"hoeren":return R_OK.hoeren();
+  case"tipps":return R_OK.tipps();
+  default:return true;
+ }
+}
+function firstOpen(){for(let i=0;i<STEPS.length;i++)if(!stepDone(STEPS[i]))return i;return STEPS.length-1}
+const reachable=i=>i<=firstOpen();
+const MENU_GROUPS=[{t:"Start",c:"--sun",s:["start","levels"]},{t:"Stufe 1 · Ankommen",c:"--e1",s:["mission","woerter","kraefte","gate1"]},{t:"Stufe 2 · Meine Wahl",c:"--e2",s:["wahl","gate2"]},{t:"Stufe 3 · Gespräch",c:"--e3",s:["spick","gespraech","einigung","gate3"]},{t:"Stufe 4 · Rückmeldung",c:"--e4",s:["hoeren","tipps","ziel"]}];
+function renderPath(){
+ const el=$("#menu");if(!el)return;S.maxStep=Math.max(S.maxStep||0,S.step);
+ el.innerHTML=MENU_GROUPS.map(g=>`<div class="menu-et" style="--c:var(${g.c})"><h4>${g.t}</h4>${g.s.map(sid=>{const i=STEPS.indexOf(sid);const inf=STEPINFO[sid];
+  const reach=reachable(i)||i===S.step;const solved=stepDone(sid)&&reach;const st=i===S.step?"now":!reach?"locked":solved?"done":"open";
+  const lock=`<svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11 V8 a4 4 0 0 1 8 0 V11" stroke="currentColor" stroke-width="2.6" fill="none"/></svg>`;
+  return `<button class="menu-item ${st} ${inf.gate?"gate":""}" data-a="jump" data-i="${i}" ${st==="now"?'aria-current="step"':""} ${reach?"":'aria-disabled="true"'}><span class="dot">${st==="done"?"✓":(inf.gate||st==="locked")?lock:""}</span>${inf.gate?"Freigabe Lehrperson":inf.l}</button>`}).join("")}</div>`).join("");
+}
+function insertTodo(){
+ const st=step();const inf=STEPINFO[st];if(!inf||inf.gate)return;
+ if(st==="wahl"&&S.wahlCover)return;
+ const h=$("#main h1");if(!h)return;
+ if(S.redoNote&&ET_OF[st]===S.redoNote.et&&st===REDO_FIRST[S.redoNote.et]){const nb=document.createElement("div");nb.className="redonote";nb.innerHTML=`<b>↺ Wiederholung: ${S.redo&&S.redo[S.redoNote.et]>1?S.redo[S.redoNote.et]+". Mal":"Die Lehrperson möchte, dass ihr diese Stufe nochmals macht."}</b>${S.redoNote.text?`<div class="redotext">«${esc(S.redoNote.text)}»<span class="redo-by">– Lehrperson</span></div>`:""}`;window.__nb=nb}else window.__nb=null;
+ const box=document.createElement("div");box.className="todo";
+ box.innerHTML=`<div class="todo-h"><span>Euer Auftrag</span><span class="who">${inf.who}</span></div><ol>${inf.todo.map(t=>`<li>${t}</li>`).join("")}</ol>`;
+ const after=h.nextElementSibling&&h.nextElementSibling.tagName==="P"?h.nextElementSibling:h;after.after(box);if(window.__nb)box.after(window.__nb);
+}
+const NAMEIDEAS=["Die Lianen-Crew", "Team Tukan", "Die Dschungelhelden", "Die Frucht-Profis", "Team Mango", "Die Affenbande"];
+function openPower(id){
+ const p=P[id],pc=PROS[id];
+ const helps=OBST.filter(o=>o.fit.includes(id)).map(o=>`<span class="chip">${esc(o.t)}</span>`).join("")||`<span class="hint">Keine der vier Hauptgefahren direkt. Überlegt, wann sie trotzdem nützt.</span>`;
+ modal(`<svg class="ill pop-ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[id]}</svg><div class="eyebrow">Superkraft</div><h2>${esc(p.t)}</h2><p>${esc(p.d)}</p>
+ <div class="pc"><div class="box solid plus"><h3>+ Vorteile</h3><ul class="tight">${pc.p.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div><div class="box solid minus"><h3>− Nachteile</h3><ul class="tight">${pc.c.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div></div>
+ <h3 style="margin-top:14px">Hilft besonders bei:</h3><div class="chips">${helps}</div>
+ <p class="hint" style="margin-top:12px">Denkt nach: Findet ihr noch einen Vorteil oder Nachteil? Den könnt ihr später als Argument brauchen.</p>
+ <div class="nav"><span></span><button class="btn primary" data-close style="--ec:var(--e1)">Schliessen</button></div>`);
+}
+
+const REDEMITTEL=[
+ {k:"Meinung äussern",s:["Ich finde, dass …","Meiner Meinung nach …","Ich bin überzeugt, dass …","Für mich ist am wichtigsten, …"]},
+ {k:"Begründen",s:["…, weil …","…, denn …","Ein Grund dafür ist, …","Das ist wichtig, damit …"]},
+ {k:"Zustimmen",s:["Da hast du recht.","Ich sehe das auch so.","Das ist ein gutes Argument."]},
+ {k:"Widersprechen",s:["Das sehe ich anders, weil …","Ich bin nicht einverstanden, denn …","Ja, aber …"]},
+ {k:"Nachfragen",s:["Wie meinst du das?","Warum findest du das wichtig?","Kannst du das genauer erklären?"]},
+ {k:"Sich einigen",s:["Können wir uns auf … einigen?","Das beste Argument ist …","Lasst uns abstimmen."]}
+];
+const REGELN=["Wir lassen einander ausreden.","Wir hören einander gut zu.","Alle kommen zu Wort.","Wir bleiben freundlich, auch wenn wir anderer Meinung sind.","Wir bleiben beim Thema."];
+const KRIT=[
+ "Beteiligung: Alle haben sich mit mehreren Beiträgen aktiv am Gespräch beteiligt.",
+ "Auf andere eingehen: Wir haben widersprochen, zugestimmt, nachgefragt und ergänzt.",
+ "Meinung begründen: Wir haben alle Superkräfte mit nachvollziehbaren Argumenten begründet.",
+ "Redemittel: Wir haben viele verschiedene passende Redemittel verwendet.",
+ "Gesprächsregeln: Wir haben die Gesprächsregeln durchgehend eingehalten.",
+ "Gesamteindruck: Unser Gespräch war zielgerichtet, kooperativ und lebendig."
+];
+const LEVELS=["nicht erfüllt","erfüllt","gut erfüllt","sehr gut erfüllt"];
+/* ---------- State ---------- */
+const fresh=()=>({step:0,group:{nr:"",members:["","","",""]},approved:{},mode:"einfach",quiz:{},quizTries:{},gaps:{},obst:{},picks:{},wahlIdx:0,wahlCover:true,spickOpen:null,rec:false,timerStart:null,timerDone:false,agreed:[],agreedWhy:{},howAgree:"",heard:false,rating:{},good:"",better:"",tips:["",""],pets:0});
+const KEY2="dschungelGame.v1";
+let G=null,S;
+try{G=JSON.parse(localStorage.getItem(KEY2)||"null")}catch(e){G=null}
+if(!G||!G.runs){G={level:1,unlocked:[1],runs:{}};}
+setLevel(G.level);
+S=Object.assign(fresh(),G.runs[G.level]||{});
+const save=()=>{G.runs[G.level]=S;try{localStorage.setItem(KEY2,JSON.stringify(G))}catch(e){}};
+const MISSION_I=STEPS.indexOf("mission"),LEVELS_I=STEPS.indexOf("levels");
+function switchLevel(n){
+ const grp=JSON.parse(JSON.stringify(S.group));save();
+ G.level=n;setLevel(n);
+ S=Object.assign(fresh(),G.runs[n]||{});S.group=grp;if(S.step<MISSION_I)S.step=MISSION_I;selObs=null;
+ save();render();window.scrollTo({top:0,behavior:"smooth"});say(`Level ${n}: ${LVL[n].name}! `+TIPS.mission);
+}
+function resetAll(){G={level:1,unlocked:[1],runs:{}};setLevel(1);S=fresh();save();$("#modalRoot").innerHTML="";render();say(TIPS.start)}
+const members=()=>S.group.members.map(m=>m.trim()).filter(Boolean);
+const step=()=>STEPS[S.step];
+
+/* ---------- Wasser (Punkte) ---------- */
+function reasonOk(t){t=(t||"").trim();return t.length>=25}
+function reasonPro(t){return /\b(weil|denn|damit|deshalb|darum|da)\b/i.test(t||"")}
+function waterParts(){
+ const ms=members();const frac=(n,d)=>d?Math.min(1,n/d):0;
+ const e1=frac(QUIZ.filter((q,i)=>S.quiz[i]===q.r).length,QUIZ.length)*8+frac(GAPS.filter((g,i)=>S.gaps[i]===g[1]).length,GAPS.length)*8+frac(Object.values(S.obst).filter(Boolean).length,OBST.length)*6+(S.approved.gate1?3:0);
+ let n=0;ms.forEach(m=>{const p=S.picks[m];if(p)p.rank.forEach(id=>{if(reasonOk(p.why[id]))n++})});
+ const e2=frac(n,ms.length*3)*20+(S.approved.gate2?5:0);
+ const e3=(S.rec?3:0)+(S.timerDone?7:0)+frac(S.agreed.filter(id=>reasonOk(S.agreedWhy[id])).length,3)*8+(S.howAgree?2:0)+(S.approved.gate3?5:0);
+ const e4=(S.heard?3:0)+frac(Object.keys(S.rating).length,KRIT.length)*8+(S.good.trim().length>10?3:0)+(S.better.trim().length>10?3:0)+frac(S.tips.filter(t=>t.trim().length>10).length,2)*6+(step()==="ziel"?2:0);
+ return [e1,e2,e3,e4].map(x=>Math.min(25,x));
+}
+function water(){return Math.min(100,Math.round(waterParts().reduce((a,b)=>a+b,0)))}
+let lastW={};
+function tankHTML(key,w,big){
+ const parts=waterParts();
+ const marks=[1,2,3,4].map(i=>{const done=parts[i-1]>=24.5||S.approved["gate"+i];return `<span class="wt-mark ${done?"done":""}" style="--p:${i*25}%"><b>${done?"✓":"S"+i}</b></span>`}).join("");
+ const start=lastW[key]!=null?lastW[key]:w;
+ return `<div class="wtank ${big==="v"?"wt-v":big?"wt-big":""}" data-wt="${key}" role="progressbar" aria-label="Heilkraft der Früchte" aria-valuenow="${w}" aria-valuemin="0" aria-valuemax="100" title="Heilkraft der Früchte: ${w}%">
+  <svg class="wt-drop" viewBox="0 0 24 30" aria-hidden="true"><circle cx="12" cy="18" r="10" fill="#f08a24"/><path d="M12 8 q4 -6 9 -4 q-3 5 -9 4Z" fill="#3fb04a"/><ellipse cx="8.5" cy="15" rx="2" ry="3" fill="#fff" opacity=".55"/></svg>
+  <div class="wt-glass"><div class="wt-water" style="${big==="v"?"height":"width"}:${start}%"><i class="wt-bub b1"></i><i class="wt-bub b2"></i><i class="wt-bub b3"></i><i class="wt-bub b4"></i></div><div class="wt-shine"></div>${marks}</div>
+  <div class="wt-num"><span class="wt-n">${start}</span><small>%</small></div></div>`;
+}
+function animateTank(key,w){
+ const el=document.querySelector(`[data-wt="${key}"]`);if(!el)return;
+ const from=lastW[key]!=null?lastW[key]:w;lastW[key]=w;
+ const water=el.querySelector(".wt-water"),num=el.querySelector(".wt-n");
+ const prop=el.classList.contains("wt-v")?"height":"width";requestAnimationFrame(()=>requestAnimationFrame(()=>{water.style[prop]=w+"%"}));
+ if(from===w){num.textContent=w;return}
+ const t0=performance.now(),dur=900;
+ const stepN=t=>{const k=Math.min(1,(t-t0)/dur);num.textContent=Math.round(from+(w-from)*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(stepN)};requestAnimationFrame(stepN);
+ if(w>from){el.classList.remove("wt-splash");void el.offsetWidth;el.classList.add("wt-splash");
+  const r=el.getBoundingClientRect();const f=document.createElement("div");f.className="wt-plus";f.textContent=`+${w-from}`;f.style.left=(r.left+r.width*.55)+"px";f.style.top=(r.top-4)+"px";document.body.appendChild(f);setTimeout(()=>f.remove(),1400)}
+}
+
+/* ---------- Tuki ---------- */
+(function drawMascot(){
+ const N=40,C={body:"#1d1d26",throat:"#fff1b8",ring:"#4fb3ff",beak:"#f5961c",beak2:"#f8c93a",tip:"#d6402f",wing:"#34344a",feet:"#f5961c",branch:"#7a5230",out:"#0b0b10"};
+ const ell=(cx,cy,rx,ry,rot=0)=>(x,y)=>{const a=rot*Math.PI/180,dx=x-cx,dy=y-cy,u=dx*Math.cos(a)+dy*Math.sin(a),v=-dx*Math.sin(a)+dy*Math.cos(a);return (u*u)/(rx*rx)+(v*v)/(ry*ry)<=1};
+ const tri=(p)=>(x,y)=>{let s=0;for(let i=0;i<3;i++){const [x1,y1]=p[i],[x2,y2]=p[(i+1)%3];const c=(x2-x1)*(y-y1)-(y2-y1)*(x-x1);if(c===0)continue;if(!s)s=Math.sign(c);else if(Math.sign(c)!==s)return false}return true};
+ const rect=(x0,y0,x1,y1)=>(x,y)=>x>=x0&&x<=x1&&y>=y0&&y<=y1;
+ const mir=f=>(x,y)=>f(N-x,y);
+ const L=[
+  [rect(2,35.5,38,37.5),"branch"],
+  [tri([[14,29],[21,29],[13,39.5]]),"body"],
+  [ell(17,25,7.5,10),"body"],
+  [ell(19.5,26,4,7,12),"wing"],
+  [ell(14.6,19.5,4.4,6),"throat"],
+  [ell(16,12,7,6.8),"body"],
+  [ell(19.2,10.8,3.2,2.9),"ring"],
+  [ell(28.5,14.4,10.6,4.4,9),"beak"],
+  [ell(28,12.6,10,2.2,6),"beak2"],
+  [ell(37.4,16.6,2.4,2,9),"tip"],
+  [rect(13.5,33,15.2,35.4),"feet"],[rect(18,33,19.7,35.4),"feet"]
+ ];
+ const grid=[];for(let y=0;y<N;y++){grid[y]=[];for(let x=0;x<N;x++){let c=null;const px=x+.5,py=y+.5;for(const [f,col] of L)if(f(px,py))c=col;grid[y][x]=c}}
+ 
+ const fill=(x,y)=>y>=0&&y<N&&x>=0&&x<N&&grid[y][x];
+ const out=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(grid[y][x]&&!C.noOut?.includes(grid[y][x])&&(!fill(x-1,y)||!fill(x+1,y)||!fill(x,y-1)||!fill(x,y+1)))out.push([x,y])}
+ out.forEach(([x,y])=>grid[y][x]="out");
+ let r="";for(let y=0;y<N;y++){let x=0;while(x<N){const c=grid[y][x];if(!c){x++;continue}let w=1;while(x+w<N&&grid[y][x+w]===c)w++;r+=`<rect x="${x}" y="${y}" width="${w+.02}" height="1.02" fill="${C[c]}"/>`;x+=w}}
+ const px=(x,y,w,h,c)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+ const eyes=`<g class="f-eyes">${px(18.4,9.8,2,2,C.body)}${px(18.4,9.8,1,1,"#fff")}</g>`;
+ const face=``;
+ const blush=`<g class="f-blush" opacity="0">${px(11,21,2,1,"#f19a8c")}${px(27,21,2,1,"#f19a8c")}</g>`;
+ $("#fenni").innerHTML=`<svg viewBox="-1 -1 42 42" shape-rendering="crispEdges" aria-hidden="true">${r}${eyes}${face}${blush}</svg>`;
+})();
+let bubbleT;
+function say(t,ms=6000){const b=$("#bubble");b.innerHTML=`<b>Tuki:</b> ${t}`;b.hidden=false;clearTimeout(bubbleT);bubbleT=setTimeout(()=>b.hidden=true,ms)}
+let danceT=null,noteT=null;
+function fenniDance(msg){
+ const f=$("#fenni");clearTimeout(danceT);clearInterval(noteT);f.classList.remove("dance");void f.offsetWidth;f.classList.add("dance");
+ say(msg||"Stufe geschafft! Ich tanze vor Freude!",5000);
+ const notes=["♪","♫","♪","★"];let k=0;
+ noteT=setInterval(()=>{const r=f.getBoundingClientRect();const n=document.createElement("div");n.className="fnote";n.textContent=notes[k++%notes.length];n.style.left=(r.left+10+Math.random()*(r.width-20))+"px";n.style.top=(r.top+20)+"px";n.style.color=["#c43d55","#1f8f84","#6b4fc9","#d9631f"][k%4];document.body.appendChild(n);setTimeout(()=>n.remove(),1600)},450);
+ danceT=setTimeout(()=>{f.classList.remove("dance");clearInterval(noteT)},10000);
+}
+function hop(){const f=$("#fenni");f.classList.remove("happy");void f.offsetWidth;f.classList.add("happy")}
+const PET=["Hihi, das kitzelt am Schnabel!", "Mein Schnabel ist gross, aber ganz leicht.", "Ich bin ein Tukan. Früchte sind mein Lieblingsessen!", "Mehr streicheln, weniger trödeln!", "Wusstest du? Tukane schlafen mit dem Schnabel unter dem Flügel."];
+let tapTimes=[];
+$("#fenni").addEventListener("click",e=>{
+ const now=Date.now();tapTimes=tapTimes.filter(t=>now-t<2500);tapTimes.push(now);
+ const h=document.createElement("div");h.className="heart";h.textContent="♥";h.style.left=(e.clientX-8)+"px";h.style.top=(e.clientY-20)+"px";document.body.appendChild(h);setTimeout(()=>h.remove(),1300);
+ if(tapTimes.length>=7){tapTimes=[];const f=$("#fenni");f.classList.remove("dig");void f.offsetWidth;f.classList.add("dig");say("Platzregen! Ich verstecke mich unter einem Blatt … und bin wieder da!",3500);return}
+ S.pets++;save();hop();sfx("pop");say(PET[S.pets%PET.length],3500);
+});
+const TIPS={
+ start:"Hallo! Ich bin Tuki, der Tukan. Ich begleite euch durch den Dschungel. Meldet euch zuerst als Gruppe an.",
+ levels:"Wählt ein Level! Die gesperrten Level öffnen sich, wenn ihr das Level davor geschafft habt.",
+ mission:"Lest den Funkspruch genau. Ihr könnt ihn auch vorlesen lassen.",
+ woerter:"Tippt auf eine Karte, dann dreht sie sich um. Diese Wörter braucht ihr später für eure Argumente!",
+ kraefte:"Hier gibt es mehrere gute Antworten. Wichtig ist, dass ihr erklären könnt, warum eine Kraft hilft.",
+ wahl:"Jetzt arbeitet jede Person allein. Es gibt kein Richtig und kein Falsch. Eine gute Begründung zählt!",
+ spick:"Das ist euer Probegalopp für die Lernkontrolle. Eure Notizen dürft ihr benutzen.",
+ gespraech:"Einigt euch nicht zu schnell! Verteidigt zuerst eure eigene Wahl.",
+ einigung:"Welche Argumente waren am stärksten? Schreibt sie auf.",
+ hoeren:"Bewertet euch mit dem Kriterienraster. Genau so wird auch die Lernkontrolle bewertet.",
+ tipps:"Ein guter Tipp ist konkret. Zum Beispiel: «Wir fragen nach, bevor wir widersprechen.»",
+ ziel:"Ihr habt es geschafft! Die Menschen in der Stadt werden wieder gesund."
+};
+/* ---------- HUD ---------- */
+function renderHud(){
+ const cur=ET_OF[step()];const e=ETAPPEN[cur];const w=water();
+ const muteBtn=`<button class="mute" data-a="mute" aria-pressed="${!G.mute}" title="Ton ein oder aus"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9 h4 l5 -4 v14 l-5 -4 h-4Z" fill="currentColor"/>${G.mute?'<path d="M16 9 l5 6 M21 9 l-5 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>':'<path d="M16 8.5 q3 3.5 0 7 M18.5 6 q5 6 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>'}</svg>${G.mute?"Ton aus":"Ton an"}</button>`;
+ $("#hud").innerHTML=`<button class="menubtn" data-a="menuopen" aria-label="Menü öffnen"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>Menü</button>
+  <div class="hud-title"><span class="hud-et" style="--c:var(${e?e.c:"--sun"})">${e?`Stufe ${cur} von 4`:STEPINFO[step()].l}</span><span class="hud-name">${e?e.n:"Dschungel-Game"}</span></div>
+  ${tankHTML("hud",w)}`;
+ $("#sgrp").innerHTML=S.group.name?`<b>${esc(S.group.name)}</b><span>${esc(members().join(", "))}</span><span class="sgrp-lv">Level ${G.level}: ${LVL[G.level].name}</span>`:`<span>Noch nicht angemeldet</span>`;
+ $("#tankv").innerHTML=tankHTML("side",w,"v");
+ $("#mutebox").innerHTML=muteBtn;
+ animateTank("hud",w);animateTank("side",w);
+}
+
+/* ---------- Schritte ---------- */
+function head(title,sub){const e=ETAPPEN[ET_OF[step()]];return `<div class="eyebrow">${e?`Level ${G.level} · Stufe ${ET_OF[step()]} · ${e.n} · ${e.a}`:"Start"}</div><h1>${title}</h1>${sub?`<p>${sub}</p>`:""}`}
+function nav(ok,label="Weiter",hint=""){return `<div class="nav"><button class="btn" data-a="back" ${S.step===0?"hidden":""}>Zurück</button><span class="hint">${ok?"":hint}</span><button class="btn primary" data-a="next" ${ok?"":"disabled"}>${label}</button></div>`}
+
+const R={};
+const startOk=()=>!!((S.group.name||"").trim().length>=2&&members().length>=2);
+R.start=()=>{
+ const m=S.group.members;
+ return head("Das Dschungel-Game","In einer Stadt am Rand des Dschungels sind viele Menschen krank. Ihr seid das Team, das die Heilfrüchte holen soll.")+
+ `<div class="stack"><div class="box solid"><label for="gname">1. Euer Gruppenname</label><input type="text" id="gname" data-gname value="${esc(S.group.name||"")}" maxlength="24" autocomplete="off" placeholder="z. B. Die Lianen-Crew">
+ <p class="hint" style="margin:8px 0 6px">Ideen zum Antippen, oder erfindet einen eigenen Namen:</p><div class="chips">${NAMEIDEAS.map(n=>`<button class="chip ${S.group.name===n?"on":""}" data-a="gname" data-n="${n}">${n}</button>`).join("")}</div></div>
+ <div class="box solid"><label>2. Eure Vornamen</label><div class="grid2">${m.map((v,i)=>`<div><label for="m${i}" class="hint" style="font-weight:400">Person ${i+1}${i>=2?" (falls ihr zu dritt oder viert seid)":""}</label><input type="text" id="m${i}" data-m="${i}" value="${esc(v)}" autocomplete="off" maxlength="20"></div>`).join("")}</div>
+ <p class="hint" style="margin:10px 0 0">Datenschutz: Schreibt nur Vornamen. Alles bleibt auf diesem iPad.</p></div></div>`+
+ nav(startOk(),"Weiter zur Levelwahl","Gruppenname und mindestens zwei Vornamen eintragen.");
+};
+R.levels=()=>{
+ const card=n=>{const d=LVL[n];const open=G.unlocked.includes(n);const r=G.runs[n];const done=r&&r.step===STEPS.length-1;
+  return `<button class="lvcard ${open?"":"locked"} ${n===G.level?"cur":""}" data-a="lvl" data-n="${n}" ${open?"":"disabled"} style="--lc:var(--e${n===1?1:n===2?2:3})">
+  <svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${d.ill[d.cover]}</svg>
+  <span class="lvtop"><span class="lvn">Level ${n}</span><span class="lvstars" aria-label="Schwierigkeit ${d.stars} von 3">${"★".repeat(d.stars)}${"☆".repeat(3-d.stars)}</span></span>
+  <span class="lvname">${d.name}</span><span class="lvteaser">${d.teaser}</span>
+  <span class="lvstate">${!open?`Gesperrt: Schafft zuerst Level ${n-1}.`:done?"✓ Geschafft! Nochmals ansehen":r&&r.step>MISSION_I?"Weiterspielen ›":"Jetzt starten ›"}</span>
+  ${open?"":`<span class="lock" aria-hidden="true"><svg viewBox="0 0 24 24" width="38" height="38"><rect x="4" y="10" width="16" height="12" rx="3" fill="var(--ink)"/><path d="M8 10 V7 a4 4 0 0 1 8 0 V10" stroke="var(--ink)" stroke-width="3" fill="none"/></svg></span>`}</button>`};
+ return head("Wählt euer Level","Jedes Level ist eine neue Mission im Dschungel. Level 2 und 3 werden freigeschaltet, wenn ihr das Level davor geschafft habt.")+
+ `<div class="lvgrid">${[1,2,3].map(card).join("")}</div><div class="nav"><button class="btn" data-a="back">Zurück</button></div>`;
+};
+R.mission=()=>{
+ const done=QUIZ.every((q,i)=>S.quiz[i]===q.r);
+ return head(`Der Funkspruch: ${LVL[G.level].name}`,LVL[G.level].sub)+
+ `<div class="briefing">${BRIEF.map((t,i)=>`<p class="${i===0?"sp":""}">${esc(t)}</p>`).join("")}</div>
+ <div class="row" style="margin:12px 0 18px"><button class="btn small" data-a="read">▶ Vorlesen</button><button class="btn small" data-a="stop">■ Stopp</button><span class="task">Blatt «Das Dschungel-Game»</span></div>
+ <h2>Habt ihr alles verstanden?</h2><div class="stack">${QUIZ.map((q,i)=>{const a=S.quiz[i];const tries=S.quizTries[i]||[];
+  return `<div class="box"><h3>${i+1}. ${esc(q.q)}</h3><div class="opts">${q.o.map((o,j)=>{const cls=a===j&&j===q.r?"right":tries.includes(j)&&j!==q.r?"wrong":"";return `<button class="opt ${cls}" data-a="quiz" data-i="${i}" data-j="${j}" ${a===q.r?"disabled":""}>${esc(o)}</button>`}).join("")}</div>
+  ${a===q.r?`<div class="fb ok">Richtig! +3 Heilkraft</div>`:tries.length?`<div class="fb no">Lest nochmals im Funkspruch nach.</div>`:""}</div>`}).join("")}</div>`+
+ nav(done,"Weiter","Beantwortet alle Fragen richtig.");
+};
+R.woerter=()=>{
+ const done=GAPS.every((g,i)=>S.gaps[i]===g[1]);
+ const opts=WORDS.map(w=>w[0]);
+ return head("Dschungel-Wörter","Tippt auf die Karten und lest die Erklärung. Sprecht jedes Wort einmal laut aus.")+
+ `<div class="grid3">${WORDS.map((w,i)=>`<button class="flip" data-a="flip" aria-label="${esc(w[0])} umdrehen"><div class="flip-in"><div class="face"><svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${ILL[i]}</svg><span class="art">${esc(w[1])}</span><span class="w">${esc(w[0])}</span></div><div class="face back"><strong>${esc(w[0])}</strong>${esc(w[2])}</div></div></button>`).join("")}</div>
+ <h2 style="margin-top:24px">Welches Wort passt?</h2><div class="stack">${GAPS.map((g,i)=>{const v=S.gaps[i]||"";const ok=v===g[1];
+  return `<div class="box"><p style="margin-bottom:8px">${esc(g[0]).replace("___",`<strong>${ok?esc(g[2]):"______"}</strong>`)}</p>
+  <select data-gap="${i}" aria-label="Lücke ${i+1}" ${ok?"disabled":""}><option value="">Wort wählen …</option>${opts.map(o=>`<option ${v===o?"selected":""}>${esc(o)}</option>`).join("")}</select>
+  ${v?ok?`<div class="fb ok">Passt! +2 Heilkraft</div>`:`<div class="fb no">Das passt nicht ganz. Schaut auf den Karten nach.</div>`:""}</div>`}).join("")}</div>`+
+ nav(done,"Weiter","Füllt alle Lücken richtig aus.");
+};
+R.kraefte=()=>{
+ const done=OBST.every((o,i)=>S.obst[i]);
+ return head("Die Superkräfte",`Lest alle ${POWERS.length} Superkräfte.${G.level>1?" In diesem Level gibt es 3 neue!":""} Verbindet dann jedes Problem mit einer Kraft, die helfen könnte.`)+
+ `<p class="hint">Tippt auf eine Superkraft: Dann seht ihr ihre Vorteile und Nachteile.</p><div class="grid3">${POWERS.map(p=>`<button class="power pcard" data-a="pinfo" data-id="${p.id}">${p.neu?'<span class="neu">NEU</span>':""}<svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[p.id]}</svg>${esc(p.t)}<span class="more">Vor- und Nachteile ›</span></button>`).join("")}</div>
+ <h2 style="margin-top:24px">Verbindet: Was hilft gegen …?</h2><p class="hint">Tippt links auf ein Problem und dann rechts auf eine Superkraft. So zieht ihr eine Linie. Nochmals auf dieselbe Kraft tippen löst die Linie.</p>
+ <div class="connect" id="connect"><svg class="clines" id="clines" aria-hidden="true"></svg>
+  <div class="ccol">${OBST.map((o,i)=>`<button class="cob ${selObs===i?"sel":""} ${S.obst[i]?"linked":""}" data-a="cob" data-i="${i}"><svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${ILL[OBST_ILL[i]]}</svg>${esc(o.t)}</button>`).join("")}</div>
+  <div class="ccol">${POWERS.map(p=>`<button class="cpw ${Object.values(S.obst).includes(p.id)?"linked":""}" data-a="cpw" data-id="${p.id}"><svg viewBox="0 0 120 70" class="ill" aria-hidden="true">${PILL[p.id]}</svg><span>${esc(p.t)}</span></button>`).join("")}</div>
+ </div>
+ <div class="stack" style="gap:6px;margin-top:12px">${OBST.map((o,i)=>{const v=S.obst[i];if(!v)return"";const fit=o.fit.includes(v);
+  return `<div class="fb ${fit?"ok":"no"}"><strong>${esc(o.t)}</strong> → ${esc(P[v].t)}: ${fit?"Gute Idee! Das hilft hier.":"Hmm, hilft das wirklich? Wenn ihr es gut begründen könnt, darf es bleiben."}</div>`}).join("")}</div>`+
+ nav(done,"Weiter","Wählt für alle vier Hindernisse eine Superkraft.");
+};
+const chip=(ok,t)=>`<span class="gs-chip ${ok===true?"ok":ok===false?"no":"mid"}">${t}</span>`;
+const mmss=ms=>{const s=Math.max(0,Math.round(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`};
+function gateSummary(n){
+ const rows=[];let ask="";
+ if(n===1){
+  const tries=QUIZ.map((q,i)=>(S.quizTries[i]||[]).filter(j=>j!==q.r).length);const wrong=tries.reduce((a,b)=>a+b,0);
+  rows.push(["Funkspruch-Fragen",chip(wrong===0?true:wrong<=2?null:false,wrong===0?"alle beim 1. Versuch":`${wrong} Fehlversuch${wrong>1?"e":""}`)+(wrong?` <span class="gs-small">bei Frage ${tries.map((t,i)=>t?i+1:0).filter(Boolean).join(", ")}</span>`:"")]);
+  const g=GAPS.filter((x,i)=>S.gaps[i]===x[1]).length;rows.push(["Lückensätze",chip(g===GAPS.length,`${g} von ${GAPS.length} richtig`)]);
+  const seen=Object.keys(S.seen||{}).filter(id=>POWERS.some(p=>p.id===id)).length;rows.push(["Vor-/Nachteile angeschaut",chip(seen>=POWERS.length?true:seen>=4?null:false,`${seen} von ${POWERS.length} Superkräften`)]);
+  rows.push(["Verbindungen",OBST.map((o,i)=>{const id=S.obst[i];const f=id&&o.fit.includes(id);return `<div class="gs-line">${chip(f?true:null,f?"passt":"diskutieren")} ${esc(o.t)} → <b>${id?esc(P[id].t):"–"}</b></div>`}).join("")]);
+  const odd=OBST.map((o,i)=>[o,S.obst[i]]).find(([o,id])=>id&&!o.fit.includes(id))||OBST.map((o,i)=>[o,S.obst[i]]).find(([o,id])=>id);
+  if(odd)ask=`Warum hilft «${esc(P[odd[1]].t)}» bei diesem Problem? «${esc(odd[0].t)}»`;
+ }
+ if(n===2){
+  members().forEach(m=>{const p=S.picks[m];if(!p||!p.rank.length){rows.push([esc(m),chip(false,"noch keine Wahl")]);return}
+   const pro=p.rank.filter(id=>reasonPro(p.why[id])).length;const words=p.rank.reduce((a,id)=>a+((p.why[id]||"").trim().split(/\s+/).filter(Boolean).length),0);
+   rows.push([esc(m),`${chip(pro===3?true:pro>=1?null:false,`${pro}/3 mit «weil/denn»`)} ${chip(words>=30?true:words>=15?null:false,`${words} Wörter`)}`+p.rank.map((id,k)=>`<div class="gs-line"><b>${k+1}. ${esc(P[id].t)}:</b> <span class="gs-small">${esc(p.why[id]||"–")}</span></div>`).join("")]);
+  });
+  const m0=members().find(m=>S.picks[m]&&S.picks[m].rank.length);if(m0)ask=`${esc(m0)}, erkläre mir deine Superkraft auf Platz 1: «${esc(P[S.picks[m0].rank[0]].t)}».`;
+ }
+ if(n===3){
+  const dur=S.timerStart&&S.timerEnd?S.timerEnd-S.timerStart:null;
+  rows.push(["Aufnahme",chip(!!S.rec,S.rec?"Aufnahme lief":"nicht bestätigt")]);
+  rows.push(["Gesprächsdauer",dur!=null?chip(dur>=300000?true:dur>=120000?null:false,mmss(dur)+" Min.")+(S.skipped?` <span class="gs-small">(Timer übersprungen)</span>`:""):chip(null,"unbekannt")]);
+  const rev=Object.values(S.revealed||{}).filter(Boolean).length;rows.push(["Spickkarten aufgedeckt",chip(rev>0?true:null,`${rev}`)]);
+  rows.push(["Einigung",chip(S.howAgree==="Durch die besten Argumente"?true:S.howAgree==="Jemand hat nachgegeben"?false:null,esc(S.howAgree||"–"))+S.agreed.map((id,k)=>{const who=members().filter(m=>S.picks[m]&&S.picks[m].rank.includes(id));return `<div class="gs-line"><b>${k+1}. ${esc(P[id].t)}</b> <span class="gs-small">(gewählt von: ${who.length?esc(who.join(", ")):"niemandem einzeln"})</span><br><span class="gs-small">${esc(S.agreedWhy[id]||"")}</span></div>`}).join("")]);
+  const lost=members().filter(m=>S.picks[m]&&!S.picks[m].rank.some(id=>S.agreed.includes(id)));
+  if(lost.length)rows.push(["Achtung",chip(false,`${esc(lost.join(", "))}: keine eigene Kraft in der Einigung`)]);
+  if(S.agreed[0])ask=lost.length?`${esc(lost[0])}, wie haben dich die anderen überzeugt?`:`Welches Argument hat euch bei «${esc(P[S.agreed[0]].t)}» überzeugt?`;
+ }
+ if(S.redo&&S.redo[n])rows.unshift(["Wiederholt",chip(null,`${S.redo[n]}×`)]);
+ return `<div class="gsum"><div class="gs-h">Für die Lehrperson: So hat die Gruppe gearbeitet</div><div class="gs-name">${esc(S.group.name||"")} · ${esc(members().join(", "))} · Level ${G.level}</div>
+ <table class="gs-t"><tbody>${rows.map(([k,v])=>`<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</tbody></table>
+ ${ask?`<div class="gs-ask"><b>Kontrollfrage:</b> ${ask}</div>`:""}</div>`;
+}
+const REDO_RESET={
+ 1:()=>({quiz:{},quizTries:{},gaps:{},obst:{},seen:{},step:STEPS.indexOf("mission")}),
+ 2:()=>({picks:{},wahlIdx:0,wahlCover:true,step:STEPS.indexOf("wahl")}),
+ 3:()=>({rec:false,timerStart:null,timerEnd:null,timerDone:false,skipped:false,revealed:{},agreed:[],agreedWhy:{},howAgree:"",spickOpen:null,step:STEPS.indexOf("spick")})
+};
+const REDO_FIRST={1:"mission",2:"wahl",3:"spick"};
+function fillExample(n){
+ if(!(S.group.name||"").trim())S.group.name="Beispielgruppe";
+ if(members().length<2)S.group.members=["Mia","Luca","",""];
+ const ms=members();
+ const why=id=>{const pr=(PROS[id]&&PROS[id].p[0])||P[id].d;return `«${P[id].t}» ist wichtig, denn ${pr.charAt(0).toLowerCase()+pr.slice(1)}`};
+ // Stufe 1
+ QUIZ.forEach((q,i)=>{S.quiz[i]=q.r;S.quizTries[i]=[q.r]});
+ GAPS.forEach((g,i)=>S.gaps[i]=g[1]);
+ OBST.forEach((o,i)=>S.obst[i]=o.fit[0]);
+ S.seen={};POWERS.forEach(p=>S.seen[p.id]=1);
+ S.approved.gate1=true;
+ if(n>=2){
+  const pool=[];OBST.forEach(o=>o.fit.forEach(id=>{if(!pool.includes(id))pool.push(id)}));
+  ms.forEach((m,k)=>{const rank=[0,1,2].map(j=>pool[(k*2+j)%pool.length]);const w={};rank.forEach(id=>w[id]=why(id));S.picks[m]={rank,why:w}});
+  S.wahlIdx=ms.length;S.wahlCover=true;S.approved.gate2=true;
+ }
+ if(n>=3){
+  S.rec=true;S.timerStart=Date.now()-420000;S.timerEnd=Date.now();S.timerDone=true;S.skipped=false;
+  S.revealed={};ms.forEach(m=>[0,1,2].forEach(k=>S.revealed[m+"|"+k]=true));
+  const all=[];ms.forEach(m=>S.picks[m].rank.forEach(id=>{if(!all.includes(id))all.push(id)}));
+  S.agreed=all.slice(0,3);S.agreedWhy={};S.agreed.forEach(id=>S.agreedWhy[id]=`Das beste Argument war: ${why(id).replace(/^«[^»]+» ist wichtig, denn /,"")}`);
+  S.howAgree="Durch die besten Argumente";S.approved.gate3=true;
+ }
+ if(n>=4){
+  S.heard=true;S.rating={};KRIT.forEach((k,i)=>S.rating[i]=[3,2,2,1,3,2][i%6]);
+  S.good="Alle haben mitgeredet und ihre Wahl mit «weil» begründet.";
+  S.better="Wir wollen mehr nachfragen und die Redemittel öfter benutzen.";
+  S.tips=["Wir lassen einander ausreden und fragen nach.","Wir benutzen mindestens drei verschiedene Redemittel."];
+ }
+ S.step=STEPS.indexOf(n===1?"wahl":n===2?"spick":n===3?"hoeren":"ziel");S.maxStep=Math.max(S.maxStep||0,S.step);selObs=null;save();
+}
+const CODE="4313";
+function pinHTML(id,label,n){return `<div class="pin" id="${id}" data-v="" ${n!=null?`data-n="${n}"`:""}><div class="pin-label">${label}</div><div class="pin-dots" aria-live="polite"><i></i><i></i><i></i><i></i></div>
+ <div class="pin-grid">${[1,2,3,4,5,6,7,8,9].map(d=>`<button type="button" data-a="pin" data-p="${id}" data-d="${d}">${d}</button>`).join("")}<button type="button" class="pin-del" data-a="pindel" data-p="${id}" aria-label="Letzte Zahl löschen">⌫ Löschen</button></div><div class="pin-err fb no" hidden>Falscher Code. Nochmals versuchen.</div></div>`}
+function pinOk(box){
+ if(box.id==="gpin"){const n=box.dataset.n;S.approved["gate"+n]=true;if(S.redoNote&&S.redoNote.et==+n)S.redoNote=null;save();render();hop();sfx("fanfare");say("Freigegeben! Weiter geht's.");return}
+ if(box.id==="lppin"){window.__openLP&&window.__openLP();return}
+ if(box.id==="rpin"){resetAll();return}
+}
+function gate(n,title,text,next){
+ const ok=S.approved["gate"+n];const e=ETAPPEN[n];
+ return `<div class="splash"><div class="eyebrow">Stufe ${n} · ${e.n}</div><div class="big">Geschafft!</div><h2>${title}</h2><p>${text}</p>
+ ${gateSummary(n)}
+ ${ok?`<p class="fb ok">Freigegeben. Weiter geht's mit: ${next}</p>`:`<div class="box solid" style="width:100%;max-width:420px;text-align:left"><h3>Lehrperson, bitte freigeben</h3>${pinHTML("gpin","Freigabe-Code eingeben",n)}<div class="row" style="margin-top:10px;justify-content:center"><button class="btn" data-a="gredo" data-n="${n}">↺ Stufe wiederholen</button></div>
+ </div>`}
+ </div>`+nav(ok,"Weiter","Geht mit dem iPad zur Lehrperson.");
+}
+R.gate1=()=>gate(1,"Ihr kennt den Dschungel und die Superkräfte.","Bringt das iPad zur Lehrperson. Sie schaut kurz, ob alles klar ist, und gibt die nächste Stufe frei.","Meine Wahl");
+R.wahl=()=>{
+ const ms=members();const i=Math.min(S.wahlIdx,ms.length);
+ if(i>=ms.length){
+  return head("Alle haben gewählt!","Jede Person hat ihre drei Superkräfte begründet. Jetzt seid ihr bereit für das Gespräch.")+
+  `<div class="grid2">${ms.map((m,k)=>`<div class="box solid"><h3>${esc(m)}</h3><p class="hint" style="margin:0">3 Superkräfte gewählt und begründet. Die Wahl bleibt geheim bis zum Gespräch.</p><button class="btn small" style="margin-top:8px" data-a="redo" data-k="${k}">${esc(m)} ändert noch etwas</button></div>`).join("")}</div>`+nav(true);
+ }
+ const name=ms[i];
+ if(S.wahlCover){
+  return `<div class="cover"><div class="eyebrow" style="color:var(--sun)">Stufe 2 · Einzelarbeit</div><h2>${esc(name)} ist dran!</h2><p style="margin-inline:auto">Die anderen schauen weg und schreiben ihre Gedanken schon ins Notizheft. Nicht spicken!</p><button class="btn primary" data-a="uncover" style="--ec:var(--e2)">Ich bin ${esc(name)}, los!</button></div>`+nav(false,"Weiter","");
+ }
+ const p=S.picks[name]||(S.picks[name]={rank:[],why:{}});
+ const all=p.rank.length===3&&p.rank.every(id=>reasonOk(p.why[id]));
+ return head(`${esc(name)}: Deine drei Superkräfte`,"Tippe drei Superkräfte an. Die erste ist für dich die wichtigste. Nochmals tippen entfernt sie.")+
+ `<div class="grid3">${POWERS.map(pw=>{const r=p.rank.indexOf(pw.id);return `<button class="power pcard ${r>=0?"sel":""}" data-a="pick" data-id="${pw.id}" aria-pressed="${r>=0}">${r>=0?`<span class="num">${r+1}</span>`:""}${pw.neu?'<span class="neu">NEU</span>':""}<svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[pw.id]}</svg>${esc(pw.t)}</button>`}).join("")}</div>
+ ${p.rank.length?`<h2 style="margin-top:24px">Warum hast du diese Superkräfte gewählt?</h2><p class="hint">Tippe auf ein Redemittel, dann kommt es in dein Textfeld. Schreibe mindestens einen ganzen Satz mit «weil» oder «denn».</p>
+ <div class="stack">${p.rank.map((id,k)=>{const t=p.why[id]||"";return `<div class="box solid"><label for="why_${id}" class="lab-ic"><svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[id]}</svg>Platz ${k+1}: ${esc(P[id].t)}</label>
+ <div class="chips" style="margin-bottom:8px">${[...REDEMITTEL[0].s.slice(0,3),...REDEMITTEL[1].s.slice(0,3)].map(s=>`<button class="chip" data-a="ins" data-t="why_${id}" data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>
+ <textarea id="why_${id}" data-why="${id}" placeholder="Ich finde diese Superkraft wichtig, weil …">${esc(t)}</textarea>
+ <div class="fb ${reasonOk(t)?"ok":"no"}" data-fb="${id}">${reasonOk(t)?(reasonPro(t)?"Starke Begründung!":"Gut! Mit «weil» oder «denn» wird sie noch stärker."):"Noch etwas kurz."}</div></div>`}).join("")}</div>`:""}`+
+ `<div class="nav"><button class="btn" data-a="back">Zurück</button><span class="hint">${all?"":"Drei Superkräfte wählen und alle begründen."}</span><button class="btn primary" data-a="wahlDone" ${all?"":"disabled"}>Fertig, iPad weitergeben</button></div>`;
+};
+R.gate2=()=>gate(2,"Alle haben ihre Superkräfte gewählt und begründet.","Bringt das iPad zur Lehrperson. Sie schaut eure Begründungen an und gibt das Gespräch frei.","Das Gespräch");
+R.spick=()=>{
+ const ms=members();const o=S.spickOpen;
+ return head("Eure Spickzettel","Das Gespräch ist euer Probegalopp für die Lernkontrolle. Ihr dürft eure Notizen benutzen. Tippt auf euren Namen, um eure eigene Wahl zu sehen.")+
+ `<div class="row">${ms.map(m=>`<button class="btn small ${o===m?"primary":""}" data-a="spick" data-m="${esc(m)}">${esc(m)}</button>`).join("")}</div>
+ ${o&&S.picks[o]?`<div class="box solid" style="margin-top:12px"><h3>${esc(o)}s Wahl</h3><ol style="margin:0;padding-left:22px">${S.picks[o].rank.map(id=>`<li style="margin-bottom:6px"><strong>${esc(P[id].t)}</strong><br><span class="muted">${esc(S.picks[o].why[id])}</span></li>`).join("")}</ol><button class="btn small" style="margin-top:8px" data-a="spick" data-m="">Zuklappen</button></div>`:""}
+ <h2 style="margin-top:22px">So läuft das Gespräch</h2>
+ <ol style="padding-left:22px;margin:0"><li>Jede Person stellt ihre drei Superkräfte vor und begründet sie.</li><li>Fragt nach, stimmt zu oder widersprecht. Verteidigt eure Wahl!</li><li>Erst am Schluss einigt ihr euch auf drei Superkräfte, mit den besten Argumenten.</li></ol>`+nav(true,"Zum Gespräch");
+};
+let tick;
+function spkInner(m,k,open){const p=S.picks[m];const id=p&&p.rank[k];if(!id)return "";
+ return open?`<svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[id]}</svg><span class="spk-pl">Platz ${k+1}</span><span class="spk-t">${esc(P[id].t)}</span><span class="spk-w">${esc(p.why[id]||"")}</span>`
+ :`<span class="spk-q">?</span><span class="spk-pl">Platz ${k+1}</span><span class="spk-hint">Antippen zum Aufdecken</span>`}
+function spickCards(){
+ const ms=members().filter(m=>S.picks[m]&&S.picks[m].rank.length);
+ if(!ms.length)return "";
+ if(!S.timerStart)return `<div class="spk-wrap"><h2>Eure Spickkarten</h2><p class="hint">Sobald das Gespräch läuft, könnt ihr hier eure Spickkarten aufdecken: 3 pro Person, mit euren Superkräften und Argumenten.</p></div>`;
+ S.revealed=S.revealed||{};
+ return `<div class="spk-wrap"><h2>Eure Spickkarten</h2><p class="hint">Wenn du an der Reihe bist, deckst du deine Karten auf und stellst deine Superkräfte vor. Beginne mit Platz 1.</p>
+ ${ms.map(m=>`<div class="spk-person"><h3>${esc(m)}</h3><div class="spk-row">${[0,1,2].map(k=>{const key=m+"|"+k;const o=!!S.revealed[key];return `<button class="spk ${o?"open":""}" data-a="spk" data-k="${esc(key)}" aria-pressed="${o}">${spkInner(m,k,o)}</button>`}).join("")}</div></div>`).join("")}</div>`;
+}
+R.gespraech=()=>{
+ const run=S.timerStart&&!S.timerDone;
+ const el=run?Math.floor((Date.now()-S.timerStart)/1000):S.timerDone?600:0;
+ return head("Auf welche Superkräfte einigt ihr euch?","Führt das Gespräch zu dritt und nehmt es auf. Ihr habt nur einen Versuch. Das Gespräch dauert 5 bis höchstens 10 Minuten.")+
+ `<div class="grid2"><div class="box solid"><h3>Gesprächsregeln</h3><ul class="tight">${REGELN.map(r=>`<li>${r}</li>`).join("")}</ul></div>
+ <div class="stack" style="gap:8px">${REDEMITTEL.map(r=>`<details><summary>${r.k}</summary><ul class="tight">${r.s.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></details>`).join("")}</div></div>
+ <div class="recbox" style="margin-top:14px"><h3>● Vor dem Start: Aufnahme vorbereiten</h3>
+  <ol class="tight"><li>Holt ein <strong>zweites iPad</strong>. Dieses iPad hier bleibt für den Timer.</li><li>Öffnet auf dem zweiten iPad die App <strong>Sprachmemos</strong>.</li><li>Legt es in die Mitte vom Tisch und tippt auf den <strong>roten Aufnahme-Knopf</strong>.</li><li>Erst dann: Häkchen setzen und hier den Timer starten.</li></ol></div>
+ <div class="box solid" style="margin-top:14px">
+  <label style="display:flex;gap:10px;align-items:center;font-weight:700"><input type="checkbox" id="rec" ${S.rec?"checked":""} style="width:24px;height:24px"> Die Aufnahme läuft auf dem zweiten iPad.</label>
+  <div class="timer" id="timer" aria-live="off">${fmt(el)}</div>
+  <div class="tl"><i id="tlf" style="width:${Math.min(100,el/6)}%"></i><b title="5 Minuten"></b></div>
+  <p class="hint" style="margin-top:6px">Ab der Markierung (5 Minuten) dürft ihr euch langsam einigen.</p>
+  <div class="row">${!S.timerStart?`<button class="btn primary" data-a="tstart" ${S.rec?"":"disabled"}>Gespräch starten</button>${S.rec?"":`<span class="hint">Startet zuerst die Aufnahme auf dem zweiten iPad.</span>`}`:run?`<button class="btn" data-a="tstop" id="tstopBtn" ${el<300?"disabled":""}>Gespräch beenden</button><span class="hint" id="tstopHint">${el<300?"Mindestens 5 Minuten sprechen.":""}</span>`:`<span class="fb ok">Gespräch beendet. Stoppt die Aufnahme auf dem zweiten iPad und gebt ihr euren Gruppennamen.</span>`}${S.timerDone?"":`<button class="btn" data-a="tskip" style="margin-left:auto">✓ Erledigt (Timer überspringen)</button>`}</div>
+ </div>`+spickCards()+nav(S.timerDone,"Weiter","Führt zuerst das Gespräch.");
+};
+const fmt=s=>`${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+function startTick(){clearInterval(tick);tick=setInterval(()=>{
+ if(step()!=="gespraech"||!S.timerStart||S.timerDone)return clearInterval(tick);
+ const el=Math.floor((Date.now()-S.timerStart)/1000);
+ if(el>=600){S.timerDone=true;S.timerEnd=Date.now();save();say("Zehn Minuten sind um! Beendet euer Gespräch.");render();return}
+ const t=$("#timer");if(t)t.textContent=fmt(el);const f=$("#tlf");if(f)f.style.width=Math.min(100,el/6)+"%";
+ const b=$("#tstopBtn");if(b&&el>=300&&b.disabled){b.disabled=false;$("#tstopHint").textContent="";say("Fünf Minuten! Jetzt dürft ihr euch einigen.")}
+},1000)}
+R.einigung=()=>{
+ const ok=S.agreed.length===3&&S.agreed.every(id=>reasonOk(S.agreedWhy[id]))&&S.howAgree;
+ return head("Eure Einigung","Auf welche drei Superkräfte habt ihr euch geeinigt? Schreibt zu jeder das stärkste Argument auf.")+
+ `<div class="grid3">${POWERS.map(pw=>{const r=S.agreed.indexOf(pw.id);return `<button class="power pcard ${r>=0?"sel":""}" data-a="agree" data-id="${pw.id}" aria-pressed="${r>=0}">${r>=0?`<span class="num">${r+1}</span>`:""}${pw.neu?'<span class="neu">NEU</span>':""}<svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[pw.id]}</svg>${esc(pw.t)}</button>`}).join("")}</div>
+ ${S.agreed.length?`<div class="stack" style="margin-top:18px">${S.agreed.map((id,k)=>`<div class="box solid"><label for="ag_${id}" class="lab-ic"><svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[id]}</svg>Stärkstes Argument für «${esc(P[id].t)}»</label><textarea id="ag_${id}" data-ag="${id}" placeholder="Das beste Argument war: … , weil …">${esc(S.agreedWhy[id]||"")}</textarea></div>`).join("")}</div>`:""}
+ <h3 style="margin-top:18px">Wie habt ihr euch geeinigt?</h3><div class="chips">${["Durch die besten Argumente","Durch Abstimmen","Mit einem Kompromiss","Jemand hat nachgegeben"].map(h=>`<button class="chip ${S.howAgree===h?"on":""}" data-a="how" data-h="${h}">${h}</button>`).join("")}</div>`+
+ nav(ok,"Weiter","Drei Superkräfte wählen, Argumente aufschreiben, Einigungsart antippen.");
+};
+R.gate3=()=>gate(3,"Euer Gespräch ist aufgenommen.","Bringt das iPad zur Lehrperson und zeigt ihr eure Einigung. Danach hört ihr euch die Aufnahme an.","Rückmeldung");
+R.hoeren=()=>{
+ const ok=S.heard&&KRIT.every((k,i)=>S.rating[i]!=null)&&S.good.trim().length>10&&S.better.trim().length>10;
+ return head("Hört euch die Aufnahme an","Hört das ganze Gespräch an. Bewertet euch danach mit dem Kriterienraster der Lernkontrolle.")+
+ `<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="heard" ${S.heard?"checked":""} style="width:24px;height:24px"> Wir haben die ganze Aufnahme angehört.</label>
+ <div class="stack" style="margin-top:14px">${KRIT.map((k,i)=>`<div class="box"><h3>${k}</h3><div class="rate">${LEVELS.map((l,j)=>`<button class="lv${j} ${S.rating[i]===j?"on":""}" data-a="rate" data-i="${i}" data-j="${j}" aria-pressed="${S.rating[i]===j}"><span class="drops">${"<i></i>".repeat(j+1)}</span>${l}</button>`).join("")}</div></div>`).join("")}</div>
+ <div class="grid2" style="margin-top:14px"><div><label for="good">Das ist uns gut gelungen:</label><textarea id="good" data-t="good">${esc(S.good)}</textarea></div><div><label for="better">Das machen wir nächstes Mal besser:</label><textarea id="better" data-t="better">${esc(S.better)}</textarea></div></div>`+
+ nav(ok,"Weiter","Aufnahme anhören, alle sechs Punkte bewerten und beide Felder ausfüllen.");
+};
+R.tipps=()=>{
+ const ok=S.tips.every(t=>t.trim().length>10);
+ return head("Tipps für das nächste Gespräch","Schreibt zwei Tipps auf, die ihr im nächsten Gespräch umsetzen wollt. Wir sammeln sie danach in der Klasse.")+
+ `<div class="stack">${S.tips.map((t,i)=>`<div><label for="tip${i}">Tipp ${i+1}</label><input type="text" id="tip${i}" data-tip="${i}" value="${esc(t)}" placeholder="Wir …" maxlength="140"></div>`).join("")}</div>
+ <p class="hint" style="margin-top:12px">Diese Tipps nehmt ihr mit in die Lernkontrolle.</p>`+nav(ok,"Mission abschliessen","Schreibt zwei Tipps (je ein ganzer Satz).");
+};
+function summary(){
+ const ms=members();let s=`DSCHUNGEL-GAME · Level ${G.level}: ${LVL[G.level].name}\nGruppe «${S.group.name||""}» (${ms.join(", ")})\nHeilkraft: ${water()}%\n\n`;
+ s+="EINZELWAHL\n";ms.forEach(m=>{const p=S.picks[m];if(!p)return;s+=`${m}:\n`;p.rank.forEach((id,k)=>s+=`  ${k+1}. ${P[id].t}: ${(p.why[id]||"").trim()}\n`)});
+ s+=`\nEINIGUNG (${S.howAgree||"-"})\n`;S.agreed.forEach((id,k)=>s+=`  ${k+1}. ${P[id].t}: ${(S.agreedWhy[id]||"").trim()}\n`);
+ s+="\nRÜCKMELDUNG\n";KRIT.forEach((k,i)=>s+=`  ${k} → ${S.rating[i]!=null?LEVELS[S.rating[i]]:"-"}\n`);
+ s+=`  Gut gelungen: ${S.good.trim()}\n  Besser machen: ${S.better.trim()}\n\nTIPPS\n`;S.tips.forEach((t,i)=>s+=`  ${i+1}. ${t.trim()}\n`);
+ return s;
+}
+R.ziel=()=>{if(G.level<3&&!G.unlocked.includes(G.level+1)){G.unlocked.push(G.level+1);save()}return `<div class="splash"><div class="eyebrow">Level ${G.level} · Mission erfüllt</div><div class="big" style="--ec:var(--accent)">Alle gesund!</div>
+<svg class="ill winscene" viewBox="0 0 240 110" aria-hidden="true">
+<rect width="240" height="110" fill="var(--ill-sky)"/>
+${TREE(20,84,1.1)}${TREE(52,86,.8)}${VINE(36,30)}${VINE(70,22,.5)}
+<path class="sand2" d="M0 80 Q60 70 120 80 T240 76 V110 H0Z"/><path class="sand" d="M0 90 Q70 82 140 90 T240 88 V110 H0Z"/>
+<circle class="sun" cx="120" cy="18" r="10"/>
+<g fill="var(--ill-rock)"><rect x="168" y="52" width="18" height="30"/><rect x="190" y="42" width="22" height="40"/><rect x="214" y="58" width="18" height="24"/></g>
+<g fill="var(--ill-rock2)"><path d="M166 52 h22 l-11 -10Z"/><path d="M188 42 h26 l-13 -12Z"/><path d="M212 58 h22 l-11 -9Z"/></g>
+<g fill="#f6b434"><rect x="173" y="60" width="6" height="6"/><rect x="196" y="50" width="6" height="6"/><rect x="204" y="62" width="6" height="6"/><rect x="220" y="66" width="6" height="6"/></g>
+${[[178,40,0],[200,28,.6],[222,44,1.1]].map(([x,y,d])=>`<g transform="translate(${x} ${y})"><text class="k-float" style="animation-delay:${d}s" font-size="12" fill="#c43d55">♥</text></g>`).join("")}
+<g transform="translate(118 66)">${HERO({cls:"k-bounce",arms:`<path d="M-5 0 l-5 -12 M5 0 l5 -12" stroke="#6b4fc9" stroke-width="3.4" stroke-linecap="round"/>`})}</g>
+<g transform="translate(140 80)"><path d="M-10 -6 h20 l-3 10 h-14Z" fill="#a87a45"/><g transform="translate(-5 -8)">${FRUIT("#f08a24",0)}</g><g transform="translate(4 -9)">${FRUIT("#e2412e",.3)}</g><g transform="translate(0 -14)">${FRUIT("#f6c234",.6)}</g></g>
+${SPARK(150,30,0)}${SPARK(180,18,.5,"#f6b434")}${SPARK(90,40,1)}${SPARK(70,36,.8)}
+${POP(70,22,"GESCHAFFT!","k-pop",13)}
+</svg>
+<div style="width:100%;max-width:520px">${tankHTML("ziel",water(),true)}</div><p>${LVL[G.level].win}</p>
+${G.level<3?`<div class="box solid" style="--ec:var(--e2)"><h3>Level ${G.level+1} ist freigeschaltet!</h3><p class="hint" style="margin:0 0 8px">${LVL[G.level+1].name}: ${LVL[G.level+1].teaser}</p><button class="btn primary" data-a="lvl" data-n="${G.level+1}" style="--ec:var(--e2)">Weiter zu Level ${G.level+1}</button></div>`:`<div class="box solid"><h3>Alle drei Level geschafft!</h3><p class="hint" style="margin:0">Ihr seid echte Dschungel-Profis und bereit für die Lernkontrolle.</p></div>`}</div>
+<div class="box solid" style="margin-top:14px"><h3>An die Lehrperson senden</h3><ol style="margin:0 0 10px;padding-left:22px"><li>Tippt auf «Zusammenfassung kopieren».</li><li>Öffnet die App «Pages», erstellt ein leeres Dokument und fügt den Text ein.</li><li>Sendet das Pages-Dokument per AirDrop an die Lehrperson.</li></ol>
+<div class="row"><button class="btn primary" data-a="copy" style="--ec:var(--accent)">Zusammenfassung kopieren</button></div>
+<pre class="sum" id="sum">${esc(summary())}</pre></div>`+`<div class="nav"><button class="btn" data-a="back">Zurück</button><button class="btn" data-a="tolevels">Zur Levelwahl</button></div>`};
+
+/* ---------- Render ---------- */
+function render(){
+ const st=step();const e=ETAPPEN[ET_OF[st]];
+ document.documentElement.style.setProperty("--ec",e?`var(${e.c})`:"var(--sun)");
+ $("#main").innerHTML=`<section class="card">${R[st]()}</section>`;
+ insertTodo();glossify($("#main"));if(st==="ziel"){lastW.ziel=0;animateTank("ziel",water())}
+ renderHud();renderPath();
+ if(st==="gespraech"&&S.timerStart&&!S.timerDone)startTick();
+ if(st==="kraefte")requestAnimationFrame(drawLines);
+}
+let lastLinks="";
+function drawLines(){
+ const c=$("#connect"),svg=$("#clines");if(!c||!svg)return;
+ const cr=c.getBoundingClientRect();let out="";const key=JSON.stringify(S.obst);
+ OBST.forEach((o,i)=>{const id=S.obst[i];if(!id)return;
+  const a=c.querySelector(`[data-a=cob][data-i="${i}"]`).getBoundingClientRect(),b=c.querySelector(`[data-a=cpw][data-id="${id}"]`).getBoundingClientRect();
+  const x1=a.right-cr.left,y1=a.top+a.height/2-cr.top,x2=b.left-cr.left,y2=b.top+b.height/2-cr.top,mx=(x1+x2)/2;
+  const fit=o.fit.includes(id);
+  out+=`<path class="cl ${fit?"ok":"no"}" d="M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}"/><circle class="cd ${fit?"ok":"no"}" cx="${x1}" cy="${y1}" r="6"/><circle class="cd ${fit?"ok":"no"}" cx="${x2}" cy="${y2}" r="6"/>`});
+ svg.setAttribute("viewBox",`0 0 ${cr.width} ${cr.height}`);svg.innerHTML=out;
+ if(key===lastLinks)svg.classList.add("still");else svg.classList.remove("still");lastLinks=key;
+}
+addEventListener("resize",()=>{if(step()==="kraefte"){lastLinks=JSON.stringify(S.obst);drawLines()}});
+function go(d){
+ try{speechSynthesis.cancel()}catch(e){}
+ S.step=Math.max(0,Math.min(STEPS.length-1,S.step+d));save();render();window.scrollTo({top:0,behavior:"smooth"});
+ sfx(step()==="ziel"&&d>0?"win":d>0?"next":"back");
+ if(d>0&&(STEPINFO[step()].gate||step()==="ziel")){fenniDance(step()==="ziel"?"Mission erfüllt! Das muss gefeiert werden!":`Stufe ${ET_OF[step()]} geschafft! Ich tanze vor Freude!`);return}
+ if(step()==="levels"&&d>0){say(`Willkommen, ${esc(S.group.name)}! Hallo ${esc(members().join(", "))}. `+TIPS.levels,7000);return}
+ const t=TIPS[step()];if(t)say(t);
+}
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
+
+/* ---------- Events ---------- */
+document.addEventListener("click",ev=>{
+ const b=ev.target.closest("[data-a]");if(!b||b.disabled)return;const a=b.dataset.a;
+ if(!["pin","pindel","jump","menuopen","menuclose","gredoyes","spk","quiz","cpw","gate","lvl","pinfo","next","back","tskip","tstop","mute","speak","wahlDone","copy"].includes(a))sfx("click");
+ if(a==="mute"){G.mute=!G.mute;save();renderHud();if(!G.mute)sfx("select");return}
+ if(a==="speak"){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(b.dataset.t);u.lang="de-DE";u.rate=.9;speechSynthesis.speak(u)}catch(e){}return}
+ if(a==="gname"){S.group.name=b.dataset.n;save();render();return}
+ if(a==="menuopen"){$("#side").classList.add("open");$("#scrim").hidden=false;return}
+ if(a==="menuclose"){$("#side").classList.remove("open");$("#scrim").hidden=true;return}
+ if(a==="jump"){const i=+b.dataset.i;if(i===S.step)return;if(!reachable(i)){const f=firstOpen();sfx("bad");hop();say(STEPINFO[STEPS[f]].gate?"Dieser Teil ist noch gesperrt. Zuerst muss die Lehrperson eure Stufe freigeben.":`Dieser Teil ist noch gesperrt. Löst zuerst «${STEPINFO[STEPS[f]].l}».`,4500);return}sfx("click");$("#side").classList.remove("open");$("#scrim").hidden=true;S.step=i;if(step()==="wahl")S.wahlCover=true;save();render();window.scrollTo({top:0,behavior:"smooth"});const t=TIPS[step()];if(t)say(t);return}
+ if(a==="next")return go(1);
+ if(a==="lvl"){const n=+b.dataset.n;if(!G.unlocked.includes(n))return;sfx("whoosh");if(n===G.level){if(S.step<MISSION_I)S.step=MISSION_I;save();render();window.scrollTo({top:0,behavior:"smooth"});say(TIPS.mission);return}return switchLevel(n)}
+ if(a==="tolevels"){S.step=LEVELS_I;save();render();window.scrollTo({top:0,behavior:"smooth"});say(TIPS.levels);return}
+ if(a==="back"){if(step()==="wahl"&&!S.wahlCover){S.wahlCover=true;save();return render()}return go(-1)}
+ if(a==="read"){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(BRIEF.join(" "));u.lang="de-DE";u.rate=.9;speechSynthesis.speak(u)}catch(e){toast("Vorlesen geht auf diesem Gerät nicht.")}return}
+ if(a==="stop"){try{speechSynthesis.cancel()}catch(e){}return}
+ if(a==="quiz"){const i=+b.dataset.i,j=+b.dataset.j;sfx(j===QUIZ[i].r?"good":"bad");S.quiz[i]=j;(S.quizTries[i]=S.quizTries[i]||[]).push(j);save();render();if(j===QUIZ[i].r)hop();return}
+ if(a==="flip"){b.classList.toggle("open");return}
+ if(a==="cob"){const i=+b.dataset.i;selObs=selObs===i?null:i;render();if(selObs!=null)say("Jetzt tippt rechts auf eine Superkraft, die gegen dieses Problem hilft.",3500);return}
+ if(a==="cpw"){if(selObs==null){say("Tippt zuerst links auf ein Problem.",3000);return}
+  const id=b.dataset.id;if(S.obst[selObs]===id)delete S.obst[selObs];else S.obst[selObs]=id;
+  const fit=S.obst[selObs]&&OBST[selObs].fit.includes(id);sfx(!S.obst[selObs]?"back":fit?"good":"select");selObs=null;save();render();if(fit)hop();return}
+ if(a==="pinfo"){openPower(b.dataset.id);S.seen=S.seen||{};S.seen[b.dataset.id]=1;save();const n=Object.keys(S.seen).length;if(n===POWERS.length)say(`Ihr habt alle ${POWERS.length} Superkräfte angeschaut. Stark!`);return}
+ if(a==="gredo"){const n=+b.dataset.n;Object.assign(S,REDO_RESET[n]());S.maxStep=S.step;S.redo=S.redo||{};S.redo[n]=(S.redo[n]||0)+1;S.redoNote={et:n,text:""};selObs=null;
+  save();render();window.scrollTo({top:0,behavior:"smooth"});sfx("back");say("Ihr wiederholt diese Stufe. Hört gut zu, was die Lehrperson euch sagt!",6000);return}
+ if(a==="pin"||a==="pindel"){const box=document.getElementById(b.dataset.p);if(!box)return;let v=box.dataset.v||"";
+  if(a==="pindel"){v=v.slice(0,-1);sfx("back")}else if(v.length<4){v+=b.dataset.d;sfx("click")}
+  box.dataset.v=v;box.querySelectorAll(".pin-dots i").forEach((d,k)=>d.classList.toggle("on",k<v.length));box.querySelector(".pin-err").hidden=true;
+  if(v.length===4){if(v===CODE){setTimeout(()=>pinOk(box),150)}else{sfx("bad");box.classList.remove("shake");void box.offsetWidth;box.classList.add("shake");box.querySelector(".pin-err").hidden=false;setTimeout(()=>{box.dataset.v="";box.querySelectorAll(".pin-dots i").forEach(d=>d.classList.remove("on"))},450)}}
+  return}
+ if(a==="uncover"){S.wahlCover=false;save();render();say(TIPS.wahl);return}
+ if(a==="pick"){const name=members()[S.wahlIdx];const p=S.picks[name];const id=b.dataset.id;const r=p.rank.indexOf(id);
+  if(r>=0)p.rank.splice(r,1);else if(p.rank.length<3)p.rank.push(id);else{say("Du hast schon drei! Tippe zuerst eine an, um sie zu entfernen.");return}
+  save();render();return}
+ if(a==="ins"){const t=document.getElementById(b.dataset.t);const s=b.dataset.s.replace(/^…,?\s*/,"").replace(/\s*…$/," ");t.value=(t.value.trim()?t.value.trim()+" ":"")+s;t.focus();t.dispatchEvent(new Event("input",{bubbles:true}));return}
+ if(a==="wahlDone"){sfx("good");S.wahlIdx++;S.wahlCover=true;save();render();hop();say(S.wahlIdx>=members().length?"Alle sind fertig. Super!":"Sehr gut! Gib das iPad weiter.");return}
+ if(a==="redo"){S.wahlIdx=+b.dataset.k;S.wahlCover=true;save();render();return}
+ if(a==="spick"){S.spickOpen=b.dataset.m||null;save();render();return}
+ if(a==="tstart"){S.timerStart=Date.now();save();render();say("Los geht's! Jede Person stellt zuerst ihre Wahl vor.");return}
+ if(a==="tstop"){sfx("good");S.timerDone=true;S.timerEnd=Date.now();save();render();hop();return}
+ if(a==="spk"){const key=b.dataset.k;S.revealed=S.revealed||{};const o=!S.revealed[key];S.revealed[key]=o;save();const [m,k]=[key.slice(0,key.lastIndexOf("|")),+key.slice(key.lastIndexOf("|")+1)];b.classList.toggle("open",o);b.setAttribute("aria-pressed",o);b.innerHTML=spkInner(m,k,o);b.classList.remove("flipin");void b.offsetWidth;b.classList.add("flipin");sfx(o?"pop":"back");return}
+ if(a==="tskip"){sfx("good");S.timerDone=true;S.skipped=true;S.timerEnd=Date.now();if(!S.timerStart)S.timerStart=Date.now();clearInterval(tick);save();render();hop();say("Erledigt! Weiter zur Einigung.");return}
+ if(a==="agree"){const id=b.dataset.id;const r=S.agreed.indexOf(id);if(r>=0)S.agreed.splice(r,1);else if(S.agreed.length<3)S.agreed.push(id);else{say("Ihr habt schon drei gewählt.");return}save();render();return}
+ if(a==="how"){S.howAgree=b.dataset.h;save();render();return}
+ if(a==="rate"){S.rating[b.dataset.i]=+b.dataset.j;save();render();return}
+ if(a==="copy"){const txt=summary();const fb=()=>{const r=document.createRange();r.selectNodeContents($("#sum"));const s=getSelection();s.removeAllRanges();s.addRange(r);toast("Text markiert. Jetzt «Kopieren» tippen.")};
+  sfx("select");try{navigator.clipboard.writeText(txt).then(()=>toast("Kopiert!"),fb)}catch(e){fb()}return}
+});
+document.addEventListener("input",ev=>{
+ const t=ev.target;
+ if(t.dataset.m!=null){S.group.members[+t.dataset.m]=t.value;save();const nb=$("[data-a=next]");if(nb)nb.disabled=!startOk();return}
+ if(t.dataset.gname!=null){S.group.name=t.value;save();const nb=$("[data-a=next]");if(nb)nb.disabled=!startOk();document.querySelectorAll("[data-a=gname]").forEach(c=>c.classList.toggle("on",c.dataset.n===t.value));renderHud();return}
+ if(t.dataset.why){const name=members()[S.wahlIdx];S.picks[name].why[t.dataset.why]=t.value;save();
+  const fbx=document.querySelector(`[data-fb="${t.dataset.why}"]`);const ok=reasonOk(t.value);fbx.className="fb "+(ok?"ok":"no");fbx.textContent=ok?(reasonPro(t.value)?"Starke Begründung!":"Gut! Mit «weil» oder «denn» wird sie noch stärker."):"Noch etwas kurz.";
+  const p=S.picks[name];const all=p.rank.length===3&&p.rank.every(id=>reasonOk(p.why[id]));const d=$("[data-a=wahlDone]");if(d)d.disabled=!all;renderHud();return}
+ if(t.dataset.ag){S.agreedWhy[t.dataset.ag]=t.value;save();updNext(R_OK.einigung());return}
+ if(t.dataset.t==="good"||t.dataset.t==="better"){S[t.dataset.t]=t.value;save();updNext(R_OK.hoeren());return}
+ if(t.dataset.tip!=null){S.tips[+t.dataset.tip]=t.value;save();updNext(R_OK.tipps());return}
+});
+const R_OK={einigung:()=>S.agreed.length===3&&S.agreed.every(id=>reasonOk(S.agreedWhy[id]))&&!!S.howAgree,
+ hoeren:()=>S.heard&&KRIT.every((k,i)=>S.rating[i]!=null)&&S.good.trim().length>10&&S.better.trim().length>10,
+ tipps:()=>S.tips.every(t=>t.trim().length>10)};
+function updNext(ok){const nb=$("[data-a=next]");if(nb)nb.disabled=!ok;const h=$(".nav .hint");if(h&&ok)h.textContent="";renderHud()}
+document.addEventListener("change",ev=>{
+ const t=ev.target;
+ if(t.dataset.f==="nr"){S.group.nr=t.value;save();render();return}
+ if(t.dataset.gap!=null){S.gaps[t.dataset.gap]=t.value;sfx(t.value===GAPS[+t.dataset.gap][1]?"good":"bad");save();render();if(t.value===GAPS[+t.dataset.gap][1])hop();return}
+ if(t.dataset.obst!=null){S.obst[t.dataset.obst]=t.value;save();render();return}
+ if(t.id==="rec"){S.rec=t.checked;save();render();return}
+ if(t.id==="heard"){S.heard=t.checked;save();render();return}
+});
+
+/* ---------- LP-Bereich ---------- */
+function modal(html){$("#modalRoot").innerHTML=`<div class="modal" id="mod"><section class="card" style="--ec:var(--ink)">${html}</section></div>`;glossify($("#mod"));sfx("open");$("#mod").addEventListener("click",e=>{if(e.target.id==="mod"||e.target.closest("[data-close]"))$("#modalRoot").innerHTML=""})}
+$("#restartBtn").addEventListener("click",()=>{
+ modal(`<div class="splash"><svg viewBox="0 0 24 24" width="56" height="56" aria-hidden="true"><path d="M19 12 A7 7 0 1 1 16.9 7" stroke="var(--e4)" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M18 3 V7.5 H13.5" stroke="var(--e4)" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><h2>Wirklich neustarten?</h2><p>Alle Eingaben, alle Level und die Anmeldung dieser Gruppe werden gelöscht. Das kann man nicht rückgängig machen.</p></div>
+ <div style="display:flex;justify-content:center">${pinHTML("rpin","Nur die Lehrperson: Code eingeben zum Neustarten")}</div>
+ <div class="nav"><button class="btn" data-close>Abbrechen</button></div>`);
+});
+$("#lpBtn").addEventListener("click",()=>{
+ modal(`<h2>LP-Bereich</h2><div style="display:flex;justify-content:center">${pinHTML("lppin","Code eingeben")}</div><div class="nav"><button class="btn" data-close>Schliessen</button></div>`);
+ window.__openLP=()=>{
+  modal(`<h2>LP-Bereich</h2>
+  <h3>Ablauf Doppellektion (90 Min., Halbklasse)</h3><div class="tw"><table><tr><th>Zeit</th><th>Stufe</th><th>Inhalt</th></tr>
+  <tr><td>0–10</td><td>Plenum</td><td>Blatt «Das Dschungel-Game», Situation klären, Gruppen bilden (LP teilt ein)</td></tr>
+  <tr><td>10–30</td><td>E1</td><td>Funkspruch, Wörter, Superkräfte · Freigabe</td></tr>
+  <tr><td>30–45</td><td>E2</td><td>Einzelwahl + Begründung · Freigabe</td></tr>
+  <tr><td>45–65</td><td>E3</td><td>Gespräch mit Aufnahme (5–10 Min.), Einigung · Freigabe</td></tr>
+  <tr><td>65–80</td><td>E4</td><td>Aufnahme anhören, Rückmeldung, Tipps</td></tr>
+  <tr><td>80–90</td><td>Plenum</td><td>Tipps sammeln, Kriterienraster der Lernkontrolle besprechen</td></tr></table></div>
+  <h3 style="margin-top:14px">Zu Schritt springen</h3><select id="jump">${STEPS.map((s,i)=>`<option value="${i}" ${i===S.step?"selected":""}>${i}: ${s}</option>`).join("")}</select>
+  <h3 style="margin-top:14px">Mit Beispiel füllen und freigeben</h3><p class="hint" style="margin:0 0 6px">Füllt Level ${G.level} mit Beispiel-Eingaben bis zur gewählten Stufe, gibt die Stufen frei und springt zum nächsten Schritt.</p>
+  <div class="row"><select id="fillto" style="flex:1;min-width:0">${[1,2,3,4].map(n=>`<option value="${n}" ${n===4?"selected":""}>bis Stufe ${n}: ${ETAPPEN[n].n}</option>`).join("")}</select><button class="btn primary" id="dofill" style="--ec:var(--accent)">Füllen</button></div>
+  <div class="row" style="margin-top:12px"><button class="btn" id="dojump">Springen</button><button class="btn" id="unlockall">Alle Level freischalten</button><button class="btn" id="reset">Gruppe zurücksetzen</button></div>
+  <div id="resetConfirm" hidden class="box solid" style="margin-top:10px"><p>Alle Eingaben und Level dieser Gruppe löschen?</p><button class="btn primary" id="resetYes" style="--ec:var(--e4)">Ja, löschen</button></div>
+  <h3 style="margin-top:14px">Aktueller Stand</h3><pre class="sum">${esc(summary())}</pre>
+  <div class="nav"><button class="btn" data-close>Schliessen</button></div>`);
+  $("#dojump").onclick=()=>{S.step=+$("#jump").value;save();$("#modalRoot").innerHTML="";render()};
+  $("#dofill").onclick=()=>{const n=+$("#fillto").value;fillExample(n);$("#modalRoot").innerHTML="";render();window.scrollTo({top:0});toast(`Beispiel bis Stufe ${n} eingefüllt`)};
+  $("#reset").onclick=()=>{$("#resetConfirm").hidden=false};
+  $("#resetYes").onclick=resetAll;
+  $("#unlockall").onclick=()=>{G.unlocked=[1,2,3];save();$("#modalRoot").innerHTML="";render();toast("Alle Level freigeschaltet")};
+ };
+});
+
+render();
+setTimeout(()=>say(TIPS[step()]||TIPS.start),600);
+window.__WG = { get S(){ return S; }, get G(){ return G; }, save: save, render: render, waterParts: waterParts, water: water };
+})();
+</script>
+
+<script>
+/* Brücke zum Glitchlab-Hub (Teil 2): Namen vorausfüllen und Sterne melden */
+(function(){ var HB = null; try { HB = window.parent !== window && window.parent.GLHubBridge; } catch(e){}
+  var ctx = window.__GLCTX; if (!HB || !ctx) return;
+  var W = window.__WG; if (!W) return;
+  try {
+    var S = W.S;
+    if (!S.group.members.some(function(m){ return m && m.trim(); })) {
+      var names = [ctx.me.n].concat(ctx.team.map(function(t){ return t.n; }));
+      S.group.nr = ctx.group; S.group.members = names.concat(["", "", "", ""]).slice(0, Math.max(4, names.length));
+      W.save(); W.render();
+    }
+    if ("name" in S.group && !String(S.group.name || "").trim()) { S.group.name = ctx.me.n; W.save(); W.render(); }
+  } catch(e){}
+  var best = {};
+  setInterval(function(){
+    try {
+      var w = W.water(), st = Math.max(0, Math.min(10, Math.floor(w / 10))), lv = W.G.level;
+      if (st > (best[lv] || 0)) { best[lv] = st; HB.score("de-dschungel", "level" + lv, st); }
+    } catch(e){}
+  }, 3000);
+})();
+</script>
+</body>
+</html>

@@ -1585,7 +1585,7 @@ $("#lpBtn").addEventListener("click",()=>{
 
 render();
 setTimeout(()=>say(TIPS[step()]||TIPS.start),600);
-window.__WG = { get S(){ return S; }, get G(){ return G; }, save: save, render: render, waterParts: waterParts };
+window.__WG = { get S(){ return S; }, get G(){ return G; }, save: save, render: render, waterParts: waterParts, water: water };
 })();
 </script>
 
@@ -1605,7 +1605,7 @@ window.__WG = { get S(){ return S; }, get G(){ return G; }, save: save, render: 
   var best = {};
   setInterval(function(){
     try {
-      var w = W.waterParts().reduce(function(a, b){ return a + b; }, 0), st = Math.max(0, Math.min(10, Math.floor(w / 10))), lv = W.G.level;
+      var w = W.water(), st = Math.max(0, Math.min(10, Math.floor(w / 10))), lv = W.G.level;
       if (st > (best[lv] || 0)) { best[lv] = st; HB.score("de-wueste", "level" + lv, st); }
     } catch(e){}
   }, 3000);

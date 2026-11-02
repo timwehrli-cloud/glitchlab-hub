@@ -133,9 +133,74 @@
         + `<g transform="translate(26 26)"><rect x="-1.5" y="0" width="3" height="28" rx="1.5" fill="#2E8B57"/><path d="M-1.5 12h-5v-7a2 2 0 0 1 3 0v4h2M1.5 9h5v-6a2 2 0 0 0-3 0v3h-2" fill="#2E8B57"/></g>`
         + `<g transform="translate(78 22)"><path d="M0 34c1-12 0-22-3-30" stroke="#7A4A22" stroke-width="2.4" fill="none"/><path d="M-3 4c-8-2-14 1-17 6 6-2 11-2 17-6zM-3 4c-2-7-8-10-14-9 5 3 9 5 14 9zM-3 4c4-7 10-8 16-6-6 1-11 3-16 6zM-3 4c7-1 13 3 15 8-6-3-10-4-15-8z" fill="#3AA35B"/><circle cx="-2" cy="7" r="1.6" fill="#7A4A22"/><circle cx="-5" cy="6" r="1.4" fill="#8B5A2B"/></g>`
         + `<ellipse cx="100" cy="58" rx="16" ry="3" fill="#4FB3E8"/><ellipse cx="100" cy="57.4" rx="12" ry="1.6" fill="#9EE3FF"/><path d="M60 12l3-1 2 1M70 9l3-1 2 1" stroke="#7A4A22" stroke-width=".8" fill="none"/>`,
-      done: () => { const m = H.modules.find(x => x.id === "de-wueste"); return !!m && m.activities.every(x => actStars(m, x) > 0); } }
+      done: () => { const m = H.modules.find(x => x.id === "de-wueste"); return !!m && m.activities.every(x => actStars(m, x) > 0); } },
+    { id: "bg_dschungel", n: "Dschungel-Hütte", ic: "🌴", wand: ["#0F5132", "#2BB57A"], boden: ["#7A5230", "#5E3E22", "#4F3420"], reqTxt: "Dschungel-Game: alle drei Level spielen",
+      svg: `<path d="M0 0h160v8c-14 6-24 2-36 6s-22 0-34 5-24-1-36 4-30 0-54 3z" fill="#0B3D24"/>`
+        + [10, 34, 62, 98, 126, 150].map((x, k) => `<path d="M${x} 6c${k % 2 ? 4 : -4} 10 ${k % 2 ? -3 : 3} 20 0 ${28 + (k % 3) * 6}" stroke="#3CC48A" stroke-width="1.6" fill="none"/><ellipse cx="${x + (k % 2 ? 2 : -2)}" cy="${30 + (k % 3) * 6}" rx="4" ry="2" fill="#5FDC9F"/>`).join("")
+        + `<g transform="translate(118 14)"><rect x="0" y="0" width="30" height="26" rx="2" fill="#163F2A" stroke="#7A5230" stroke-width="2"/><path d="M15 0v26M0 13h30" stroke="#7A5230" stroke-width="1.4"/><circle cx="23" cy="7" r="3" fill="#FFE07A" opacity=".8"/></g>`
+        + `<g transform="translate(70 18)"><rect x="0" y="6" width="8" height="10" fill="#E53935"/><rect x="0" y="3" width="6" height="4" fill="#E53935"/><rect x="6" y="4" width="3" height="2" fill="#FFC21A"/><rect x="1" y="4" width="2" height="1.6" fill="#fff"/><rect x="-2" y="10" width="3" height="6" fill="#2E6BE6"/><rect x="2" y="16" width="3" height="7" fill="#FFC21A"/><path d="M-6 6h24" stroke="#7A5230" stroke-width="1.6"/></g>`
+        + `<path d="M0 58c10-8 22-8 30-2s14-6 24-4M120 60c8-10 22-12 40-6" stroke="#1F9D68" stroke-width="5" fill="none" stroke-linecap="round"/>`
+        + `<g fill="#FFE680">${[[20, 40], [48, 30], [96, 46], [104, 22], [140, 48]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r=".9"/>`).join("")}</g>`,
+      done: () => gameAll("de-dschungel") },
+    { id: "bg_tundra", n: "Polar-Iglu", ic: "🐻‍❄️", wand: ["#0B1D3A", "#2C4A86"], boden: ["#E8F1FA", "#D3E3F2", "#B9CFE6"], reqTxt: "Tundra-Game: alle drei Level spielen",
+      svg: `<path d="M0 14c30-10 60 6 90-2s50-8 70-2" stroke="#3CFF7A" stroke-width="4" fill="none" opacity=".55"/><path d="M0 22c34-8 64 6 96-2s46-6 64 0" stroke="#00E5FF" stroke-width="3" fill="none" opacity=".45"/><path d="M10 6c30-6 60 4 90-2" stroke="#B79CFF" stroke-width="2" fill="none" opacity=".5"/>`
+        + `<g fill="#fff">${[[8, 30], [24, 8], [44, 34], [70, 6], [112, 30], [134, 10], [150, 34], [86, 38]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r=".8"/>`).join("")}</g>`
+        + `<path d="M0 60l18-14 14 8 22-18 20 16 18-10 22 12 18-8 28 14z" fill="#DDEBF7"/><path d="M54 36l-6 8 6-2 4 4 2-6z" fill="#fff"/>`
+        + `<g transform="translate(106 38)"><path d="M0 22a16 16 0 0 1 32 0z" fill="#F4F9FF" stroke="#B9CFE6" stroke-width="1"/><path d="M4 16h24M2 20h28M10 8l2 6M20 8l-2 6M16 6v8" stroke="#B9CFE6" stroke-width=".7"/><path d="M11 22a5 5 0 0 1 10 0z" fill="#2C4A86"/></g>`
+        + `<g transform="translate(24 44)"><rect x="0" y="4" width="14" height="9" rx="3" fill="#fff"/><circle cx="3" cy="4" r="2" fill="#fff"/><circle cx="11" cy="4" r="2" fill="#fff"/><circle cx="5" cy="8" r=".9" fill="#14062E"/><circle cx="9" cy="8" r=".9" fill="#14062E"/><rect x="6" y="10" width="2" height="1" fill="#14062E"/></g>`,
+      done: () => gameAll("de-tundra") },
+    { id: "bg_lava", n: "Vulkan-Labor", ic: "🌋", wand: ["#2A0A12", "#6E1A12"], boden: ["#3A2A26", "#2A1C18", "#1C1210"], reqTxt: "Lava-Game spielen",
+      svg: `<circle cx="80" cy="22" r="22" fill="#FF6A00" opacity=".18"/><path d="M36 60L68 22h24l32 38z" fill="#5A2A1E" stroke="#8A3A1A" stroke-width="1.2"/><path d="M50 60l22-26h4l-8 26zM110 60L90 34h-4l10 26z" fill="#3A1A12"/>`
+        + `<path d="M68 22h24l-4 5H72z" fill="#FFC21A"/><path d="M73 26c-3 8 2 12-2 20s3 9 1 14" stroke="#FF6A00" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M86 26c3 7-2 12 2 18" stroke="#FF8A1F" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+        + `<circle cx="72" cy="12" r="2.4" fill="#FFC21A"/><circle cx="84" cy="8" r="2" fill="#FF6A00"/><circle cx="92" cy="14" r="1.6" fill="#FFC21A"/><circle cx="78" cy="4" r="1.4" fill="#FF8A1F"/>`
+        + `<g transform="translate(16 18)"><rect x="0" y="0" width="22" height="26" rx="2" fill="#1C0A0E" stroke="#8A3A1A" stroke-width="1.6"/><path d="M4 20l4-8 4 5 3-6 4 9" stroke="#FFC21A" stroke-width="1.2" fill="none"/><text x="11" y="7" font-size="4" font-weight="800" text-anchor="middle" fill="#FF8A1F" font-family="sans-serif">°C</text></g>`
+        + `<g transform="translate(130 22)"><path d="M6 0l6 8-6 14-6-14z" fill="#9EE3FF"/><path d="M6 0v22M0 8h12" stroke="#fff" stroke-width=".7" opacity=".8"/><circle cx="6" cy="10" r="10" fill="#9EE3FF" opacity=".15"/></g>`
+        + `<path d="M0 56c20-4 30 2 44 0M116 58c14-4 28 0 44-2" stroke="#FF6A00" stroke-width="2" fill="none"/>`,
+      done: () => gameAll("de-lava") }
   ];
-  const builtinExtras = () => { const lp = isLP(); return { bgs: BUILTIN_BGS.map(({ done, ...b }) => Object.assign({ badge: "hb:" + b.id }, b)), earned: BUILTIN_BGS.filter(b => lp || b.done()).map(b => "hb:" + b.id) }; };
+  /* ---------- Belohnungen der Abenteuer-Games (Deutsch · Gespräche führen): Diplome, Emote, Skin ----------
+     Sterne pro Level = Tankstand / 10 (höchstens 10). Diplome: Level mit 6+ Sternen, Meister = alle Level voll. */
+  const GAME_REW = [
+    { mod: "de-wueste", emoji: "🏜️", skin: { n: "Sandsturm", base: "#E0A84A" },
+      dips: [{ id: "quelle", n: "Quellen-Finder", emoji: "💧", wand: "medaille", lv: 1, min: 6 }, { id: "karawane", n: "Karawanen-Führer", emoji: "🐪", wand: "wimpel", lv: 2, min: 6 },
+        { id: "fata", n: "Fata-Morgana-Entlarver", emoji: "🏝️", wand: "schild", lv: 3, min: 6 }, { id: "meister", n: "Wüsten-Meister", emoji: "🏜️", wand: "pokal", all: 10 }] },
+    { mod: "de-dschungel", emoji: "🌴", skin: { n: "Dschungel", base: "#2FA866" }, emote: { n: "Lianen-Schwung", d: "gLiTCh schwingt sich wie ein Affe an einer Liane durchs Bild. Uh-uh-ah-ah!", ic: "🐒", text: "Uh-uh-ah-ah!", anim: "wackeln", farben: ["#2FA866", "#FFC21A"] },
+      dips: [{ id: "frucht", n: "Heilfrucht-Sammler", emoji: "🍈", wand: "holz", lv: 1, min: 6 }, { id: "fluss", n: "Krokodil-Überquerer", emoji: "🐊", wand: "wimpel", lv: 2, min: 6 },
+        { id: "tempel", n: "Tempel-Entdecker", emoji: "🛕", wand: "rolle", lv: 3, min: 6 }, { id: "meister", n: "Dschungel-Meister", emoji: "🌴", wand: "pokal", all: 10 }] },
+    { mod: "de-tundra", emoji: "❄️", skin: { n: "Eiszapfen", base: "#7FC8F8" }, emote: { n: "Schneegestöber", d: "Ein Schneesturm wirbelt los und gLiTCh bibbert: Brrr!", ic: "❄️", text: "Brrr!", anim: "regen", farben: ["#9FD8FF", "#FFFFFF"] },
+      dips: [{ id: "nacht", n: "Polarnacht-Profi", emoji: "🌙", wand: "rahmen", lv: 1, min: 6 }, { id: "sturm", n: "Schneesturm-Bezwinger", emoji: "🌨️", wand: "schild", lv: 2, min: 6 },
+        { id: "nordlicht", n: "Nordlicht-Debattierer", emoji: "🌌", wand: "stern", lv: 3, min: 6 }, { id: "meister", n: "Tundra-Meister", emoji: "🐻‍❄️", wand: "pokal", all: 10 }] },
+    { mod: "de-lava", emoji: "🌋", skin: { n: "Vulkanglut", base: "#E2471B" }, emote: { n: "Vulkanausbruch", d: "Der Vulkan bricht aus und gLiTCh jubelt mitten im Funkenregen. BOOM!", ic: "🌋", text: "BOOM!", anim: "jubeln", farben: ["#FF6A00", "#FFC21A"] },
+      dips: [{ id: "forscher", n: "Vulkan-Forscher", emoji: "🌋", wand: "medaille", lv: 1, min: 4 }, { id: "baendiger", n: "Lava-Bändiger", emoji: "🔥", wand: "schild", lv: 1, min: 7 },
+        { id: "held", n: "Eiskristall-Held", emoji: "💎", wand: "pokal", lv: 1, min: 10 }] }
+  ];
+  const gameMod = id => H.modules.find(x => x.id === id);
+  const rawSt = (m, x) => { const st = progOf(m.id, x.id)?.stars || 0; return lpStat(m) === "fertig" ? fullAct(x, st) : st; };
+  const gameAll = id => { const m = gameMod(id); return !!m && m.activities.every(x => rawSt(m, x) > 0); };
+  const gameLv = (m, n) => { const x = m.activities[n - 1]; return x ? rawSt(m, x) : 0; };
+  const gameSum = m => m.activities.reduce((a, x) => a + rawSt(m, x), 0), gameMax = m => m.activities.reduce((a, x) => a + (x.maxStars || 0), 0);
+  const dipOk = (m, d) => d.all ? m.activities.every(x => rawSt(m, x) >= d.all) : gameLv(m, d.lv) >= d.min;
+  const dipTxt = (m, d) => d.all ? `«${m.title}»: in allen Levels den Tank ganz füllen`
+    : `«${m.title}»: ${m.activities.length > 1 ? `in Level ${d.lv} ` : ""}${d.min} Sterne holen (Tank ${d.min >= 10 ? "ganz" : `zu ${d.min * 10} %`} voll)`;
+  const gameExtras = lp => {
+    const out = { dips: [], mods: [], emotes: [], skins: [] }, earned = [];
+    GAME_REW.forEach(g => {
+      const m = gameMod(g.mod); if (!m) return;
+      const art = (H.modArt || {})[m.id] || {}, c = art.c || "#8B5CFF", key = m.id.slice(3);
+      out.mods.push({ id: m.id, n: m.title, c, emoji: g.emoji });
+      g.dips.forEach(d => { const id = `hd:${key}:${d.id}`; if (lp || dipOk(m, d)) earned.push(id); out.dips.push({ id, n: d.n, d: dipTxt(m, d), emoji: d.emoji, wand: d.wand, mod: m.title, modId: m.id, c }); });
+      if (g.emote) { const id = "he_" + key, badge = "hb:" + id, half = Math.ceil((m.activities[0].maxStars || 10) / 2);
+        if (lp || gameLv(m, 1) >= half) earned.push(badge);
+        out.emotes.push(Object.assign({ id, badge, mod: m.title, d: `Aus dem «${m.title}».`, reqTxt: `«${m.title}»: ${m.activities.length > 1 ? "in Level 1 " : ""}${half} Sterne holen` }, g.emote)); }
+      if (g.skin) { const id = "hs_" + key, badge = "hb:" + id, sh = window.GLGlitch ? GLGlitch.shades(g.skin.base) : {};
+        if (lp || gameSum(m) >= Math.ceil(gameMax(m) * .9)) earned.push(badge);
+        out.skins.push({ id, badge, mod: m.title, n: g.skin.n, base: g.skin.base, light: sh.light, dark: sh.dark, hi: sh.hi, reqTxt: `${m.title}: 90 % der Sterne` }); }
+    });
+    return { custom: out, earned };
+  };
+  if (window.GLGlitch && GLGlitch.addSkins) GLGlitch.addSkins(GAME_REW.map(g => ({ id: "hs_" + g.mod.slice(3), n: g.skin.n, base: g.skin.base })));
+  const builtinExtras = () => { const lp = isLP(), ge = gameExtras(lp);
+    return { bgs: BUILTIN_BGS.map(({ done, ...b }) => Object.assign({ badge: "hb:" + b.id }, b)), earned: BUILTIN_BGS.filter(b => lp || b.done()).map(b => "hb:" + b.id).concat(ge.earned), custom: ge.custom }; };
 
   /* ---------- gLiTCh streicheln: mit Finger oder Maus hin und her über gLiTCh fahren ---------- */
   const PET_LINES = ["Hihi! Das kitzelt!", "Mehr! Mein Code schnurrt!", "Oh, so lieb!", "Bzzzt … das tut gut!", "Pixel-Kuschelzeit!"];
@@ -590,6 +655,7 @@
       /* Extras aus hochgeladenen Modulen: freigeschaltete kommen als «up:…»-Merker dazu */
       const up = H.uploadExtras(m => modStars(m), m => upBadges(m.id), isLP(), () => levelOf(allStars()) + 1);
       const bi = builtinExtras(); up.custom.bgs = bi.bgs.concat(up.custom.bgs || []);
+      ["dips", "mods", "emotes", "skins"].forEach(k => { up.custom[k] = (bi.custom[k] || []).concat(up.custom[k] || []); });
       mods.hub.badges = [...new Set([...mods.hub.badges, ...up.earned, ...bi.earned])];
       if (isLP()) {   // Lehrpersonen-Konto: höchstes Level, alle Diplome, alles freigeschaltet
         mods.hub.stars = GD.LEVELS[99].s + 1;

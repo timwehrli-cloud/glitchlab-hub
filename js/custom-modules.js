@@ -22,6 +22,7 @@
     { key: "wueste", n: "Wüste", c: "#F2C14E", c2: "#B5651D" },
     { key: "dschungel", n: "Dschungel", c: "#2BB57A", c2: "#0B3D24" },
     { key: "tundra", n: "Tundra", c: "#5B8CFF", c2: "#0B1D3A" },
+    { key: "lava", n: "Lava", c: "#FF6A00", c2: "#2A0A12" },
     { key: "prompt", n: "Bausteine", c: "#7B4CEF", c2: "#2A1466" },
     { key: "fakenews", n: "Zeitung & Lupe", c: "#DD4646", c2: "#5A1414" },
     { key: "kibilder", n: "Bild: echt oder KI?", c: "#00B3C7", c2: "#0B3E5A" },

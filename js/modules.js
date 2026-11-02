@@ -192,6 +192,22 @@
       { id: "level3", title: "Level 3 · Die Fata Morgana", maxStars: 10 }
     ]
   });
+  /* Weitere Abenteuer-Games im gleichen Aufbau (games/<name>): Sterne = Tankstand / 10 pro Level */
+  [
+    { key: "dschungel", title: "Dschungel-Game", minutes: 90, frameBg: "#F7FBEF",
+      teaser: "Heilfrüchte suchen, den Krokodil-Fluss überqueren und euch im Gespräch einigen: Rettet die kranke Stadt!",
+      levels: ["Die Heilfrüchte", "Der Fluss der Krokodile", "Der Tempel der Goldfrucht"] },
+    { key: "tundra", title: "Tundra-Game", minutes: 90, frameBg: "#FBFDFF",
+      teaser: "Polarnacht, Schneesturm, Nordlicht: Argumente sammeln, diskutieren und gemeinsam eine Lösung finden.",
+      levels: ["Die Polarnacht", "Der Schneesturm", "Das Nordlicht"] },
+    { key: "lava", title: "Lava-Game", minutes: 30, frameBg: "#FFFAF6",
+      teaser: "Heimtraining allein gegen die Uhr: Überzeuge Lavageist Magmar und hol den Eiskristall aus dem Krater. Sehr schwer!",
+      levels: ["Der Vulkan Ignis"] }
+  ].forEach(g => H.registerModule({
+    id: "de-" + g.key, subject: "de", theme: "de-gespraech", kind: "frame", src: `games/${g.key}/index.html`, work: g.key,
+    title: g.title, minutes: g.minutes, frameBg: g.frameBg, noBuddy: true, teaser: g.teaser,
+    activities: g.levels.map((n, k) => ({ id: "level" + (k + 1), title: g.levels.length > 1 ? `Level ${k + 1} · ${n}` : n, maxStars: 10 }))
+  }));
   /* ---------------------------------------------------------------
      NMG · Entdeckungsreise Schweiz: die 8 Module aus dem gLiTCh-Lab «NMG Schweiz»
      (Daten in js/glitch-data.js, Bilder dort unter LABART)

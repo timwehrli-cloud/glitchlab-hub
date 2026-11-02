@@ -1,0 +1,1527 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lava-Game</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=VT323&display=swap">
+<style>
+/* Layout: Seitenleiste mit Menü und senkrechtem Kühlungs-Tank, rechts eine Spielkarte pro Schritt; Maskottchen Magmar fix oben rechts */
+:root{
+  --bg:#f3e2d6; --bg2:#ead0bf; --surface:#fffaf6; --ink:#2a1a14; --muted:#6e5448; --line:#e0c3b0;
+  --accent:#c2410c; --accent-ink:#ffffff; --sun:#e2541c; --e1:#c2410c; --e2:#b4235a; --e3:#7a3fc9; --e4:#1f7fae;
+  --good:#2f8a3d; --warn:#b5651d; --chip:#f8e9df; --shadow:0 2px 0 #c9a690;
+  --ill-sky:#f7c9a8; --ill-sand:#5a3b33; --ill-sand2:#3f2823; --ill-rock:#4a3530; --ill-rock2:#2c1d19; --ill-sun:#ffb340; --ill-water:#6fd0f5; --ill-dark:#1a0d0b; --ill-ink:#2a1a14; --ill-snake:#5a7a4a;
+  --display:"Bungee","Arial Black",system-ui,sans-serif; --body:"Atkinson Hyperlegible",system-ui,-apple-system,sans-serif; --hud:"VT323",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1a0d0b; --bg2:#24120f; --surface:#2a1713; --ink:#f6e6dc; --muted:#c4a597; --line:#4a2c24;
+  --accent:#ff7a3a; --accent-ink:#10202a; --sun:#ff8a3c; --e1:#ff7a3a; --e2:#ff6b9a; --e3:#b28cff; --e4:#6fd0f5;
+  --good:#6fd17c; --warn:#f0b060; --chip:#3a1f19; --shadow:0 2px 0 #0a0403; color-scheme:dark;
+  --ill-sky:#3a1a14; --ill-sand:#4a302a; --ill-sand2:#2e1c18; --ill-rock:#3e2c27; --ill-rock2:#22150f; --ill-sun:#ffb340; --ill-water:#6fd0f5; --ill-dark:#0a0403; --ill-ink:#f6e6dc; --ill-snake:#8fcf55}}
+:root[data-theme="dark"]{
+  --bg:#1a0d0b; --bg2:#24120f; --surface:#2a1713; --ink:#f6e6dc; --muted:#c4a597; --line:#4a2c24;
+  --accent:#ff7a3a; --accent-ink:#10202a; --sun:#ff8a3c; --e1:#ff7a3a; --e2:#ff6b9a; --e3:#b28cff; --e4:#6fd0f5;
+  --good:#6fd17c; --warn:#f0b060; --chip:#3a1f19; --shadow:0 2px 0 #0a0403; color-scheme:dark;
+  --ill-sky:#3a1a14; --ill-sand:#4a302a; --ill-sand2:#2e1c18; --ill-rock:#3e2c27; --ill-rock2:#22150f; --ill-sun:#ffb340; --ill-water:#6fd0f5; --ill-dark:#0a0403; --ill-ink:#f6e6dc; --ill-snake:#8fcf55}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  background-image:radial-gradient(ellipse 120% 40% at 50% 105%,var(--bg2),transparent 70%);background-attachment:fixed}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.app{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;align-self:start;height:100vh;height:100dvh;overflow-y:auto;background:var(--surface);border-right:2.5px solid var(--ink);padding-block:16px calc(14px + env(safe-area-inset-bottom,0px));padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:14px;display:flex;flex-direction:column;gap:12px;z-index:35}
+.mainwrap{min-width:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 110px}
+.mainwrap main{max-width:860px;margin:0 auto}
+.sgrp{display:flex;flex-direction:column;gap:1px;border:2px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg);font-size:14px;color:var(--muted)}
+.sgrp b{font-size:16px;color:var(--ink)}.sgrp-lv{font-family:var(--hud);font-size:17px;color:var(--sun)}
+.side-body{display:grid;grid-template-columns:56px minmax(0,1fr);gap:8px;flex:none}
+.side-tank{display:flex}
+.side-foot{display:flex;flex-direction:column;gap:8px;border-top:2px solid var(--line);padding-top:10px}
+.side-foot .footbtns button{border:0;background:none;color:var(--muted);font-family:var(--hud);font-size:18px;text-decoration:underline;padding:0}
+.side-src{font-family:var(--hud);font-size:15px;color:var(--muted)}
+.menu{display:flex;flex-direction:column;gap:2px}
+.menu-et{margin-bottom:6px}
+.menu-et h4{font-family:var(--hud);font-size:16px;font-weight:400;color:var(--c);margin:0 0 2px;letter-spacing:.03em;text-transform:uppercase;line-height:1.1}
+.menu-item{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:none;padding:4px 8px;border-radius:8px;font-size:15px;color:var(--ink);min-height:32px}
+.menu-item .dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;flex:none;color:var(--muted);background:var(--surface)}
+.menu-item.done .dot{background:var(--good);border-color:var(--good);color:#fff}
+.menu-item.now{background:var(--c);color:var(--accent-ink);font-weight:700;box-shadow:var(--shadow)}
+.menu-item.now .dot{border-color:var(--accent-ink);background:transparent;color:var(--accent-ink)}
+.menu-item.locked{color:var(--muted);opacity:.6;cursor:not-allowed}
+.menu-item.open .dot{border-color:var(--c);border-style:dashed}
+.menu-item.done:hover{background:color-mix(in srgb,var(--c) 14%,transparent)}
+.menu-item.gate{font-size:13px;color:var(--muted)}.menu-item.gate.now{color:var(--accent-ink)}
+.menubtn{display:none;align-items:center;gap:6px;border:2px solid var(--ink);background:var(--surface);border-radius:10px;padding:6px 12px;font-weight:700;box-shadow:var(--shadow)}
+.hud-title{display:flex;flex-direction:column;line-height:1.1}
+.hud-et{font-family:var(--hud);font-size:19px;color:var(--c)}
+.hud-name{font-family:var(--display);font-size:clamp(20px,3vw,28px)}
+.hud .wtank{display:none}
+.scrim{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 45%,transparent);z-index:34}
+@media (max-width:900px){
+ .app{display:block}
+ .side{position:fixed;top:0;bottom:0;left:0;height:auto;width:min(300px,86vw);transform:translateX(-105%);transition:transform .25s ease;box-shadow:6px 0 24px rgba(0,0,0,.25)}
+ .side.open{transform:none}
+ .menubtn{display:inline-flex}
+ .hud .wtank{display:flex;flex-basis:100%;max-width:none;order:3}
+}
+
+/* HUD */
+.hud{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding-right:100px;min-height:84px;max-width:860px;margin:0 auto}
+.logo{font-family:var(--display);font-size:clamp(20px,4vw,28px);letter-spacing:.02em;line-height:1;color:var(--ink)}
+.logo small{display:block;font-family:var(--hud);font-size:18px;color:var(--muted);letter-spacing:.04em}
+.tank{display:flex;align-items:center;gap:8px;font-family:var(--hud);font-size:20px}
+.tank-bar{width:150px;height:18px;border:2px solid var(--ink);border-radius:4px;overflow:hidden;background:var(--surface);position:relative}
+.tank-fill{height:100%;background:repeating-linear-gradient(90deg,var(--accent) 0 10px,color-mix(in srgb,var(--accent) 80%,#fff) 10px 12px);transition:width .8s ease}
+.etappen{display:flex;gap:6px}
+.et{font-family:var(--hud);font-size:18px;padding:0 8px;border:2px solid var(--line);border-radius:4px;color:var(--muted);background:var(--surface)}
+.et.on{border-color:var(--ec);color:var(--ink);background:color-mix(in srgb,var(--ec) 18%,var(--surface))}
+.et.done{border-color:var(--ec);background:var(--ec);color:var(--accent-ink)}
+.grp{font-family:var(--hud);font-size:20px;color:var(--muted)}
+
+/* Fenni */
+.fenni{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:20;width:80px;height:80px;border:0;background:none;padding:0}
+.fenni svg{width:80px;height:80px;image-rendering:pixelated;animation:bob 2.4s ease-in-out infinite;transform-origin:50% 100%}
+.fenni.happy svg{animation:hop .5s ease 2}
+.fenni.dig svg{animation:dig 1.6s ease forwards}
+@keyframes bob{50%{transform:translateY(-3px)}}
+@keyframes hop{50%{transform:translateY(-12px) rotate(-6deg)}}
+@keyframes dig{40%{transform:translateY(60px) scaleY(.4);opacity:0}60%{transform:translateY(60px);opacity:0}100%{transform:none;opacity:1}}
+.bubble{position:fixed;top:calc(100px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:20;max-width:min(300px,calc(100vw - 32px));background:var(--surface);border:2px solid var(--ink);border-radius:10px;padding:10px 12px;font-size:15px;box-shadow:var(--shadow)}
+.bubble::before{content:"";position:absolute;top:-9px;right:30px;width:14px;height:14px;background:var(--surface);border-left:2px solid var(--ink);border-top:2px solid var(--ink);transform:rotate(45deg)}
+.bubble b{font-family:var(--hud);font-size:19px;font-weight:400;color:var(--sun)}
+.heart{position:fixed;z-index:21;pointer-events:none;font-family:var(--hud);font-size:26px;color:var(--e4);animation:up 1.2s ease-out forwards}
+@keyframes up{to{transform:translateY(-60px);opacity:0}}
+
+/* Card */
+.card{background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:clamp(18px,4vw,32px);box-shadow:4px 4px 0 var(--ec,var(--ink));margin-top:14px}
+.eyebrow{font-family:var(--hud);font-size:20px;color:var(--ec,var(--sun));letter-spacing:.04em;text-transform:uppercase}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,5vw,40px);line-height:1.1;margin:4px 0 12px}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(20px,3.6vw,26px);line-height:1.15;margin:4px 0 10px}
+h3{font-size:19px;margin:0 0 6px}
+p{margin:0 0 12px;max-width:65ch}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.box{border:2px dashed var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.box.solid{border-style:solid}
+.task{display:inline-block;font-family:var(--hud);font-size:18px;background:var(--chip);border-radius:4px;padding:0 8px;color:var(--muted)}
+
+.btn{border:2px solid var(--ink);background:var(--surface);border-radius:10px;padding:10px 18px;font-weight:700;box-shadow:var(--shadow);min-height:48px}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.primary{background:var(--ec,var(--accent));color:var(--accent-ink);border-color:var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.btn.small{min-height:38px;padding:6px 12px;font-size:15px}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap}
+.hint{font-size:15px;color:var(--muted)}
+
+input[type=text],input[type=password],textarea,select{width:100%;border:2px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px;min-height:46px}
+textarea{min-height:96px;resize:vertical}
+label{font-weight:700;display:block;margin-bottom:4px}
+
+/* briefing */
+.briefing{font-family:var(--hud);font-size:23px;line-height:1.3;background:var(--ink);color:var(--surface);border-radius:10px;padding:16px 18px;position:relative;overflow:hidden}
+.briefing p{max-width:none;margin:0 0 8px}
+.briefing .sp{color:var(--sun)}
+
+/* options */
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;border:2px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 14px;min-height:48px}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 16%,var(--surface))}
+.opt.wrong{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,var(--surface));text-decoration:line-through;opacity:.8}
+.fb{font-size:15px;margin-top:6px}
+.fb.ok{color:var(--good)} .fb.no{color:var(--warn)}
+
+/* flip cards */
+.flip{perspective:800px;border:0;background:none;padding:0;min-height:130px;text-align:left}
+.flip-in{position:relative;width:100%;height:100%;min-height:130px;transition:transform .5s;transform-style:preserve-3d}
+.flip.open .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border:2px solid var(--ink);border-radius:10px;padding:12px;display:flex;flex-direction:column;justify-content:center;background:var(--chip)}
+.face.back{transform:rotateY(180deg);background:var(--surface);font-size:15px}
+.face .w{font-family:var(--display);font-size:18px;line-height:1.15}
+.face .art{font-family:var(--hud);font-size:18px;color:var(--muted)}
+.flip,.flip-in{min-height:236px}
+.face .ill{aspect-ratio:12/7;height:auto;max-height:none}
+.face{justify-content:flex-start;gap:4px}
+.face.back{justify-content:center}
+.ill{width:100%;height:auto;max-height:96px;display:block;border-radius:6px;background:var(--ill-sky);margin-bottom:4px}
+.ill *{transform-box:fill-box;transform-origin:center}
+.ill .sand{fill:var(--ill-sand)} .ill .sand2{fill:var(--ill-sand2)} .ill .rock{fill:var(--ill-rock)} .ill .rock2{fill:var(--ill-rock2)}
+.ill .sun{fill:var(--ill-sun)} .ill .water{fill:var(--ill-water)} .ill .dark{fill:var(--ill-dark)} .ill .ink{fill:var(--ill-ink)}
+.ill .snake{fill:none;stroke:var(--ill-snake);stroke-width:5;stroke-linecap:round}
+.ill .wind{fill:none;stroke:var(--ill-sand2);stroke-width:3;stroke-linecap:round;stroke-dasharray:18 12}
+.ill .path{fill:none;stroke:var(--ill-ink);stroke-width:2;stroke-dasharray:3 4}
+.a-pulse{animation:pulse 2.6s ease-in-out infinite}
+.a-shim{animation:shim 1.8s ease-in-out infinite}
+.a-wind{animation:wind 1.2s linear infinite}
+.a-wind.s2{animation-duration:.9s}
+.a-drift{animation:drift 2.4s ease-in-out infinite}
+.a-drop{animation:drop 1.4s ease-in infinite}
+.a-drop.d2{animation-delay:.45s}.a-drop.d3{animation-delay:.9s}
+.a-ripple{animation:ripple 1.8s ease-out infinite}
+.a-walk{animation:walk 5s linear infinite}
+.a-blink{animation:blink 3.2s step-end infinite}
+.a-slither{animation:slither 1.4s linear infinite}
+.a-tongue{animation:tongue 1.1s steps(2) infinite}
+.a-sway{animation:sway 2.8s ease-in-out infinite}
+.a-flag{animation:flag 1s ease-in-out infinite;transform-origin:0 50%}
+.a-bob{animation:bob 1.6s ease-in-out infinite}
+.a-roll{animation:roll 3.5s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.15)}}
+@keyframes shim{50%{transform:translateY(-3px);opacity:.4}}
+@keyframes wind{to{stroke-dashoffset:-60}}
+@keyframes drift{50%{transform:translateX(8px)}}
+@keyframes drop{0%{transform:translateY(-6px);opacity:0}20%{opacity:1}100%{transform:translateY(16px);opacity:0}}
+@keyframes ripple{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.6);opacity:0}}
+@keyframes walk{0%{transform:translateX(-40px)}100%{transform:translateX(40px)}}
+@keyframes blink{0%,88%{transform:scaleY(1)}90%,96%{transform:scaleY(.1)}}
+@keyframes slither{to{stroke-dashoffset:-40}}
+@keyframes tongue{50%{transform:scaleX(0)}}
+@keyframes sway{50%{transform:rotate(-8deg)}}
+@keyframes flag{50%{transform:skewY(10deg) scaleX(.85)}}
+@keyframes roll{0%,100%{transform:translateX(0) rotate(0)}50%{transform:translateX(14px) rotate(180deg)}}
+.pcard{display:flex;flex-direction:column;gap:6px;cursor:pointer}
+.pcard .ill{max-height:none;aspect-ratio:12/7;height:auto;margin:0}
+.pcard .more{font-family:var(--hud);font-size:17px;font-weight:400;color:#6b5636}
+.pop-ill{max-height:170px;margin-bottom:10px}
+.pc{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+.pc .box h3{display:flex;gap:8px;align-items:center}
+.pc .plus{border-color:var(--good)} .pc .minus{border-color:var(--warn)}
+.pc .plus h3{color:var(--good)} .pc .minus h3{color:var(--warn)}
+.a-spin{animation:spin 8s linear infinite}
+.a-flap{animation:flap .5s ease-in-out infinite}
+.a-fly{animation:fly 3s ease-in-out infinite}
+.a-lift{animation:lift 1.6s ease-in-out infinite}
+.a-needle{animation:needle 2.2s ease-in-out infinite;transform-origin:50% 50%}
+.a-glow{animation:glow 1.8s ease-in-out infinite}
+.a-talk{animation:talk 2.4s step-end infinite}
+.a-talk.t2{animation-delay:1.2s}
+.a-dash{animation:dashx .5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes flap{50%{transform:scaleY(.3)}}
+@keyframes fly{50%{transform:translate(14px,-6px)}}
+@keyframes lift{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes needle{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(18deg)}}
+@keyframes glow{50%{opacity:.25}}
+@keyframes talk{0%{opacity:1}50%{opacity:0}}
+@keyframes dashx{to{transform:translateX(-14px);opacity:0}}
+.connect{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 clamp(36px,8vw,90px);margin-top:8px}
+.clines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:2}
+.ccol{display:flex;flex-direction:column;gap:8px;justify-content:space-around;min-width:0}
+.cob{border:2px solid var(--ink);background:var(--chip);border-radius:10px;padding:8px;text-align:left;font-weight:700;font-size:15px;display:flex;flex-direction:column;gap:4px}
+.cob .ill{max-height:64px;margin:0}
+.cpw{display:flex;align-items:center;gap:8px;border:2px solid #8b7a5c;background:linear-gradient(#e9dcbf,#d8c6a0);color:#3a2c18;border-radius:6px;padding:4px 8px;text-align:left;font-weight:700;font-size:14px;line-height:1.2;min-height:44px}
+.cpw .ill{width:48px;height:28px;flex:none;margin:0;border-radius:4px}
+.cob.sel{outline:4px solid var(--ec);outline-offset:2px;animation:pulse 1.2s ease-in-out infinite}
+.cob.linked,.cpw.linked{border-color:var(--ink);box-shadow:0 0 0 2px var(--ec)}
+.cl{fill:none;stroke-width:4;stroke-linecap:round;stroke-dasharray:600;stroke-dashoffset:0;animation:drawl .7s ease-out}
+.cl.ok{stroke:var(--good)} .cl.no{stroke:var(--warn)}
+.cd.ok{fill:var(--good)} .cd.no{fill:var(--warn)}
+.still .cl{animation:none}
+@keyframes drawl{from{stroke-dashoffset:600}}
+@media (max-width:520px){.cpw .ill{display:none}.cob .ill{max-height:48px}}
+.lab-ic{display:flex;align-items:center;gap:10px}.lab-ic .ill{width:60px;height:35px;flex:none;margin:0;border-radius:4px}
+.power.pcard.sel .ill{outline:2px solid var(--ec)}
+/* Superkraft-Animationen */
+.k-pop,.k-pling{transform-origin:center;transform-box:fill-box}
+.k-pop{animation:kpop 2.6s ease-out infinite}
+@keyframes kpop{0%,40%{transform:scale(0) rotate(-8deg);opacity:0}52%{transform:scale(1.35) rotate(-8deg);opacity:1}60%,88%{transform:scale(1) rotate(-8deg);opacity:1}100%{transform:scale(1.1) rotate(-8deg);opacity:0}}
+.k-twinkle{animation:ktw 1.6s ease-in-out infinite}
+@keyframes ktw{0%,100%{transform:scale(.2) rotate(0);opacity:0}50%{transform:scale(1.2) rotate(45deg);opacity:1}}
+.k-cape{animation:kcape .8s ease-in-out infinite;transform-origin:30% 0%}
+.k-flutter{animation:kflut .25s ease-in-out infinite;transform-origin:30% 0%}
+@keyframes kcape{50%{transform:skewX(-10deg)}}
+@keyframes kflut{50%{transform:skewX(-22deg) scaleY(.85)}}
+.k-scent{animation:kscent 1s linear infinite}
+@keyframes kscent{to{stroke-dashoffset:24}}
+.k-throb{animation:kthrob 1s ease-in-out infinite}
+@keyframes kthrob{50%{transform:scale(1.15)}}
+.k-sniff{animation:ksniff 1s ease-in-out infinite}
+@keyframes ksniff{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-2px) rotate(8deg)}50%{transform:translateY(0) rotate(0)}75%{transform:translateY(-2px) rotate(8deg)}}
+.k-scroll{animation:kscroll 4s linear infinite}
+.k-scroll-slow{animation:kscroll 7s linear infinite}
+.k-scroll-fast{animation:kscroll 1.1s linear infinite}
+@keyframes kscroll{to{transform:translateX(-120px)}}
+.k-speed{animation:kspeed .6s linear infinite}
+.k-speed-fast{animation:kspeed .3s linear infinite}
+@keyframes kspeed{0%{transform:translateX(10px);opacity:1}100%{transform:translateX(-14px);opacity:0}}
+.k-hover{animation:khover 1.4s ease-in-out infinite}
+@keyframes khover{50%{transform:translateX(-5px)}}
+.k-flapbird{animation:kflap .35s ease-in-out infinite}
+@keyframes kflap{50%{transform:scaleY(-.6)}}
+.k-bounce{animation:kbounce 1.2s ease-in-out infinite}
+@keyframes kbounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}55%{transform:translateY(0) scaleY(.92)}}
+.k-nod{animation:knod 1.4s ease-in-out infinite;transform-origin:20% 80%}
+@keyframes knod{50%{transform:rotate(-5deg)}}
+.k-talk1{animation:ktalk1 3s ease-out infinite}
+.k-talk2{animation:ktalk2 3s ease-out infinite}
+@keyframes ktalk1{0%{transform:scale(0);opacity:0}8%{transform:scale(1.2);opacity:1}14%,42%{transform:scale(1);opacity:1}50%,100%{transform:scale(0);opacity:0}}
+@keyframes ktalk2{0%,50%{transform:scale(0);opacity:0}58%{transform:scale(1.2);opacity:1}64%,92%{transform:scale(1);opacity:1}100%{transform:scale(0);opacity:0}}
+.k-float{animation:kfloat 1.8s ease-out infinite}
+@keyframes kfloat{0%{transform:translateY(0) scale(.5);opacity:0}30%{opacity:1}100%{transform:translateY(-18px) scale(1.2);opacity:0}}
+.k-shake{animation:kshake 1.6s linear infinite}
+@keyframes kshake{0%,45%,60%,100%{transform:translate(0,0)}48%{transform:translate(-2px,1px)}52%{transform:translate(2px,-1px)}56%{transform:translate(-1px,1px)}}
+.k-lift{animation:klift 1.6s cubic-bezier(.5,0,.5,1) infinite}
+@keyframes klift{0%,100%{transform:translateY(0)}30%{transform:translateY(-14px) rotate(-6deg)}46%{transform:translateY(2px) rotate(0)}52%{transform:translateY(0)}}
+.k-puff{animation:kpuff 1.6s ease-out infinite}
+@keyframes kpuff{0%,44%{transform:scale(0);opacity:0}50%{transform:scale(1);opacity:.9}80%,100%{transform:scale(2.2);opacity:0}}
+.k-chip{animation:kchip 1.6s ease-out infinite}.k-chip2{animation:kchip2 1.6s ease-out infinite}
+@keyframes kchip{0%,46%{transform:translate(0,0);opacity:0}50%{opacity:1}80%,100%{transform:translate(-10px,-14px);opacity:0}}
+@keyframes kchip2{0%,46%{transform:translate(0,0);opacity:0}50%{opacity:1}80%,100%{transform:translate(10px,-14px);opacity:0}}
+.k-draw{stroke-dasharray:4 4;animation:kdraw 3s linear infinite}
+@keyframes kdraw{0%{opacity:0;stroke-dashoffset:40}10%{opacity:1}100%{stroke-dashoffset:0}}
+.k-pin{animation:kpin 3s ease-in infinite;transform-origin:50% 100%}
+@keyframes kpin{0%,55%{transform:translateY(-30px);opacity:0}70%{transform:translateY(0) scaleY(.8);opacity:1}78%{transform:translateY(-4px)}85%,100%{transform:translateY(0);opacity:1}}
+.k-compass{animation:kcomp 3s ease-in-out infinite}
+@keyframes kcomp{0%{transform:rotate(0)}40%{transform:rotate(700deg)}55%{transform:rotate(690deg)}65%,100%{transform:rotate(675deg)}}
+.k-sweep{animation:ksweep 3s ease-in-out infinite}
+@keyframes ksweep{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(14deg)}}
+.k-glow2{animation:kglow2 1.2s ease-in-out infinite}
+@keyframes kglow2{50%{transform:scale(1.6);opacity:.15}}
+.k-batfly{animation:kbat 3s ease-in-out infinite}
+@keyframes kbat{0%,100%{transform:translate(0,0)}25%{transform:translate(-12px,6px)}50%{transform:translate(4px,-4px)}75%{transform:translate(10px,6px)}}
+.k-run{animation:krun .3s ease-in-out infinite}
+@keyframes krun{50%{transform:translateY(-3px)}}
+.k-shield{animation:kshield 2.4s ease-out infinite}
+@keyframes kshield{0%,38%{transform:scale(.9);opacity:.15}45%{transform:scale(1.15);opacity:.9}70%,100%{transform:scale(1);opacity:.3}}
+.k-lunge{animation:klunge 2.4s cubic-bezier(.6,0,.4,1) infinite}
+@keyframes klunge{0%,25%{transform:translateX(0)}42%{transform:translateX(-30px)}50%{transform:translateX(-26px) rotate(8deg)}70%,100%{transform:translateX(0) rotate(0)}}
+.k-dizzy{animation:kdizzy 2.4s linear infinite}
+@keyframes kdizzy{0%,48%{opacity:0;transform:rotate(0)}55%{opacity:1}90%{opacity:1;transform:rotate(360deg)}100%{opacity:0;transform:rotate(400deg)}}
+.k-pling{animation:kpling 2.4s ease-out infinite}
+@keyframes kpling{0%,40%{transform:scale(0) rotate(-8deg);opacity:0}46%{transform:scale(1.4) rotate(-8deg);opacity:1}54%,80%{transform:scale(1) rotate(-8deg);opacity:1}92%,100%{opacity:0}}
+.k-spinrays{animation:spin 3s linear infinite}
+.k-ray{animation:kray .5s linear infinite}
+@keyframes kray{to{stroke-dashoffset:12}}
+.k-ice{animation:kice 1.6s ease-in-out infinite}
+@keyframes kice{50%{transform:scale(1.08);opacity:.75}}
+.k-orbit{animation:spin 5s linear infinite}
+.k-slosh{animation:kslosh 1.2s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes kslosh{50%{transform:skewY(4deg)}}
+.pcard:hover .ill,.pcard:focus-visible .ill{filter:saturate(1.3) brightness(1.05)}
+.recbox{border:2px solid var(--e4);border-radius:10px;padding:12px 16px;background:color-mix(in srgb,var(--e4) 10%,var(--surface))}.recbox h3{color:var(--e4)}
+/* Levelwahl */
+.lvgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.lvcard{position:relative;display:flex;flex-direction:column;gap:6px;text-align:left;border:2px solid var(--ink);border-radius:12px;padding:10px;background:var(--surface);box-shadow:4px 4px 0 var(--lc);transition:transform .15s}
+.lvcard:not([disabled]):hover{transform:translateY(-3px)}
+.lvcard.cur{outline:3px solid var(--lc);outline-offset:2px}
+.lvcard .ill{aspect-ratio:12/7;height:auto;max-height:none;margin:0}
+.lvcard.locked{cursor:not-allowed}.lvcard.locked .ill{filter:grayscale(1) brightness(.7)}.lvcard.locked>span:not(.lock){opacity:.6}
+.lvtop{display:flex;justify-content:space-between;align-items:center}
+.lvn{font-family:var(--hud);font-size:20px;color:var(--lc)}
+.lvstars{color:var(--sun);font-size:18px;letter-spacing:2px}
+.lvname{font-family:var(--display);font-size:19px;line-height:1.15}
+.lvteaser{font-size:15px;color:var(--muted)}
+.lvstate{font-weight:700;font-size:15px;color:var(--lc);margin-top:auto;padding-top:8px;border-top:2px dashed var(--line);min-height:52px;display:flex;align-items:center}
+.lvname{min-height:2.3em;display:flex;align-items:flex-end}
+.lvteaser{min-height:2.8em}
+.lock{position:absolute;top:34px;left:50%;transform:translateX(-50%);background:var(--surface);border:2px solid var(--ink);border-radius:50%;width:58px;height:58px;display:grid;place-items:center}
+.footbtns{display:flex;gap:16px}
+/* Level-2/3-Animationen */
+.a-spinslow{animation:spin 3s linear infinite}
+.a-sink{animation:asink 3s ease-in-out infinite}
+@keyframes asink{0%,100%{transform:translateY(-4px)}50%{transform:translateY(10px)}}
+.a-wobble{animation:awob 1.6s ease-in-out infinite}
+@keyframes awob{25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.a-fall{animation:afall 1.5s ease-in infinite}
+@keyframes afall{0%{transform:translateY(-10px) rotate(0);opacity:0}15%{opacity:1}85%{transform:translateY(46px) rotate(200deg);opacity:1}100%{transform:translateY(48px) rotate(220deg);opacity:0}}
+.a-bounce-x{animation:abx 1.2s ease-in-out infinite}
+@keyframes abx{50%{transform:translateX(5px)}}
+.a-flicker{animation:aflick .25s ease-in-out infinite alternate;transform-origin:50% 100%}
+@keyframes aflick{to{transform:scaleY(1.18) scaleX(.9) skewX(4deg)}}
+.a-crawl{animation:acrawl 2.4s ease-in-out infinite}
+@keyframes acrawl{50%{transform:translateX(-10px)}}
+.a-sting{animation:asting 1.2s ease-in-out infinite}
+@keyframes asting{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(-30deg)}80%{transform:rotate(10deg)}}
+.a-runaway{animation:arun 2.8s linear infinite}
+@keyframes arun{0%{transform:translateX(-30px)}100%{transform:translateX(80px)}}
+.a-step{animation:astep 2.4s ease-out infinite;opacity:0}
+@keyframes astep{0%{opacity:0;transform:scale(.4)}10%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0}}
+.a-mirage{animation:amir 3s ease-in-out infinite}
+@keyframes amir{0%,100%{opacity:.15;transform:skewX(-6deg)}50%{opacity:.95;transform:skewX(6deg)}}
+.a-dry{animation:adry 3s ease-in infinite}
+@keyframes adry{0%{transform:scale(1);opacity:1}80%,100%{transform:scale(.1);opacity:0}}
+.k-draw2{animation:kdraw2 4s linear infinite}
+@keyframes kdraw2{0%{stroke-dashoffset:140;opacity:0}5%{opacity:1}100%{stroke-dashoffset:0}}
+.a-walkin{animation:awalkin 3s ease-in-out infinite}
+@keyframes awalkin{0%{transform:translateX(40px)}50%,100%{transform:translateX(0)}}
+.winscene{width:100%;max-width:560px;aspect-ratio:24/11;height:auto;max-height:none;border-radius:12px;border:2px solid var(--ink)}
+.k-river{animation:kriver .8s linear infinite}@keyframes kriver{to{stroke-dashoffset:-16}}
+.k-fountain{animation:kfount .6s ease-in-out infinite alternate;transform-origin:50% 100%}@keyframes kfount{to{transform:scaleY(1.2) scaleX(1.1)}}
+/* Wegweiser, Auftrag, Glossar, NEU */
+.path{display:flex;align-items:center;gap:0;overflow-x:auto;padding:6px 2px 8px;margin-top:4px;scrollbar-width:thin}
+.pstep{flex:none;font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;border:2px solid var(--line);color:var(--muted);background:var(--surface);white-space:nowrap}
+.pstep.done{border-color:var(--good);color:var(--good)}
+.pstep.now{border-color:var(--ink);background:var(--ec);color:var(--accent-ink);box-shadow:var(--shadow)}
+.pstep.gate{padding:4px 6px;display:inline-grid;place-items:center}
+.pline{flex:none;width:12px;height:2px;background:var(--line)}
+.todo{border:2px solid var(--ec);border-radius:12px;background:color-mix(in srgb,var(--ec) 9%,var(--surface));padding:10px 14px 10px;margin:0 0 16px}
+.todo-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.todo-h span:first-child{font-family:var(--hud);font-size:21px;color:var(--ec);letter-spacing:.03em}
+.todo .who{font-size:13px;font-weight:700;background:var(--ec);color:var(--accent-ink);border-radius:999px;padding:2px 10px}
+.todo ol{margin:0;padding-left:22px}.todo li{margin:2px 0}
+.gl{text-decoration:underline;text-decoration-style:dotted;text-decoration-color:var(--sun);text-decoration-thickness:2.5px;text-underline-offset:3px;cursor:help;border-radius:3px}
+.gl:hover,.gl:focus-visible{background:color-mix(in srgb,var(--sun) 22%,transparent)}
+.briefing .gl{text-decoration-color:var(--sun)}
+.glw{display:inline-block;font-weight:700;color:var(--ink);background:color-mix(in srgb,var(--sun) 25%,transparent);border-radius:4px;padding:0 5px;margin-right:2px}
+.bspeak{display:inline-block;margin-top:6px;border:2px solid var(--ink);background:var(--chip);border-radius:8px;padding:2px 8px;font-size:13px;font-weight:700}
+.neu{position:absolute;top:-9px;left:-8px;z-index:1;background:#c43d55;color:#fff;font-family:var(--display);font-size:11px;padding:2px 7px;border-radius:6px;border:2px solid var(--ink);transform:rotate(-6deg);animation:kthrob 1.4s ease-in-out infinite}
+.mute{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:700;color:var(--muted)}
+.mute[aria-pressed="true"]{border-color:var(--ink);color:var(--ink)}
+/* neue Kraft-Animationen */
+.k-swirl{animation:spin 1.4s linear infinite}
+.k-rise{animation:krise 2.4s ease-out infinite;transform-origin:50% 100%}
+@keyframes krise{0%,20%{transform:scaleY(0)}60%,100%{transform:scaleY(1)}}
+.k-grow{animation:kgrow 2.6s cubic-bezier(.5,1.6,.5,1) infinite;transform-origin:50% 100%}
+@keyframes kgrow{0%,15%{transform:scale(.7)}45%,85%{transform:scale(1.7)}100%{transform:scale(.7)}}
+.k-flee{animation:kflee 2s ease-in infinite}
+@keyframes kflee{0%{transform:translateX(-14px)}100%{transform:translateX(30px);opacity:0}}
+.k-phase{animation:kphase 3s ease-in-out infinite}
+@keyframes kphase{0%{transform:translateX(-36px);opacity:1}40%{opacity:1}50%{transform:translateX(0);opacity:.25}60%{opacity:1}100%{transform:translateX(36px);opacity:1}}
+.k-fake{animation:kfake 3s ease-in-out infinite}
+@keyframes kfake{0%,30%{opacity:1}60%,100%{opacity:.08}}
+.k-fakex{animation:kfakex 3s ease-out infinite}
+@keyframes kfakex{0%,35%{transform:scale(0);opacity:0}48%{transform:scale(1.3);opacity:1}60%,90%{transform:scale(1);opacity:1}100%{opacity:0}}
+.k-invis{animation:kinvis 3s ease-in-out infinite}
+@keyframes kinvis{0%,20%,100%{opacity:1}45%,75%{opacity:.06}}
+.spk-wrap{margin-top:20px}
+.spk-person{margin-top:12px}.spk-person h3{margin-bottom:6px}
+.spk-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.spk{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:150px;border:2px solid var(--ink);border-radius:12px;padding:8px;text-align:center;color:#fff8ea;background:repeating-linear-gradient(45deg,#6b4fc9 0 10px,#5b40b0 10px 20px);box-shadow:var(--shadow)}
+.spk .spk-q{font-family:var(--display);font-size:44px;line-height:1;color:#f6b434}
+.spk .spk-pl{font-family:var(--hud);font-size:18px}
+.spk .spk-hint{font-size:12px;opacity:.85}
+.spk.open{background:var(--surface);color:var(--ink);justify-content:flex-start;text-align:left;align-items:stretch}
+.spk.open .ill{aspect-ratio:12/7;height:auto;max-height:none;margin:0}
+.spk.open .spk-pl{color:var(--ec)}
+.spk-t{font-weight:700;font-size:15px;line-height:1.2}
+.spk-w{font-size:14px;color:var(--muted);line-height:1.35}
+.spk.flipin{animation:spkflip .45s ease-out}
+@keyframes spkflip{0%{transform:perspective(600px) rotateY(90deg)}100%{transform:perspective(600px) rotateY(0)}}
+@media (max-width:560px){.spk-row{grid-template-columns:1fr}}
+.gsum{width:100%;max-width:640px;text-align:left;border:2px dashed var(--ink);border-radius:12px;padding:12px 14px;background:var(--bg)}
+.gs-h{font-family:var(--hud);font-size:21px;color:var(--ec)}
+.gs-name{font-size:14px;color:var(--muted);margin-bottom:6px}
+.gs-t{width:100%;border-collapse:collapse;font-size:14px}
+.gs-t th{width:34%;text-align:left;vertical-align:top;padding:6px 8px 6px 0;border-bottom:1px solid var(--line);font-weight:700}
+.gs-t td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.gs-chip{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:700;margin:1px 0}
+.gs-chip.ok{background:color-mix(in srgb,var(--good) 20%,transparent);color:var(--good)}
+.gs-chip.mid{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.gs-chip.no{background:color-mix(in srgb,#d64545 18%,transparent);color:#c43d3d}
+.gs-line{margin-top:4px}.gs-small{color:var(--muted);font-size:13px}
+.gs-ask{margin-top:10px;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,var(--sun) 16%,transparent);font-size:14px}
+.redobox{margin-top:12px;padding:10px 12px;border:2px solid var(--e4);border-radius:10px;background:color-mix(in srgb,var(--e4) 8%,var(--surface))}
+.redonote{border:2px solid var(--e4);border-radius:12px;background:color-mix(in srgb,var(--e4) 10%,var(--surface));padding:10px 14px;margin:0 0 12px;color:var(--ink)}
+.redonote b{color:var(--e4)}
+.redotext{margin-top:6px;font-size:17px}.redotext .redo-by{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+/* Wassertank */
+.wtank{position:relative;display:flex;align-items:center;gap:8px;flex:1 1 280px;min-width:0;max-width:460px}
+.wt-drop{width:24px;height:30px;flex:none;animation:kbounce 2.4s ease-in-out infinite}
+.wt-glass{position:relative;flex:1;min-width:0;height:30px;border:2.5px solid var(--ink);border-radius:999px;background:color-mix(in srgb,var(--bg2) 60%,var(--surface));overflow:hidden;box-shadow:inset 0 2px 0 rgba(0,0,0,.08)}
+.wt-water{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(180deg,#d8f6ff 0%,#6fd0f5 55%,#2a8fc0 100%);transition:width 1.1s cubic-bezier(.3,1.2,.4,1);overflow:visible}
+.wt-water::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(120deg,rgba(255,255,255,.18) 0 6px,transparent 6px 16px);animation:wtflow 1.4s linear infinite}
+.wt-water::after{content:"";position:absolute;top:-4px;bottom:-4px;right:-7px;width:12px;background:radial-gradient(circle at 0 50%,#8adcf7 5px,transparent 5.5px) 0 0/12px 10px repeat-y;animation:wtwave .9s linear infinite}
+@keyframes wtflow{to{background-position:32px 0}}
+@keyframes wtwave{to{background-position:0 10px}}
+.wt-bub{position:absolute;bottom:-4px;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.75);animation:wtbub 2.2s ease-in infinite}
+.wt-bub.b1{left:15%}.wt-bub.b2{left:40%;animation-delay:.6s}.wt-bub.b3{left:65%;animation-delay:1.2s;width:3px;height:3px}.wt-bub.b4{left:85%;animation-delay:1.7s}
+@keyframes wtbub{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(-26px);opacity:0}}
+.wt-shine{position:absolute;left:8px;right:8px;top:3px;height:4px;border-radius:999px;background:rgba(255,255,255,.45);pointer-events:none}
+.wt-mark{position:absolute;top:0;bottom:0;left:var(--p);width:0;border-left:2px dashed color-mix(in srgb,var(--ink) 35%,transparent)}
+.wt-mark:last-of-type{border-left:0}
+.wt-mark b{position:absolute;top:50%;right:3px;transform:translateY(-50%);font-family:var(--hud);font-size:13px;font-weight:400;line-height:1;color:var(--ink);opacity:.55}
+.wt-mark.done b{color:#fff;opacity:1;text-shadow:0 1px 0 rgba(0,0,0,.3)}
+.wt-num{font-family:var(--hud);font-size:22px;min-width:46px;color:var(--ink)}
+.wt-num small{font-size:16px}
+.wtank.wt-splash .wt-glass{animation:wtsplash .6s ease-out}
+@keyframes wtsplash{30%{transform:scale(1.06,1.18)}60%{transform:scale(.98,.95)}}
+.wt-plus{position:fixed;z-index:30;pointer-events:none;font-family:var(--display);font-size:16px;color:#6fd0f5;-webkit-text-stroke:1px #fff;animation:wtplus 1.3s ease-out forwards}
+@keyframes wtplus{0%{transform:translateY(0) scale(.6);opacity:0}20%{transform:translateY(-6px) scale(1.2);opacity:1}100%{transform:translateY(-34px) scale(1);opacity:0}}
+.wtank.wt-big .wt-glass{height:44px}
+.wtank.wt-big .wt-drop{width:32px;height:40px}
+.wtank.wt-big .wt-num{font-size:34px;min-width:70px}
+.wtank.wt-big .wt-mark b{font-size:18px}
+.wtank.wt-big .wt-bub{width:6px;height:6px}
+@media (prefers-reduced-motion:reduce){.wt-water,.wt-water::before,.wt-water::after,.wt-bub,.wt-drop{animation:none;transition:none}}
+.fenni{width:88px;height:88px}.fenni svg{width:88px;height:88px}
+.f-eyes{animation:fblink 4.5s step-end infinite;transform-box:fill-box;transform-origin:center}
+@keyframes fblink{0%,92%,100%{transform:scaleY(1)}94%,97%{transform:scaleY(.15)}}
+.fenni.happy .f-blush{opacity:1;transition:opacity .2s}
+/* senkrechter Tank */
+.side-tank .wtank{height:100%}
+.wtank.wt-v{flex-direction:column-reverse;align-items:center;justify-content:flex-end;max-width:none;width:100%;gap:6px;flex:none}
+.wt-v .wt-glass{flex:1;width:38px;min-height:280px;max-height:520px;border-radius:20px}
+.wt-v .wt-water{inset:auto 0 0 0;width:auto;height:0;transition:height 1.1s cubic-bezier(.3,1.2,.4,1);background:linear-gradient(90deg,#d8f6ff 0%,#6fd0f5 55%,#2a8fc0 100%)}
+.wt-v .wt-water::before{background:repeating-linear-gradient(30deg,rgba(255,255,255,.16) 0 6px,transparent 6px 16px);animation:wtflowv 1.6s linear infinite}
+@keyframes wtflowv{to{background-position:0 -32px}}
+.wt-v .wt-water::after{top:-6px;bottom:auto;left:0;right:0;width:auto;height:10px;background:radial-gradient(circle at 50% 100%,#d8f6ff 5px,transparent 5.5px) 0 0/10px 10px repeat-x;animation:wtwavex 1s linear infinite}
+@keyframes wtwavex{to{background-position:10px 0}}
+.wt-v .wt-bub{bottom:2px;animation-name:wtbubv;animation-duration:3s}
+.wt-v .wt-bub.b1{left:20%}.wt-v .wt-bub.b2{left:55%}.wt-v .wt-bub.b3{left:35%}.wt-v .wt-bub.b4{left:70%}
+@keyframes wtbubv{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-140px);opacity:0}}
+.wt-v .wt-shine{left:5px;right:auto;top:10px;bottom:10px;width:5px;height:auto}
+.wt-v .wt-mark{left:0;right:0;top:auto;bottom:var(--p);width:auto;height:0;border-left:0;border-top:2px dashed color-mix(in srgb,var(--ink) 35%,transparent)}
+.wt-v .wt-mark:last-of-type{border-top:0}
+.wt-v .wt-mark b{top:3px;left:50%;right:auto;transform:translateX(-50%);font-size:13px}
+.wt-v .wt-num{min-width:0;text-align:center;font-size:24px}
+.wt-v .wt-drop{width:22px;height:28px}
+.fenni.dance svg{animation:fdance 1.25s ease-in-out 8}
+@keyframes fdance{0%{transform:translateY(0) rotate(0)}12%{transform:translateY(-10px) rotate(-12deg) scaleX(1.05)}25%{transform:translateY(0) rotate(0) scaleY(.92)}37%{transform:translateY(-10px) rotate(12deg) scaleX(1.05)}50%{transform:translateY(0) rotate(0) scaleY(.92)}62%{transform:translateX(-6px) rotate(-8deg)}75%{transform:translateX(6px) rotate(8deg)}87%{transform:translateY(-14px) scaleX(-1)}100%{transform:translateY(0) rotate(0)}}
+.fenni.dance .f-blush{opacity:1}
+.fnote{position:fixed;z-index:25;pointer-events:none;font-size:22px;font-weight:700;animation:fnote 1.6s ease-out forwards}
+@keyframes fnote{0%{transform:translate(0,0) scale(.6);opacity:0}20%{opacity:1}100%{transform:translate(-30px,-60px) rotate(-20deg) scale(1.2);opacity:0}}
+@media (prefers-reduced-motion:reduce){.fenni.dance svg{animation:none}.fnote{display:none}}
+.pin{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:300px;margin:0 auto}
+.pin-label{font-weight:700;font-size:15px;text-align:center}
+.pin-dots{display:flex;gap:12px}
+.pin-dots i{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--ink);background:transparent;transition:background .15s,transform .15s}
+.pin-dots i.on{background:var(--ink);transform:scale(1.1)}
+.pin-grid{display:grid;grid-template-columns:repeat(3,64px);gap:8px}
+.pin-grid button{height:56px;border:2px solid var(--ink);border-radius:12px;background:var(--surface);font-family:var(--hud);font-size:30px;line-height:1;box-shadow:var(--shadow);color:var(--ink)}
+.pin-grid button:active{transform:translateY(2px);box-shadow:none;background:var(--chip)}
+.pin-grid .pin-del{grid-column:1/-1;height:44px;font-family:var(--body);font-size:15px;font-weight:700}
+.pin.shake{animation:pinshake .4s}
+@keyframes pinshake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+/* zusätzliche Animationen */
+.k-bubble{animation:kbubble 1.8s ease-in infinite}
+@keyframes kbubble{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(-16px);opacity:0}}
+.k-climb{animation:kclimb 2.2s ease-in-out infinite}
+@keyframes kclimb{0%,100%{transform:translateY(6px)}50%{transform:translateY(-14px)}}
+.k-rain{animation:krain .45s linear infinite}
+@keyframes krain{from{transform:translate(0,-6px)}to{transform:translate(-3px,8px)}}
+.k-zap{animation:kzap 1.8s steps(1) infinite}
+@keyframes kzap{0%,100%{opacity:.3}40%,58%{opacity:1}}
+.k-zapbg{opacity:0;animation:kzapbg 1.8s steps(1) infinite}
+@keyframes kzapbg{42%,50%{opacity:.55}}
+.k-slip{animation:kslip 1.4s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes kslip{0%,100%{transform:rotate(0)}30%{transform:rotate(-20deg) translateX(-4px)}60%{transform:rotate(18deg) translateX(4px)}}
+.k-grow-vine{stroke-dasharray:90;animation:kgrowv 2.6s ease-out infinite}
+@keyframes kgrowv{0%{stroke-dashoffset:90}60%,100%{stroke-dashoffset:0}}
+.k-camo{animation:kcamo 3s ease-in-out infinite}
+@keyframes kcamo{0%,20%,100%{filter:none;opacity:1}45%,75%{filter:hue-rotate(160deg) saturate(.6);opacity:.35}}
+.k-snow{animation:ksnow 3s linear infinite}
+@keyframes ksnow{from{transform:translate(0,-10px)}to{transform:translate(-8px,14px)}}
+.k-aurora{animation:kaurora 4s ease-in-out infinite}
+@keyframes kaurora{0%,100%{transform:translateX(0) scaleY(1);opacity:.75}50%{transform:translateX(-6px) scaleY(1.25);opacity:1}}
+.k-heat{animation:kheat 1.2s ease-in-out infinite}
+@keyframes kheat{0%,100%{transform:translateY(0) scaleX(1);opacity:.6}50%{transform:translateY(-3px) scaleX(1.06);opacity:1}}
+.k-lavaflow{animation:klavaflow 2.4s linear infinite}
+@keyframes klavaflow{to{stroke-dashoffset:-40}}
+/* Lava */
+#lpBtn{display:none}
+.k-erupt{animation:kerupt 1.6s ease-out infinite}
+@keyframes kerupt{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--ex,6px),-22px) scale(.3);opacity:0}}
+.clock{font-family:var(--hud);font-size:22px;border:2px solid var(--ink);border-radius:8px;padding:2px 10px;background:var(--surface);white-space:nowrap}
+.clock.warm{background:#ffe0b3;color:#2a1a14}
+.clock.hot{background:#d6352a;color:#fff;animation:kthrob 1s infinite}
+.mag-say{background:color-mix(in srgb,var(--e1) 14%,var(--surface));border:2px solid var(--e1);border-radius:14px 14px 14px 4px;padding:10px 14px;margin:10px 0 14px;font-size:17px}
+.duel-steps{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px}
+.dstep{border:2px solid var(--line);border-radius:999px;padding:2px 12px;font-weight:700;font-size:14px;color:var(--muted)}
+.dstep.now{border-color:var(--ec);color:var(--ec)}
+.dstep.won{border-color:var(--good);background:color-mix(in srgb,var(--good) 15%,var(--surface));color:var(--ink)}
+.dstep.lost{border-color:#d6352a;background:color-mix(in srgb,#d6352a 12%,var(--surface));color:var(--ink)}
+.timer.dt{font-size:clamp(44px,10vw,72px);margin:6px 0}
+.timer.hot{color:#d6352a}
+.blitz-intro{text-align:center}
+.blitz-card{font-size:clamp(20px,4vw,28px);font-weight:700;text-align:center;border:3px solid var(--ink);border-radius:14px;padding:22px 14px;margin:14px 0;background:var(--surface);box-shadow:var(--shadow)}
+.blitz-card.okf{animation:bok .35s}.blitz-card.nof{animation:bno .35s}
+@keyframes bok{0%{background:color-mix(in srgb,var(--good) 40%,var(--surface))}100%{background:var(--surface)}}
+@keyframes bno{0%{background:color-mix(in srgb,#d6352a 40%,var(--surface))}100%{background:var(--surface)}}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.bcat{min-height:56px;font-size:16px}
+.stars{display:flex;gap:6px;font-size:44px;line-height:1;margin:6px 0}
+.stars span{color:var(--line)}.stars span.on{color:#ffb340;text-shadow:0 2px 0 #c2410c}
+@media (prefers-reduced-motion:reduce){.flip-in{transition:none}.fenni svg{animation:none}.ill *{animation:none!important}.cl,.cob.sel{animation:none}}
+
+/* powers */
+.power{position:relative;text-align:left;border:2px solid #8b7a5c;background:linear-gradient(#e9dcbf,#d8c6a0);color:#3a2c18;border-radius:6px;padding:10px 12px;min-height:56px;font-weight:700;box-shadow:inset 0 -3px 0 #b8a37b}
+.power .num{position:absolute;top:-10px;right:-8px;width:30px;height:30px;border-radius:50%;background:var(--ec,var(--accent));color:var(--accent-ink);border:2px solid var(--ink);font-family:var(--hud);font-size:22px;line-height:24px;text-align:center}
+.power.sel{border-color:var(--ink);outline:3px solid var(--ec,var(--accent))}
+.power small{display:block;font-weight:400;font-size:14px;margin-top:2px}
+.obst{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:2px solid var(--line);background:var(--chip);border-radius:999px;padding:5px 12px;font-size:15px;min-height:36px}
+.chip.on{background:var(--ec,var(--accent));color:var(--accent-ink);border-color:var(--ink)}
+
+/* splash */
+.splash{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.splash p{margin-inline:auto}
+.big{font-family:var(--display);font-size:clamp(34px,8vw,64px);line-height:1;color:var(--ec)}
+.cover{background:var(--ink);color:var(--surface);border-radius:14px;padding:40px 20px;text-align:center}
+.cover h2{color:var(--sun)}
+
+/* timer */
+.timer{font-family:var(--hud);font-size:clamp(64px,16vw,120px);line-height:1;text-align:center;color:var(--ec)}
+.tl{height:14px;border:2px solid var(--ink);border-radius:4px;position:relative;overflow:hidden;background:var(--bg)}
+.tl i{position:absolute;inset:0 auto 0 0;background:var(--ec)}
+.tl b{position:absolute;top:-2px;bottom:-2px;left:50%;width:3px;background:var(--ink)}
+
+/* rating */
+.rate{display:flex;gap:6px;flex-wrap:wrap}
+.rate{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.rate button{--lc:#888;border:2px solid var(--lc);background:color-mix(in srgb,var(--lc) 14%,var(--surface));color:var(--ink);border-radius:8px;padding:6px 6px;font-size:14px;font-weight:700;min-height:52px;display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1.1}
+.rate .lv0{--lc:#d64545}.rate .lv1{--lc:#e8912c}.rate .lv2{--lc:#8fbf3a}.rate .lv3{--lc:#2f9a4a}
+.rate button.on{background:var(--lc);color:#fff;border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--lc) 40%,transparent);transform:scale(1.04)}
+.rate .drops{display:flex;gap:2px}.rate .drops i{width:7px;height:9px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:var(--lc)}
+.rate button.on .drops i{background:#fff}
+@media (max-width:420px){.rate button{font-size:12px}}
+
+details{border:2px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--bg)}
+details summary{font-weight:700;cursor:pointer;min-height:32px}
+ul.tight{margin:6px 0 0;padding-left:20px} ul.tight li{margin:2px 0}
+
+.foot{display:flex;justify-content:space-between;gap:10px;margin-top:28px;font-family:var(--hud);font-size:18px;color:var(--muted)}
+.foot button{border:0;background:none;color:var(--muted);font-family:var(--hud);font-size:18px;text-decoration:underline}
+.modal{position:fixed;inset:0;z-index:40;background:color-mix(in srgb,var(--ink) 55%,transparent);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .card{max-width:640px;width:100%;max-height:88vh;overflow:auto;margin:0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+td,th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.tw{overflow-x:auto}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-weight:700}
+pre.sum{white-space:pre-wrap;font-family:var(--body);font-size:14px;background:var(--bg);border:2px solid var(--line);border-radius:8px;padding:12px;max-height:280px;overflow:auto}
+.city{font-family:var(--hud);font-size:22px;line-height:1.1;white-space:pre;color:var(--accent);overflow-x:auto}
+</style>
+</head>
+<body>
+<script>
+/* Brücke zum Glitchlab-Hub (Teil 1): Spielstand pro Team */
+(function(){ var HB = null; try { HB = window.parent !== window && window.parent.GLHubBridge; } catch(e){}
+  if (!HB) return; var ctx = HB.context("lava"); window.__GLCTX = ctx; var K = ctx.workKey("lava");
+  var gi = Storage.prototype.getItem, si = Storage.prototype.setItem;
+  var map = function(k){ return k === "lavaGame.v1" ? K : k === "lavaGame.v1.old" ? K + ".alt" : k; };
+  Storage.prototype.getItem = function(k){ return gi.call(this, map(k)); };
+  Storage.prototype.setItem = function(k, v){ return si.call(this, map(k), v); };
+})();
+</script>
+
+
+
+<button class="fenni" id="fenni" aria-label="Magmar, der Lavageist. Antippen zum Streicheln"></button>
+<div class="bubble" id="bubble" hidden></div>
+
+<div class="app">
+ <aside class="side" id="side" aria-label="Menü">
+  <div class="logo">Lava-Game<small>Mission Eiskristall</small></div>
+  <div class="sgrp" id="sgrp"></div>
+  <div class="side-body"><div class="side-tank" id="tankv"></div><nav class="menu" id="menu" aria-label="Fortschritt"></nav></div>
+  <div class="side-foot" id="sfoot"><span id="mutebox"></span><span class="footbtns"><button id="restartBtn" type="button">Neustart</button><button id="lpBtn" type="button">LP-Bereich</button></span><span class="side-src">Deutsch Sechs · Kapitel 2 B · Heimtraining</span></div>
+ </aside>
+ <div class="scrim" id="scrim" data-a="menuclose" hidden></div>
+ <div class="mainwrap">
+  <header class="hud" id="hud"></header>
+  <main id="main"></main>
+ </div>
+</div>
+<div id="modalRoot"></div>
+
+<script>
+(function(){
+const KEY="lavaGame.v1.old";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- Inhalte ---------- */
+const STEPS=["start","mission","woerter","kraefte","wahl","duell","blitz","check","ziel"];
+const ET_OF={start:0,mission:1,woerter:1,kraefte:1,wahl:2,duell:3,blitz:3,check:4,ziel:4};
+const ETAPPEN=[null,{n:"Vulkan erkunden",c:"--e1",a:"Wortschatz"},{n:"Meine Superkräfte",c:"--e2",a:"Begründen"},{n:"Duell mit Magmar",c:"--e3",a:"Gespräch"},{n:"Selbstcheck",c:"--e4",a:"Lernkontrolle"}];
+const HERO=(o={})=>`<g class="${o.cls||""}"><path class="${o.cape||"k-cape"}" d="M-5 -2 L-13 13 L4 10Z" fill="#c43d55"/><rect x="-5" y="-3" width="10" height="13" rx="3" fill="#6b4fc9"/><path d="M-3 10 v6 M3 10 v6" stroke="#2b1d3a" stroke-width="3" stroke-linecap="round"/>${o.arms||`<path d="M-5 1 l-4 6 M5 1 l4 6" stroke="#6b4fc9" stroke-width="3" stroke-linecap="round"/>`}<circle cx="0" cy="-8" r="6" fill="#6b4fc9"/><rect x="-1" y="-10.5" width="7" height="3.6" rx="1.6" fill="#7ef0e0"/>${o.shades?`<rect x="-1.5" y="-11" width="8" height="4" rx="1.5" fill="#1d1310"/>`:""}<text x="-2.4" y="6" font-size="6" font-family="Bungee,Arial Black,sans-serif" fill="#f6b434">S</text></g>`;
+const POP=(x,y,t,cls="k-pop",size=11)=>`<g transform="translate(${x} ${y})"><text class="${cls}" text-anchor="middle" font-size="${size}" font-family="Bungee,Arial Black,sans-serif" fill="#f6b434" stroke="#2b1d3a" stroke-width="1.6" paint-order="stroke">${t}</text></g>`;
+const SPARK=(x,y,d=0,c="#fff")=>`<g transform="translate(${x} ${y})"><path class="k-twinkle" style="animation-delay:${d}s" d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1Z" fill="${c}"/></g>`;
+/* ---------- Lava-Zeichnungen ---------- */
+const DUNES=`<path class="sand2" d="M0 55 Q30 48 60 55 T120 52 V70 H0Z"/><path class="sand" d="M0 61 Q40 55 80 61 T120 59 V70 H0Z"/>`;
+const LAVAR=(y=60)=>`<path d="M-4 ${y} Q30 ${y-6} 60 ${y} T124 ${y-2}" stroke="#ff7a1a" stroke-width="6" fill="none" stroke-linecap="round"/><path class="k-lavaflow" d="M-4 ${y} Q30 ${y-6} 60 ${y} T124 ${y-2}" stroke="#ffd23f" stroke-width="2" fill="none" stroke-dasharray="6 14" stroke-linecap="round"/>`;
+const VOLC=(x=60,s=1)=>`<g transform="translate(${x} 62) scale(${s})"><path d="M-40 0 L-10 -38 H10 L40 0Z" fill="var(--ill-rock)"/><path d="M-10 -38 H10 L6 -34 H-6Z" fill="#ff7a1a"/><path d="M-6 -34 q-2 10 -8 18 M4 -34 q3 12 10 22" stroke="#ff7a1a" stroke-width="2.4" fill="none"/></g>`;
+const SMOKE=(x,y,s=1,c="#8a8a80",d=0)=>`<g transform="translate(${x} ${y}) scale(${s})"><g class="a-drift" style="animation-delay:${d}s"><circle cx="0" cy="0" r="7" fill="${c}" opacity=".85"/><circle cx="8" cy="-3" r="6" fill="${c}" opacity=".8"/><circle cx="-7" cy="-4" r="5" fill="${c}" opacity=".75"/></g></g>`;
+const CRYSTAL=(x,y,s=1)=>`<g transform="translate(${x} ${y}) scale(${s})"><circle class="k-glow2" r="12" fill="#6fd0f5" opacity=".35"/><path d="M0 -12 L7 -3 L0 12 L-7 -3Z" fill="#9fe6ff" stroke="#2a8fc0" stroke-width="1"/><path d="M-7 -3 H7 M0 -12 V12" stroke="#fff" stroke-width=".8" opacity=".8"/></g>`;
+const ROCK=(r=5,c="var(--ill-rock)")=>`<path d="M${-r} 0 L${-r*.4} ${-r} L${r*.6} ${-r*.8} L${r} ${r*.2} L${r*.2} ${r} L${-r*.7} ${r*.7}Z" fill="${c}"/>`;
+let ILL=[
+ /* Vulkan */ `${VOLC(60,1)}${SMOKE(58,14,1,"#9a948a")}${SMOKE(70,6,.7,"#b0aa9f",.8)}${DUNES}`,
+ /* Krater */ `<rect width="120" height="70" fill="var(--ill-rock2)"/><ellipse cx="60" cy="38" rx="44" ry="24" fill="var(--ill-rock)"/><ellipse cx="60" cy="40" rx="30" ry="15" fill="#ff7a1a"/><ellipse class="k-heat" cx="60" cy="40" rx="20" ry="9" fill="#ffd23f"/>${[[50,40,0],[66,42,.7],[58,36,1.3]].map(([x,y,d])=>`<g transform="translate(${x} ${y})"><circle class="k-bubble" style="animation-delay:${d}s" r="2" fill="#fff3a0"/></g>`).join("")}`,
+ /* Lava */ `${DUNES}${LAVAR(50)}${LAVAR(62)}<g transform="translate(30 30)">${SMOKE(0,0,.6,"#9a948a")}</g>`,
+ /* ausbrechen */ `${VOLC(60,1)}${[[-6,0],[0,.3],[6,.6],[-3,.9],[4,1.2]].map(([dx,d])=>`<g transform="translate(${60+dx} 24)"><circle class="k-erupt" style="animation-delay:${d}s" r="2.6" fill="#ff7a1a"/></g>`).join("")}${POP(96,16,"BUMM!","k-pop",10)}${DUNES}`,
+ /* brodeln */ `<rect width="120" height="70" fill="var(--ill-rock2)"/><path d="M10 40 Q60 26 110 40 V70 H10Z" fill="#ff7a1a"/>${[[30,46,0],[50,42,.4],[70,44,.8],[90,48,1.2],[60,52,1.6]].map(([x,y,d])=>`<g transform="translate(${x} ${y})"><circle class="k-bubble" style="animation-delay:${d}s" r="3" fill="#ffd23f"/></g>`).join("")}${POP(60,18,"BLUBB","k-pop",9)}`,
+ /* giftiger Rauch */ `${DUNES}${SMOKE(30,40,1.4,"#9fae7a")}${SMOKE(64,30,1.6,"#8f9f6a",.6)}${SMOKE(96,44,1.2,"#a6b585",1.1)}<g transform="translate(60 18)"><g class="k-throb"><path d="M0 -9 L8 5 H-8Z" fill="#f6c234" stroke="#2b1d3a" stroke-width="1.2"/><rect x="-.9" y="-4" width="1.8" height="5" fill="#2b1d3a"/><rect x="-.9" y="2" width="1.8" height="1.6" fill="#2b1d3a"/></g></g>`,
+ /* Erdbeben */ `<g class="k-shake">${DUNES}<path d="M20 56 l10 6 l-6 4 l12 4 M60 54 l6 8 l-8 2 l10 6 M96 56 l-6 6 l8 3" stroke="#1d0f0c" stroke-width="2" fill="none"/>${TREEISH()}</g>${POP(60,18,"RUMMS!","k-pop",10)}`,
+ /* herabstürzen */ `<path d="M0 0 H34 L44 70 H0Z" fill="var(--ill-rock)"/>${DUNES}${[[56,6,0,5],[74,0,.5,4],[64,-4,1,6]].map(([x,y,d,r])=>`<g transform="translate(${x} ${y})"><g class="a-fall" style="animation-delay:${d}s">${ROCK(r)}</g></g>`).join("")}`,
+ /* unerträglich */ `<rect width="120" height="70" fill="#f7a76a" opacity=".5"/><g transform="translate(30 22)"><g class="k-spinrays"><path d="M0 -16 V-11 M0 11 V16 M-16 0 H-11 M11 0 H16 M-11 -11 L-8 -8 M8 8 L11 11 M11 -11 L8 -8 M-8 8 L-11 11" stroke="#ffb02e" stroke-width="3" stroke-linecap="round"/></g><circle r="9" fill="#ffb02e"/></g><g transform="translate(86 34)"><rect x="-4" y="-22" width="8" height="34" rx="4" fill="#fff" stroke="#2b1d3a"/><circle cy="14" r="7" fill="#e2412e" stroke="#2b1d3a"/><rect class="k-heat" x="-2" y="-20" width="4" height="34" fill="#e2412e"/></g>${DUNES}<g class="k-heat"><path d="M10 50 q5 -4 10 0 t10 0 M50 48 q5 -4 10 0 t10 0" stroke="#fff3a0" stroke-width="1.6" fill="none"/></g>`
+];
+function TREEISH(){return `<g transform="translate(96 56)"><path d="M0 0 V-16 M0 -10 l-5 -4 M0 -13 l5 -4" stroke="#3f2823" stroke-width="2"/></g>`}
+let GAPS=[
+ ["Der ___ spuckt Feuer und Asche.","der Vulkan","Vulkan"],
+ ["Oben im ___ ist es am heissesten.","der Krater","Krater"],
+ ["Die ___ ist flüssiges, glühendes Gestein.","die Lava","Lava"],
+ ["Bald wird der Vulkan ___.","ausbrechen","ausbrechen"],
+ ["Bei einem ___ wackelt der ganze Boden.","das Erdbeben","Erdbeben"],
+ ["Pass auf, die Felsen könnten ___!","herabstürzen","herabstürzen"],
+ ["Die Hitze ist kaum auszuhalten, sie ist ___.","unerträglich","unerträglich"]
+];
+let WORDS=[
+ ["der Vulkan","Nomen","Ein Berg, aus dem heisse Lava, Asche und Rauch kommen können."],
+ ["der Krater","Nomen","Die grosse Öffnung oben im Vulkan."],
+ ["die Lava","Nomen","Flüssiges, glühend heisses Gestein aus dem Vulkan."],
+ ["ausbrechen","Verb","Der Vulkan spuckt plötzlich Lava, Asche und Rauch. «Der Vulkan bricht aus.»"],
+ ["brodeln","Verb","Eine Flüssigkeit blubbert und wirft Blasen, weil sie sehr heiss ist."],
+ ["der giftige Rauch","Nomen","Rauch mit Gift. Man kann darin kaum atmen."],
+ ["das Erdbeben","Nomen","Der Boden wackelt stark. Häuser und Felsen können einstürzen."],
+ ["herabstürzen","Verb","Schnell von oben nach unten fallen."],
+ ["unerträglich","Adjektiv","So schlimm, dass man es fast nicht aushalten kann."]
+];
+let BRIEF=[
+ "Notruf aus Vulkanstadt …",
+ "Der Vulkan Ignis brodelt. Schon bald wird er ausbrechen und die Stadt zerstören.",
+ "Tief im Krater liegt ein uralter Eiskristall. Nur er kann die Lava abkühlen. Die Regierung der Stadt schickt dich los, um ihn zu holen.",
+ "Der Weg ist extrem gefährlich: Lavaströme fliessen über alle Wege. Giftiger Rauch steigt aus dem Boden. Man kann kaum atmen und sieht fast nichts. Immer wieder bebt die Erde, und Felsen stürzen herab. Am Kraterrand ist die Hitze unerträglich.",
+ "Und dann ist da noch Magmar, der Lavageist. Er findet jede Schwäche in deinen Argumenten. Du musst ihn überzeugen!",
+ "Du hast nur 30 Minuten. Wähle drei Superkräfte und begründe sie so gut, dass Magmar dir nicht mehr widersprechen kann."
+];
+let QUIZ=[
+ {q:"Was kann die Lava abkühlen?",o:["Wasser aus dem Fluss","Der Eiskristall im Krater","Ein starker Wind","Magmar"],r:1},
+ {q:"Welche zwei Probleme macht der giftige Rauch?",o:["Man wird müde und hungrig.","Man kann kaum atmen und sieht fast nichts.","Man hört nichts mehr.","Man wird nass und friert."],r:1},
+ {q:"Warum ist «fliegen wie ein Vogel» vielleicht keine perfekte Superkraft?",o:["Weil man im Rauch nichts sieht.","Weil es keine Vögel gibt.","Weil die Stadt zu weit weg ist.","Weil Fliegen verboten ist."],r:0},
+ {q:"Was passiert bei einem Erdbeben?",o:["Die Lava wird kalt.","Felsen stürzen herab.","Der Rauch verschwindet.","Es beginnt zu regnen."],r:1},
+ {q:"Wie besiegst du Magmar?",o:["Mit grosser Kraft.","Indem du davonrennst.","Mit guten Argumenten.","Indem du ihm den Kristall gibst."],r:2}
+];
+const BASE_POWERS=[
+ {id:"fliegen",t:"fliegen wie ein Vogel",d:"Du fliegst durch die Luft, über Felsen und Lava."},
+ {id:"stark",t:"übernatürlich stark sein",d:"Du bist stärker als alle Menschen und hebst sogar riesige Felsen."},
+ {id:"schnell",t:"übernatürlich schnell sein",d:"Du rennst schneller als ein Auto."},
+ {id:"hitze",t:"vor Hitze geschützt sein",d:"Keine Hitze kann dir etwas anhaben."},
+ {id:"luft",t:"ohne Atemluft auskommen",d:"Du musst nicht atmen. Giftiger Rauch ist dir egal."},
+ {id:"orient",t:"super Orientierungssinn",d:"Du weisst immer, wo du bist und wohin du musst."},
+ {id:"eis",t:"Eis erzeugen",d:"Aus deinen Händen kommt Eis. Du kannst Dinge einfrieren."},
+ {id:"beben",t:"Erdbeben vorher spüren",d:"Du spürst jedes Erdbeben ein paar Sekunden, bevor es kommt."},
+ {id:"rauch",t:"durch Rauch sehen",d:"Du siehst auch im dichtesten Rauch alles."},
+ {id:"teleport",t:"sich teleportieren",d:"Du springst in einem Augenblick an einen Ort, den du sehen kannst."}
+];
+const P=Object.fromEntries(BASE_POWERS.map(p=>[p.id,p]));
+let POWERS=BASE_POWERS.slice();
+let selObs=null;
+let OBST_ILL=[2,5,6,7];
+let OBST=[
+ {t:"Lavaströme fliessen über alle Wege.",fit:["fliegen","eis","teleport"]},
+ {t:"Giftiger Rauch: Man kann kaum atmen und sieht nichts.",fit:["luft","rauch","orient"]},
+ {t:"Erdbeben lassen Felsen herabstürzen.",fit:["beben","stark","schnell","teleport"]},
+ {t:"Am Kraterrand ist es unerträglich heiss.",fit:["hitze","eis"]}
+];
+const PILL={
+ fliegen:`<g class="k-scroll-slow"><g fill="#fff" opacity=".85"><ellipse cx="20" cy="14" rx="10" ry="4"/><ellipse cx="80" cy="10" rx="12" ry="4"/><ellipse cx="140" cy="14" rx="10" ry="4"/><ellipse cx="200" cy="10" rx="12" ry="4"/></g></g>
+  <g class="k-scroll"><path class="sand2" d="M0 56 Q30 46 60 56 T120 56 T180 56 T240 56 V70 H0Z"/></g>
+  <g class="k-speed"><rect x="18" y="28" width="16" height="2" rx="1" fill="var(--ill-ink)" opacity=".5"/><rect x="10" y="36" width="20" height="2" rx="1" fill="var(--ill-ink)" opacity=".5"/><rect x="20" y="44" width="12" height="2" rx="1" fill="var(--ill-ink)" opacity=".5"/></g>
+  <g transform="translate(64 36) rotate(-70)"><g class="k-hover">${HERO({cape:"k-flutter",arms:`<path d="M-4 -2 l-2 -10 M4 -2 l2 -10" stroke="#6b4fc9" stroke-width="3" stroke-linecap="round"/>`})}</g></g>
+  <g transform="translate(96 20)"><g class="k-flapbird"><path d="M-6 0 L0 3 L6 0 L0 5Z" fill="var(--ill-ink)"/></g></g>
+  ${POP(98,46,"WUSCH!","k-pop",10)}`,
+ stark:`<g class="k-shake">${DUNES}
+  <g transform="translate(60 48)">${HERO({arms:`<path d="M-5 0 l-5 -12 M5 0 l5 -12" stroke="#6b4fc9" stroke-width="3.4" stroke-linecap="round"/>`})}</g>
+  <g transform="translate(60 22)"><g class="k-lift"><path d="M-22 4 Q-24 -10 -6 -12 Q14 -16 22 -4 Q26 8 6 10 Q-16 12 -22 4Z" fill="var(--ill-rock)"/><path d="M4 -10 Q16 -10 20 -2 L10 2Z" fill="var(--ill-rock2)"/><path d="M-12 -2 l6 4 M2 4 l6 -3" stroke="var(--ill-rock2)" stroke-width="1.4"/></g></g>
+  <g transform="translate(46 64)"><circle class="k-puff" r="5" fill="#f3e3c3"/></g><g transform="translate(74 64)"><circle class="k-puff" style="animation-delay:.1s" r="5" fill="#f3e3c3"/></g>
+  <g transform="translate(30 50)"><circle class="k-chip" r="2" fill="var(--ill-rock2)"/></g><g transform="translate(92 50)"><circle class="k-chip2" r="2" fill="var(--ill-rock2)"/></g>
+  </g>${POP(96,20,"WUMMS!")}`,
+ schnell:`<g class="k-scroll-fast"><path class="sand" d="M0 58 H240 V70 H0Z"/>${[30,90,150,210].map(x=>`<g transform="translate(${x} 56)">${ROCK(6)}</g>`).join("")}${[60,180].map(x=>`<path d="M${x-10} 63 h20" stroke="#ff7a1a" stroke-width="3"/>`).join("")}</g>
+  <g class="k-speed-fast"><rect x="10" y="24" width="26" height="2" rx="1" fill="var(--ill-ink)" opacity=".6"/><rect x="4" y="34" width="32" height="2" rx="1" fill="var(--ill-ink)" opacity=".6"/><rect x="14" y="44" width="22" height="2" rx="1" fill="var(--ill-ink)" opacity=".6"/></g>
+  <g transform="translate(60 42) rotate(14)"><g class="k-run">${HERO({cape:"k-flutter"})}</g></g><g transform="translate(26 6)"><g class="a-fall">${ROCK(5)}</g></g>${POP(94,22,"ZOOM!")}`,
+ hitze:`${DUNES}
+  <g transform="translate(96 16)"><g class="k-spinrays"><path d="M0 -16 V-11 M0 11 V16 M-16 0 H-11 M11 0 H16 M-11 -11 L-8 -8 M8 8 L11 11 M11 -11 L8 -8 M-8 8 L-11 11" stroke="var(--ill-sun)" stroke-width="3" stroke-linecap="round"/></g><circle r="9" fill="var(--ill-sun)"/><path d="M-5 -3 l3 1.5 M5 -3 l-3 1.5" stroke="#7a3a10" stroke-width="1.4" stroke-linecap="round"/><path d="M-3 4 q3 -2 6 0" stroke="#7a3a10" stroke-width="1.4" fill="none"/></g>
+  <path class="k-ray" d="M86 22 L56 34" stroke="#f6b434" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="6 6"/><path class="k-ray" style="animation-delay:.2s" d="M88 28 L58 42" stroke="#f6b434" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="6 6"/>
+  <g transform="translate(40 40)"><circle class="k-ice" r="17" fill="#bfefff" stroke="#7ef0e0" stroke-width="2" opacity=".5"/></g>
+  ${SPARK(28,28,0)}${SPARK(54,30,.5)}
+  <g transform="translate(40 46)">${HERO({shades:true,cls:"k-bounce"})}</g>
+  ${POP(40,14,"COOL!")}`,
+ luft:`${DUNES}${SMOKE(30,40,1.3,"#9fae7a")}${SMOKE(88,36,1.4,"#8f9f6a",.6)}<g transform="translate(58 46)">${HERO()}</g><g transform="translate(58 36)"><circle class="k-shield" r="13" fill="#d8f6ff" stroke="#6fd0f5" stroke-width="2" opacity=".45"/></g><g transform="translate(76 22)"><path d="M-8 -6 h16 M-8 0 h16" stroke="#e2412e" stroke-width="2"/><g class="k-throb"><circle r="9" fill="none" stroke="#e2412e" stroke-width="2"/><path d="M-6 6 L6 -6" stroke="#e2412e" stroke-width="2"/></g></g>${POP(30,18,"KEIN HUST!","k-pop",8)}`,
+ orient:`<rect x="6" y="6" width="108" height="58" rx="4" fill="#f3e3c3" stroke="#a06a28" stroke-width="1.5"/>
+  <path d="M14 18 l6 -6 l6 6Z M80 52 l5 -6 l5 6Z M60 14 q4 -4 8 0" fill="#c98f3e" stroke="#a06a28" stroke-width="1"/>
+  <path class="k-draw" d="M16 56 C30 30 46 60 58 40 S80 16 98 24" fill="none" stroke="#c43d55" stroke-width="2.2" stroke-dasharray="4 4" stroke-linecap="round"/>
+  <g transform="translate(98 22)"><g class="k-pin"><path d="M0 2 C-6 -4 -6 -12 0 -12 C6 -12 6 -4 0 2Z" fill="#c43d55"/><circle cy="-7" r="2" fill="#fff"/></g></g>
+  <g transform="translate(26 22)"><circle r="11" fill="#fff" stroke="#2b1d3a" stroke-width="1.5"/><text x="-2.5" y="-4" font-size="6" font-family="Bungee,sans-serif" fill="#2b1d3a">N</text><g class="k-compass"><path d="M0 -8 L2.5 0 L0 8 L-2.5 0Z" fill="#c43d55"/><path d="M0 0 L2.5 0 L0 8 L-2.5 0Z" fill="#2b1d3a"/></g></g>
+  ${POP(66,62,"HIER LANG!","k-pop",8)}`,
+ eis:`${DUNES}${LAVAR(60)}<path d="M60 58 Q86 52 116 56" stroke="#bfefff" stroke-width="7" fill="none" stroke-linecap="round" class="k-grow-vine"/>
+  <g transform="translate(40 44)">${HERO({arms:`<path d="M-5 1 l-4 6 M5 0 l9 -2" stroke="#6b4fc9" stroke-width="3" stroke-linecap="round"/>`})}</g>${SPARK(56,40,0,"#bfefff")}${SPARK(72,46,.5,"#bfefff")}${SPARK(90,42,1,"#bfefff")}${POP(84,18,"FRIER!")}`,
+ beben:`<g class="k-shake">${DUNES}<path d="M70 56 l6 8 l-8 2 l10 6" stroke="#1d0f0c" stroke-width="2" fill="none"/></g><g transform="translate(36 46)">${HERO()}</g><g transform="translate(36 30)"><g class="k-throb"><path d="M-12 0 q3 -6 6 0 t6 0 t6 0 t6 0" stroke="#f6c234" stroke-width="2.4" fill="none"/></g></g><g transform="translate(84 6)"><g class="a-fall">${ROCK(5)}</g></g>${POP(92,36,"ACHTUNG!","k-pop",8)}`,
+ rauch:`<rect width="120" height="70" fill="#9fae7a" opacity=".55"/>${SMOKE(28,30,1.5,"#8f9f6a")}${SMOKE(92,30,1.5,"#8f9f6a",.6)}${DUNES}<g transform="translate(40 46)">${HERO()}</g><g transform="translate(43 37)"><circle class="k-glow2" r="6" fill="#7ef0e0" opacity=".7"/></g><path class="k-scent" d="M50 37 L104 30" stroke="#7ef0e0" stroke-width="2.4" stroke-dasharray="3 4"/>${CRYSTAL(106,30,.6)}`,
+ teleport:`${DUNES}${LAVAR(62)}<g transform="translate(24 44)"><g class="k-invis">${HERO()}</g></g><g transform="translate(96 44)"><g class="k-invis" style="animation-delay:1.5s">${HERO()}</g></g>${SPARK(24,30,0,"#a68cff")}${SPARK(96,30,1.5,"#a68cff")}<path class="k-scent" d="M32 30 Q60 6 88 30" stroke="#a68cff" stroke-width="2" fill="none" stroke-dasharray="3 4"/>${POP(60,48,"PLOPP!","k-pop",9)}`
+};
+let PROS={
+ fliegen:{p:["Du fliegst über die Lavaströme.","Du kommst schnell zum Krater."],c:["Im dichten Rauch siehst du nicht, wohin du fliegst.","Über dem Krater ist die Luft so heiss, dass du nicht fliegen kannst."]},
+ stark:{p:["Du schiebst herabstürzende Felsen zur Seite.","Du kannst den schweren Eiskristall tragen."],c:["Gegen Hitze und Rauch hilft dir Kraft gar nichts.","Lava kannst du nicht wegschieben."]},
+ schnell:{p:["Du rennst den fallenden Felsen davon.","Du bist nur kurz in der Hitze."],c:["Im Rauch rennst du vielleicht direkt in die Lava.","Über Lavaströme kannst du nicht rennen."]},
+ hitze:{p:["Die Hitze am Kraterrand macht dir nichts.","Du kannst sogar nahe an die Lava gehen."],c:["Gegen den giftigen Rauch hilft sie überhaupt nicht.","Fallende Felsen treffen dich trotzdem."]},
+ luft:{p:["Der giftige Rauch macht dir nichts aus.","Du kannst lange im Krater bleiben."],c:["Du siehst im Rauch trotzdem nichts.","Gegen Hitze und Lava hilft sie nicht."]},
+ orient:{p:["Du findest den Weg auch im Rauch.","Du findest den kürzesten Weg zum Krater."],c:["Du kennst den Weg, aber die Lava versperrt ihn.","Gegen die Hitze hilft sie nicht."]},
+ eis:{p:["Du machst die Lava hart und gehst darüber.","Du kühlst dich am heissen Kraterrand ab."],c:["In der grossen Hitze schmilzt dein Eis sofort.","Gegen Rauch und Erdbeben hilft sie nicht."]},
+ beben:{p:["Du weisst vorher, wann ein Erdbeben kommt, und gehst in Deckung.","Kein Felsen überrascht dich."],c:["Gegen Lava, Rauch und Hitze hilft sie nicht.","Du spürst das Beben, aber ausweichen musst du trotzdem selbst."]},
+ rauch:{p:["Du siehst durch den dichtesten Rauch.","Du erkennst Gefahren sehr früh."],c:["Atmen kannst du im Rauch trotzdem nicht.","Gegen die Hitze hilft sie nicht."]},
+ teleport:{p:["Du springst einfach über die Lava auf die andere Seite.","Du entkommst fallenden Felsen sofort."],c:["Du musst dein Ziel sehen. Im Rauch geht das nicht.","Am heissen Kraterrand hilft sie dir nicht."]}
+};
+const COVER=`<rect width="120" height="70" fill="var(--ill-sky)"/>${VOLC(60,1.1)}${SMOKE(58,10,1,"#9a948a")}${CRYSTAL(60,42,.5)}${DUNES}${LAVAR(64)}`;
+const LVL={1:{name:"Der Vulkan Ignis",teaser:"Hol den Eiskristall aus dem Krater.",stars:3,ill:[COVER],cover:0,sub:"Lies den Notruf ganz genau. Die Fragen sind schwierig!",brief:BRIEF,quiz:QUIZ,words:WORDS,gaps:GAPS,obst:OBST,obstIll:OBST_ILL,pros:PROS,win:"Du hast Magmar überzeugt und den Eiskristall geholt. Die Lava kühlt ab, Vulkanstadt ist gerettet!"}};
+function setLevel(n){}
+/* ---------- Wörter-Erklärungen (Magmar) ---------- */
+const GLOSS_LIST=[[["Vulkan", "Vulkans"], "Ein Berg, aus dem heisse Lava, Asche und Rauch kommen können."], [["Krater", "Kraters", "Kraterrand"], "Die grosse Öffnung oben im Vulkan."], [["Lava", "Lavaströme", "Lavaströmen"], "Flüssiges, glühend heisses Gestein."], [["Lavageist"], "Ein Fantasiewesen aus Lava. So wie ich!"], [["brodelt", "brodeln"], "Eine Flüssigkeit blubbert, weil sie sehr heiss ist."], [["ausbrechen", "bricht"], "Der Vulkan spuckt plötzlich Lava, Asche und Rauch."], [["giftige", "giftigen", "giftiger"], "Etwas, das krank machen oder töten kann."], [["Erdbeben", "bebt"], "Der Boden wackelt stark."], [["herabstürzen", "stürzen"], "Schnell von oben nach unten fallen."], [["unerträglich"], "So schlimm, dass man es fast nicht aushalten kann."], [["Eiskristall"], "Ein Stück Eis mit glatten Flächen und Kanten, wie ein Edelstein."], [["Regierung"], "Die Menschen, die ein Land oder eine Stadt leiten."], [["Duell"], "Ein Kampf zwischen zwei Gegnern. Hier kämpfst du mit Argumenten."], [["widersprechen", "Widerspruch"], "Sagen, dass man anderer Meinung ist."], [["ergänzen", "ergänze"], "Etwas dazu sagen, das noch fehlt."], [["Selbstcheck"], "Du überprüfst selbst, was du schon kannst."], [["Lernkontrolle"], "Eine Prüfung, bei der die Lehrperson sieht, was du gelernt hast."], [["Bestleistung"], "Dein bestes Ergebnis bis jetzt."], [["Superkräfte", "Superkraft"], "Eine besondere Fähigkeit, die normale Menschen nicht haben. Wie bei einem Superhelden!"], [["Hindernis", "Hindernisse"], "Etwas, das dir im Weg ist. Du musst es schaffen, daran vorbeizukommen."], [["Orientierungssinn"], "Du weisst immer, wo du bist und wohin du gehen musst."], [["übernatürlich"], "Viel mehr, als ein Mensch normal kann. Fast wie Magie."], [["begründen", "begründet", "Begründung", "Begründungen", "begründe"], "Sagen, warum. Zum Beispiel mit «weil …» oder «denn …»."], [["Argument", "Argumente", "Argumenten"], "Ein Grund, warum etwas richtig oder gut ist."], [["Redemittel"], "Satzanfänge, die beim Sprechen helfen. Zum Beispiel «Ich finde, dass …»."], [["einigen", "einigt", "geeinigt", "Einigung"], "Am Ende wollen alle das Gleiche. Alle sind einverstanden."], [["Kompromiss"], "Jede Person gibt ein bisschen nach. So sind am Ende alle zufrieden."], [["widersprecht", "widersprichst", "widersprochen"], "Sagen, dass man anderer Meinung ist."], [["zustimmen", "zugestimmt", "stimmst"], "Sagen, dass man gleicher Meinung ist."], [["nachfragen", "nachgefragt"], "Eine Frage stellen, weil man etwas genauer wissen will."], [["ergänzt"], "Etwas Neues dazusagen, das noch fehlt."], [["Gesprächsregeln"], "Regeln, damit ein Gespräch fair ist. Zum Beispiel: einander ausreden lassen."], [["Rückmeldung"], "Man sagt jemandem, was gut war und was noch besser werden kann."], [["Aufnahme"], "Man nimmt das Gespräch auf, damit man es später nochmals anhören kann."], [["Mission"], "Ein wichtiger Auftrag."], [["Funkspruch"], "Eine Nachricht, die über Funk geschickt wird. Wie mit einem Walkie-Talkie."], [["Notruf"], "Eine Nachricht, wenn jemand ganz dringend Hilfe braucht."], [["Stufe", "Stufen"], "Ein Teil vom Spiel. Nach jeder Stufe gibt die Lehrperson frei."], [["Gefahren"], "Dinge, die gefährlich sind und dir schaden können."], [["lauern", "lauert"], "Versteckt warten, um plötzlich anzugreifen."], [["Vorteile"], "Das Gute an einer Sache."], [["Nachteile"], "Das Schlechte an einer Sache."], [["Respekt"], "Man hat Achtung vor jemandem und ist vorsichtig."], [["beteiligt"], "Mitgemacht."], [["Beiträge", "Beiträgen"], "Das, was jemand im Gespräch sagt."], [["nachvollziehbar", "nachvollziehbaren"], "So, dass andere es gut verstehen können."], [["zielgerichtet"], "Man arbeitet auf das Ziel hin und schweift nicht ab."], [["kooperativ"], "Man arbeitet gut zusammen und hilft einander."]];
+const GLOSS={};GLOSS_LIST.forEach(([fs,e])=>fs.forEach(f=>GLOSS[f.toLowerCase()]=e));
+const GLOSS_RE=new RegExp("(?<![\\p{L}])("+Object.keys(GLOSS).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")(?![\\p{L}])","giu");
+const GLOSS_SKIP=".gsum,.redonote,h1,textarea,input,select,option,svg,script,style,button,pre,.gl,.flip,.cover h2,.eyebrow,.lvcard,.timer";
+function glossify(root){
+ if(!root)return;
+ const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest(GLOSS_SKIP))return NodeFilter.FILTER_REJECT;GLOSS_RE.lastIndex=0;return GLOSS_RE.test(n.nodeValue)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});
+ const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+ nodes.forEach(n=>{const f=document.createDocumentFragment();let last=0;const t=n.nodeValue;GLOSS_RE.lastIndex=0;let m;
+  while((m=GLOSS_RE.exec(t))){f.appendChild(document.createTextNode(t.slice(last,m.index)));const sp=document.createElement("span");sp.className="gl";sp.tabIndex=0;sp.setAttribute("role","button");sp.dataset.w=m[0];sp.textContent=m[0];f.appendChild(sp);last=m.index+m[0].length}
+  f.appendChild(document.createTextNode(t.slice(last)));n.parentNode.replaceChild(f,n)});
+}
+function explain(word){
+ const e=GLOSS[word.toLowerCase()];if(!e)return;sfx("pop");hop();
+ say(`<span class="glw">${esc(word)}</span> ${esc(e)} <button class="bspeak" data-a="speak" data-t="${esc(word+". "+e)}">▶ Anhören</button>`,10000);
+}
+function glossHandler(ev){const g=ev.target.closest&&ev.target.closest(".gl");if(!g)return;ev.preventDefault();ev.stopPropagation();explain(g.dataset.w)}
+document.addEventListener("click",glossHandler,true);
+document.addEventListener("keydown",ev=>{if((ev.key==="Enter"||ev.key===" ")&&ev.target.classList&&ev.target.classList.contains("gl")){ev.preventDefault();explain(ev.target.dataset.w)}});
+
+/* ---------- Sounds ---------- */
+let AC=null;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){AC=null}}if(AC&&AC.state==="suspended")AC.resume();return AC}
+function tone(f,t0,d,type="sine",vol=.12,f2){const c=ac();if(!c)return;const o=c.createOscillator(),g=c.createGain(),t=c.currentTime+t0;o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.connect(g).connect(c.destination);o.start(t);o.stop(t+d+.05)}
+function sfx(n){if(G&&G.mute)return;try{switch(n){
+ case"click":tone(700,0,.06,"square",.05);break;
+ case"next":tone(392,0,.08,"triangle",.1);tone(587,.07,.12,"triangle",.1);break;
+ case"back":tone(587,0,.07,"triangle",.08);tone(392,.06,.1,"triangle",.08);break;
+ case"good":tone(523,0,.1,"triangle",.12);tone(659,.08,.1,"triangle",.12);tone(784,.16,.18,"triangle",.12);break;
+ case"bad":tone(260,0,.18,"sawtooth",.06,160);break;
+ case"pop":tone(600,0,.09,"sine",.12,1200);break;
+ case"open":tone(330,0,.16,"sine",.1,880);break;
+ case"select":tone(520,0,.05,"square",.05);tone(780,.05,.07,"square",.05);break;
+ case"fanfare":[523,659,784,1046].forEach((f,i)=>tone(f,i*.1,.22,"triangle",.12));break;
+ case"win":[523,659,784,1046,784,1046,1318].forEach((f,i)=>tone(f,i*.11,.26,"triangle",.12));break;
+ case"whoosh":tone(220,0,.35,"sine",.08,1400);break;
+}}catch(e){}}
+
+/* ---------- Wegweiser ---------- */
+const STEPINFO={
+ start:{l:"Anmelden",who:"Du allein",todo:["Schreibe deinen Vornamen.","Plane 30 Minuten ohne Pause ein.","Tippe auf «Start». Dann läuft die Zeit!"]},
+ mission:{l:"Notruf",who:"Du allein",todo:["Lies den Notruf genau oder lass ihn vorlesen.","Beantworte die 5 Fragen. Jeder Fehlversuch kostet Kühlung."]},
+ woerter:{l:"Vulkan-Wörter",who:"Du allein",todo:["Lies die Wortkarten.","Schreibe die fehlenden Wörter selbst in die Lücken."]},
+ kraefte:{l:"Superkräfte",who:"Du allein",todo:["Lies die Vor- und Nachteile der Superkräfte.","Verbinde jede Gefahr mit einer Superkraft, die wirklich hilft."]},
+ wahl:{l:"Meine Wahl",who:"Du allein",todo:["Wähle 3 Superkräfte. Platz 1 ist die wichtigste.","Begründe jede mit «weil» oder «denn».","Nenne in jeder Begründung eine Gefahr."]},
+ duell:{l:"Duell",who:"Du allein",todo:["Magmar greift deine Superkräfte an.","Antworte in 90 Sekunden genau so, wie es verlangt ist.","Schreibe zum Schluss dein stärkstes Argument."]},
+ blitz:{l:"Redemittel-Blitz",who:"Du allein",todo:["Ordne 12 Redemittel in 60 Sekunden zu.","Du brauchst mindestens 10 richtige."]},
+ check:{l:"Selbstcheck",who:"Du allein",todo:["Schätze dich bei jedem Punkt ehrlich ein.","Schreibe auf, was du schon gut kannst und was du noch trainierst."]},
+ ziel:{l:"Ziel",who:"Du allein",todo:["Kopiere die Zusammenfassung.","Schicke sie deiner Lehrperson oder bring sie in die Schule mit."]}
+};
+function stepDone(sid){
+ switch(sid){
+  case"start":return startOk()&&!!S.t0;
+  case"mission":return QUIZ.every((q,i)=>S.quiz[i]===q.r);
+  case"woerter":return GAPS.every((x,i)=>gapOk(i));
+  case"kraefte":return linksOk();
+  case"wahl":return wahlDoneL();
+  case"duell":return duelDone();
+  case"blitz":return blitzDone();
+  case"check":return checkDone();
+  default:return true;
+ }
+}
+function firstOpen(){for(let i=0;i<STEPS.length;i++)if(!stepDone(STEPS[i]))return i;return STEPS.length-1}
+const reachable=i=>i<=firstOpen();
+const MENU_GROUPS=[{t:"Start",c:"--sun",s:["start"]},{t:"Stufe 1 · Vulkan erkunden",c:"--e1",s:["mission","woerter","kraefte"]},{t:"Stufe 2 · Meine Superkräfte",c:"--e2",s:["wahl"]},{t:"Stufe 3 · Duell mit Magmar",c:"--e3",s:["duell","blitz"]},{t:"Stufe 4 · Selbstcheck",c:"--e4",s:["check","ziel"]}];
+function renderPath(){
+ const el=$("#menu");if(!el)return;S.maxStep=Math.max(S.maxStep||0,S.step);
+ el.innerHTML=MENU_GROUPS.map(g=>`<div class="menu-et" style="--c:var(${g.c})"><h4>${g.t}</h4>${g.s.map(sid=>{const i=STEPS.indexOf(sid);const inf=STEPINFO[sid];
+  const reach=reachable(i)||i===S.step;const solved=stepDone(sid)&&reach;const st=i===S.step?"now":!reach?"locked":solved?"done":"open";
+  const lock=`<svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11 V8 a4 4 0 0 1 8 0 V11" stroke="currentColor" stroke-width="2.6" fill="none"/></svg>`;
+  return `<button class="menu-item ${st} ${inf.gate?"gate":""}" data-a="jump" data-i="${i}" ${st==="now"?'aria-current="step"':""} ${reach?"":'aria-disabled="true"'}><span class="dot">${st==="done"?"✓":(inf.gate||st==="locked")?lock:""}</span>${inf.gate?"Freigabe Lehrperson":inf.l}</button>`}).join("")}</div>`).join("");
+}
+function insertTodo(){
+ const st=step();const inf=STEPINFO[st];if(!inf||inf.gate)return;
+ if(st==="wahl"&&S.wahlCover)return;
+ const h=$("#main h1");if(!h)return;
+ if(S.redoNote&&ET_OF[st]===S.redoNote.et&&st===REDO_FIRST[S.redoNote.et]){const nb=document.createElement("div");nb.className="redonote";nb.innerHTML=`<b>↺ Wiederholung: ${S.redo&&S.redo[S.redoNote.et]>1?S.redo[S.redoNote.et]+". Mal":"Die Lehrperson möchte, dass ihr diese Stufe nochmals macht."}</b>${S.redoNote.text?`<div class="redotext">«${esc(S.redoNote.text)}»<span class="redo-by">– Lehrperson</span></div>`:""}`;window.__nb=nb}else window.__nb=null;
+ const box=document.createElement("div");box.className="todo";
+ box.innerHTML=`<div class="todo-h"><span>Dein Auftrag</span><span class="who">${inf.who}</span></div><ol>${inf.todo.map(t=>`<li>${t}</li>`).join("")}</ol>`;
+ const after=h.nextElementSibling&&h.nextElementSibling.tagName==="P"?h.nextElementSibling:h;after.after(box);if(window.__nb)box.after(window.__nb);
+}
+const NAMEIDEAS=[];
+function openPower(id){
+ const p=P[id],pc=PROS[id];
+ const helps=OBST.filter(o=>o.fit.includes(id)).map(o=>`<span class="chip">${esc(o.t)}</span>`).join("")||`<span class="hint">Keine der vier Hauptgefahren direkt. Überlege, wann sie trotzdem nützt.</span>`;
+ modal(`<svg class="ill pop-ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[id]}</svg><div class="eyebrow">Superkraft</div><h2>${esc(p.t)}</h2><p>${esc(p.d)}</p>
+ <div class="pc"><div class="box solid plus"><h3>+ Vorteile</h3><ul class="tight">${pc.p.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div><div class="box solid minus"><h3>− Nachteile</h3><ul class="tight">${pc.c.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div></div>
+ <h3 style="margin-top:14px">Hilft besonders bei:</h3><div class="chips">${helps}</div>
+ <p class="hint" style="margin-top:12px">Denk nach: Findest du noch einen Vorteil oder Nachteil? Den brauchst du im Duell gegen Magmar!</p>
+ <div class="nav"><span></span><button class="btn primary" data-close style="--ec:var(--e1)">Schliessen</button></div>`);
+}
+
+const REDEMITTEL=[
+ {k:"Meinung äussern",s:["Ich finde, dass …","Meiner Meinung nach …","Ich bin überzeugt, dass …","Für mich ist am wichtigsten, …"]},
+ {k:"Begründen",s:["…, weil …","…, denn …","Ein Grund dafür ist, …","Das ist wichtig, damit …"]},
+ {k:"Zustimmen",s:["Da hast du recht.","Ich sehe das auch so.","Das ist ein gutes Argument."]},
+ {k:"Widersprechen",s:["Das sehe ich anders, weil …","Ich bin nicht einverstanden, denn …","Ja, aber …"]},
+ {k:"Nachfragen",s:["Wie meinst du das?","Warum findest du das wichtig?","Kannst du das genauer erklären?"]},
+ {k:"Sich einigen",s:["Können wir uns auf … einigen?","Das beste Argument ist …","Lasst uns abstimmen."]}
+];
+const REGELN=["Wir lassen einander ausreden.","Wir hören einander gut zu.","Alle kommen zu Wort.","Wir bleiben freundlich, auch wenn wir anderer Meinung sind.","Wir bleiben beim Thema."];
+const KRIT=[
+ "Ich kann meine Meinung mit Argumenten begründen.",
+ "Ich kann widersprechen und dabei ein Argument nennen.",
+ "Ich kann zustimmen und etwas ergänzen.",
+ "Ich kann nachfragen, wenn etwas unklar ist.",
+ "Ich verwende verschiedene Redemittel."
+];
+const LEVELS=["nicht erfüllt","erfüllt","gut erfüllt","sehr gut erfüllt"];
+/* ---------- State ---------- */
+const fresh=()=>({step:0,group:{nr:"",name:"",members:["","","",""]},approved:{},quiz:{},quizTries:{},gt:{},gw:{},gapWrong:0,obst:{},badLinks:0,picks:{},wahlIdx:0,wahlCover:false,duel:{i:0,res:{}},duelFinal:{id:"",txt:""},blitz:{best:0,runs:0,wrongTotal:0},rating:{},good:"",better:"",t0:null,tEnd:null,lost:false,pets:0});
+const KEY2="lavaGame.v1";
+let G=null,S;
+try{G=JSON.parse(localStorage.getItem(KEY2)||"null")}catch(e){G=null}
+if(!G||!G.runs){G={level:1,unlocked:[1],runs:{}};}
+setLevel(G.level);
+S=Object.assign(fresh(),G.runs[G.level]||{});
+const save=()=>{G.runs[G.level]=S;try{localStorage.setItem(KEY2,JSON.stringify(G))}catch(e){}};
+const MISSION_I=STEPS.indexOf("mission"),LEVELS_I=STEPS.indexOf("levels");
+function switchLevel(n){
+ const grp=JSON.parse(JSON.stringify(S.group));save();
+ G.level=n;setLevel(n);
+ S=Object.assign(fresh(),G.runs[n]||{});S.group=grp;if(S.step<MISSION_I)S.step=MISSION_I;selObs=null;
+ save();render();window.scrollTo({top:0,behavior:"smooth"});say(`Level ${n}: ${LVL[n].name}! `+TIPS.mission);
+}
+function resetAll(){G={level:1,unlocked:[1],runs:{},best:G.best||0,mute:G.mute};setLevel(1);S=fresh();save();$("#modalRoot").innerHTML="";render();say(TIPS.start)}
+const members=()=>S.group.members.map(m=>m.trim()).filter(Boolean);
+const step=()=>STEPS[S.step];
+
+/* ---------- Wasser (Punkte) ---------- */
+function reasonOk(t){t=(t||"").trim();return t.length>=25}
+function reasonPro(t){return /\b(weil|denn|damit|deshalb|darum|da)\b/i.test(t||"")}
+function waterParts(){
+ const frac=(n,d)=>d?Math.min(1,n/d):0;const p=S.picks[me()]||{rank:[],why:{}};const D=S.duel||{res:{}};
+ const e1=frac(QUIZ.filter((q,i)=>S.quiz[i]===q.r).length,QUIZ.length)*8+frac(GAPS.filter((x,i)=>gapOk(i)).length,GAPS.length)*9+frac(OBST.filter((o,i)=>S.obst[i]&&o.fit.includes(S.obst[i])).length,OBST.length)*8;
+ const e2=frac(p.rank.filter(id=>lavaOk(p.why[id])).length,3)*25;
+ const e3=Object.values(D.res||{}).filter(r=>r.ok).length*6+(S.duelFinal&&S.duelFinal.id&&lavaOk(S.duelFinal.txt)?7:0);
+ const e4=frac((S.blitz&&S.blitz.best)||0,12)*13+frac(Object.keys(S.rating).length,KRIT.length)*6+(S.good.trim().length>10?3:0)+(S.better.trim().length>10?3:0);
+ return [e1,e2,e3,e4].map(x=>Math.min(25,x));
+}
+function water(){return Math.max(0,Math.min(100,Math.round(waterParts().reduce((a,b)=>a+b,0)-lavaPen())))}
+let lastW={};
+function tankHTML(key,w,big){
+ const parts=waterParts();
+ const marks=[1,2,3,4].map(i=>{const done=parts[i-1]>=24.5||S.approved["gate"+i];return `<span class="wt-mark ${done?"done":""}" style="--p:${i*25}%"><b>${done?"✓":"S"+i}</b></span>`}).join("");
+ const start=lastW[key]!=null?lastW[key]:w;
+ return `<div class="wtank ${big==="v"?"wt-v":big?"wt-big":""}" data-wt="${key}" role="progressbar" aria-label="Kühlung der Lava" aria-valuenow="${w}" aria-valuemin="0" aria-valuemax="100" title="Kühlung der Lava: ${w}%">
+  <svg class="wt-drop" viewBox="0 0 24 30" aria-hidden="true"><path d="M12 2 L19 10 L12 28 L5 10Z" fill="#9fe6ff" stroke="#2a8fc0" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 2 L12 28 M5 10 H19" stroke="#2a8fc0" stroke-width="1"/></svg>
+  <div class="wt-glass"><div class="wt-water" style="${big==="v"?"height":"width"}:${start}%"><i class="wt-bub b1"></i><i class="wt-bub b2"></i><i class="wt-bub b3"></i><i class="wt-bub b4"></i></div><div class="wt-shine"></div>${marks}</div>
+  <div class="wt-num"><span class="wt-n">${start}</span><small>%</small></div></div>`;
+}
+function animateTank(key,w){
+ const el=document.querySelector(`[data-wt="${key}"]`);if(!el)return;
+ const from=lastW[key]!=null?lastW[key]:w;lastW[key]=w;
+ const water=el.querySelector(".wt-water"),num=el.querySelector(".wt-n");
+ const prop=el.classList.contains("wt-v")?"height":"width";requestAnimationFrame(()=>requestAnimationFrame(()=>{water.style[prop]=w+"%"}));
+ if(from===w){num.textContent=w;return}
+ const t0=performance.now(),dur=900;
+ const stepN=t=>{const k=Math.min(1,(t-t0)/dur);num.textContent=Math.round(from+(w-from)*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(stepN)};requestAnimationFrame(stepN);
+ if(w>from){el.classList.remove("wt-splash");void el.offsetWidth;el.classList.add("wt-splash");
+  const r=el.getBoundingClientRect();const f=document.createElement("div");f.className="wt-plus";f.textContent=`+${w-from}`;f.style.left=(r.left+r.width*.55)+"px";f.style.top=(r.top-4)+"px";document.body.appendChild(f);setTimeout(()=>f.remove(),1400)}
+}
+
+/* ---------- Magmar ---------- */
+(function drawMascot(){
+ const N=40,C={rock:"#4a3530",rock2:"#3a2724",lava:"#ff7a1a",lava2:"#ff9d2e",flame:"#ffd23f",flame2:"#ff7a1a",out:"#1a0d08"};
+ const ell=(cx,cy,rx,ry,rot=0)=>(x,y)=>{const a=rot*Math.PI/180,dx=x-cx,dy=y-cy,u=dx*Math.cos(a)+dy*Math.sin(a),v=-dx*Math.sin(a)+dy*Math.cos(a);return (u*u)/(rx*rx)+(v*v)/(ry*ry)<=1};
+ const tri=(p)=>(x,y)=>{let s=0;for(let i=0;i<3;i++){const [x1,y1]=p[i],[x2,y2]=p[(i+1)%3];const c=(x2-x1)*(y-y1)-(y2-y1)*(x-x1);if(c===0)continue;if(!s)s=Math.sign(c);else if(Math.sign(c)!==s)return false}return true};
+ const rect=(x0,y0,x1,y1)=>(x,y)=>x>=x0&&x<=x1&&y>=y0&&y<=y1;
+ const mir=f=>(x,y)=>f(N-x,y);
+ const L=[
+  [tri([[11,11],[14.5,1],[18,11]]),"flame2"],[tri([[16.5,10],[20,-1],[23.5,10]]),"flame"],[tri([[22,11],[25.5,2],[29,11]]),"flame2"],
+  [ell(8.5,28,3.2,5.4,20),"rock"],[ell(31.5,28,3.2,5.4,-20),"rock"],
+  [ell(7.2,33,2.8,2.4),"lava2"],[ell(32.8,33,2.8,2.4),"lava2"],
+  [ell(20,31,12,8),"rock"],
+  [ell(14,38.2,3.6,1.8),"rock2"],[ell(26,38.2,3.6,1.8),"rock2"],
+  [ell(20,19,11,9.6),"rock"],
+  [ell(20,31.5,5,4.4),"lava"]
+ ];
+ const grid=[];for(let y=0;y<N;y++){grid[y]=[];for(let x=0;x<N;x++){let c=null;const px=x+.5,py=y+.5;for(const [f,col] of L)if(f(px,py))c=col;grid[y][x]=c}}
+ [[12,21],[13,22],[13,23],[14,24],[27,20],[26,21],[26,22],[25,23],[11,28],[12,29],[13,30],[28,28],[27,29],[27,30],[20,12],[21,13],[16,27],[24,27]].forEach(([x,y])=>{if(grid[y]&&grid[y][x]==="rock")grid[y][x]="lava"});
+ const fill=(x,y)=>y>=0&&y<N&&x>=0&&x<N&&grid[y][x];
+ const out=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(grid[y][x]&&!C.noOut?.includes(grid[y][x])&&(!fill(x-1,y)||!fill(x+1,y)||!fill(x,y-1)||!fill(x,y+1)))out.push([x,y])}
+ out.forEach(([x,y])=>grid[y][x]="out");
+ let r="";for(let y=0;y<N;y++){let x=0;while(x<N){const c=grid[y][x];if(!c){x++;continue}let w=1;while(x+w<N&&grid[y][x+w]===c)w++;r+=`<rect x="${x}" y="${y}" width="${w+.02}" height="1.02" fill="${C[c]}"/>`;x+=w}}
+ const px=(x,y,w,h,c)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+ const eyes=`<g class="f-eyes">${px(13.8,16.4,3.4,2.4,"#ffe14a")}${px(22.8,16.4,3.4,2.4,"#ffe14a")}${px(15.2,16.8,1.2,1.8,"#1a0d08")}${px(24.2,16.8,1.2,1.8,"#1a0d08")}</g>`;
+ const face=`${px(15.5,22,9,1.8,"#1a0d08")}${px(16.6,22.6,6.8,.9,"#ff7a1a")}${px(16.6,22,1,.8,"#fff")}${px(22.4,22,1,.8,"#fff")}`;
+ const blush=`<g class="f-blush" opacity="0">${px(11,21,2,1,"#f19a8c")}${px(27,21,2,1,"#f19a8c")}</g>`;
+ $("#fenni").innerHTML=`<svg viewBox="-1 -1 42 42" shape-rendering="crispEdges" aria-hidden="true">${r}${eyes}${face}${blush}</svg>`;
+})();
+let bubbleT;
+function say(t,ms=6000){const b=$("#bubble");b.innerHTML=`<b>Magmar:</b> ${t}`;b.hidden=false;clearTimeout(bubbleT);bubbleT=setTimeout(()=>b.hidden=true,ms)}
+let danceT=null,noteT=null;
+function fenniDance(msg){
+ const f=$("#fenni");clearTimeout(danceT);clearInterval(noteT);f.classList.remove("dance");void f.offsetWidth;f.classList.add("dance");
+ say(msg||"Stufe geschafft! Ich tanze vor Freude!",5000);
+ const notes=["♪","♫","♪","★"];let k=0;
+ noteT=setInterval(()=>{const r=f.getBoundingClientRect();const n=document.createElement("div");n.className="fnote";n.textContent=notes[k++%notes.length];n.style.left=(r.left+10+Math.random()*(r.width-20))+"px";n.style.top=(r.top+20)+"px";n.style.color=["#c43d55","#1f8f84","#6b4fc9","#d9631f"][k%4];document.body.appendChild(n);setTimeout(()=>n.remove(),1600)},450);
+ danceT=setTimeout(()=>{f.classList.remove("dance");clearInterval(noteT)},10000);
+}
+function hop(){const f=$("#fenni");f.classList.remove("happy");void f.offsetWidth;f.classList.add("happy")}
+const PET=["Autsch, heiss! Pass auf deine Finger auf!", "Ich bin Magmar. Mich überzeugt man nicht so leicht!", "Streicheln bringt dir keine Punkte. Argumente schon!", "Blubb … blubb … ich brodle vor mich hin.", "Wusstest du? Lava kann über 1000 Grad heiss sein."];
+let tapTimes=[];
+$("#fenni").addEventListener("click",e=>{
+ const now=Date.now();tapTimes=tapTimes.filter(t=>now-t<2500);tapTimes.push(now);
+ const h=document.createElement("div");h.className="heart";h.textContent="♥";h.style.left=(e.clientX-8)+"px";h.style.top=(e.clientY-20)+"px";document.body.appendChild(h);setTimeout(()=>h.remove(),1300);
+ if(tapTimes.length>=7){tapTimes=[];const f=$("#fenni");f.classList.remove("dig");void f.offsetWidth;f.classList.add("dig");say("Wuuusch! Ich tauche in die Lava ab … und bin wieder da!",3500);return}
+ S.pets++;save();hop();sfx("pop");say(PET[S.pets%PET.length],3500);
+});
+const TIPS={
+ start:"Hahaha! Ich bin Magmar, der Lavageist. Du willst meinen Eiskristall? Das wird schwer! Schreib zuerst deinen Vornamen.",
+ mission:"Lies den Notruf ganz genau. Die Fragen sind knifflig, und jeder Fehler kostet Kühlung!",
+ woerter:"Hier gibt es keine Auswahlliste. Du musst die Wörter selbst richtig schreiben!",
+ kraefte:"Verbinde nur, was wirklich hilft. Falsche Linien kosten Punkte!",
+ wahl:"Drei Superkräfte. Jede Begründung braucht «weil» oder «denn» und eine Gefahr. Sonst lache ich dich aus!",
+ duell:"Jetzt kämpfen wir! Ich greife deine Superkräfte an. Antworte genau so, wie es verlangt ist.",
+ blitz:"Schnell, schneller, Redemittel-Blitz! 60 Sekunden, mindestens 10 richtig.",
+ check:"Sei ehrlich zu dir. Was kannst du schon, was musst du noch üben?",
+ ziel:"Geschafft! Kopiere deine Zusammenfassung für die Lehrperson."
+};
+/* ---------- HUD ---------- */
+function renderHud(){
+ const cur=ET_OF[step()];const e=ETAPPEN[cur];const w=water();
+ const muteBtn=`<button class="mute" data-a="mute" aria-pressed="${!G.mute}" title="Ton ein oder aus"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9 h4 l5 -4 v14 l-5 -4 h-4Z" fill="currentColor"/>${G.mute?'<path d="M16 9 l5 6 M21 9 l-5 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>':'<path d="M16 8.5 q3 3.5 0 7 M18.5 6 q5 6 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>'}</svg>${G.mute?"Ton aus":"Ton an"}</button>`;
+ $("#hud").innerHTML=`<button class="menubtn" data-a="menuopen" aria-label="Menü öffnen"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>Menü</button>
+  <div class="hud-title"><span class="hud-et" style="--c:var(${e?e.c:"--sun"})">${e?`Stufe ${cur} von 4`:STEPINFO[step()].l}</span><span class="hud-name">${e?e.n:"Lava-Game"}</span></div>
+  <span id="clock" class="clock ${clockCls()}" title="Restzeit">${clockTxt()}</span>${tankHTML("hud",w)}`;
+ $("#sgrp").innerHTML=S.group.name?`<b>${esc(S.group.name)}</b><span>gegen Magmar</span><span class="sgrp-lv">Heimtraining · sehr schwer</span>`:`<span>Noch nicht angemeldet</span>`;
+ $("#tankv").innerHTML=tankHTML("side",w,"v");
+ $("#mutebox").innerHTML=muteBtn;
+ animateTank("hud",w);animateTank("side",w);
+}
+
+/* ---------- Schritte ---------- */
+function head(title,sub){const e=ETAPPEN[ET_OF[step()]];return `<div class="eyebrow">${e?`Stufe ${ET_OF[step()]} · ${e.n} · ${e.a}`:"Heimtraining"}</div><h1>${title}</h1>${sub?`<p>${sub}</p>`:""}`}
+function nav(ok,label="Weiter",hint=""){return `<div class="nav"><button class="btn" data-a="back" ${S.step===0?"hidden":""}>Zurück</button><span class="hint">${ok?"":hint}</span><button class="btn primary" data-a="next" ${ok?"":"disabled"}>${label}</button></div>`}
+
+const R={};
+const startOk=()=>(S.group.name||"").trim().length>=2;
+R.start=()=>{
+ return head("Das Lava-Game","Sehr schweres Heimtraining · 30 Minuten · nur du gegen Magmar")+
+ `<svg class="ill" viewBox="0 0 120 70" aria-hidden="true" style="width:100%;max-width:520px;display:block;margin:0 auto 14px;border-radius:12px">${COVER}${SMOKE(40,14,.8,"#9a948a",.6)}<g transform="translate(60 20)"><circle class="k-erupt" r="3" fill="#ff7a1a"/></g><g transform="translate(56 20)"><circle class="k-erupt" style="animation-delay:.5s" r="2.4" fill="#ffb340"/></g><g transform="translate(64 20)"><circle class="k-erupt" style="animation-delay:1s" r="2.6" fill="#ff7a1a"/></g></svg>
+ <div class="stack"><div class="box solid"><label for="lname">Dein Vorname</label><input type="text" id="lname" data-lname value="${esc(S.group.name||"")}" maxlength="20" autocomplete="off" placeholder="Vorname">
+ <p class="hint" style="margin:10px 0 0">Datenschutz: Schreibe nur deinen Vornamen. Alles bleibt auf diesem Gerät.</p></div>
+ <div class="box"><h3>So funktioniert es</h3><ul class="tight"><li>Du hast <strong>30 Minuten</strong>. Die Uhr läuft ab «Start» und hält nicht an.</li><li>Jeder Fehler kostet Kühlung. Am Schluss bekommst du bis zu 3 Sterne.</li><li>Magmar ist streng: Begründungen brauchen «weil» oder «denn» und eine Gefahr.</li><li>Du kannst so oft spielen, wie du willst. Deine Bestleistung: <strong>${G.best||0}%</strong></li></ul></div></div>`+
+ nav(startOk(),S.t0?"Weiter":"Start! Die Uhr läuft","Schreibe deinen Vornamen (mindestens 2 Buchstaben).");
+};
+R.levels=()=>{
+ const card=n=>{const d=LVL[n];const open=G.unlocked.includes(n);const r=G.runs[n];const done=r&&r.step===STEPS.length-1;
+  return `<button class="lvcard ${open?"":"locked"} ${n===G.level?"cur":""}" data-a="lvl" data-n="${n}" ${open?"":"disabled"} style="--lc:var(--e${n===1?1:n===2?2:3})">
+  <svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${d.ill[d.cover]}</svg>
+  <span class="lvtop"><span class="lvn">Level ${n}</span><span class="lvstars" aria-label="Schwierigkeit ${d.stars} von 3">${"★".repeat(d.stars)}${"☆".repeat(3-d.stars)}</span></span>
+  <span class="lvname">${d.name}</span><span class="lvteaser">${d.teaser}</span>
+  <span class="lvstate">${!open?`Gesperrt: Schafft zuerst Level ${n-1}.`:done?"✓ Geschafft! Nochmals ansehen":r&&r.step>MISSION_I?"Weiterspielen ›":"Jetzt starten ›"}</span>
+  ${open?"":`<span class="lock" aria-hidden="true"><svg viewBox="0 0 24 24" width="38" height="38"><rect x="4" y="10" width="16" height="12" rx="3" fill="var(--ink)"/><path d="M8 10 V7 a4 4 0 0 1 8 0 V10" stroke="var(--ink)" stroke-width="3" fill="none"/></svg></span>`}</button>`};
+ return head("Wählt euer Level","Jedes Level ist eine neue Mission in der Wüste. Level 2 und 3 werden freigeschaltet, wenn ihr das Level davor geschafft habt.")+
+ `<div class="lvgrid">${[1,2,3].map(card).join("")}</div><div class="nav"><button class="btn" data-a="back">Zurück</button></div>`;
+};
+R.mission=()=>{
+ const done=QUIZ.every((q,i)=>S.quiz[i]===q.r);
+ return head("Der Notruf",LVL[1].sub)+
+ `<div class="briefing">${BRIEF.map((t,i)=>`<p class="${i===0?"sp":""}">${esc(t)}</p>`).join("")}</div>
+ <div class="row" style="margin:12px 0 18px"><button class="btn small" data-a="read">▶ Vorlesen</button><button class="btn small" data-a="stop">■ Stopp</button><span class="task">Heimtraining · Kapitel 2 B</span></div>
+ <h2>Hast du alles verstanden?</h2><p class="hint">Jeder Fehlversuch kostet 1 Punkt Kühlung.</p><div class="stack">${QUIZ.map((q,i)=>{const a=S.quiz[i];const tries=S.quizTries[i]||[];
+  return `<div class="box"><h3>${i+1}. ${esc(q.q)}</h3><div class="opts">${q.o.map((o,j)=>{const cls=a===j&&j===q.r?"right":tries.includes(j)&&j!==q.r?"wrong":"";return `<button class="opt ${cls}" data-a="quiz" data-i="${i}" data-j="${j}" ${a===q.r?"disabled":""}>${esc(o)}</button>`}).join("")}</div>
+  ${a===q.r?`<div class="fb ok">Richtig!</div>`:tries.length?`<div class="fb no">Falsch! Lies nochmals im Notruf nach.</div>`:""}</div>`}).join("")}</div>`+
+ nav(done,"Weiter","Beantworte alle Fragen richtig.");
+};
+R.kraefte=()=>{
+ const done=linksOk();
+ return head("Die Superkräfte",`Lies alle ${POWERS.length} Superkräfte. Verbinde dann jede Gefahr mit einer Kraft, die wirklich hilft.`)+
+ `<p class="hint">Tippe auf eine Superkraft: Dann siehst du ihre Vorteile und Nachteile.</p><div class="grid3">${POWERS.map(p=>`<button class="power pcard" data-a="pinfo" data-id="${p.id}"><svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[p.id]}</svg>${esc(p.t)}<span class="more">Vor- und Nachteile ›</span></button>`).join("")}</div>
+ <h2 style="margin-top:24px">Verbinde: Was hilft gegen …?</h2><p class="hint">Tippe links auf eine Gefahr und dann rechts auf eine Superkraft. Jede falsche Linie kostet 1 Punkt Kühlung!</p>
+ <div class="connect" id="connect"><svg class="clines" id="clines" aria-hidden="true"></svg>
+  <div class="ccol">${OBST.map((o,i)=>`<button class="cob ${selObs===i?"sel":""} ${S.obst[i]?"linked":""}" data-a="cob" data-i="${i}"><svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${ILL[OBST_ILL[i]]}</svg>${esc(o.t)}</button>`).join("")}</div>
+  <div class="ccol">${POWERS.map(p=>`<button class="cpw ${Object.values(S.obst).includes(p.id)?"linked":""}" data-a="cpw" data-id="${p.id}"><svg viewBox="0 0 120 70" class="ill" aria-hidden="true">${PILL[p.id]}</svg><span>${esc(p.t)}</span></button>`).join("")}</div>
+ </div>
+ <div class="stack" style="gap:6px;margin-top:12px">${OBST.map((o,i)=>{const v=S.obst[i];if(!v)return"";const fit=o.fit.includes(v);
+  return `<div class="fb ${fit?"ok":"no"}"><strong>${esc(o.t)}</strong> → ${esc(P[v].t)}: ${fit?"Richtig! Das hilft hier.":"Falsch! Das hilft hier nicht. Wähle eine andere Superkraft."}</div>`}).join("")}</div>`+
+ nav(done,"Weiter","Verbinde alle vier Gefahren richtig.");
+};
+/* ---------- Lava: Spiellogik (Heimtraining) ---------- */
+const TLIM=30*60*1000;
+const leftMs=()=>S.t0?Math.max(0,TLIM-((S.tEnd||Date.now())-S.t0)):TLIM;
+const clockTxt=()=>{const s=Math.ceil(leftMs()/1000);return `⏱ ${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`};
+const clockCls=()=>!S.t0?"":leftMs()<5*60000?"hot":leftMs()<10*60000?"warm":"";
+const me=()=>members()[0]||"";
+function lavaChecks(t){t=t||"";return {len:t.trim().length>=40,weil:reasonPro(t),gefahr:/(lava|rauch|gas|dampf|atm|erdbeben|beben|fels|stein|hitze|heiss|krater|glut)/i.test(t)}}
+function lavaOk(t){const c=lavaChecks(t);return c.len&&c.weil&&c.gefahr}
+function lavaFb(t){const c=lavaChecks(t);return [c.len?"✓ lang genug":"✗ mindestens 40 Zeichen",c.weil?"✓ mit weil/denn":"✗ «weil» oder «denn» fehlt",c.gefahr?"✓ Gefahr genannt":"✗ nenne eine Gefahr (Lava, Rauch, Erdbeben, Hitze)"].join(" · ")}
+const norm=s=>(s||"").trim().toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/\s+/g," ");
+const gapOk=i=>norm(S.gt&&S.gt[i])===norm(GAPS[i][2]);
+const linksOk=()=>OBST.every((o,i)=>S.obst[i]&&o.fit.includes(S.obst[i]));
+const wahlDoneL=()=>{const p=S.picks[me()];return !!(p&&p.rank.length===3&&p.rank.every(id=>lavaOk(p.why[id])))};
+const DUEL_T=[{id:"wider",t:"widersprechen und begründen",hint:"Das sehe ich anders, weil …"},{id:"erg",t:"zustimmen und etwas ergänzen",hint:"Da hast du recht, aber ich möchte ergänzen, dass …"},{id:"frag",t:"nachfragen und dann begründen",hint:"Wie meinst du das? Ich glaube nämlich, dass …, weil …"}];
+const DLEN=90,BLEN=60;
+function duelCheck(k,t){t=t||"";const id=DUEL_T[k].id;const miss=[];
+ if(t.trim().length<30)miss.push("Deine Antwort ist zu kurz (mindestens 30 Zeichen).");
+ if(id==="wider"){if(!/(nicht einverstanden|sehe (ich )?(das )?anders|ja,? aber|stimmt (so )?nicht|anderer meinung|glaube ich nicht|falsch)/i.test(t))miss.push("Ich höre keinen Widerspruch! Zum Beispiel: «Das sehe ich anders …»");if(!reasonPro(t))miss.push("Wo ist deine Begründung mit «weil» oder «denn»?")}
+ if(id==="erg"){if(!/(recht|stimme|einverstanden|stimmt|genau)/i.test(t))miss.push("Du sollst mir zuerst zustimmen! Zum Beispiel: «Da hast du recht …»");if(!/(ergänz|ausserdem|dazu|aber|trotzdem|zusätzlich)/i.test(t))miss.push("Und was ergänzt du? Zum Beispiel: «… aber ich möchte ergänzen, dass …»")}
+ if(id==="frag"){if(!/\?/.test(t))miss.push("Wo ist deine Frage? Eine Frage endet mit einem Fragezeichen.");if(!reasonPro(t))miss.push("Nach der Frage brauchst du noch eine Begründung mit «weil» oder «denn».")}
+ return miss}
+const duelDone=()=>{const D=S.duel||{};return (D.i||0)>=3&&!!(S.duelFinal&&S.duelFinal.id&&lavaOk(S.duelFinal.txt))};
+const BLITZ=[["Ich bin der Meinung, dass …",0],["Meiner Ansicht nach …",0],["…, weil es gefährlich ist.",1],["Ein Grund dafür ist …",1],["Da hast du völlig recht.",2],["Ich sehe das genauso.",2],["Das sehe ich anders.",3],["Ja, aber …",3],["Wie meinst du das?",4],["Kannst du ein Beispiel nennen?",4],["Dazu möchte ich ergänzen, dass …",5],["Ausserdem …",5]];
+const BCAT=["Meinung äussern","begründen","zustimmen","widersprechen","nachfragen","ergänzen"];
+const BGOAL=10;
+const blitzDone=()=>((S.blitz&&S.blitz.best)||0)>=BGOAL;
+const checkDone=()=>KRIT.every((k,i)=>S.rating[i]!=null)&&S.good.trim().length>10&&S.better.trim().length>10;
+function lavaPen(){let p=0;Object.entries(S.quizTries||{}).forEach(([i,t])=>{const q=QUIZ[+i];if(q)p+=t.filter(j=>j!==q.r).length});
+ p+=(S.gapWrong||0)+(S.badLinks||0);const D=S.duel||{};Object.values(D.res||{}).forEach(r=>p+=(r.tries||0)*2);p+=Math.round(((S.blitz&&S.blitz.wrongTotal)||0)*.5);return Math.min(35,p)}
+
+R.woerter=()=>{
+ const done=GAPS.every((g,i)=>gapOk(i));
+ return head("Vulkan-Wörter","Tippe auf die Karten und lies die Erklärungen. Dann schreibst du die Wörter selbst in die Lücken. Ohne Auswahlliste!")+
+ `<div class="grid3">${WORDS.map((w,i)=>`<button class="flip" data-a="flip" aria-label="${esc(w[0])} umdrehen"><div class="flip-in"><div class="face"><svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${ILL[i]}</svg><span class="art">${esc(w[1])}</span><span class="w">${esc(w[0])}</span></div><div class="face back"><strong>${esc(w[0])}</strong>${esc(w[2])}</div></div></button>`).join("")}</div>
+ <h2 style="margin-top:24px">Schreib das fehlende Wort</h2><p class="hint">Schreibe das Wort genau so, wie es in den Satz passt, und tippe auf «Prüfen». Jeder Fehler kostet einen Punkt Kühlung.</p>
+ <div class="stack">${GAPS.map((g,i)=>{const ok=gapOk(i);const w=(S.gw&&S.gw[i])||0;return `<div class="box"><p style="margin-bottom:8px">${esc(g[0]).replace("___",`<strong>${ok?esc(g[2]):"______"}</strong>`)}</p>${ok?`<div class="fb ok">Richtig!</div>`:`<div class="row"><input type="text" id="gt${i}" data-gt="${i}" value="${esc((S.gt&&S.gt[i])||"")}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Lücke ${i+1}" style="flex:1;min-width:0"><button class="btn small" data-a="gcheck" data-i="${i}">Prüfen</button></div>${w?`<div class="fb no">Leider falsch.${w>=2?` Tipp: Das Wort beginnt mit «${esc(g[2].charAt(0))}».`:""}</div>`:""}`}</div>`}).join("")}</div>`+
+ nav(done,"Weiter","Fülle alle Lücken richtig aus.");
+};
+R.duell=()=>{
+ const p=S.picks[me()]||{rank:[],why:{}};const D=S.duel||(S.duel={i:0,res:{}});const k=D.i||0;
+ const status=`<div class="duel-steps">${[0,1,2].map(j=>{const r=D.res[j];return `<span class="dstep ${r?(r.ok?"won":"lost"):j===k?"now":""}">${r?(r.ok?"✓ Duell "+(j+1):"✗ Duell "+(j+1)):"Duell "+(j+1)}</span>`}).join("")}<span class="dstep ${k>=3?"now":""}">Finale</span></div>`;
+ if(k>=3){
+  const f=S.duelFinal||(S.duelFinal={id:"",txt:""});const won=Object.values(D.res).filter(r=>r.ok).length;
+  return head("Das Finale gegen Magmar",`Du hast ${won} von 3 Duellen gewonnen. Jetzt kommt dein stärkstes Argument!`)+status+
+  `<div class="mag-say"><b>Magmar:</b> «${won===3?"Grrr … Du bist gut. Aber ein letztes Argument will ich noch hören!":won>=1?"Hmpf. Ein paar Treffer. Überzeug mich jetzt richtig!":"Haha! Bis jetzt hast du mich nicht überzeugt. Letzte Chance!"}»</div>
+  <div class="box solid"><h3>Welche Superkraft ist am wichtigsten?</h3><div class="chips" style="margin:6px 0 10px">${p.rank.map(id=>`<button class="chip ${f.id===id?"on":""}" data-a="dfinal" data-id="${id}">${esc(P[id].t)}</button>`).join("")}</div>
+  <label for="dfin">Dein stärkstes Argument (mit «weil» und einer Gefahr)</label><textarea id="dfin" data-dfin placeholder="Die wichtigste Superkraft ist …, weil …">${esc(f.txt)}</textarea><div class="fb ${lavaOk(f.txt)?"ok":"no"}" id="dfin_fb">${lavaFb(f.txt)}</div></div>`+
+  nav(duelDone(),"Weiter","Wähle eine Superkraft und schreibe dein stärkstes Argument.");
+ }
+ const id=p.rank[k];if(!id)return head("Zuerst wählen","Du hast noch keine drei Superkräfte gewählt.")+nav(false);
+ const tech=DUEL_T[k];const running=!!D.start;const el=running?Math.floor((Date.now()-D.start)/1000):0;
+ return head(`Duell ${k+1} von 3: ${esc(P[id].t)}`,"Magmar greift deine Superkraft an. Antworte genau so, wie es verlangt ist, bevor die Zeit abläuft.")+status+
+ `<div class="mag-say"><b>Magmar:</b> «Pah! «${esc(P[id].t)}»? ${esc((PROS[id]&&PROS[id].c[0])||"Das bringt dir gar nichts!")}»</div>
+ <div class="box solid"><div class="eyebrow">Deine Aufgabe</div><h3 style="margin-top:4px">${tech.t}</h3><p class="hint">Zum Beispiel: «${esc(tech.hint)}»</p>
+ ${!running?`<button class="btn primary" data-a="dstart">Duell starten (90 Sekunden)</button>`:`<div class="timer dt" id="dtimer">${fmt(Math.max(0,DLEN-el))}</div><div class="tl"><i id="dtl" style="width:${Math.min(100,el/DLEN*100)}%"></i></div>
+ <textarea id="duel_t" data-duel placeholder="${esc(tech.hint)}" style="margin-top:10px">${esc(D.draft||"")}</textarea><div class="row" style="margin-top:8px"><button class="btn primary" data-a="dsend">Antworten</button>${D.tries?`<span class="hint">Fehlversuche: ${D.tries} (je −2 Kühlung)</span>`:""}</div>`}
+ ${D.msg?`<div class="fb ${D.msgOk?"ok":"no"}" style="margin-top:8px">${D.msg}</div>`:""}</div>
+ <details style="margin-top:12px"><summary>Meine Begründung für diese Superkraft</summary><p style="margin:6px 0 0">${esc(p.why[id]||"")}</p></details>`+nav(false,"Weiter","Gewinne zuerst alle Duelle.");
+};
+R.blitz=()=>{
+ const B=S.blitz||(S.blitz={best:0,runs:0,wrongTotal:0});
+ if(!B.start){
+  return head("Redemittel-Blitz",`12 Redemittel in ${BLEN} Sekunden. Ordne jedes der richtigen Art zu. Ziel: mindestens ${BGOAL} richtig.`)+
+  `<div class="box solid blitz-intro"><div class="big" style="font-size:44px">${B.best||0}/12</div><p class="hint" style="margin:0">Deine Bestleistung${B.runs?` nach ${B.runs} Versuch${B.runs>1?"en":""}`:""}</p>${B.last?`<p style="margin:8px 0 0">Letzte Runde: ${B.last.c} richtig, ${B.last.w} falsch.</p>`:""}
+  <button class="btn primary" data-a="bstart" style="margin-top:12px">${B.runs?"Nochmals versuchen":"Start!"}</button></div>`+
+  nav(blitzDone(),"Weiter",`Schaffe mindestens ${BGOAL} richtige.`);
+ }
+ const it=BLITZ[B.order[B.idx]];const el=Math.floor((Date.now()-B.start)/1000);
+ return head("Redemittel-Blitz",`Richtig: ${B.c} · Falsch: ${B.w} · Noch ${12-B.idx}`)+
+ `<div class="timer dt" id="btimer">${fmt(Math.max(0,BLEN-el))}</div><div class="tl"><i id="btl" style="width:${Math.min(100,el/BLEN*100)}%"></i></div>
+ <div class="blitz-card" id="bcard">«${esc(it[0])}»</div>
+ <div class="bgrid">${BCAT.map((c,j)=>`<button class="btn bcat" data-a="bpick" data-c="${j}">${c}</button>`).join("")}</div>`;
+};
+function blitzEnd(){const B=S.blitz;B.best=Math.max(B.best||0,B.c);B.last={c:B.c,w:B.w};B.runs=(B.runs||0)+1;B.wrongTotal=(B.wrongTotal||0)+B.w;B.start=null;save();render();
+ if(B.c>=BGOAL){hop();sfx("fanfare");say("Blitzschnell! Das hätte nicht mal ich geschafft.",5000)}else{sfx("bad");say(`${B.c} richtig. Du brauchst ${BGOAL}. Nochmals!`,5000)}}
+R.check=()=>head("Dein Selbstcheck","Schätze dich ehrlich ein. Genau diese Punkte bewertet die Lehrperson in der Lernkontrolle.")+
+ `<div class="stack">${KRIT.map((k,i)=>`<div class="box"><h3>${k}</h3><div class="rate">${LEVELS.map((l,j)=>`<button class="lv${j} ${S.rating[i]===j?"on":""}" data-a="rate" data-i="${i}" data-j="${j}" aria-pressed="${S.rating[i]===j}"><span class="drops">${"<i></i>".repeat(j+1)}</span>${l}</button>`).join("")}</div></div>`).join("")}</div>
+ <div class="grid2" style="margin-top:14px"><div><label for="good">Das kann ich schon gut:</label><textarea id="good" data-t="good">${esc(S.good)}</textarea></div><div><label for="better">Das trainiere ich bis zur Lernkontrolle:</label><textarea id="better" data-t="better">${esc(S.better)}</textarea></div></div>`+
+ nav(checkDone(),"Mission abschliessen","Bewerte alle Punkte und fülle beide Felder aus.");
+function stars(w){return w>=85?3:w>=65?2:w>=40?1:0}
+function summary(){
+ const p=S.picks[me()]||{rank:[],why:{}};const D=S.duel||{res:{}};const used=S.t0?((S.tEnd||Date.now())-S.t0):0;
+ let s=`LAVA-GAME (Heimtraining) · ${me()}\nErgebnis: ${water()}% Kühlung · ${"★".repeat(stars(water()))}${"☆".repeat(3-stars(water()))}\nZeit: ${mmss(used)} von 30:00${S.lost?" (Zeit abgelaufen)":""}\n\nMEINE SUPERKRÄFTE\n`;
+ p.rank.forEach((id,k)=>s+=`  ${k+1}. ${P[id].t}: ${(p.why[id]||"").trim()}\n`);
+ s+="\nDUELLE GEGEN MAGMAR\n";[0,1,2].forEach(j=>{const r=D.res&&D.res[j];s+=`  ${j+1}. ${DUEL_T[j].t}: ${r?(r.ok?"gewonnen":"verloren"):"-"}${r&&r.txt?` – ${r.txt.trim()}`:""}\n`});
+ if(S.duelFinal&&S.duelFinal.id)s+=`  Stärkstes Argument (${P[S.duelFinal.id].t}): ${S.duelFinal.txt.trim()}\n`;
+ s+=`\nREDEMITTEL-BLITZ: Bestleistung ${(S.blitz&&S.blitz.best)||0}/12\n\nSELBSTCHECK\n`;KRIT.forEach((k,i)=>s+=`  ${k} → ${S.rating[i]!=null?LEVELS[S.rating[i]]:"-"}\n`);
+ s+=`  Das kann ich gut: ${S.good.trim()}\n  Das trainiere ich: ${S.better.trim()}\n`;
+ return s;
+}
+R.ziel=()=>{if(S.t0&&!S.tEnd){S.tEnd=Date.now();save()}const w=water();const st=stars(w);if(!S.lost&&w>(G.best||0)){G.best=w;save()}
+ const used=S.t0?(S.tEnd-S.t0):0;
+ return `<div class="splash"><div class="eyebrow">${S.lost?"Zeit abgelaufen":"Mission erfüllt"}</div><div class="big" style="--ec:${S.lost?"#d6352a":"var(--accent)"}">${S.lost?"Die Lava war schneller!":"Magmar ist überzeugt!"}</div>
+ <svg class="ill winscene" viewBox="0 0 240 110" aria-hidden="true"><rect width="240" height="110" fill="var(--ill-sky)"/>
+ <g transform="translate(120 96) scale(2)"><path d="M-40 0 L-10 -38 H10 L40 0Z" fill="var(--ill-rock)"/><path d="M-10 -38 H10 L6 -34 H-6Z" fill="${S.lost?"#ff7a1a":"#9fe6ff"}"/></g>
+ ${S.lost?`${[[-8,0],[0,.4],[8,.8]].map(([dx,d])=>`<g transform="translate(${120+dx} 22)"><circle class="k-erupt" style="animation-delay:${d}s" r="4" fill="#ff7a1a"/></g>`).join("")}`:`${CRYSTAL(120,14,1.2)}${SPARK(96,20,0,"#bfefff")}${SPARK(146,16,.6,"#bfefff")}`}
+ <path class="sand2" d="M0 92 Q60 84 120 92 T240 90 V110 H0Z"/><path d="M0 100 Q60 94 120 100 T240 98" stroke="${S.lost?"#ff7a1a":"#9fe6ff"}" stroke-width="5" fill="none"/>
+ <g transform="translate(46 80)">${HERO({cls:"k-bounce",arms:S.lost?"":`<path d="M-5 0 l-5 -12 M5 0 l5 -12" stroke="#6b4fc9" stroke-width="3.4" stroke-linecap="round"/>`})}</g>
+ ${POP(190,30,S.lost?"NOCHMAL!":"GESCHAFFT!","k-pop",13)}</svg>
+ <div class="stars" aria-label="${st} von 3 Sternen">${[0,1,2].map(i=>`<span class="${i<st?"on":""}">★</span>`).join("")}</div>
+ <div style="width:100%;max-width:520px">${tankHTML("ziel",w,true)}</div>
+ <p>${S.lost?"Die 30 Minuten sind um. Du kannst es sofort nochmals versuchen und deine Punkte verbessern.":LVL[1].win} Zeit: <strong>${mmss(used)}</strong>. Bestleistung: <strong>${G.best||0}%</strong>.</p>
+ <div class="row" style="justify-content:center"><button class="btn primary" data-a="again" style="--ec:var(--e1)">↺ Nochmals spielen</button></div></div>
+ <div class="box solid" style="margin-top:14px"><h3>Ergebnis an die Lehrperson schicken</h3><ol style="margin:0 0 10px;padding-left:22px"><li>Tippe auf «Zusammenfassung kopieren».</li><li>Füge den Text in einen Chat mit deiner Lehrperson ein (zum Beispiel in Teams).</li><li>Oder bring das Ergebnis in die nächste Deutschstunde mit.</li></ol>
+ <div class="row"><button class="btn primary" data-a="copy" style="--ec:var(--accent)">Zusammenfassung kopieren</button></div>
+ <pre class="sum" id="sum">${esc(summary())}</pre></div>`;
+};
+function lavaTick(){
+ const st=step();
+ if(st==="duell"&&S.duel&&S.duel.start){const el=Math.floor((Date.now()-S.duel.start)/1000);const t=$("#dtimer");if(t){t.textContent=fmt(Math.max(0,DLEN-el));t.classList.toggle("hot",DLEN-el<=15)}const f=$("#dtl");if(f)f.style.width=Math.min(100,el/DLEN*100)+"%";
+  if(el>=DLEN){const D=S.duel;D.res[D.i]={ok:false,txt:D.draft||"",tries:D.tries||0,time:DLEN};D.i++;D.start=null;D.draft="";D.tries=0;D.msg="Zu langsam! Magmar lacht: «Hahaha!» Dieses Duell ist verloren.";D.msgOk=false;save();render();sfx("bad");say("Die Zeit ist um! Weiter zum nächsten Duell.",4000)}}
+ if(st==="blitz"&&S.blitz&&S.blitz.start){const el=Math.floor((Date.now()-S.blitz.start)/1000);const t=$("#btimer");if(t){t.textContent=fmt(Math.max(0,BLEN-el));t.classList.toggle("hot",BLEN-el<=10)}const f=$("#btl");if(f)f.style.width=Math.min(100,el/BLEN*100)+"%";if(el>=BLEN)blitzEnd()}
+}
+setInterval(()=>{const c=$("#clock");if(c){c.textContent=clockTxt();c.className="clock "+clockCls()}
+ if(S.t0&&!S.tEnd&&leftMs()<=0&&step()!=="ziel"){S.lost=true;S.tEnd=Date.now();if(S.duel)S.duel.start=null;if(S.blitz)S.blitz.start=null;S.step=STEPS.indexOf("ziel");save();render();sfx("bad");say("Die Zeit ist um! Die Lava war schneller. Schau dir dein Ergebnis an und versuche es nochmals.",9000);return}
+ if(S.lost&&step()!=="ziel"){S.step=STEPS.indexOf("ziel");save();render();return}
+ lavaTick()},1000);
+document.addEventListener("click",ev=>{
+ const b=ev.target.closest("[data-a]");if(!b||b.disabled)return;const a=b.dataset.a;
+ if(a==="gcheck"){const i=+b.dataset.i;const inp=$("#gt"+i);S.gt=S.gt||{};S.gt[i]=inp?inp.value:"";if(gapOk(i)){sfx("good");hop()}else{S.gw=S.gw||{};S.gw[i]=(S.gw[i]||0)+1;S.gapWrong=(S.gapWrong||0)+1;sfx("bad")}save();render();const nx=$("[data-gt]");if(nx)nx.focus();return}
+ if(a==="dstart"){S.duel.start=Date.now();S.duel.msg="";save();render();const t=$("#duel_t");if(t)t.focus();say("Los! 90 Sekunden. Zeig mir, was du kannst!",3000);return}
+ if(a==="dsend"){const D=S.duel;const t=$("#duel_t");D.draft=t?t.value:D.draft;const miss=duelCheck(D.i,D.draft);
+  if(!miss.length){D.res[D.i]={ok:true,txt:D.draft,tries:D.tries||0,time:Math.floor((Date.now()-D.start)/1000)};D.i++;D.start=null;D.draft="";D.tries=0;D.msg="Magmar knurrt: «Grrr … Das ist ein gutes Argument.» Duell gewonnen!";D.msgOk=true;save();render();sfx("fanfare");hop();window.scrollTo({top:0,behavior:"smooth"})}
+  else{D.tries=(D.tries||0)+1;D.msg="Magmar lacht: «"+miss.join(" ")+"»";D.msgOk=false;save();render();sfx("bad");const tt=$("#duel_t");if(tt){tt.focus();tt.setSelectionRange(tt.value.length,tt.value.length)}}
+  return}
+ if(a==="dfinal"){S.duelFinal.id=b.dataset.id;save();render();return}
+ if(a==="bstart"){const B=S.blitz;B.order=BLITZ.map((x,i)=>i).sort(()=>Math.random()-.5);B.idx=0;B.c=0;B.w=0;B.start=Date.now();save();render();return}
+ if(a==="bpick"){const B=S.blitz;if(!B.start)return;const it=BLITZ[B.order[B.idx]];const ok=+b.dataset.c===it[1];if(ok)B.c++;else B.w++;sfx(ok?"good":"bad");B.idx++;
+  if(B.idx>=BLITZ.length){blitzEnd();return}save();render();const c=$("#bcard");if(c){c.classList.add(ok?"okf":"nof")}return}
+ if(a==="again"){const best=G.best||0;G={level:1,unlocked:[1],runs:{},best,mute:G.mute};S=fresh();S.group.name="";save();render();window.scrollTo({top:0});say(TIPS.start);return}
+});
+document.addEventListener("input",ev=>{
+ const t=ev.target;
+ if(t.dataset.gt!=null){S.gt=S.gt||{};S.gt[+t.dataset.gt]=t.value;save();return}
+ if(t.dataset.duel!=null){S.duel.draft=t.value;save();return}
+ if(t.dataset.dfin!=null){S.duelFinal.txt=t.value;save();const fb=$("#dfin_fb");if(fb){fb.className="fb "+(lavaOk(t.value)?"ok":"no");fb.textContent=lavaFb(t.value)}updNext(duelDone());return}
+ if(t.dataset.lname!=null){S.group.name=t.value;S.group.members=[t.value,"","",""];save();const nb=$("[data-a=next]");if(nb)nb.disabled=!startOk();renderHud();return}
+});
+document.addEventListener("keydown",ev=>{const t=ev.target;if(ev.key==="Enter"&&t.dataset&&t.dataset.gt!=null){ev.preventDefault();const b=document.querySelector(`[data-a=gcheck][data-i="${t.dataset.gt}"]`);if(b)b.click()}});
+
+document.addEventListener("click",ev=>{const b=ev.target.closest("[data-a]");if(!b)return;if(b.dataset.a==="hardreset"){resetAll();window.scrollTo({top:0})}});
+document.addEventListener("input",ev=>{const t=ev.target;
+ if(t.dataset.lwhy){const p=S.picks[me()];p.why[t.dataset.lwhy]=t.value;save();const fb=document.querySelector(`[data-lfb="${t.dataset.lwhy}"]`);if(fb){fb.className="fb "+(lavaOk(t.value)?"ok":"no");fb.textContent=lavaFb(t.value)}updNext(wahlDoneL());return}
+ if(t.dataset.t==="good"||t.dataset.t==="better"){updNext(checkDone());return}});
+const chip=(ok,t)=>`<span class="gs-chip ${ok===true?"ok":ok===false?"no":"mid"}">${t}</span>`;
+const mmss=ms=>{const s=Math.max(0,Math.round(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`};
+function gateSummary(n){
+ const rows=[];let ask="";
+ if(n===1){
+  const tries=QUIZ.map((q,i)=>(S.quizTries[i]||[]).filter(j=>j!==q.r).length);const wrong=tries.reduce((a,b)=>a+b,0);
+  rows.push(["Funkspruch-Fragen",chip(wrong===0?true:wrong<=2?null:false,wrong===0?"alle beim 1. Versuch":`${wrong} Fehlversuch${wrong>1?"e":""}`)+(wrong?` <span class="gs-small">bei Frage ${tries.map((t,i)=>t?i+1:0).filter(Boolean).join(", ")}</span>`:"")]);
+  const g=GAPS.filter((x,i)=>S.gaps[i]===x[1]).length;rows.push(["Lückensätze",chip(g===GAPS.length,`${g} von ${GAPS.length} richtig`)]);
+  const seen=Object.keys(S.seen||{}).filter(id=>POWERS.some(p=>p.id===id)).length;rows.push(["Vor-/Nachteile angeschaut",chip(seen>=POWERS.length?true:seen>=4?null:false,`${seen} von ${POWERS.length} Superkräften`)]);
+  rows.push(["Verbindungen",OBST.map((o,i)=>{const id=S.obst[i];const f=id&&o.fit.includes(id);return `<div class="gs-line">${chip(f?true:null,f?"passt":"diskutieren")} ${esc(o.t)} → <b>${id?esc(P[id].t):"–"}</b></div>`}).join("")]);
+  const odd=OBST.map((o,i)=>[o,S.obst[i]]).find(([o,id])=>id&&!o.fit.includes(id))||OBST.map((o,i)=>[o,S.obst[i]]).find(([o,id])=>id);
+  if(odd)ask=`Warum hilft «${esc(P[odd[1]].t)}» bei diesem Problem? «${esc(odd[0].t)}»`;
+ }
+ if(n===2){
+  members().forEach(m=>{const p=S.picks[m];if(!p||!p.rank.length){rows.push([esc(m),chip(false,"noch keine Wahl")]);return}
+   const pro=p.rank.filter(id=>reasonPro(p.why[id])).length;const words=p.rank.reduce((a,id)=>a+((p.why[id]||"").trim().split(/\s+/).filter(Boolean).length),0);
+   rows.push([esc(m),`${chip(pro===3?true:pro>=1?null:false,`${pro}/3 mit «weil/denn»`)} ${chip(words>=30?true:words>=15?null:false,`${words} Wörter`)}`+p.rank.map((id,k)=>`<div class="gs-line"><b>${k+1}. ${esc(P[id].t)}:</b> <span class="gs-small">${esc(p.why[id]||"–")}</span></div>`).join("")]);
+  });
+  const m0=members().find(m=>S.picks[m]&&S.picks[m].rank.length);if(m0)ask=`${esc(m0)}, erkläre mir deine Superkraft auf Platz 1: «${esc(P[S.picks[m0].rank[0]].t)}».`;
+ }
+ if(n===3){
+  const dur=S.timerStart&&S.timerEnd?S.timerEnd-S.timerStart:null;
+  rows.push(["Aufnahme",chip(!!S.rec,S.rec?"Aufnahme lief":"nicht bestätigt")]);
+  rows.push(["Gesprächsdauer",dur!=null?chip(dur>=300000?true:dur>=120000?null:false,mmss(dur)+" Min.")+(S.skipped?` <span class="gs-small">(Timer übersprungen)</span>`:""):chip(null,"unbekannt")]);
+  const rev=Object.values(S.revealed||{}).filter(Boolean).length;rows.push(["Spickkarten aufgedeckt",chip(rev>0?true:null,`${rev}`)]);
+  rows.push(["Einigung",chip(S.howAgree==="Durch die besten Argumente"?true:S.howAgree==="Jemand hat nachgegeben"?false:null,esc(S.howAgree||"–"))+S.agreed.map((id,k)=>{const who=members().filter(m=>S.picks[m]&&S.picks[m].rank.includes(id));return `<div class="gs-line"><b>${k+1}. ${esc(P[id].t)}</b> <span class="gs-small">(gewählt von: ${who.length?esc(who.join(", ")):"niemandem einzeln"})</span><br><span class="gs-small">${esc(S.agreedWhy[id]||"")}</span></div>`}).join("")]);
+  const lost=members().filter(m=>S.picks[m]&&!S.picks[m].rank.some(id=>S.agreed.includes(id)));
+  if(lost.length)rows.push(["Achtung",chip(false,`${esc(lost.join(", "))}: keine eigene Kraft in der Einigung`)]);
+  if(S.agreed[0])ask=lost.length?`${esc(lost[0])}, wie haben dich die anderen überzeugt?`:`Welches Argument hat euch bei «${esc(P[S.agreed[0]].t)}» überzeugt?`;
+ }
+ if(S.redo&&S.redo[n])rows.unshift(["Wiederholt",chip(null,`${S.redo[n]}×`)]);
+ return `<div class="gsum"><div class="gs-h">Für die Lehrperson: So hat die Gruppe gearbeitet</div><div class="gs-name">${esc(S.group.name||"")} · ${esc(members().join(", "))} · Level ${G.level}</div>
+ <table class="gs-t"><tbody>${rows.map(([k,v])=>`<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</tbody></table>
+ ${ask?`<div class="gs-ask"><b>Kontrollfrage:</b> ${ask}</div>`:""}</div>`;
+}
+const REDO_RESET={
+ 1:()=>({quiz:{},quizTries:{},gaps:{},obst:{},seen:{},step:STEPS.indexOf("mission")}),
+ 2:()=>({picks:{},wahlIdx:0,wahlCover:true,step:STEPS.indexOf("wahl")}),
+ 3:()=>({rec:false,timerStart:null,timerEnd:null,timerDone:false,skipped:false,revealed:{},agreed:[],agreedWhy:{},howAgree:"",spickOpen:null,step:STEPS.indexOf("spick")})
+};
+const REDO_FIRST={1:"mission",2:"wahl",3:"spick"};
+function fillExample(n){
+ if(!(S.group.name||"").trim())S.group.name="Beispielgruppe";
+ if(members().length<2)S.group.members=["Mia","Luca","",""];
+ const ms=members();
+ const why=id=>{const pr=(PROS[id]&&PROS[id].p[0])||P[id].d;return `«${P[id].t}» ist wichtig, denn ${pr.charAt(0).toLowerCase()+pr.slice(1)}`};
+ // Stufe 1
+ QUIZ.forEach((q,i)=>{S.quiz[i]=q.r;S.quizTries[i]=[q.r]});
+ GAPS.forEach((g,i)=>S.gaps[i]=g[1]);
+ OBST.forEach((o,i)=>S.obst[i]=o.fit[0]);
+ S.seen={};POWERS.forEach(p=>S.seen[p.id]=1);
+ S.approved.gate1=true;
+ if(n>=2){
+  const pool=[];OBST.forEach(o=>o.fit.forEach(id=>{if(!pool.includes(id))pool.push(id)}));
+  ms.forEach((m,k)=>{const rank=[0,1,2].map(j=>pool[(k*2+j)%pool.length]);const w={};rank.forEach(id=>w[id]=why(id));S.picks[m]={rank,why:w}});
+  S.wahlIdx=ms.length;S.wahlCover=true;S.approved.gate2=true;
+ }
+ if(n>=3){
+  S.rec=true;S.timerStart=Date.now()-420000;S.timerEnd=Date.now();S.timerDone=true;S.skipped=false;
+  S.revealed={};ms.forEach(m=>[0,1,2].forEach(k=>S.revealed[m+"|"+k]=true));
+  const all=[];ms.forEach(m=>S.picks[m].rank.forEach(id=>{if(!all.includes(id))all.push(id)}));
+  S.agreed=all.slice(0,3);S.agreedWhy={};S.agreed.forEach(id=>S.agreedWhy[id]=`Das beste Argument war: ${why(id).replace(/^«[^»]+» ist wichtig, denn /,"")}`);
+  S.howAgree="Durch die besten Argumente";S.approved.gate3=true;
+ }
+ if(n>=4){
+  S.heard=true;S.rating={0:3,1:2,2:2,3:1,4:3};
+  S.good="Alle haben mitgeredet und ihre Wahl mit «weil» begründet.";
+  S.better="Wir wollen mehr nachfragen und die Redemittel öfter benutzen.";
+  S.tips=["Wir lassen einander ausreden und fragen nach.","Wir benutzen mindestens drei verschiedene Redemittel."];
+ }
+ S.step=STEPS.indexOf(n===1?"wahl":n===2?"spick":n===3?"hoeren":"ziel");S.maxStep=Math.max(S.maxStep||0,S.step);selObs=null;save();
+}
+const CODE="4313";
+function pinHTML(id,label,n){return `<div class="pin" id="${id}" data-v="" ${n!=null?`data-n="${n}"`:""}><div class="pin-label">${label}</div><div class="pin-dots" aria-live="polite"><i></i><i></i><i></i><i></i></div>
+ <div class="pin-grid">${[1,2,3,4,5,6,7,8,9].map(d=>`<button type="button" data-a="pin" data-p="${id}" data-d="${d}">${d}</button>`).join("")}<button type="button" class="pin-del" data-a="pindel" data-p="${id}" aria-label="Letzte Zahl löschen">⌫ Löschen</button></div><div class="pin-err fb no" hidden>Falscher Code. Nochmals versuchen.</div></div>`}
+function pinOk(box){
+ if(box.id==="gpin"){const n=box.dataset.n;S.approved["gate"+n]=true;if(S.redoNote&&S.redoNote.et==+n)S.redoNote=null;save();render();hop();sfx("fanfare");say("Freigegeben! Weiter geht's.");return}
+ if(box.id==="lppin"){window.__openLP&&window.__openLP();return}
+ if(box.id==="rpin"){resetAll();return}
+}
+function gate(n,title,text,next){
+ const ok=S.approved["gate"+n];const e=ETAPPEN[n];
+ return `<div class="splash"><div class="eyebrow">Stufe ${n} · ${e.n}</div><div class="big">Geschafft!</div><h2>${title}</h2><p>${text}</p>
+ ${gateSummary(n)}
+ ${ok?`<p class="fb ok">Freigegeben. Weiter geht's mit: ${next}</p>`:`<div class="box solid" style="width:100%;max-width:420px;text-align:left"><h3>Lehrperson, bitte freigeben</h3>${pinHTML("gpin","Freigabe-Code eingeben",n)}<div class="row" style="margin-top:10px;justify-content:center"><button class="btn" data-a="gredo" data-n="${n}">↺ Stufe wiederholen</button></div>
+ </div>`}
+ </div>`+nav(ok,"Weiter","Geht mit dem iPad zur Lehrperson.");
+}
+R.gate1=()=>gate(1,"Ihr kennt die Wüste und die Superkräfte.","Bringt das iPad zur Lehrperson. Sie schaut kurz, ob alles klar ist, und gibt die nächste Stufe frei.","Meine Wahl");
+R.wahl=()=>{
+ const name=me();const p=S.picks[name]||(S.picks[name]={rank:[],why:{}});
+ return head("Deine drei Superkräfte","Tippe drei Superkräfte an. Die erste ist für dich die wichtigste. Nochmals tippen entfernt sie.")+
+ `<div class="grid3">${POWERS.map(pw=>{const r=p.rank.indexOf(pw.id);return `<button class="power pcard ${r>=0?"sel":""}" data-a="pick" data-id="${pw.id}" aria-pressed="${r>=0}">${r>=0?`<span class="num">${r+1}</span>`:""}<svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[pw.id]}</svg>${esc(pw.t)}</button>`}).join("")}</div>
+ ${p.rank.length?`<h2 style="margin-top:24px">Warum hast du diese Superkräfte gewählt?</h2><p class="hint">Magmar prüft jede Begründung: mindestens 40 Zeichen, «weil» oder «denn» und eine Gefahr (Lava, Rauch, Erdbeben, Hitze …).</p>
+ <div class="stack">${p.rank.map((id,k)=>{const t=p.why[id]||"";return `<div class="box solid"><label for="why_${id}" class="lab-ic"><svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[id]}</svg>Platz ${k+1}: ${esc(P[id].t)}</label>
+ <div class="chips" style="margin-bottom:8px">${[...REDEMITTEL[0].s.slice(0,3),...REDEMITTEL[1].s.slice(0,3)].map(s=>`<button class="chip" data-a="ins" data-t="why_${id}" data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>
+ <textarea id="why_${id}" data-lwhy="${id}" placeholder="Ich brauche diese Superkraft, weil …">${esc(t)}</textarea>
+ <div class="fb ${lavaOk(t)?"ok":"no"}" data-lfb="${id}">${lavaFb(t)}</div></div>`}).join("")}</div>`:""}`+
+ nav(wahlDoneL(),"Fertig, auf zum Duell!","Drei Superkräfte wählen und alle streng begründen.");
+};
+R.gate2=()=>gate(2,"Alle haben ihre Superkräfte gewählt und begründet.","Bringt das iPad zur Lehrperson. Sie schaut eure Begründungen an und gibt das Gespräch frei.","Das Gespräch");
+R.spick=()=>{
+ const ms=members();const o=S.spickOpen;
+ return head("Eure Spickzettel","Im Gespräch dürft ihr eure Notizen benutzen. Tippt auf euren Namen, um eure eigene Wahl zu sehen.")+
+ `<div class="row">${ms.map(m=>`<button class="btn small ${o===m?"primary":""}" data-a="spick" data-m="${esc(m)}">${esc(m)}</button>`).join("")}</div>
+ ${o&&S.picks[o]?`<div class="box solid" style="margin-top:12px"><h3>${esc(o)}s Wahl</h3><ol style="margin:0;padding-left:22px">${S.picks[o].rank.map(id=>`<li style="margin-bottom:6px"><strong>${esc(P[id].t)}</strong><br><span class="muted">${esc(S.picks[o].why[id])}</span></li>`).join("")}</ol><button class="btn small" style="margin-top:8px" data-a="spick" data-m="">Zuklappen</button></div>`:""}
+ <h2 style="margin-top:22px">So läuft das Gespräch</h2>
+ <ol style="padding-left:22px;margin:0"><li>Jede Person stellt ihre drei Superkräfte vor und begründet sie.</li><li>Fragt nach, stimmt zu oder widersprecht. Verteidigt eure Wahl!</li><li>Erst am Schluss einigt ihr euch auf drei Superkräfte, mit den besten Argumenten.</li></ol>`+nav(true,"Zum Gespräch");
+};
+let tick;
+function spkInner(m,k,open){const p=S.picks[m];const id=p&&p.rank[k];if(!id)return "";
+ return open?`<svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[id]}</svg><span class="spk-pl">Platz ${k+1}</span><span class="spk-t">${esc(P[id].t)}</span><span class="spk-w">${esc(p.why[id]||"")}</span>`
+ :`<span class="spk-q">?</span><span class="spk-pl">Platz ${k+1}</span><span class="spk-hint">Antippen zum Aufdecken</span>`}
+function spickCards(){
+ const ms=members().filter(m=>S.picks[m]&&S.picks[m].rank.length);
+ if(!ms.length)return "";
+ if(!S.timerStart)return `<div class="spk-wrap"><h2>Eure Spickkarten</h2><p class="hint">Sobald das Gespräch läuft, könnt ihr hier eure Spickkarten aufdecken: 3 pro Person, mit euren Superkräften und Argumenten.</p></div>`;
+ S.revealed=S.revealed||{};
+ return `<div class="spk-wrap"><h2>Eure Spickkarten</h2><p class="hint">Wenn du an der Reihe bist, deckst du deine Karten auf und stellst deine Superkräfte vor. Beginne mit Platz 1.</p>
+ ${ms.map(m=>`<div class="spk-person"><h3>${esc(m)}</h3><div class="spk-row">${[0,1,2].map(k=>{const key=m+"|"+k;const o=!!S.revealed[key];return `<button class="spk ${o?"open":""}" data-a="spk" data-k="${esc(key)}" aria-pressed="${o}">${spkInner(m,k,o)}</button>`}).join("")}</div></div>`).join("")}</div>`;
+}
+R.gespraech=()=>{
+ const run=S.timerStart&&!S.timerDone;
+ const el=run?Math.floor((Date.now()-S.timerStart)/1000):S.timerDone?600:0;
+ return head("Auf welche Superkräfte einigt ihr euch?","Führt das Gespräch zu dritt und nehmt es auf. Ihr habt nur einen Versuch. Das Gespräch dauert 5 bis höchstens 10 Minuten.")+
+ `<div class="grid2"><div class="box solid"><h3>Gesprächsregeln</h3><ul class="tight">${REGELN.map(r=>`<li>${r}</li>`).join("")}</ul></div>
+ <div class="stack" style="gap:8px">${REDEMITTEL.map(r=>`<details><summary>${r.k}</summary><ul class="tight">${r.s.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></details>`).join("")}</div></div>
+ <div class="recbox" style="margin-top:14px"><h3>● Vor dem Start: Aufnahme vorbereiten</h3>
+  <ol class="tight"><li>Holt ein <strong>zweites iPad</strong>. Dieses iPad hier bleibt für den Timer.</li><li>Öffnet auf dem zweiten iPad die App <strong>Sprachmemos</strong>.</li><li>Legt es in die Mitte vom Tisch und tippt auf den <strong>roten Aufnahme-Knopf</strong>.</li><li>Erst dann: Häkchen setzen und hier den Timer starten.</li></ol></div>
+ <div class="box solid" style="margin-top:14px">
+  <label style="display:flex;gap:10px;align-items:center;font-weight:700"><input type="checkbox" id="rec" ${S.rec?"checked":""} style="width:24px;height:24px"> Die Aufnahme läuft auf dem zweiten iPad.</label>
+  <div class="timer" id="timer" aria-live="off">${fmt(el)}</div>
+  <div class="tl"><i id="tlf" style="width:${Math.min(100,el/6)}%"></i><b title="5 Minuten"></b></div>
+  <p class="hint" style="margin-top:6px">Ab der Markierung (5 Minuten) dürft ihr euch langsam einigen.</p>
+  <div class="row">${!S.timerStart?`<button class="btn primary" data-a="tstart" ${S.rec?"":"disabled"}>Gespräch starten</button>${S.rec?"":`<span class="hint">Startet zuerst die Aufnahme auf dem zweiten iPad.</span>`}`:run?`<button class="btn" data-a="tstop" id="tstopBtn" ${el<300?"disabled":""}>Gespräch beenden</button><span class="hint" id="tstopHint">${el<300?"Mindestens 5 Minuten sprechen.":""}</span>`:`<span class="fb ok">Gespräch beendet. Stoppt die Aufnahme auf dem zweiten iPad und gebt ihr euren Gruppennamen.</span>`}${S.timerDone?"":`<button class="btn" data-a="tskip" style="margin-left:auto">✓ Erledigt (Timer überspringen)</button>`}</div>
+ </div>`+spickCards()+nav(S.timerDone,"Weiter","Führt zuerst das Gespräch.");
+};
+const fmt=s=>`${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+function startTick(){clearInterval(tick);tick=setInterval(()=>{
+ if(step()!=="gespraech"||!S.timerStart||S.timerDone)return clearInterval(tick);
+ const el=Math.floor((Date.now()-S.timerStart)/1000);
+ if(el>=600){S.timerDone=true;S.timerEnd=Date.now();save();say("Zehn Minuten sind um! Beendet euer Gespräch.");render();return}
+ const t=$("#timer");if(t)t.textContent=fmt(el);const f=$("#tlf");if(f)f.style.width=Math.min(100,el/6)+"%";
+ const b=$("#tstopBtn");if(b&&el>=300&&b.disabled){b.disabled=false;$("#tstopHint").textContent="";say("Fünf Minuten! Jetzt dürft ihr euch einigen.")}
+},1000)}
+R.einigung=()=>{
+ const ok=S.agreed.length===3&&S.agreed.every(id=>reasonOk(S.agreedWhy[id]))&&S.howAgree;
+ return head("Eure Einigung","Auf welche drei Superkräfte habt ihr euch geeinigt? Schreibt zu jeder das stärkste Argument auf.")+
+ `<div class="grid3">${POWERS.map(pw=>{const r=S.agreed.indexOf(pw.id);return `<button class="power pcard ${r>=0?"sel":""}" data-a="agree" data-id="${pw.id}" aria-pressed="${r>=0}">${r>=0?`<span class="num">${r+1}</span>`:""}${pw.neu?'<span class="neu">NEU</span>':""}<svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[pw.id]}</svg>${esc(pw.t)}</button>`}).join("")}</div>
+ ${S.agreed.length?`<div class="stack" style="margin-top:18px">${S.agreed.map((id,k)=>`<div class="box solid"><label for="ag_${id}" class="lab-ic"><svg class="ill" viewBox="0 0 120 70" aria-hidden="true">${PILL[id]}</svg>Stärkstes Argument für «${esc(P[id].t)}»</label><textarea id="ag_${id}" data-ag="${id}" placeholder="Das beste Argument war: … , weil …">${esc(S.agreedWhy[id]||"")}</textarea></div>`).join("")}</div>`:""}
+ <h3 style="margin-top:18px">Wie habt ihr euch geeinigt?</h3><div class="chips">${["Durch die besten Argumente","Durch Abstimmen","Mit einem Kompromiss","Jemand hat nachgegeben"].map(h=>`<button class="chip ${S.howAgree===h?"on":""}" data-a="how" data-h="${h}">${h}</button>`).join("")}</div>`+
+ nav(ok,"Weiter","Drei Superkräfte wählen, Argumente aufschreiben, Einigungsart antippen.");
+};
+R.gate3=()=>gate(3,"Euer Gespräch ist aufgenommen.","Bringt das iPad zur Lehrperson und zeigt ihr eure Einigung. Danach hört ihr euch die Aufnahme an.","Rückmeldung");
+R.hoeren=()=>{
+ const ok=S.heard&&KRIT.every((k,i)=>S.rating[i]!=null)&&S.good.trim().length>10&&S.better.trim().length>10;
+ return head("Hört euch die Aufnahme an","Hört das ganze Gespräch an. Gebt euch danach gegenseitig eine Rückmeldung: Wie gut ist es euch gelungen?")+
+ `<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="heard" ${S.heard?"checked":""} style="width:24px;height:24px"> Wir haben die ganze Aufnahme angehört.</label>
+ <div class="stack" style="margin-top:14px">${KRIT.map((k,i)=>`<div class="box"><h3>${k}</h3><div class="rate">${LEVELS.map((l,j)=>`<button class="lv${j} ${S.rating[i]===j?"on":""}" data-a="rate" data-i="${i}" data-j="${j}" aria-pressed="${S.rating[i]===j}"><span class="drops">${"<i></i>".repeat(j+1)}</span>${l}</button>`).join("")}</div></div>`).join("")}</div>
+ <div class="grid2" style="margin-top:14px"><div><label for="good">Das ist uns gut gelungen:</label><textarea id="good" data-t="good">${esc(S.good)}</textarea></div><div><label for="better">Das machen wir nächstes Mal besser:</label><textarea id="better" data-t="better">${esc(S.better)}</textarea></div></div>`+
+ nav(ok,"Weiter","Aufnahme anhören, alle fünf Punkte bewerten und beide Felder ausfüllen.");
+};
+R.tipps=()=>{
+ const ok=S.tips.every(t=>t.trim().length>10);
+ return head("Tipps für das nächste Gespräch","Schreibt zwei Tipps auf, die ihr im nächsten Gespräch umsetzen wollt. Wir sammeln sie danach in der Klasse.")+
+ `<div class="stack">${S.tips.map((t,i)=>`<div><label for="tip${i}">Tipp ${i+1}</label><input type="text" id="tip${i}" data-tip="${i}" value="${esc(t)}" placeholder="Wir …" maxlength="140"></div>`).join("")}</div>
+ <p class="hint" style="margin-top:12px">Die Tipps helfen euch auch bei der Lernkontrolle.</p>`+nav(ok,"Mission abschliessen","Schreibt zwei Tipps (je ein ganzer Satz).");
+};
+/* ---------- Render ---------- */
+function render(){
+ const st=step();const e=ETAPPEN[ET_OF[st]];
+ document.documentElement.style.setProperty("--ec",e?`var(${e.c})`:"var(--sun)");
+ $("#main").innerHTML=`<section class="card">${R[st]()}</section>`;
+ insertTodo();glossify($("#main"));if(st==="ziel"){lastW.ziel=0;animateTank("ziel",water())}
+ renderHud();renderPath();
+ if(st==="gespraech"&&S.timerStart&&!S.timerDone)startTick();
+ if(st==="kraefte")requestAnimationFrame(drawLines);
+}
+let lastLinks="";
+function drawLines(){
+ const c=$("#connect"),svg=$("#clines");if(!c||!svg)return;
+ const cr=c.getBoundingClientRect();let out="";const key=JSON.stringify(S.obst);
+ OBST.forEach((o,i)=>{const id=S.obst[i];if(!id)return;
+  const a=c.querySelector(`[data-a=cob][data-i="${i}"]`).getBoundingClientRect(),b=c.querySelector(`[data-a=cpw][data-id="${id}"]`).getBoundingClientRect();
+  const x1=a.right-cr.left,y1=a.top+a.height/2-cr.top,x2=b.left-cr.left,y2=b.top+b.height/2-cr.top,mx=(x1+x2)/2;
+  const fit=o.fit.includes(id);
+  out+=`<path class="cl ${fit?"ok":"no"}" d="M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}"/><circle class="cd ${fit?"ok":"no"}" cx="${x1}" cy="${y1}" r="6"/><circle class="cd ${fit?"ok":"no"}" cx="${x2}" cy="${y2}" r="6"/>`});
+ svg.setAttribute("viewBox",`0 0 ${cr.width} ${cr.height}`);svg.innerHTML=out;
+ if(key===lastLinks)svg.classList.add("still");else svg.classList.remove("still");lastLinks=key;
+}
+addEventListener("resize",()=>{if(step()==="kraefte"){lastLinks=JSON.stringify(S.obst);drawLines()}});
+function go(d){
+ try{speechSynthesis.cancel()}catch(e){}
+ if(step()==="start"&&d>0&&!S.t0){S.t0=Date.now();S.tEnd=null;S.lost=false}
+ S.step=Math.max(0,Math.min(STEPS.length-1,S.step+d));save();render();window.scrollTo({top:0,behavior:"smooth"});
+ sfx(step()==="ziel"&&d>0?"win":d>0?"next":"back");
+ if(d>0&&(STEPINFO[step()].gate||step()==="ziel")){fenniDance("Grrr … du hast es geschafft. Ich tanze trotzdem!");return}
+ if(step()==="levels"&&d>0){say(`Willkommen, ${esc(S.group.name)}! Hallo ${esc(members().join(", "))}. `+TIPS.levels,7000);return}
+ const t=TIPS[step()];if(t)say(t);
+}
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
+
+/* ---------- Events ---------- */
+document.addEventListener("click",ev=>{
+ const b=ev.target.closest("[data-a]");if(!b||b.disabled)return;const a=b.dataset.a;
+ if(!["pin","pindel","jump","menuopen","menuclose","gredoyes","spk","quiz","cpw","gate","lvl","pinfo","next","back","tskip","tstop","mute","speak","wahlDone","copy"].includes(a))sfx("click");
+ if(a==="mute"){G.mute=!G.mute;save();renderHud();if(!G.mute)sfx("select");return}
+ if(a==="speak"){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(b.dataset.t);u.lang="de-DE";u.rate=.9;speechSynthesis.speak(u)}catch(e){}return}
+ if(a==="gname"){S.group.name=b.dataset.n;save();render();return}
+ if(a==="menuopen"){$("#side").classList.add("open");$("#scrim").hidden=false;return}
+ if(a==="menuclose"){$("#side").classList.remove("open");$("#scrim").hidden=true;return}
+ if(a==="jump"){const i=+b.dataset.i;if(i===S.step)return;if(!reachable(i)){const f=firstOpen();sfx("bad");hop();say(STEPINFO[STEPS[f]].gate?"Dieser Teil ist noch gesperrt. Zuerst muss die Lehrperson eure Stufe freigeben.":`Dieser Teil ist noch gesperrt. Löst zuerst «${STEPINFO[STEPS[f]].l}».`,4500);return}sfx("click");$("#side").classList.remove("open");$("#scrim").hidden=true;S.step=i;save();render();window.scrollTo({top:0,behavior:"smooth"});const t=TIPS[step()];if(t)say(t);return}
+ if(a==="next")return go(1);
+ if(a==="lvl"){const n=+b.dataset.n;if(!G.unlocked.includes(n))return;sfx("whoosh");if(n===G.level){if(S.step<MISSION_I)S.step=MISSION_I;save();render();window.scrollTo({top:0,behavior:"smooth"});say(TIPS.mission);return}return switchLevel(n)}
+ if(a==="tolevels"){S.step=LEVELS_I;save();render();window.scrollTo({top:0,behavior:"smooth"});say(TIPS.levels);return}
+ if(a==="back")return go(-1);
+ if(a==="read"){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(BRIEF.join(" "));u.lang="de-DE";u.rate=.9;speechSynthesis.speak(u)}catch(e){toast("Vorlesen geht auf diesem Gerät nicht.")}return}
+ if(a==="stop"){try{speechSynthesis.cancel()}catch(e){}return}
+ if(a==="quiz"){const i=+b.dataset.i,j=+b.dataset.j;sfx(j===QUIZ[i].r?"good":"bad");S.quiz[i]=j;(S.quizTries[i]=S.quizTries[i]||[]).push(j);save();render();if(j===QUIZ[i].r)hop();return}
+ if(a==="flip"){b.classList.toggle("open");return}
+ if(a==="cob"){const i=+b.dataset.i;selObs=selObs===i?null:i;render();if(selObs!=null)say("Jetzt tippe rechts auf eine Superkraft, die gegen diese Gefahr hilft.",3500);return}
+ if(a==="cpw"){if(selObs==null){say("Tippe zuerst links auf eine Gefahr.",3000);return}
+  const id=b.dataset.id;if(S.obst[selObs]===id)delete S.obst[selObs];else S.obst[selObs]=id;
+  const fit=S.obst[selObs]&&OBST[selObs].fit.includes(id);if(S.obst[selObs]&&!fit){S.badLinks=(S.badLinks||0)+1;setTimeout(()=>say("Hahaha! Das hilft dir doch nicht! −1 Kühlung.",3500),50)}sfx(!S.obst[selObs]?"back":fit?"good":"select");selObs=null;save();render();if(fit)hop();return}
+ if(a==="pinfo"){openPower(b.dataset.id);S.seen=S.seen||{};S.seen[b.dataset.id]=1;save();const n=Object.keys(S.seen).length;if(n===POWERS.length)say(`Du hast alle ${POWERS.length} Superkräfte angeschaut. Nicht schlecht …`);return}
+ if(a==="gredo"){const n=+b.dataset.n;Object.assign(S,REDO_RESET[n]());S.maxStep=S.step;S.redo=S.redo||{};S.redo[n]=(S.redo[n]||0)+1;S.redoNote={et:n,text:""};selObs=null;
+  save();render();window.scrollTo({top:0,behavior:"smooth"});sfx("back");say("Ihr wiederholt diese Stufe. Hört gut zu, was die Lehrperson euch sagt!",6000);return}
+ if(a==="pin"||a==="pindel"){const box=document.getElementById(b.dataset.p);if(!box)return;let v=box.dataset.v||"";
+  if(a==="pindel"){v=v.slice(0,-1);sfx("back")}else if(v.length<4){v+=b.dataset.d;sfx("click")}
+  box.dataset.v=v;box.querySelectorAll(".pin-dots i").forEach((d,k)=>d.classList.toggle("on",k<v.length));box.querySelector(".pin-err").hidden=true;
+  if(v.length===4){if(v===CODE){setTimeout(()=>pinOk(box),150)}else{sfx("bad");box.classList.remove("shake");void box.offsetWidth;box.classList.add("shake");box.querySelector(".pin-err").hidden=false;setTimeout(()=>{box.dataset.v="";box.querySelectorAll(".pin-dots i").forEach(d=>d.classList.remove("on"))},450)}}
+  return}
+ if(a==="uncover"){S.wahlCover=false;save();render();say(TIPS.wahl);return}
+ if(a==="pick"){const name=me();const p=S.picks[name];const id=b.dataset.id;const r=p.rank.indexOf(id);
+  if(r>=0)p.rank.splice(r,1);else if(p.rank.length<3)p.rank.push(id);else{say("Du hast schon drei! Tippe zuerst eine an, um sie zu entfernen.");return}
+  save();render();return}
+ if(a==="ins"){const t=document.getElementById(b.dataset.t);const s=b.dataset.s.replace(/^…,?\s*/,"").replace(/\s*…$/," ");t.value=(t.value.trim()?t.value.trim()+" ":"")+s;t.focus();t.dispatchEvent(new Event("input",{bubbles:true}));return}
+ if(a==="wahlDone"){sfx("good");S.wahlIdx++;S.wahlCover=true;save();render();hop();say(S.wahlIdx>=members().length?"Alle sind fertig. Super!":"Sehr gut! Gib das iPad weiter.");return}
+ if(a==="redo"){S.wahlIdx=+b.dataset.k;S.wahlCover=true;save();render();return}
+ if(a==="spick"){S.spickOpen=b.dataset.m||null;save();render();return}
+ if(a==="tstart"){S.timerStart=Date.now();save();render();say("Los geht's! Jede Person stellt zuerst ihre Wahl vor.");return}
+ if(a==="tstop"){sfx("good");S.timerDone=true;S.timerEnd=Date.now();save();render();hop();return}
+ if(a==="spk"){const key=b.dataset.k;S.revealed=S.revealed||{};const o=!S.revealed[key];S.revealed[key]=o;save();const [m,k]=[key.slice(0,key.lastIndexOf("|")),+key.slice(key.lastIndexOf("|")+1)];b.classList.toggle("open",o);b.setAttribute("aria-pressed",o);b.innerHTML=spkInner(m,k,o);b.classList.remove("flipin");void b.offsetWidth;b.classList.add("flipin");sfx(o?"pop":"back");return}
+ if(a==="tskip"){sfx("good");S.timerDone=true;S.skipped=true;S.timerEnd=Date.now();if(!S.timerStart)S.timerStart=Date.now();clearInterval(tick);save();render();hop();say("Erledigt! Weiter zur Einigung.");return}
+ if(a==="agree"){const id=b.dataset.id;const r=S.agreed.indexOf(id);if(r>=0)S.agreed.splice(r,1);else if(S.agreed.length<3)S.agreed.push(id);else{say("Ihr habt schon drei gewählt.");return}save();render();return}
+ if(a==="how"){S.howAgree=b.dataset.h;save();render();return}
+ if(a==="rate"){S.rating[b.dataset.i]=+b.dataset.j;save();render();return}
+ if(a==="copy"){const txt=summary();const fb=()=>{const r=document.createRange();r.selectNodeContents($("#sum"));const s=getSelection();s.removeAllRanges();s.addRange(r);toast("Text markiert. Jetzt «Kopieren» tippen.")};
+  sfx("select");try{navigator.clipboard.writeText(txt).then(()=>toast("Kopiert!"),fb)}catch(e){fb()}return}
+});
+document.addEventListener("input",ev=>{
+ const t=ev.target;
+ if(t.dataset.m!=null){S.group.members[+t.dataset.m]=t.value;save();const nb=$("[data-a=next]");if(nb)nb.disabled=!startOk();return}
+ if(t.dataset.gname!=null){S.group.name=t.value;save();const nb=$("[data-a=next]");if(nb)nb.disabled=!startOk();document.querySelectorAll("[data-a=gname]").forEach(c=>c.classList.toggle("on",c.dataset.n===t.value));renderHud();return}
+ if(t.dataset.why){const name=members()[S.wahlIdx];S.picks[name].why[t.dataset.why]=t.value;save();
+  const fbx=document.querySelector(`[data-fb="${t.dataset.why}"]`);const ok=reasonOk(t.value);fbx.className="fb "+(ok?"ok":"no");fbx.textContent=ok?(reasonPro(t.value)?"Starke Begründung!":"Gut! Mit «weil» oder «denn» wird sie noch stärker."):"Noch etwas kurz.";
+  const p=S.picks[name];const all=p.rank.length===3&&p.rank.every(id=>reasonOk(p.why[id]));const d=$("[data-a=wahlDone]");if(d)d.disabled=!all;renderHud();return}
+ if(t.dataset.ag){S.agreedWhy[t.dataset.ag]=t.value;save();updNext(R_OK.einigung());return}
+ if(t.dataset.t==="good"||t.dataset.t==="better"){S[t.dataset.t]=t.value;save();updNext(R_OK.hoeren());return}
+ if(t.dataset.tip!=null){S.tips[+t.dataset.tip]=t.value;save();updNext(R_OK.tipps());return}
+});
+const R_OK={einigung:()=>true,hoeren:()=>checkDone(),tipps:()=>true};
+function updNext(ok){const nb=$("[data-a=next]");if(nb)nb.disabled=!ok;const h=$(".nav .hint");if(h&&ok)h.textContent="";renderHud()}
+document.addEventListener("change",ev=>{
+ const t=ev.target;
+ if(t.dataset.f==="nr"){S.group.nr=t.value;save();render();return}
+ if(t.dataset.gap!=null){S.gaps[t.dataset.gap]=t.value;sfx(t.value===GAPS[+t.dataset.gap][1]?"good":"bad");save();render();if(t.value===GAPS[+t.dataset.gap][1])hop();return}
+ if(t.dataset.obst!=null){S.obst[t.dataset.obst]=t.value;save();render();return}
+ if(t.id==="rec"){S.rec=t.checked;save();render();return}
+ if(t.id==="heard"){S.heard=t.checked;save();render();return}
+});
+
+/* ---------- LP-Bereich ---------- */
+function modal(html){$("#modalRoot").innerHTML=`<div class="modal" id="mod"><section class="card" style="--ec:var(--ink)">${html}</section></div>`;glossify($("#mod"));sfx("open");$("#mod").addEventListener("click",e=>{if(e.target.id==="mod"||e.target.closest("[data-close]"))$("#modalRoot").innerHTML=""})}
+$("#restartBtn").addEventListener("click",()=>{
+ modal(`<div class="splash"><svg viewBox="0 0 24 24" width="56" height="56" aria-hidden="true"><path d="M19 12 A7 7 0 1 1 16.9 7" stroke="var(--e4)" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M18 3 V7.5 H13.5" stroke="var(--e4)" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><h2>Wirklich neustarten?</h2><p>Alle deine Eingaben werden gelöscht und die 30 Minuten starten von vorne. Deine Bestleistung bleibt gespeichert.</p></div>
+ <div class="nav"><button class="btn" data-close>Abbrechen</button><button class="btn primary" data-a="hardreset" style="--ec:var(--e4)">Ja, neu starten</button></div>`);
+});
+$("#lpBtn").addEventListener("click",()=>{
+ modal(`<h2>LP-Bereich</h2><div style="display:flex;justify-content:center">${pinHTML("lppin","Code eingeben")}</div><div class="nav"><button class="btn" data-close>Schliessen</button></div>`);
+ window.__openLP=()=>{
+  modal(`<h2>LP-Bereich</h2>
+  <h3>Ablauf Doppellektion (90 Min., Halbklasse)</h3><div class="tw"><table><tr><th>Zeit</th><th>Stufe</th><th>Inhalt</th></tr>
+  <tr><td>0–10</td><td>Plenum</td><td>Bild S. 36, Situation klären, Gruppen bilden (LP teilt ein)</td></tr>
+  <tr><td>10–30</td><td>E1</td><td>Funkspruch, Wörter, Superkräfte · Freigabe</td></tr>
+  <tr><td>30–45</td><td>E2</td><td>Einzelwahl + Begründung · Freigabe</td></tr>
+  <tr><td>45–65</td><td>E3</td><td>Gespräch mit Aufnahme (5–10 Min.), Einigung · Freigabe</td></tr>
+  <tr><td>65–80</td><td>E4</td><td>Aufnahme anhören, Rückmeldung, Tipps</td></tr>
+  <tr><td>80–90</td><td>Plenum</td><td>Tipps sammeln, Hinweise zur Lernkontrolle</td></tr></table></div>
+  <h3 style="margin-top:14px">Zu Schritt springen</h3><select id="jump">${STEPS.map((s,i)=>`<option value="${i}" ${i===S.step?"selected":""}>${i}: ${s}</option>`).join("")}</select>
+  <h3 style="margin-top:14px">Mit Beispiel füllen und freigeben</h3><p class="hint" style="margin:0 0 6px">Füllt Level ${G.level} mit Beispiel-Eingaben bis zur gewählten Stufe, gibt die Stufen frei und springt zum nächsten Schritt.</p>
+  <div class="row"><select id="fillto" style="flex:1;min-width:0">${[1,2,3,4].map(n=>`<option value="${n}" ${n===4?"selected":""}>bis Stufe ${n}: ${ETAPPEN[n].n}</option>`).join("")}</select><button class="btn primary" id="dofill" style="--ec:var(--accent)">Füllen</button></div>
+  <div class="row" style="margin-top:12px"><button class="btn" id="dojump">Springen</button><button class="btn" id="unlockall">Alle Level freischalten</button><button class="btn" id="reset">Gruppe zurücksetzen</button></div>
+  <div id="resetConfirm" hidden class="box solid" style="margin-top:10px"><p>Alle Eingaben und Level dieser Gruppe löschen?</p><button class="btn primary" id="resetYes" style="--ec:var(--e4)">Ja, löschen</button></div>
+  <h3 style="margin-top:14px">Aktueller Stand</h3><pre class="sum">${esc(summary())}</pre>
+  <div class="nav"><button class="btn" data-close>Schliessen</button></div>`);
+  $("#dojump").onclick=()=>{S.step=+$("#jump").value;save();$("#modalRoot").innerHTML="";render()};
+  $("#dofill").onclick=()=>{const n=+$("#fillto").value;fillExample(n);$("#modalRoot").innerHTML="";render();window.scrollTo({top:0});toast(`Beispiel bis Stufe ${n} eingefüllt`)};
+  $("#reset").onclick=()=>{$("#resetConfirm").hidden=false};
+  $("#resetYes").onclick=resetAll;
+  $("#unlockall").onclick=()=>{G.unlocked=[1,2,3];save();$("#modalRoot").innerHTML="";render();toast("Alle Level freigeschaltet")};
+ };
+});
+
+render();
+setTimeout(()=>say(TIPS[step()]||TIPS.start),600);
+window.__WG = { get S(){ return S; }, get G(){ return G; }, save: save, render: render, waterParts: waterParts, water: water };
+})();
+</script>
+
+<script>
+/* Brücke zum Glitchlab-Hub (Teil 2): Namen vorausfüllen und Sterne melden */
+(function(){ var HB = null; try { HB = window.parent !== window && window.parent.GLHubBridge; } catch(e){}
+  var ctx = window.__GLCTX; if (!HB || !ctx) return;
+  var W = window.__WG; if (!W) return;
+  try {
+    var S = W.S;
+    if (!S.group.members.some(function(m){ return m && m.trim(); })) {
+      var names = [ctx.me.n].concat(ctx.team.map(function(t){ return t.n; }));
+      S.group.nr = ctx.group; S.group.members = names.concat(["", "", "", ""]).slice(0, Math.max(4, names.length));
+      W.save(); W.render();
+    }
+    if ("name" in S.group && !String(S.group.name || "").trim()) { S.group.name = ctx.me.n; W.save(); W.render(); }
+  } catch(e){}
+  var best = {};
+  setInterval(function(){
+    try {
+      var w = W.water(), st = Math.max(0, Math.min(10, Math.floor(w / 10))), lv = W.G.level;
+      if (st > (best[lv] || 0)) { best[lv] = st; HB.score("de-lava", "level" + lv, st); }
+    } catch(e){}
+  }, 3000);
+})();
+</script>
+</body>
+</html>
