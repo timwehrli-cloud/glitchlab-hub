@@ -549,3 +549,6 @@ footer.foot { text-align: center; padding-block: 8px 28px; }
 .tch-n{display:flex;flex-direction:column;min-width:0}.tch-n small{color:var(--muted)}
 .tch-code{font:800 20px/1 ui-monospace,Menlo,monospace;letter-spacing:.15em;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--accent) 14%,transparent)}
 @media (max-width:560px){.tch{grid-template-columns:1fr auto}.tch .acts-cell{grid-column:1/-1}}
+.km-kid.all .km-allic{width:30px;height:30px;display:grid;place-items:center;font-size:18px}
+.km-b.part{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.km-b em{font-style:normal;display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:4px;padding:0 4px;border-radius:99px;background:var(--accent);color:#fff;font-size:11px}

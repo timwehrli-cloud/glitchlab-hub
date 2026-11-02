@@ -891,33 +891,44 @@
   function kidModsPanelHTML() {
     const kids = LP.kids.filter(k => !k.is_teacher);
     if (!kids.length) return "";
-    if (!kids.some(k => k.id === LP.kidSel)) LP.kidSel = kids[0].id;
-    const k = kids.find(x => x.id === LP.kidSel), subjects = H.subjects.filter(sj => H.modules.some(m => m.subject === sj.id && !m.soon && !m.lpOnly));
-    const row = m => { const set = lpStatOf(LP.prog, k.id, m), auto = autoStat(LP.prog, k.id, m), cur = set || auto, got = kidModStars(LP.prog, k.id, m);
+    if (LP.kidSel !== "__all" && !kids.some(k => k.id === LP.kidSel)) LP.kidSel = "__all";
+    const ALL = LP.kidSel === "__all", k = ALL ? null : kids.find(x => x.id === LP.kidSel), targets = ALL ? kids : [k];
+    const subjects = H.subjects.filter(sj => H.modules.some(m => m.subject === sj.id && !m.soon && !m.lpOnly));
+    const row = m => {
+      if (ALL) {
+        const st = targets.map(x => ({ set: lpStatOf(LP.prog, x.id, m), cur: lpStatOf(LP.prog, x.id, m) || autoStat(LP.prog, x.id, m) })), nSet = st.filter(x => x.set).length;
+        const cnt = v => st.filter(x => x.cur === v).length;
+        return `<div class="km-r"><span class="acc-n"><b>${esc(m.title)}</b><small>${cnt("fertig")} von ${targets.length} abgeschlossen${nSet ? ` · bei ${nSet} von dir gesetzt` : " · automatisch"}</small></span>
+        <span class="km-seg" role="group" aria-label="Status von ${esc(m.title)} für die ganze Klasse">${STATUS.map(([v, n]) => { const c = cnt(v), on = c === targets.length; return `<button type="button" class="km-b ${v}${on ? " on" : ""}${c && !on ? " part" : ""}" data-kstat="${esc(m.id)}" data-v="${v}" aria-pressed="${on}" title="Für alle ${targets.length} Kinder setzen">${n}${c && !on ? ` <em>${c}</em>` : ""}</button>`; }).join("")}</span>
+        ${nSet ? `<button type="button" class="link km-x" data-kstat="${esc(m.id)}" data-v="" title="Für alle wieder automatisch">↺ automatisch</button>` : `<span class="km-x"></span>`}</div>`;
+      }
+      const set = lpStatOf(LP.prog, k.id, m), auto = autoStat(LP.prog, k.id, m), cur = set || auto, got = kidModStars(LP.prog, k.id, m);
       return `<div class="km-r"><span class="acc-n"><b>${esc(m.title)}</b><small>${H.openEnded(m) ? "★ " + got : got + " / " + H.maxStars(m) + " ★"} · ${set ? "von dir gesetzt" : "automatisch"}</small></span>
         <span class="km-seg" role="group" aria-label="Status von ${esc(m.title)}">${STATUS.map(([v, n]) => `<button type="button" class="km-b ${v}${cur === v ? " on" : ""}${cur === v && !set ? " auto" : ""}" data-kstat="${esc(m.id)}" data-v="${v}" aria-pressed="${cur === v}">${n}</button>`).join("")}</span>
         ${set ? `<button type="button" class="link km-x" data-kstat="${esc(m.id)}" data-v="" title="Wieder automatisch (so, wie das Kind gearbeitet hat)">↺ automatisch</button>` : `<span class="km-x"></span>`}</div>`; };
     return `<section class="panel" id="kidMods"><h2>Module pro Kind verwalten</h2>
-      <p class="hint"><b>Offen:</b> noch nicht begonnen. <b>In Bearbeitung:</b> das Modul ist für dieses Kind frei. <b>Abgeschlossen:</b> das Kind bekommt alle Belohnungen des Moduls, also alle Sterne (und damit die Level), alle Diplome und alles, was das Modul freischaltet (Outfits, Emotes, Zimmer). «↺ automatisch» nimmt deine Einstellung zurück. Die eigene Arbeit des Kindes bleibt immer erhalten.</p>
-      <div class="km-kids" role="tablist" aria-label="Kind wählen">${kids.map(x => `<button type="button" class="km-kid${x.id === k.id ? " on" : ""}" data-ksel="${x.id}" role="tab" aria-selected="${x.id === k.id}">${gl("normal", x.color, "still")}<span>${esc(x.first_name)}</span></button>`).join("")}</div>
-      <div class="km-all row"><span class="hint" style="margin:0">Alles auf einmal für ${esc(k.first_name)}:</span><button type="button" class="btn small" data-kall="fertig">Alle abschliessen</button><button type="button" class="btn small" data-kall="">Alle automatisch</button></div>
+      <p class="hint"><b>Offen:</b> noch nicht begonnen. <b>In Bearbeitung:</b> das Modul ist frei. <b>Abgeschlossen:</b> alle Belohnungen des Moduls, also alle Sterne (und damit die Level), alle Diplome und alles, was das Modul freischaltet (Outfits, Emotes, Zimmer). Mit «Ganze Klasse» setzt du es für alle Kinder auf einmal; die Zahl im Knopf zeigt, bei wie vielen es schon so ist. «↺ automatisch» nimmt deine Einstellung zurück. Die eigene Arbeit der Kinder bleibt immer erhalten.</p>
+      <div class="km-kids" role="tablist" aria-label="Kind wählen"><button type="button" class="km-kid all${ALL ? " on" : ""}" data-ksel="__all" role="tab" aria-selected="${ALL}"><span class="km-allic" aria-hidden="true">👥</span><span>Ganze Klasse</span></button>${kids.map(x => `<button type="button" class="km-kid${!ALL && x.id === k.id ? " on" : ""}" data-ksel="${x.id}" role="tab" aria-selected="${!ALL && x.id === k.id}">${gl("normal", x.color, "still")}<span>${esc(x.first_name)}</span></button>`).join("")}</div>
+      <div class="km-all row"><span class="hint" style="margin:0">Alles auf einmal für ${ALL ? "die ganze Klasse" : esc(k.first_name)}:</span><button type="button" class="btn small" data-kall="fertig">Alle Module abschliessen</button><button type="button" class="btn small" data-kall="">Alle automatisch</button></div>
       <div class="acc">${subjects.map(sj => `<div class="acc-s"><h3 style="--c:${sj.color}"><span>${esc(sj.short)}</span>${esc(sj.name)}</h3>
         ${H.themes.filter(t => t.subject === sj.id && H.modules.some(m => m.theme === t.id && !m.soon && !m.lpOnly)).map(t => `<div class="acc-t"><small>${esc(t.title)}</small>
           ${H.modules.filter(m => m.theme === t.id && !m.soon && !m.lpOnly).map(row).join("")}</div>`).join("")}</div>`).join("")}</div></section>`;
   }
   function bindKidModsPanel() {
     const keep = async fn => { const y = window.scrollY; await fn(); await render(); window.scrollTo(0, y); };
+    const targets = () => LP.kidSel === "__all" ? LP.kids.filter(x => !x.is_teacher) : LP.kids.filter(x => x.id === LP.kidSel);
+    const who = () => LP.kidSel === "__all" ? "die ganze Klasse" : (targets()[0] || {}).first_name;
     $$("[data-ksel]").forEach(b => b.onclick = () => keep(async () => { LP.kidSel = b.dataset.ksel; }));
     $$("[data-kstat]").forEach(b => b.onclick = () => keep(async () => {
-      const m = H.modules.find(x => x.id === b.dataset.kstat), k = LP.kids.find(x => x.id === LP.kidSel), v = b.dataset.v;
-      try { await S.be.setModStatus(k.id, m.id, v || null);
-        toast(v === "fertig" ? `«${m.title}» abgeschlossen: ${k.first_name} bekommt alle Belohnungen.` : v ? `«${m.title}» für ${k.first_name}: ${STATUS.find(s => s[0] === v)[1]}.` : `«${m.title}» für ${k.first_name} wieder automatisch.`);
+      const m = H.modules.find(x => x.id === b.dataset.kstat), v = b.dataset.v;
+      try { for (const k of targets()) { if ((lpStatOf(LP.prog, k.id, m) || "") !== v) await S.be.setModStatus(k.id, m.id, v || null); }
+        toast(v === "fertig" ? `«${m.title}» abgeschlossen für ${who()}: alle Belohnungen.` : v ? `«${m.title}» für ${who()}: ${STATUS.find(s => s[0] === v)[1]}.` : `«${m.title}» für ${who()} wieder automatisch.`);
       } catch (err) { toast(err.message, "err"); }
     }));
     $$("[data-kall]").forEach(b => b.onclick = () => keep(async () => {
-      const k = LP.kids.find(x => x.id === LP.kidSel), v = b.dataset.kall;
-      try { for (const m of H.modules.filter(x => !x.soon && !x.lpOnly)) { if ((lpStatOf(LP.prog, k.id, m) || "") !== v) await S.be.setModStatus(k.id, m.id, v || null); }
-        toast(v ? `Alle Module für ${k.first_name} abgeschlossen.` : `Alle Module für ${k.first_name} wieder automatisch.`);
+      const v = b.dataset.kall;
+      try { for (const k of targets()) for (const m of H.modules.filter(x => !x.soon && !x.lpOnly)) { if ((lpStatOf(LP.prog, k.id, m) || "") !== v) await S.be.setModStatus(k.id, m.id, v || null); }
+        toast(v ? `Alle Module für ${who()} abgeschlossen.` : `Alle Module für ${who()} wieder automatisch.`);
       } catch (err) { toast(err.message, "err"); }
     }));
   }
