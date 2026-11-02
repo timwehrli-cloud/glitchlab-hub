@@ -18,6 +18,7 @@
   const ET = (M.etappen || []).filter(e => e && Array.isArray(e.aufgaben));
   const LEX = O.lexikon ? (M.lexikon || []).filter(w => w && w.wort) : [];
   const DIP = (M.diplome || []).filter(d => d && d.id);
+  const wall = d => window.GLWall ? GLWall.svg(d.wand, d.emoji, M.farbe, d.id) : esc(d.emoji || "🏅");
   const scorable = a => a && a.typ !== "info";
   const KEY = "glmod." + slug(M.titel || "modul");
   document.documentElement.style.setProperty("--mc", /^#[0-9a-f]{3,8}$/i.test(M.farbe || "") ? M.farbe : "#A07CFF");
@@ -41,8 +42,17 @@
   const totalMax = () => ET.reduce((n, _, e) => n + etMax(e), 0);
   const who = () => HUB && HUB.alle ? HUB.alle.join(" und ") : "";
   /* Freigabe zwischen den Etappen: keine | selbst (Selbsteinschätzung) | lp (Code der Lehrperson) */
-  const gateNeeded = e => O.freigabe === "selbst" || (O.freigabe === "lp" && e < ET.length - 1);
-  const etUnlocked = e => e <= 0 || O.freigabe === "keine" || (etDone(e - 1) && (!gateNeeded(e - 1) || !!S.gate[e - 1]) && etUnlocked(e - 1));
+  /* Freigabe-Schritte (frei kombinierbar): selbst = Selbsteinschätzung, praes = Präsentation, lp = Code der Lehrperson */
+  const GORDER = ["selbst", "praes", "lp"];
+  const GATES = (Array.isArray(O.gates) ? O.gates : O.freigabe === "selbst" ? ["selbst"] : O.freigabe === "lp" ? ["lp"] : []).filter((g, i, a) => GORDER.includes(g) && a.indexOf(g) === i).sort((a, b) => GORDER.indexOf(a) - GORDER.indexOf(b));
+  const stepsFor = e => GATES.filter(g => g !== "lp" || e < ET.length - 1 || GATES.length > 1);   // nur LP-Code: nach der letzten Etappe nicht nötig
+  const gateNeeded = e => stepsFor(e).length > 0;
+  S.gs = S.gs || {};
+  const gateDone = e => !!S.gate[e] || stepsFor(e).every(g => (S.gs[e] || {})[g]);
+  const etUnlocked = e => e <= 0 || !GATES.length || (etDone(e - 1) && (!gateNeeded(e - 1) || gateDone(e - 1)) && etUnlocked(e - 1));
+  const GNAME = { selbst: "euch selbst einschätzen", praes: "präsentieren", lp: "von der Lehrperson freigeben lassen" };
+  const missing = e => stepsFor(e).filter(g => !(S.gs[e] || {})[g]);
+  const andList = l => l.length > 1 ? l.slice(0, -1).join(", ") + " und " + l[l.length - 1] : l.join("");
   const SELBST = [["super", "🤩", "Kann ich super"], ["gut", "🙂", "Kann ich gut"], ["teils", "🤔", "Teilweise"], ["hilfe", "😵‍💫", "Brauche noch Hilfe"]];
 
   /* ---------- Diplome ---------- */
@@ -149,12 +159,12 @@
     const sd = $("#side"); if (!sd) return;
     const st = total(), mx = totalMax(), dn = B.filter((_, i) => bDone(i)).length;
     sd.innerHTML = `<div class="side-card lvl"><div class="ring" style="--p:${mx ? Math.round(st / mx * 100) : 0}"><span>★</span></div><div><small>Sterne in diesem Modul</small><b>${st} von ${mx}</b>${who() ? `<small>Team: ${esc(who())}</small>` : ""}</div></div>
-      ${DIP.length ? `<div class="side-card"><small class="cap">Diplome: ${esc(M.titel || "")}</small><div class="hexes">${DIP.map(d => `<button type="button" class="hex${S.dips.includes(d.id) ? " got" : ""}" data-dip="${esc(d.id)}" title="${esc(d.name)}">${S.dips.includes(d.id) ? esc(d.emoji || "🏅") : "🔒"}</button>`).join("")}</div>
+      ${DIP.length ? `<div class="side-card"><small class="cap">Diplome: ${esc(M.titel || "")}</small><div class="hexes">${DIP.map(d => `<button type="button" class="hex${S.dips.includes(d.id) ? " got" : ""}" data-dip="${esc(d.id)}" title="${esc(d.name)}">${S.dips.includes(d.id) ? wall(d) : "🔒"}</button>`).join("")}</div>
         <p class="side-note">Tippt ein Diplom an, dann verrät gLiTCh, wie ihr es bekommt.</p></div>` : ""}
       <div class="side-card"><div class="prog-h"><b>Fortschritt</b><span>${dn} / ${B.length}</span></div><div class="pbar"><i style="width:${B.length ? Math.round(dn / B.length * 100) : 0}%"></i></div>
         ${ET.map((E, e) => { const se = S.selbst[e] && SELBST.find(x => x[0] === S.selbst[e].w);
-          return `<div class="et-row${etDone(e) ? " ok" : ""}${etUnlocked(e) ? "" : " lock"}"><span>${etUnlocked(e) ? esc(E.emoji || "⭐") : "🔒"}</span><span>${esc(E.titel)}</span><small>${se ? se[1] + " " : ""}${etDone(e) ? (gateNeeded(e) && !S.gate[e] ? (O.freigabe === "lp" ? "✓ · Freigabe fehlt" : "✓ · Einschätzung fehlt") : "✓") : `★ ${etStars(e)}/${etMax(e)}`}</small></div>`; }).join("")}
-        ${O.freigabe !== "keine" ? `<p class="side-note">${O.freigabe === "lp" ? "🔐 Die nächste Etappe gibt eure Lehrperson mit ihrem Code frei." : "🪞 Nach jeder Etappe schätzt ihr euch selbst ein."}</p>` : ""}</div>
+          return `<div class="et-row${etDone(e) ? " ok" : ""}${etUnlocked(e) ? "" : " lock"}"><span>${etUnlocked(e) ? esc(E.emoji || "⭐") : "🔒"}</span><span>${esc(E.titel)}</span><small>${se ? se[1] + " " : ""}${etDone(e) ? (!gateNeeded(e) || gateDone(e) ? "✓" : "✓ · " + ({ selbst: "Einschätzung", praes: "Präsentation", lp: "Freigabe" })[missing(e)[0]] + " fehlt") : `★ ${etStars(e)}/${etMax(e)}`}</small></div>`; }).join("")}
+        ${GATES.length ? `<p class="side-note">Nach jeder Etappe: ${andList(GATES.map(g => ({ selbst: "🪞 Selbsteinschätzung", praes: "🎤 Präsentation", lp: "🔐 Freigabe mit dem Code der Lehrperson" })[g]))}.</p>` : ""}</div>
       ${LEX.length ? `<div class="side-card"><div class="prog-h"><b>📖 Fachwörter</b><span>${(S.words || []).length} / ${LEX.length}</span></div><p class="side-note">Wörter mit gepunkteter Linie antippen: gLiTCh erklärt sie.</p><button type="button" class="btn small" data-golex>Lexikon öffnen</button></div>` : ""}`;
     $$("[data-dip]", sd).forEach(b => b.onclick = () => { const d = DIP.find(x => x.id === b.dataset.dip); say(S.dips.includes(d.id) ? `${d.emoji || "🏅"} **${d.name}**: geschafft! ${d.beschreibung || ""}` : `${d.emoji || "🏅"} **${d.name}**: ${d.beschreibung || "Löst die Bausteine, dann bekommt ihr es."}`, S.dips.includes(d.id) ? "cool" : "wink", 7000); });
     const gl2 = $("[data-golex]", sd); if (gl2) gl2.onclick = () => showLex();
@@ -164,18 +174,21 @@
     const x = B[i];
     if (x && !etUnlocked(x.e)) {
       let p = 0; while (p < x.e && etUnlocked(p + 1)) p++;   // letzte offene Etappe
-      if (etDone(p) && gateNeeded(p) && !S.gate[p]) return gateDlg(p);
-      return say(`🔒 Zuerst Etappe ${p + 1} «${ET[p].titel}» fertig machen${gateNeeded(p) ? (O.freigabe === "lp" ? " und von der Lehrperson freigeben lassen" : " und euch selbst einschätzen") : ""}.`, "hmm", 7000);
+      if (etDone(p) && gateNeeded(p) && !gateDone(p)) return gateDlg(p);
+      return say(`🔒 Zuerst Etappe ${p + 1} «${ET[p].titel}» fertig machen${gateNeeded(p) ? " und " + andList(missing(p).map(g => GNAME[g])) : ""}.`, "hmm", 7000);
     }
     view.b = i; paintTabs(); stage(); window.scrollTo({ top: 0, behavior: "smooth" });
   }
   /* ---------- Freigabe-Fenster nach einer Etappe ---------- */
   function gateDlg(e, then) {
-    if (!gateNeeded(e) || S.gate[e]) { if (then) then(); return; }
     const E = ET[e], nextI = B.findIndex(y => y.e === e + 1);
-    const pass = () => { S.gate[e] = true; save(); paintTabs(); paintSide(); if (then) then(); else if (nextI >= 0) goB(nextI); else goB(B.length); };
-    if (O.freigabe === "selbst") {
-      const ov = dlg(`<h2>🪞 Selbsteinschätzung</h2><div class="hero">${gl("wink")}<div class="bubble"><b>gLiTCh</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Wie gut kannst du das jetzt?</p></div></div></div>
+    const finish = () => { save(); paintTabs(); paintSide(); if (then) then(); else if (nextI >= 0) goB(nextI); else goB(B.length); };
+    if (!gateNeeded(e) || gateDone(e)) return finish();
+    const step = missing(e)[0], nSteps = stepsFor(e).length, nr = nSteps > 1 ? ` <small class="g-step">Schritt ${stepsFor(e).indexOf(step) + 1} von ${nSteps}</small>` : "";
+    const pass = () => { S.gs[e] = Object.assign({}, S.gs[e], { [step]: new Date().toISOString() }); save(); paintTabs(); paintSide(); if (gateDone(e)) finish(); else setTimeout(() => gateDlg(e, then), 350); };
+    if (step === "praes") return praesDlg(e, nr, pass);
+    if (step === "selbst") {
+      const ov = dlg(`<h2>🪞 Selbsteinschätzung${nr}</h2><div class="hero">${gl("wink")}<div class="bubble"><b>gLiTCh</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Wie gut kannst du das jetzt?</p></div></div></div>
         <div class="selbst" role="radiogroup" aria-label="Selbsteinschätzung">${SELBST.map(([v, ic, n]) => `<button type="button" class="sb" data-sb="${v}" role="radio" aria-checked="false"><span>${ic}</span>${esc(n)}</button>`).join("")}</div>
         <label class="f"><span>Das nehme ich mit (ein Satz, freiwillig)</span><textarea class="in" id="sbTxt" style="min-height:60px" placeholder="z. B. Ich weiss jetzt, dass …"></textarea></label>`);
       const ok = $("[data-x]", ov); ok.textContent = "Speichern und weiter →"; ok.disabled = true;
@@ -186,18 +199,42 @@
       return;
     }
     let code = "";
-    const ov = dlg(`<h2>🔐 Freigabe durch die Lehrperson</h2><div class="hero">${gl("cool")}<div class="bubble"><b>gLiTCh</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Zeigt eure Arbeit eurer Lehrperson. Sie gibt mit ihrem Code die nächste Etappe frei.</p></div></div></div>
+    const ov = dlg(`<h2>🔐 Freigabe durch die Lehrperson${nr}</h2><div class="hero">${gl("cool")}<div class="bubble"><b>gLiTCh</b><div><p>${GATES.includes("praes") ? `Präsentation von Etappe ${e + 1} geschafft! Jetzt gibt eure Lehrperson mit ihrem Code ${e < ET.length - 1 ? "die nächste Etappe" : "das Ziel"} frei.` : `Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Zeigt eure Arbeit eurer Lehrperson. Sie gibt mit ihrem Code die nächste Etappe frei.`}</p></div></div></div>
       <div class="pin"><div class="pin-dots" id="pinD" aria-live="polite"></div><div class="pin-pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button type="button" data-pn="${n}">${n}</button>`).join("")}<button type="button" data-pn="del" aria-label="Löschen">⌫</button><button type="button" data-pn="0">0</button><button type="button" class="go" data-pn="ok">OK</button></div><p class="err" id="pinE" role="alert"></p></div>`);
     $("[data-x]", ov).textContent = "Später";
     const paint = () => { $("#pinD", ov).textContent = code ? "●".repeat(code.length) : "Code eingeben"; };
     const check = () => {
       let ok = false; try { ok = HUB && HUB.pruefeCode ? !!HUB.pruefeCode(code) : code === String(O.code || "1234"); } catch (err) { ok = false; }
-      if (ok) { ov.remove(); confetti(30); say("Freigegeben! Weiter zur nächsten Etappe.", "cool", 6000); pass(); }
+      if (ok) { ov.remove(); confetti(30); say(e < ET.length - 1 ? "Freigegeben! Weiter zur nächsten Etappe." : "Freigegeben! Ab zum Ziel.", "cool", 6000); pass(); }
       else { code = ""; paint(); $("#pinE", ov).textContent = "Falscher Code. Nochmals versuchen."; const p = $(".pin", ov); p.classList.remove("shake"); void p.offsetWidth; p.classList.add("shake"); }
     };
     $$("[data-pn]", ov).forEach(b => b.onclick = () => { const v = b.dataset.pn; $("#pinE", ov).textContent = "";
       if (v === "del") code = code.slice(0, -1); else if (v === "ok") return check(); else if (code.length < 8) code += v; paint(); });
     paint();
+  }
+  /* ---------- Präsentation einer Etappe (wie im gLiTCh-Lab): Stichworte, eigene Produkte, Vollbild ---------- */
+  function praesDlg(e, nr, pass) {
+    const E = ET[e], A = E.aufgaben;
+    const own = A.map((a, t) => ({ a, x: S.ans[k(e, t)] })).filter(({ a, x }) => (a.typ === "schreiben" || a.typ === "gestalten") && x && x.v)
+      .map(({ a, x }) => typeof x.v === "string" ? { titel: a.titel || KIND[a.typ], text: x.v } : { titel: x.v.titel || a.titel || KIND[a.typ], text: x.v.text || "", farbe: x.v.farbe });
+    const txt = A.map(a => [a.text, a.frage, a.aussage, a.auftrag].join(" ")).join(" ");
+    const words = LEX.filter(w => new RegExp("(^|[^\\wäöüÄÖÜß])" + w.wort.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(?=[^\\wäöüÄÖÜß]|$)", "i").test(txt)).slice(0, 4);
+    const ideas = A.filter(a => !scorable(a) && a.titel).map(a => a.titel).slice(0, 4);
+    const ov = dlg(`<div class="praes" id="praesBox"><h2>🎤 Etappe ${e + 1} präsentieren${nr}</h2>
+      <div class="praes-head" style="--ec:${["#E3A300", "#1F9D68", "#2E6BE6", "#DD4646", "#7B4CEF", "#00B3C7"][e % 6]}"><span>${esc(E.emoji || "⭐")}</span><div><b>${esc(E.titel)}</b>${E.ziel ? `<small>${esc(E.ziel)}</small>` : ""}</div><em>★ ${etStars(e)} / ${etMax(e)}</em></div>
+      <p class="praes-lead">${who() ? esc(who()) + ": " : ""}Erzählt der Klasse oder eurer Lehrperson, was ihr in dieser Etappe herausgefunden habt.</p>
+      <ol class="praes-list">
+        <li><b>Worum ging es?</b> ${E.ziel ? esc(E.ziel) : "Erklärt das Thema in zwei Sätzen."}</li>
+        ${ideas.length ? `<li><b>Das haben wir gelernt:</b> ${ideas.map(esc).join(" · ")}</li>` : ""}
+        ${words.length ? `<li><b>Erklärt diese Fachwörter:</b> ${words.map(w => `<span class="pw">${esc(w.wort)}</span>`).join(" ")}</li>` : `<li><b>Ein schwieriges Wort</b> aus der Etappe erklären.</li>`}
+        <li><b>Das war spannend oder schwierig:</b> Was nehmt ihr mit?</li>
+      </ol>
+      ${own.length ? `<h3>Unser Produkt</h3><div class="praes-own">${own.map(o => `<div class="po" style="--pc:${/^#[0-9a-f]{6}$/i.test(o.farbe || "") ? o.farbe : "var(--mc)"}"><b>${esc(o.titel)}</b><p>${esc(o.text).replace(/\n/g, "<br>")}</p></div>`).join("")}</div>` : ""}
+      <div class="row praes-act"><button type="button" class="btn" data-full>⛶ Vollbild für die Klasse</button><button type="button" class="btn primary" data-done>✓ Wir haben präsentiert</button></div></div>`);
+    $("[data-x]", ov).textContent = "Später";
+    const box = $(".dlg", ov);
+    $("[data-full]", ov).onclick = () => { try { if (document.fullscreenElement) document.exitFullscreen(); else box.requestFullscreen(); } catch (err) { box.classList.toggle("big"); } };
+    $("[data-done]", ov).onclick = () => { try { if (document.fullscreenElement) document.exitFullscreen(); } catch (err) { /* egal */ } ov.remove(); confetti(30); say("Applaus! 👏 Toll präsentiert.", "cool", 5000); pass(); };
   }
   function readAloud(text) {
     try { const u = new SpeechSynthesisUtterance(String(text).replace(/\*\*/g, "")); u.lang = "de-CH"; u.rate = .95; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { say("Vorlesen geht auf diesem Gerät leider nicht.", "sad", 4000); }
@@ -229,8 +266,8 @@
     $("#stage").innerHTML = `<div class="stage-card ziel-card"><div class="eyebrow"><span>Ziel</span><span>${B.filter((_, i) => bDone(i)).length} von ${B.length} Bausteinen</span></div>
       <h1>${all ? "Geschafft! 🎉" : "Fast am Ziel"}</h1>
       <div class="ziel-hero">${gl(all ? "cool" : "wink", "huge")}<div><p class="ziel-stars">★ ${st} <small>von ${mx}</small></p><p>${esc(all ? (M.schluss || "Super, ihr habt alles geschafft!") : "Löst die offenen Bausteine (ohne ✓ in der Leiste oben), dann seid ihr am Ziel.")}</p></div></div>
-      ${DIP.length ? `<h3>Diplome</h3><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e" aria-hidden="true">${esc(d.emoji || "🏅")}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>` : ""}
-      ${O.freigabe === "selbst" && Object.keys(S.selbst).length ? `<h3>Eure Selbsteinschätzung</h3><div class="selbst-list">${ET.map((E, e) => { const se = S.selbst[e], x = se && SELBST.find(y => y[0] === se.w); return x ? `<div><span>${x[1]}</span><b>${esc(E.titel)}</b><small>${esc(x[2])}${se.t ? " · «" + esc(se.t) + "»" : ""}</small></div>` : ""; }).join("")}</div>` : ""}
+      ${DIP.length ? `<h3>Diplome</h3><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e wall" aria-hidden="true">${wall(d)}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>` : ""}
+      ${GATES.includes("selbst") && Object.keys(S.selbst).length ? `<h3>Eure Selbsteinschätzung</h3><div class="selbst-list">${ET.map((E, e) => { const se = S.selbst[e], x = se && SELBST.find(y => y[0] === se.w); return x ? `<div><span>${x[1]}</span><b>${esc(E.titel)}</b><small>${esc(x[2])}${se.t ? " · «" + esc(se.t) + "»" : ""}</small></div>` : ""; }).join("")}</div>` : ""}
       ${O.pdf ? `<div class="pdf-box"><span>📄</span><div><b>Zusammenfassung als PDF</b><small>Alles Wichtige aus dem Modul${LEX.length ? ", die Fachwörter" : ""} und eure Sterne zum Aufbewahren.</small></div><button type="button" class="btn" data-pdf>Herunterladen</button></div>` : ""}
       <div class="nav"><button type="button" class="btn" data-prev>← Zurück</button>${HUB ? `<button type="button" class="btn primary" data-exit>Zurück zum Hub</button>` : ""}</div></div>`;
     $("[data-prev]").onclick = () => goB(B.length - 1);
@@ -248,7 +285,7 @@
     save(); if (ok) { report(e); confetti(); }
     checkDips(); paintSide(); paintTabs();
     const nach = $("#nach"); if (ok && nach) nach.hidden = false;
-    if (ok && !wasDone && etDone(e)) { setTimeout(() => say(`${ET[e].lob || "Etappe geschafft!"} ⭐`, "cool", 9000), 900); if (gateNeeded(e) && !S.gate[e]) setTimeout(() => { if (!document.querySelector(".ov")) gateDlg(e, () => {}); }, 2200); }
+    if (ok && !wasDone && etDone(e)) { setTimeout(() => say(`${ET[e].lob || "Etappe geschafft!"} ⭐`, "cool", 9000), 900); if (gateNeeded(e) && !gateDone(e)) { const when = () => { if (gateDone(e)) return; if (document.querySelector(".ov")) return setTimeout(when, 500); gateDlg(e); }; setTimeout(when, 2200); } }
   }
   function fb(ok, text) {
     const f = document.createElement("div"); f.className = "fb " + (ok ? "ok" : "bad");
@@ -472,8 +509,8 @@
     paint(""); $("#lq", ov).oninput = ev => paint(ev.target.value);
     if (word) { const w = LEX.find(x => x.wort === word); if (w) { $("#ll", ov).insertAdjacentHTML("beforebegin", `<div class="bubble" style="margin-bottom:12px"><b>${esc(w.wort)}</b><p>${esc(w.erklaerung)}</p></div>`); } }
   }
-  function showDips() { dlg(`<h2>🏅 Diplome</h2><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e" aria-hidden="true">${esc(d.emoji || "🏅")}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>`); }
-  function showDip(d) { confetti(40); showMsg("cool", `🏅 **Neues Diplom: ${d.name}!**\n\n${d.beschreibung || ""}${HUB ? "\n\nSchaut in gLiTChs Zimmer: Vielleicht gibt es dort etwas Neues." : ""}`, "Juhui!"); }
+  function showDips() { dlg(`<h2>🏅 Diplome</h2><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e wall" aria-hidden="true">${wall(d)}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>`); }
+  function showDip(d) { confetti(40); setTimeout(() => { const h = document.querySelector(".ov .hero"); if (h) h.insertAdjacentHTML("afterend", `<div class="dip-new">${wall(d)}</div>`); }, 0); showMsg("cool", `🏅 **Neues Diplom: ${d.name}!**\n\n${d.beschreibung || ""}${HUB ? "\n\nSchaut in gLiTChs Zimmer: Vielleicht gibt es dort etwas Neues." : ""}`, "Juhui!"); }
   function showLinks() { dlg(`<h2>🔗 Links</h2><ul class="links">${(M.links || []).map(l => `<li><a href="${esc(/^https?:\/\//i.test(l.url) ? l.url : "#")}" target="_blank" rel="noopener">${esc(l.titel || l.url)}</a>${l.titel ? `<br><small>${esc(l.url)}</small>` : ""}</li>`).join("")}</ul>`); }
   function confetti(n = 18) {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;

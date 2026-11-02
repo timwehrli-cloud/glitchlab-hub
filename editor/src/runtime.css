@@ -221,3 +221,25 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
 .pdf-box div{flex:1;min-width:180px;display:grid}
 .pdf-box small{color:var(--muted)}
 @media (prefers-reduced-motion: reduce){.pin.shake{animation:none}}
+/* Präsentation */
+.g-step{font:700 .8rem/1 "Inter",system-ui,sans-serif;color:var(--muted);margin-left:6px;white-space:nowrap}
+.praes-head{display:flex;align-items:center;gap:12px;margin:12px 0;padding:14px 16px;border-radius:18px;background:color-mix(in srgb,var(--ec) 14%,#fff);border:2.5px solid var(--ec)}
+.praes-head > span{font-size:2.2rem}.praes-head div{flex:1;display:grid}.praes-head b{font-size:1.25rem}.praes-head small{color:var(--muted)}
+.praes-head em{font-style:normal;font-weight:800;color:var(--gold);white-space:nowrap}
+.praes-lead{font-weight:600}
+.praes-list{display:grid;gap:8px;padding-left:22px;margin:8px 0 14px}
+.praes-list li{padding:4px 0}
+.pw{display:inline-block;margin:2px 4px 2px 0;padding:2px 10px;border-radius:99px;background:var(--surface2);border:1.5px dashed var(--accent);font-weight:700}
+.praes-own{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:8px 0 14px}
+.po{padding:12px 14px;border-radius:16px;background:#fff;border:2.5px solid var(--pc);box-shadow:3px 3px 0 var(--pc)}
+.po p{margin:6px 0 0;white-space:normal}
+.praes-act{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.dlg:fullscreen,.dlg.big{width:100vw;max-width:none;height:100vh;max-height:none;border-radius:0;padding:4vh 6vw;font-size:1.35rem;overflow:auto}
+.dlg:fullscreen .praes-head b,.dlg.big .praes-head b{font-size:2rem}
+/* Diplome als Wand-Gegenstände (wie im gLiTCh-Lab) */
+.hex.got{background:none;clip-path:none}
+.hex svg,.dip .e.wall svg{width:44px;height:44px;overflow:visible;filter:drop-shadow(0 2px 1.5px rgba(42,22,8,.45))}
+.dip .e.wall{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 6px;border-radius:14px;background:linear-gradient(#4B2696,#2A1466)}
+.dip:not(.got) .e.wall svg{filter:grayscale(1) brightness(.5);opacity:.5}
+.dip-new{display:grid;place-items:center;margin:4px auto 10px;width:120px;height:120px;border-radius:22px;background:linear-gradient(#4B2696,#2A1466)}
+.dip-new svg{width:96px;height:96px;overflow:visible;filter:drop-shadow(0 3px 2px rgba(42,22,8,.5))}

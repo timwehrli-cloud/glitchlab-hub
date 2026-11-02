@@ -77,7 +77,8 @@ option,optgroup{background:var(--surface);color:var(--ink)}
 .item{display:grid;grid-template-columns:64px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.2fr) auto;gap:8px;align-items:center;padding:8px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
 .item .in{padding:7px 9px;border-radius:10px}
 .item .emo{text-align:center;font-size:1.3rem;padding:4px}
-.item.dip{grid-template-columns:64px minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr) auto}
+.item.dip{grid-template-columns:48px 64px minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,.9fr) auto}
+.wl-prev{width:48px;height:48px;border-radius:10px;background:linear-gradient(#4B2696,#2A1466);display:grid;place-items:center}.wl-prev svg{width:40px;height:40px;overflow:visible}
 .item.bg{grid-template-columns:64px minmax(0,1fr) auto auto minmax(0,1.2fr) auto}
 .item.bg .sw{display:flex;gap:4px}
 .item.bg input[type=color]{width:34px;height:34px;padding:0;border:1.5px solid var(--line);border-radius:8px;background:none}
@@ -133,6 +134,8 @@ option,optgroup{background:var(--surface);color:var(--ink)}
 .seg button b{font-size:.95rem}.seg button small{color:var(--muted);font-size:.78rem;line-height:1.3}
 .seg button.on{border-color:var(--teal);background:linear-gradient(135deg,rgba(46,230,214,.18),rgba(160,124,255,.14))}
 .seg button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.seg .ck{display:inline-grid;place-items:center;width:18px;height:18px;margin-right:6px;border-radius:5px;border:1.5px solid var(--muted);font-size:.75rem;vertical-align:-3px}
+.seg button.on .ck{background:var(--teal);border-color:var(--teal);color:#0B0618}
 </style>
 
 <div class="wrap">
@@ -179,7 +182,7 @@ option,optgroup{background:var(--surface);color:var(--ink)}
     <div class="card">
       <div class="card-h"><div><p class="eyebrow">Ablauf</p><h2>Funktionen und Freigabe</h2></div><p>Schalte ein oder aus, was das Modul anbietet. Das kannst du auch nach dem Erstellen noch ändern: Die Datei passt sich beim Herunterladen an.</p></div>
       <div class="toggles" id="toggles"></div>
-      <div class="f"><span>Zwischen den Etappen</span><div class="seg" id="freigabe" role="radiogroup" aria-label="Freigabe zwischen den Etappen"></div></div>
+      <div class="f"><span>Zwischen den Etappen</span><div class="seg" id="freigabe" role="group" aria-label="Freigabe zwischen den Etappen: keine oder eine bis drei kombinieren"></div></div>
       <p class="hint" id="frHint"></p>
       <label class="f" id="codeWrap"><span>Code zum Testen ohne Hub</span><input class="in" id="optCode" inputmode="numeric" maxlength="8" placeholder="1234" style="max-width:180px"></label>
     </div>

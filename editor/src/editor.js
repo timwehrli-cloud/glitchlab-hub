@@ -26,10 +26,11 @@
   const KEY = "gle.draft.v1";
   const fresh = () => ({ typenV2: true, titel: "", fach: "nmg", hubThema: "", hubNeu: "", klasse: "6", minuten: "45", etappen: "4", rahmen: "auto", ideen: "", typen: TYPES.map(t => t[0]), material: [], links: "", belIdeen: "",
     diplome: [], outfits: [], emotes: [], zimmer: [], hintergruende: [], plan: null, inhalt: [], step: 1, opt: freshOpt() });
-  const freshOpt = () => ({ tipps: true, vorlesen: true, lexikon: true, pdf: true, freigabe: "keine", code: "" });
+  const freshOpt = () => ({ tipps: true, vorlesen: true, lexikon: true, pdf: true, gates: [], code: "" });
   let D = fresh();
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === "object") D = Object.assign(fresh(), s); } catch (e) { /* kein Speicher */ }
   D.opt = Object.assign(freshOpt(), D.opt || {});
+  if (!Array.isArray(D.opt.gates)) D.opt.gates = D.opt.freigabe === "selbst" ? ["selbst"] : D.opt.freigabe === "lp" ? ["lp"] : [];
   if (!D.typenV2) { D.typen = [...new Set([...D.typen, "mehrfach", "memory", "sortieren", "zeitmaschine", "raetsel", "schaetzen", "gestalten"])]; D.typenV2 = true; }
   let saveT = null;
   const save = () => { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) { try { localStorage.setItem(KEY, JSON.stringify(Object.assign({}, D, { material: D.material.map(m => Object.assign({}, m, { text: m.text.slice(0, 20000) })) }))); } catch (e2) { /* zu gross */ } } }, 400); };
@@ -87,16 +88,21 @@
   /* ---------- Funktionen und Freigabe ---------- */
   const TOGGLES = [["tipps", "💡 Tipps von gLiTCh", "Tipp-Knopf bei jeder Aufgabe und Hilfe bei Fehlern"], ["vorlesen", "🔊 Vorlesen", "«gLiTCh erklärt» lässt sich vorlesen"],
     ["lexikon", "📖 Fachwörter-Lexikon", "Schwierige Wörter antippen, gLiTCh erklärt sie"], ["pdf", "📄 Zusammenfassung als PDF", "Die Kinder laden am Schluss alles Wichtige als PDF herunter"]];
-  const FREI = [["keine", "Keine Freigabe", "Die Kinder gehen frei von Etappe zu Etappe."], ["selbst", "🪞 Selbsteinschätzung", "Nach jeder Etappe schätzen sich die Kinder ein (4 Stufen und ein Satz). Erst dann geht die nächste auf."],
-    ["lp", "🔐 Freigabe mit LP-Code", "Nach jeder Etappe gibt die Lehrperson mit ihrem Code frei. Im Hub gilt der Code jeder Lehrperson der Klasse."]];
+  const FREI = [["keine", "Keine Freigabe", "Die Kinder gehen frei von Etappe zu Etappe."], ["selbst", "🪞 Selbsteinschätzung", "Die Kinder schätzen sich ein (4 Stufen und ein Satz)."],
+    ["praes", "🎤 Präsentation", "Wie im M&I-Lab: Die Gruppe präsentiert die Etappe mit Stichworten, Fachwörtern und ihrem Produkt, auch im Vollbild."],
+    ["lp", "🔐 Freigabe mit LP-Code", "Die Lehrperson gibt mit ihrem Code frei. Im Hub gilt der Code jeder Lehrperson der Klasse."]];
   function paintOpts() {
     const O = D.opt;
     $("#toggles").innerHTML = TOGGLES.map(([k, n, d]) => `<label class="tg"><input type="checkbox" data-opt="${k}"${O[k] ? " checked" : ""}><i aria-hidden="true"></i><span><b>${esc(n)}</b><small>${esc(d)}</small></span></label>`).join("");
     $$("[data-opt]").forEach(c => c.onchange = () => { O[c.dataset.opt] = c.checked; save(); if (D.step === 4) renderResult(); });
-    $("#freigabe").innerHTML = FREI.map(([v, n, d]) => `<button type="button" role="radio" aria-checked="${O.freigabe === v}" class="${O.freigabe === v ? "on" : ""}" data-fr="${v}"><b>${esc(n)}</b><small>${esc(d)}</small></button>`).join("");
-    $$("[data-fr]").forEach(b => b.onclick = () => { O.freigabe = b.dataset.fr; save(); paintOpts(); if (D.step === 4) renderResult(); });
-    $("#codeWrap").hidden = O.freigabe !== "lp";
-    $("#frHint").textContent = O.freigabe === "lp" ? "Im Hub gilt der Freigabe-Code jeder Lehrperson der Klasse (deiner und die der weiteren Lehrpersonen). Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Hub geöffnet wird (leer = 1234)." : "";
+    const G = O.gates;
+    $("#freigabe").innerHTML = FREI.map(([v, n, d]) => { const on = v === "keine" ? !G.length : G.includes(v);
+      return `<button type="button" role="${v === "keine" ? "radio" : "checkbox"}" aria-checked="${on}" class="${on ? "on" : ""}${v === "keine" ? "" : " multi"}" data-fr="${v}"><b>${v === "keine" ? "" : `<span class="ck" aria-hidden="true">${on ? "✓" : ""}</span>`}${esc(n)}</b><small>${esc(d)}</small></button>`; }).join("");
+    $$("[data-fr]").forEach(b => b.onclick = () => { const v = b.dataset.fr;
+      if (v === "keine") O.gates = []; else O.gates = G.includes(v) ? G.filter(x => x !== v) : ["selbst", "praes", "lp"].filter(x => x === v || G.includes(x));
+      save(); paintOpts(); if (D.step === 4) renderResult(); });
+    $("#codeWrap").hidden = !G.includes("lp");
+    $("#frHint").textContent = (G.length > 1 ? `Nach jeder Etappe in dieser Reihenfolge: ${G.map(g => ({ selbst: "Selbsteinschätzung", praes: "Präsentation", lp: "LP-Code" })[g]).join(" → ")}. ` : G.length ? "" : "Wähle eine, zwei oder alle drei Freigaben. ") + (G.includes("lp") ? "Im Hub gilt der Freigabe-Code jeder Lehrperson der Klasse (deiner und die der weiteren Lehrpersonen). Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Hub geöffnet wird (leer = 1234)." : "");
     const c = $("#optCode"); c.value = O.code || ""; c.oninput = () => { O.code = c.value.replace(/\D/g, "").slice(0, 8); save(); };
     c.onchange = () => { c.value = O.code; if (D.step === 4) renderResult(); };
   }
@@ -148,7 +154,7 @@
 
   /* ---------- 3 Belohnungen ---------- */
   const CATS = [
-    { k: "diplome", n: "Diplome", ic: "🏅", d: "Auszeichnungen im Modul. Im Hub hängen sie als Bild an gLiTChs Wand (10 Plätze). Sie können auch Extras freischalten." },
+    { k: "diplome", n: "Diplome", ic: "🏅", d: "Auszeichnungen im Modul. Im Hub hängen sie als Gegenstand an gLiTChs Wand (10 Plätze), im gleichen Stil wie die NMG- und M&I-Diplome. Wähle pro Diplom, was an der Wand hängt. Sie können auch Extras freischalten." },
     { k: "outfits", n: "Outfits für gLiTCh", ic: "👕", d: "Kleider und Accessoires für die Garderobe." },
     { k: "emotes", n: "Emotes", ic: "✨", d: "Kleine Animationen, die gLiTCh vorführt." },
     { k: "zimmer", n: "Zimmer-Gegenstände", ic: "🛋️", d: "Möbel und Deko für gLiTChs Zimmer." },
@@ -163,7 +169,8 @@
     const emo = `<input class="in emo" data-f="${c.k}:${i}:emoji" value="${esc(x.emoji)}" maxlength="8" aria-label="Emoji">`;
     const name = `<input class="in" data-f="${c.k}:${i}:name" value="${esc(x.name)}" maxlength="40" aria-label="Name">`;
     const unl = sel(UNLOCK(), x.freischalten, `data-f="${c.k}:${i}:freischalten" aria-label="Freischalten"`);
-    if (c.k === "diplome") return `<div class="item dip">${emo}${name}<input class="in" data-f="${c.k}:${i}:beschreibung" value="${esc(x.beschreibung)}" maxlength="120" aria-label="Beschreibung" placeholder="Wofür gibt es das Diplom?">${sel(DIP_COND(), x.bedingung, `data-f="${c.k}:${i}:bedingung" aria-label="Bedingung"`)}${del}</div>`;
+    if (c.k === "diplome") { if (!x.wand) x.wand = GLWall.pick(x.id || x.name);
+      return `<div class="item dip"><span class="wl-prev" title="So hängt es an gLiTChs Wand">${GLWall.svg(x.wand, x.emoji, (D.plan && D.plan.farbe) || "#7B4CEF")}</span>${emo}${name}<input class="in" data-f="${c.k}:${i}:beschreibung" value="${esc(x.beschreibung)}" maxlength="120" aria-label="Beschreibung" placeholder="Wofür gibt es das Diplom?">${sel(DIP_COND(), x.bedingung, `data-f="${c.k}:${i}:bedingung" aria-label="Bedingung"`)}${sel(GLWall.KINDS, x.wand, `data-f="${c.k}:${i}:wand" aria-label="Wandgegenstand"`)}${del}</div>`; }
     if (c.k === "outfits") return `<div class="item">${emo}${name}${sel(OUT_SLOTS, x.platz, `data-f="${c.k}:${i}:platz" aria-label="Platz"`)}${unl}${del}</div>`;
     if (c.k === "emotes") return `<div class="item">${emo}${name}${sel(ANIMS, x.animation, `data-f="${c.k}:${i}:animation" aria-label="Animation"`)}${unl}${del}</div>`;
     if (c.k === "zimmer") return `<div class="item">${emo}${name}${sel(ROOM_SLOTS, x.platz, `data-f="${c.k}:${i}:platz" aria-label="Platz"`)}${unl}${del}</div>`;
@@ -180,6 +187,7 @@
       if (f === "wand0" || f === "wand1") { x.wand = x.wand || []; x.wand[+f.slice(-1)] = el.value; }
       else if (f === "boden0" || f === "boden1") { x.boden = x.boden || []; x.boden[+f.slice(-1)] = el.value; }
       else x[f] = el.value;
+      if (k === "diplome" && (f === "wand" || f === "emoji")) { const pv = el.closest(".item").querySelector(".wl-prev"); if (pv) pv.innerHTML = GLWall.svg(x.wand, x.emoji, (D.plan && D.plan.farbe) || "#7B4CEF"); }
       if (k === "diplome" && f === "name" && el.tagName === "INPUT") { /* Name ändert die id nicht, damit Freischaltungen gültig bleiben */ }
       save(); paintSteps(); if (k === "diplome" && f === "name") $$("select[data-f$=':freischalten']", $("#cats")).forEach(s => { const v = s.value; s.innerHTML = opts(UNLOCK(), v); });
     }; });
@@ -425,7 +433,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
     return {
       titel: P.titel, fach: D.fach, thema: hubThemaName(), beschreibung: P.beschreibung || "", minuten: +D.minuten, farbe: P.farbe, emoji: P.emoji,
       aufgaben: D.inhalt.map((e, i) => ({ id: "etappe-" + (i + 1), titel: e.titel, sterne: etSterne(e) })),
-      diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung })),
+      diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, wand: d.wand || GLWall.pick(d.id) })),
       extras: {
         outfits: D.outfits.map(x => ({ id: x.id, name: x.name, platz: x.platz, emoji: x.emoji, spruch: x.spruch || "", freischalten: un(x) })),
         emotes: D.emotes.map(x => ({ id: x.id, name: x.name, emoji: x.emoji, text: x.text || x.name, animation: x.animation, farben: x.farben || [], beschreibung: `Aus dem Modul «${P.titel}».`, freischalten: un(x) })),
@@ -438,7 +446,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
   function buildModule() {
     const P = D.plan, j = o => JSON.stringify(o).replace(/</g, "\\u003c");
     const mod = { titel: P.titel, beschreibung: P.beschreibung, emoji: P.emoji, farbe: P.farbe, intro: P.intro, schluss: P.schluss, fachname: fachName(), fachkurz: ({ mi: "M&I", nmg: "NMG", de: "DE", ma: "MA", en: "EN", fr: "FR", sp: "SPORT", mg: "GAMES" })[D.fach] || "",
-      etappen: D.inhalt, lexikon: P.lexikon, opt: Object.assign({}, D.opt), diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, bedingung: d.bedingung })), links: linkList() };
+      etappen: D.inhalt, lexikon: P.lexikon, opt: Object.assign({}, D.opt), diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, bedingung: d.bedingung, wand: d.wand || GLWall.pick(d.id) })), links: linkList() };
     const T = id => document.getElementById(id).textContent;
     const SC = "<" + "/script>";
     return `<!doctype html>

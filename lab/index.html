@@ -7897,12 +7897,14 @@ function outfitSVG(opts){
 }
 function glitchSVG(mood="normal", opts={}){
   const [e,m] = G_MOOD[mood] || G_MOOD.normal; const d = (Math.random()*3).toFixed(2);
-  const shade = y => y<=3 ? "#B79CFF" : y>=11 ? "#6A3FE0" : "#8B5CFF";
+  const _L = window.GLAB_SKINS || [], _id = (opts.outfit && opts.outfit.skin) || window.GLAB_CUR_SKIN;
+  const _sk = (window.GLAB_IS_LP ? _L.find(x=>x.id === "gold") : _L.find(x=>x.id === _id && x.id !== "gold")) || {light:"#B79CFF", base:"#8B5CFF", dark:"#6A3FE0", hi:"#E3D6FF"};
+  const shade = y => y<=3 ? _sk.light : y>=11 ? _sk.dark : _sk.base;
   return `<svg viewBox="${opts.flex ? "-5 -3 24 21" : opts.det ? "-3 -8 26 26" : "-2 -2 18 18"}" shape-rendering="crispEdges" aria-hidden="true" style="--d:-${d}s">
     ${opts.zen ? `<ellipse class="gzen" cx="7" cy="7" rx="10" ry="10" fill="#00E5FF" opacity=".18"/><ellipse class="gzen g2" cx="7" cy="7" rx="7.5" ry="7.5" fill="#FF2BD6" opacity=".12"/>` : ""}
     <rect class="gp gp1" x="-1" y="3" width="1" height="1" fill="#00E5FF"/><rect class="gp gp2" x="15" y="8" width="1" height="1" fill="#FF2BD6"/><rect class="gp gp3" x="13" y="-1" width="1" height="1" fill="#FFC21A"/>
     <g class="gc" fill="#00E5FF">${gBody()}</g><g class="gm" fill="#FF2BD6">${gBody()}</g>
-    <g class="gb">${gBody(shade)}<rect x="2" y="3" width="1" height="1" fill="#E3D6FF"/><rect x="0" y="0" width="1" height="1" fill="#00E5FF"/><rect x="13" y="0" width="1" height="1" fill="#FF2BD6"/></g>
+    <g class="gb">${gBody(shade)}<rect x="2" y="3" width="1" height="1" fill="${_sk.hi}"/><rect x="0" y="0" width="1" height="1" fill="#00E5FF"/><rect x="13" y="0" width="1" height="1" fill="#FF2BD6"/></g>
     <g class="ge">${G_EYES[e]}</g><g>${G_MOUTH[m]}</g>
     ${mood==="love" ? `<g class="gblush"><rect x="1" y="7" width="2" height="2" fill="#FF4F7B"/><rect x="11" y="7" width="2" height="2" fill="#FF4F7B"/><rect x="1" y="7" width="1" height="1" fill="#FF8FAB"/><rect x="11" y="7" width="1" height="1" fill="#FF8FAB"/></g>` : ""}
     ${opts.flex ? `<g class="garms" stroke="#2A0F66" stroke-width=".35"><g class="garm-l"><rect x="-3" y="8" width="3" height="2" fill="#7B4CEF"/><rect x="-4" y="4" width="2" height="5" fill="#7B4CEF"/><rect x="-3" y="6.6" width="2" height="1.6" fill="#B79CFF"/><rect x="-4.3" y="2.6" width="2.6" height="2" fill="#B79CFF"/></g><g class="garm-r"><rect x="14" y="8" width="3" height="2" fill="#7B4CEF"/><rect x="16" y="4" width="2" height="5" fill="#7B4CEF"/><rect x="15" y="6.6" width="2" height="1.6" fill="#B79CFF"/><rect x="15.7" y="2.6" width="2.6" height="2" fill="#B79CFF"/></g></g>` : ""}}

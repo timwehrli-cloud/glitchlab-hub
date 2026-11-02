@@ -77,7 +77,8 @@ option,optgroup{background:var(--surface);color:var(--ink)}
 .item{display:grid;grid-template-columns:64px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.2fr) auto;gap:8px;align-items:center;padding:8px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
 .item .in{padding:7px 9px;border-radius:10px}
 .item .emo{text-align:center;font-size:1.3rem;padding:4px}
-.item.dip{grid-template-columns:64px minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr) auto}
+.item.dip{grid-template-columns:48px 64px minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,.9fr) auto}
+.wl-prev{width:48px;height:48px;border-radius:10px;background:linear-gradient(#4B2696,#2A1466);display:grid;place-items:center}.wl-prev svg{width:40px;height:40px;overflow:visible}
 .item.bg{grid-template-columns:64px minmax(0,1fr) auto auto minmax(0,1.2fr) auto}
 .item.bg .sw{display:flex;gap:4px}
 .item.bg input[type=color]{width:34px;height:34px;padding:0;border:1.5px solid var(--line);border-radius:8px;background:none}
@@ -148,6 +149,8 @@ option,optgroup{background:var(--surface);color:var(--ink)}
 .seg button b{font-size:.95rem}.seg button small{color:var(--muted);font-size:.78rem;line-height:1.3}
 .seg button.on{border-color:var(--teal);background:linear-gradient(135deg,rgba(46,230,214,.18),rgba(160,124,255,.14))}
 .seg button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.seg .ck{display:inline-grid;place-items:center;width:18px;height:18px;margin-right:6px;border-radius:5px;border:1.5px solid var(--muted);font-size:.75rem;vertical-align:-3px}
+.seg button.on .ck{background:var(--teal);border-color:var(--teal);color:#0B0618}
 </style>
 
 <div class="wrap">
@@ -194,7 +197,7 @@ option,optgroup{background:var(--surface);color:var(--ink)}
     <div class="card">
       <div class="card-h"><div><p class="eyebrow">Ablauf</p><h2>Funktionen und Freigabe</h2></div><p>Schalte ein oder aus, was das Modul anbietet. Das kannst du auch nach dem Erstellen noch ändern: Die Datei passt sich beim Herunterladen an.</p></div>
       <div class="toggles" id="toggles"></div>
-      <div class="f"><span>Zwischen den Etappen</span><div class="seg" id="freigabe" role="radiogroup" aria-label="Freigabe zwischen den Etappen"></div></div>
+      <div class="f"><span>Zwischen den Etappen</span><div class="seg" id="freigabe" role="group" aria-label="Freigabe zwischen den Etappen: keine oder eine bis drei kombinieren"></div></div>
       <p class="hint" id="frHint"></p>
       <label class="f" id="codeWrap"><span>Code zum Testen ohne Hub</span><input class="in" id="optCode" inputmode="numeric" maxlength="8" placeholder="1234" style="max-width:180px"></label>
     </div>
@@ -474,6 +477,28 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
 .pdf-box div{flex:1;min-width:180px;display:grid}
 .pdf-box small{color:var(--muted)}
 @media (prefers-reduced-motion: reduce){.pin.shake{animation:none}}
+/* Präsentation */
+.g-step{font:700 .8rem/1 "Inter",system-ui,sans-serif;color:var(--muted);margin-left:6px;white-space:nowrap}
+.praes-head{display:flex;align-items:center;gap:12px;margin:12px 0;padding:14px 16px;border-radius:18px;background:color-mix(in srgb,var(--ec) 14%,#fff);border:2.5px solid var(--ec)}
+.praes-head > span{font-size:2.2rem}.praes-head div{flex:1;display:grid}.praes-head b{font-size:1.25rem}.praes-head small{color:var(--muted)}
+.praes-head em{font-style:normal;font-weight:800;color:var(--gold);white-space:nowrap}
+.praes-lead{font-weight:600}
+.praes-list{display:grid;gap:8px;padding-left:22px;margin:8px 0 14px}
+.praes-list li{padding:4px 0}
+.pw{display:inline-block;margin:2px 4px 2px 0;padding:2px 10px;border-radius:99px;background:var(--surface2);border:1.5px dashed var(--accent);font-weight:700}
+.praes-own{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:8px 0 14px}
+.po{padding:12px 14px;border-radius:16px;background:#fff;border:2.5px solid var(--pc);box-shadow:3px 3px 0 var(--pc)}
+.po p{margin:6px 0 0;white-space:normal}
+.praes-act{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.dlg:fullscreen,.dlg.big{width:100vw;max-width:none;height:100vh;max-height:none;border-radius:0;padding:4vh 6vw;font-size:1.35rem;overflow:auto}
+.dlg:fullscreen .praes-head b,.dlg.big .praes-head b{font-size:2rem}
+/* Diplome als Wand-Gegenstände (wie im gLiTCh-Lab) */
+.hex.got{background:none;clip-path:none}
+.hex svg,.dip .e.wall svg{width:44px;height:44px;overflow:visible;filter:drop-shadow(0 2px 1.5px rgba(42,22,8,.45))}
+.dip .e.wall{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 6px;border-radius:14px;background:linear-gradient(#4B2696,#2A1466)}
+.dip:not(.got) .e.wall svg{filter:grayscale(1) brightness(.5);opacity:.5}
+.dip-new{display:grid;place-items:center;margin:4px auto 10px;width:120px;height:120px;border-radius:22px;background:linear-gradient(#4B2696,#2A1466)}
+.dip-new svg{width:96px;height:96px;overflow:visible;filter:drop-shadow(0 3px 2px rgba(42,22,8,.5))}
 </script>
 <script type="text/plain" id="rt-gcss">.glitch { display: inline-block; position: relative; line-height: 0; flex: none; }
 .glitch svg { width: 100%; height: 100%; overflow: visible; display: block; animation: gBob 2.6s ease-in-out infinite; animation-delay: var(--d, 0s); }
@@ -570,6 +595,42 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
 
   window.GLGlitch = { svg, shades };
 })();
+
+/* =====================================================================
+   gLiTCh · Diplome als Gegenstände an der Wand (20 × 20, ohne Hintergrund)
+   Gleicher Stil wie die Diplome der NMG- und M&I-Module im gLiTCh-Lab.
+   GLWall.svg(art, emoji, farbe) → SVG-Text. art: siehe GLWall.KINDS
+   ===================================================================== */
+window.GLWall = window.GLWall || (function () {
+  const NAIL = '<circle cx="10" cy="1.2" r=".8" fill="#3A2410"/>';
+  const STR = (a, b, y) => `<path d="M${a} ${y}L10 1.2L${b} ${y}" stroke="#3A2410" stroke-width=".35" fill="none"/>`;
+  const SHELF = '<rect x="2.4" y="16" width="15.2" height="1.3" rx=".3" fill="#8B5A2B"/><path d="M4.4 17.3l1.4 1.6M15.6 17.3l-1.4 1.6" stroke="#5D3A1A" stroke-width=".6"/>';
+  const clean = e => String(e || "🏅").replace(/[<>&"']/g, "").slice(0, 8) || "🏅";
+  const col = c => /^#[0-9a-f]{6}$/i.test(String(c || "")) ? c : "#7B4CEF";
+  const mix = (c, t, f) => "#" + [1, 3, 5].map(i => { const v = parseInt(c.slice(i, i + 2), 16); return Math.round(v + (t - v) * f).toString(16).padStart(2, "0"); }).join("");
+  const dk = c => mix(c, 0, .38), lt = (c, f = .8) => mix(c, 255, f);
+  const em = (e, x, y, s) => `<text x="${x}" y="${y}" font-size="${s}" text-anchor="middle" dominant-baseline="central">${e}</text>`;
+  const spark = (x, y, d) => `<path class="wl-flake" style="animation-delay:-${d}s" d="M${x} ${y - .9}v1.8M${x - .9} ${y}h1.8" stroke="#FFF3B0" stroke-width=".35"/>`;
+  const star = (cx, cy, ro, ri) => "M" + Array.from({ length: 10 }, (_, k) => { const a = -Math.PI / 2 + Math.PI * k / 5, r = k % 2 ? ri : ro; return `${(cx + r * Math.cos(a)).toFixed(2)} ${(cy + r * Math.sin(a)).toFixed(2)}`; }).join("L") + "z";
+  const K = {
+    rahmen: (e, c) => STR(4, 16, 5) + `<rect x="2.5" y="5" width="15" height="13" rx=".6" fill="#7A4A22"/><rect x="3.6" y="6.1" width="12.8" height="10.8" fill="${lt(c)}"/><rect x="3.6" y="14.6" width="12.8" height="2.3" fill="${lt(c, .55)}"/><g class="wl-fly">${em(e, 10, 11, 6.2)}</g>` + NAIL,
+    wimpel: (e, c) => `<path d="M10 1.2V3" stroke="#3A2410" stroke-width=".4"/><g class="wl-sway"><rect x="2.4" y="2.6" width="15.2" height="1.1" rx=".55" fill="#8B5A2B"/><path d="M3.2 3.7h13.6L10 18.8z" fill="${c}" stroke="${dk(c)}" stroke-width=".4"/><path d="M4.6 5.2h10.8" stroke="${lt(c, .5)}" stroke-width=".5"/>${em(e, 10, 8.8, 5)}</g>` + NAIL,
+    schild: (e, c) => STR(6, 14, 4.6) + `<g class="wl-sway"><path d="M10 4.4l5.6 2v4.2c0 3.8-2.7 6.1-5.6 7.3-2.9-1.2-5.6-3.5-5.6-7.3V6.4z" fill="${c}" stroke="${dk(c)}" stroke-width=".45"/><path d="M10 5.5l4.3 1.6v3.5c0 3-2 4.8-4.3 5.8z" fill="${lt(c, .25)}"/>${em(e, 10, 10.8, 5.2)}</g>` + NAIL,
+    pokal: (e, c) => SHELF + `<path d="M6.2 4.2h7.6v3.6c0 2.6-1.7 4.2-3.8 4.2s-3.8-1.6-3.8-4.2z" fill="#F2C94C" stroke="#8B6914" stroke-width=".35"/><path d="M6.2 5.4H4.6c0 2 .8 3 2 3.2M13.8 5.4h1.6c0 2-.8 3-2 3.2" stroke="#C9A227" stroke-width=".55" fill="none"/><rect x="9.3" y="12" width="1.4" height="1.8" fill="#C9A227"/><rect x="7" y="13.8" width="6" height="2.2" rx=".3" fill="${dk(c)}"/>${em(e, 10, 7.7, 3.8)}` + spark(4.2, 3.2, 0) + spark(15.8, 10.6, 1),
+    medaille: (e, c) => `<g class="wl-sway"><path d="M10 1.2 5.8 9.6h2.6L10 5.2z" fill="${c}"/><path d="M10 1.2l4.2 8.4h-2.6L10 5.2z" fill="${dk(c)}"/><circle cx="10" cy="13.4" r="5.2" fill="#F2C94C" stroke="#8B6914" stroke-width=".5"/><circle cx="10" cy="13.4" r="4" fill="#FFE680" stroke="#C98A00" stroke-width=".3"/>${em(e, 10, 13.6, 4.6)}<path class="wl-glow" d="M6.6 11.2a4.2 4.2 0 0 1 2-2" stroke="#fff" stroke-width=".6" fill="none"/></g>` + NAIL,
+    rolle: (e, c) => STR(5, 15, 4) + `<rect x="4" y="4" width="12" height="13" fill="#F1E2BC" stroke="#B89A5E" stroke-width=".4"/><rect x="3.4" y="3.2" width="13.2" height="1.8" rx=".9" fill="#D9C28E"/><rect x="3.4" y="16.2" width="13.2" height="1.8" rx=".9" fill="#D9C28E"/>${em(e, 10, 9.4, 4.6)}<path d="M6 13h8" stroke="#6B4A2B" stroke-width=".45"/><path d="M13.4 17.4v1.4" stroke="${dk(c)}" stroke-width=".5"/><circle class="wl-sway" cx="13.4" cy="18.9" r="1.2" fill="${c}"/>` + NAIL,
+    holz: (e, c) => `<g class="wl-sway">` + STR(5, 15, 6.2) + `<rect x="2.6" y="6.2" width="14.8" height="9.4" rx="1" fill="#C68A4E" stroke="#7A4A22" stroke-width=".5"/><path d="M3.6 8.4h12.8M3.6 13.4h12.8" stroke="#A86F38" stroke-width=".3"/><rect x="2.6" y="14.2" width="14.8" height="1.4" fill="${c}"/>${em(e, 10, 10.6, 5)}</g>` + NAIL,
+    stern: (e, c) => STR(6, 14, 4) + `<g class="wl-sway"><path d="${star(10, 11, 7.4, 3.4)}" fill="${c}" stroke="${dk(c)}" stroke-width=".45"/><path d="${star(10, 11, 5.6, 2.6)}" fill="${lt(c, .35)}"/>${em(e, 10, 11.4, 4.2)}</g>` + spark(3.4, 5.4, .4) + spark(16.4, 16, 1.2) + NAIL
+  };
+  const KINDS = [["rahmen", "Bilderrahmen"], ["wimpel", "Wimpel"], ["schild", "Wappenschild"], ["pokal", "Pokal"], ["medaille", "Medaille"], ["rolle", "Urkunde"], ["holz", "Holzschild"], ["stern", "Stern"]];
+  const pick = id => { let h = 0; String(id || "").split("").forEach(ch => { h = (h * 31 + ch.charCodeAt(0)) >>> 0; }); return KINDS[h % KINDS.length][0]; };
+  const svg = (art, emoji, c, id) => `<svg viewBox="0 0 20 20" aria-hidden="true" class="wl-art">${(K[art] || K[pick(id || emoji)])(clean(emoji), col(c))}</svg>`;
+  const CSS = ".wl-sway{transform-box:fill-box;transform-origin:50% 0;animation:wlSway 3.2s ease-in-out infinite}.wl-wave{transform-box:fill-box;transform-origin:0 50%;animation:wlWave 1.6s ease-in-out infinite}.wl-fly{animation:wlFly 3s ease-in-out infinite}.wl-flake{animation:wlFlake 2.6s linear infinite}.wl-glow{animation:wlGlow 2.2s ease-in-out infinite}"
+    + "@keyframes wlSway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}@keyframes wlWave{0%,100%{transform:skewY(0) scaleX(1)}50%{transform:skewY(-5deg) scaleX(.93)}}@keyframes wlFly{50%{transform:translateY(-.8px)}}@keyframes wlFlake{0%{opacity:0}20%{opacity:1}80%{opacity:1}100%{opacity:0}}@keyframes wlGlow{0%,100%{opacity:1}50%{opacity:.35}}"
+    + "@media (prefers-reduced-motion: reduce){.wl-sway,.wl-wave,.wl-fly,.wl-flake,.wl-glow{animation:none}}";
+  try { if (!window.GLWALL_NOCSS && !document.getElementById("glWallCss")) { const st = document.createElement("style"); st.id = "glWallCss"; st.textContent = CSS; (document.head || document.documentElement).appendChild(st); } } catch (e) { /* ohne DOM */ }
+  return { svg, KINDS, pick, CSS };
+})();
 </script>
 <script type="text/plain" id="rt-js">/* gLiTCh-Modul · Laufzeit (vom gLiTCh-Editor in jede Moduldatei eingebaut)
    Daten: window.MODUL = { titel, beschreibung, emoji, farbe, intro, schluss,
@@ -591,6 +652,7 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
   const ET = (M.etappen || []).filter(e => e && Array.isArray(e.aufgaben));
   const LEX = O.lexikon ? (M.lexikon || []).filter(w => w && w.wort) : [];
   const DIP = (M.diplome || []).filter(d => d && d.id);
+  const wall = d => window.GLWall ? GLWall.svg(d.wand, d.emoji, M.farbe, d.id) : esc(d.emoji || "🏅");
   const scorable = a => a && a.typ !== "info";
   const KEY = "glmod." + slug(M.titel || "modul");
   document.documentElement.style.setProperty("--mc", /^#[0-9a-f]{3,8}$/i.test(M.farbe || "") ? M.farbe : "#A07CFF");
@@ -614,8 +676,17 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
   const totalMax = () => ET.reduce((n, _, e) => n + etMax(e), 0);
   const who = () => HUB && HUB.alle ? HUB.alle.join(" und ") : "";
   /* Freigabe zwischen den Etappen: keine | selbst (Selbsteinschätzung) | lp (Code der Lehrperson) */
-  const gateNeeded = e => O.freigabe === "selbst" || (O.freigabe === "lp" && e < ET.length - 1);
-  const etUnlocked = e => e <= 0 || O.freigabe === "keine" || (etDone(e - 1) && (!gateNeeded(e - 1) || !!S.gate[e - 1]) && etUnlocked(e - 1));
+  /* Freigabe-Schritte (frei kombinierbar): selbst = Selbsteinschätzung, praes = Präsentation, lp = Code der Lehrperson */
+  const GORDER = ["selbst", "praes", "lp"];
+  const GATES = (Array.isArray(O.gates) ? O.gates : O.freigabe === "selbst" ? ["selbst"] : O.freigabe === "lp" ? ["lp"] : []).filter((g, i, a) => GORDER.includes(g) && a.indexOf(g) === i).sort((a, b) => GORDER.indexOf(a) - GORDER.indexOf(b));
+  const stepsFor = e => GATES.filter(g => g !== "lp" || e < ET.length - 1 || GATES.length > 1);   // nur LP-Code: nach der letzten Etappe nicht nötig
+  const gateNeeded = e => stepsFor(e).length > 0;
+  S.gs = S.gs || {};
+  const gateDone = e => !!S.gate[e] || stepsFor(e).every(g => (S.gs[e] || {})[g]);
+  const etUnlocked = e => e <= 0 || !GATES.length || (etDone(e - 1) && (!gateNeeded(e - 1) || gateDone(e - 1)) && etUnlocked(e - 1));
+  const GNAME = { selbst: "euch selbst einschätzen", praes: "präsentieren", lp: "von der Lehrperson freigeben lassen" };
+  const missing = e => stepsFor(e).filter(g => !(S.gs[e] || {})[g]);
+  const andList = l => l.length > 1 ? l.slice(0, -1).join(", ") + " und " + l[l.length - 1] : l.join("");
   const SELBST = [["super", "🤩", "Kann ich super"], ["gut", "🙂", "Kann ich gut"], ["teils", "🤔", "Teilweise"], ["hilfe", "😵‍💫", "Brauche noch Hilfe"]];
 
   /* ---------- Diplome ---------- */
@@ -722,12 +793,12 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
     const sd = $("#side"); if (!sd) return;
     const st = total(), mx = totalMax(), dn = B.filter((_, i) => bDone(i)).length;
     sd.innerHTML = `<div class="side-card lvl"><div class="ring" style="--p:${mx ? Math.round(st / mx * 100) : 0}"><span>★</span></div><div><small>Sterne in diesem Modul</small><b>${st} von ${mx}</b>${who() ? `<small>Team: ${esc(who())}</small>` : ""}</div></div>
-      ${DIP.length ? `<div class="side-card"><small class="cap">Diplome: ${esc(M.titel || "")}</small><div class="hexes">${DIP.map(d => `<button type="button" class="hex${S.dips.includes(d.id) ? " got" : ""}" data-dip="${esc(d.id)}" title="${esc(d.name)}">${S.dips.includes(d.id) ? esc(d.emoji || "🏅") : "🔒"}</button>`).join("")}</div>
+      ${DIP.length ? `<div class="side-card"><small class="cap">Diplome: ${esc(M.titel || "")}</small><div class="hexes">${DIP.map(d => `<button type="button" class="hex${S.dips.includes(d.id) ? " got" : ""}" data-dip="${esc(d.id)}" title="${esc(d.name)}">${S.dips.includes(d.id) ? wall(d) : "🔒"}</button>`).join("")}</div>
         <p class="side-note">Tippt ein Diplom an, dann verrät gLiTCh, wie ihr es bekommt.</p></div>` : ""}
       <div class="side-card"><div class="prog-h"><b>Fortschritt</b><span>${dn} / ${B.length}</span></div><div class="pbar"><i style="width:${B.length ? Math.round(dn / B.length * 100) : 0}%"></i></div>
         ${ET.map((E, e) => { const se = S.selbst[e] && SELBST.find(x => x[0] === S.selbst[e].w);
-          return `<div class="et-row${etDone(e) ? " ok" : ""}${etUnlocked(e) ? "" : " lock"}"><span>${etUnlocked(e) ? esc(E.emoji || "⭐") : "🔒"}</span><span>${esc(E.titel)}</span><small>${se ? se[1] + " " : ""}${etDone(e) ? (gateNeeded(e) && !S.gate[e] ? (O.freigabe === "lp" ? "✓ · Freigabe fehlt" : "✓ · Einschätzung fehlt") : "✓") : `★ ${etStars(e)}/${etMax(e)}`}</small></div>`; }).join("")}
-        ${O.freigabe !== "keine" ? `<p class="side-note">${O.freigabe === "lp" ? "🔐 Die nächste Etappe gibt eure Lehrperson mit ihrem Code frei." : "🪞 Nach jeder Etappe schätzt ihr euch selbst ein."}</p>` : ""}</div>
+          return `<div class="et-row${etDone(e) ? " ok" : ""}${etUnlocked(e) ? "" : " lock"}"><span>${etUnlocked(e) ? esc(E.emoji || "⭐") : "🔒"}</span><span>${esc(E.titel)}</span><small>${se ? se[1] + " " : ""}${etDone(e) ? (!gateNeeded(e) || gateDone(e) ? "✓" : "✓ · " + ({ selbst: "Einschätzung", praes: "Präsentation", lp: "Freigabe" })[missing(e)[0]] + " fehlt") : `★ ${etStars(e)}/${etMax(e)}`}</small></div>`; }).join("")}
+        ${GATES.length ? `<p class="side-note">Nach jeder Etappe: ${andList(GATES.map(g => ({ selbst: "🪞 Selbsteinschätzung", praes: "🎤 Präsentation", lp: "🔐 Freigabe mit dem Code der Lehrperson" })[g]))}.</p>` : ""}</div>
       ${LEX.length ? `<div class="side-card"><div class="prog-h"><b>📖 Fachwörter</b><span>${(S.words || []).length} / ${LEX.length}</span></div><p class="side-note">Wörter mit gepunkteter Linie antippen: gLiTCh erklärt sie.</p><button type="button" class="btn small" data-golex>Lexikon öffnen</button></div>` : ""}`;
     $$("[data-dip]", sd).forEach(b => b.onclick = () => { const d = DIP.find(x => x.id === b.dataset.dip); say(S.dips.includes(d.id) ? `${d.emoji || "🏅"} **${d.name}**: geschafft! ${d.beschreibung || ""}` : `${d.emoji || "🏅"} **${d.name}**: ${d.beschreibung || "Löst die Bausteine, dann bekommt ihr es."}`, S.dips.includes(d.id) ? "cool" : "wink", 7000); });
     const gl2 = $("[data-golex]", sd); if (gl2) gl2.onclick = () => showLex();
@@ -737,18 +808,21 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
     const x = B[i];
     if (x && !etUnlocked(x.e)) {
       let p = 0; while (p < x.e && etUnlocked(p + 1)) p++;   // letzte offene Etappe
-      if (etDone(p) && gateNeeded(p) && !S.gate[p]) return gateDlg(p);
-      return say(`🔒 Zuerst Etappe ${p + 1} «${ET[p].titel}» fertig machen${gateNeeded(p) ? (O.freigabe === "lp" ? " und von der Lehrperson freigeben lassen" : " und euch selbst einschätzen") : ""}.`, "hmm", 7000);
+      if (etDone(p) && gateNeeded(p) && !gateDone(p)) return gateDlg(p);
+      return say(`🔒 Zuerst Etappe ${p + 1} «${ET[p].titel}» fertig machen${gateNeeded(p) ? " und " + andList(missing(p).map(g => GNAME[g])) : ""}.`, "hmm", 7000);
     }
     view.b = i; paintTabs(); stage(); window.scrollTo({ top: 0, behavior: "smooth" });
   }
   /* ---------- Freigabe-Fenster nach einer Etappe ---------- */
   function gateDlg(e, then) {
-    if (!gateNeeded(e) || S.gate[e]) { if (then) then(); return; }
     const E = ET[e], nextI = B.findIndex(y => y.e === e + 1);
-    const pass = () => { S.gate[e] = true; save(); paintTabs(); paintSide(); if (then) then(); else if (nextI >= 0) goB(nextI); else goB(B.length); };
-    if (O.freigabe === "selbst") {
-      const ov = dlg(`<h2>🪞 Selbsteinschätzung</h2><div class="hero">${gl("wink")}<div class="bubble"><b>gLiTCh</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Wie gut kannst du das jetzt?</p></div></div></div>
+    const finish = () => { save(); paintTabs(); paintSide(); if (then) then(); else if (nextI >= 0) goB(nextI); else goB(B.length); };
+    if (!gateNeeded(e) || gateDone(e)) return finish();
+    const step = missing(e)[0], nSteps = stepsFor(e).length, nr = nSteps > 1 ? ` <small class="g-step">Schritt ${stepsFor(e).indexOf(step) + 1} von ${nSteps}</small>` : "";
+    const pass = () => { S.gs[e] = Object.assign({}, S.gs[e], { [step]: new Date().toISOString() }); save(); paintTabs(); paintSide(); if (gateDone(e)) finish(); else setTimeout(() => gateDlg(e, then), 350); };
+    if (step === "praes") return praesDlg(e, nr, pass);
+    if (step === "selbst") {
+      const ov = dlg(`<h2>🪞 Selbsteinschätzung${nr}</h2><div class="hero">${gl("wink")}<div class="bubble"><b>gLiTCh</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Wie gut kannst du das jetzt?</p></div></div></div>
         <div class="selbst" role="radiogroup" aria-label="Selbsteinschätzung">${SELBST.map(([v, ic, n]) => `<button type="button" class="sb" data-sb="${v}" role="radio" aria-checked="false"><span>${ic}</span>${esc(n)}</button>`).join("")}</div>
         <label class="f"><span>Das nehme ich mit (ein Satz, freiwillig)</span><textarea class="in" id="sbTxt" style="min-height:60px" placeholder="z. B. Ich weiss jetzt, dass …"></textarea></label>`);
       const ok = $("[data-x]", ov); ok.textContent = "Speichern und weiter →"; ok.disabled = true;
@@ -759,18 +833,42 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
       return;
     }
     let code = "";
-    const ov = dlg(`<h2>🔐 Freigabe durch die Lehrperson</h2><div class="hero">${gl("cool")}<div class="bubble"><b>gLiTCh</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Zeigt eure Arbeit eurer Lehrperson. Sie gibt mit ihrem Code die nächste Etappe frei.</p></div></div></div>
+    const ov = dlg(`<h2>🔐 Freigabe durch die Lehrperson${nr}</h2><div class="hero">${gl("cool")}<div class="bubble"><b>gLiTCh</b><div><p>${GATES.includes("praes") ? `Präsentation von Etappe ${e + 1} geschafft! Jetzt gibt eure Lehrperson mit ihrem Code ${e < ET.length - 1 ? "die nächste Etappe" : "das Ziel"} frei.` : `Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Zeigt eure Arbeit eurer Lehrperson. Sie gibt mit ihrem Code die nächste Etappe frei.`}</p></div></div></div>
       <div class="pin"><div class="pin-dots" id="pinD" aria-live="polite"></div><div class="pin-pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button type="button" data-pn="${n}">${n}</button>`).join("")}<button type="button" data-pn="del" aria-label="Löschen">⌫</button><button type="button" data-pn="0">0</button><button type="button" class="go" data-pn="ok">OK</button></div><p class="err" id="pinE" role="alert"></p></div>`);
     $("[data-x]", ov).textContent = "Später";
     const paint = () => { $("#pinD", ov).textContent = code ? "●".repeat(code.length) : "Code eingeben"; };
     const check = () => {
       let ok = false; try { ok = HUB && HUB.pruefeCode ? !!HUB.pruefeCode(code) : code === String(O.code || "1234"); } catch (err) { ok = false; }
-      if (ok) { ov.remove(); confetti(30); say("Freigegeben! Weiter zur nächsten Etappe.", "cool", 6000); pass(); }
+      if (ok) { ov.remove(); confetti(30); say(e < ET.length - 1 ? "Freigegeben! Weiter zur nächsten Etappe." : "Freigegeben! Ab zum Ziel.", "cool", 6000); pass(); }
       else { code = ""; paint(); $("#pinE", ov).textContent = "Falscher Code. Nochmals versuchen."; const p = $(".pin", ov); p.classList.remove("shake"); void p.offsetWidth; p.classList.add("shake"); }
     };
     $$("[data-pn]", ov).forEach(b => b.onclick = () => { const v = b.dataset.pn; $("#pinE", ov).textContent = "";
       if (v === "del") code = code.slice(0, -1); else if (v === "ok") return check(); else if (code.length < 8) code += v; paint(); });
     paint();
+  }
+  /* ---------- Präsentation einer Etappe (wie im gLiTCh-Lab): Stichworte, eigene Produkte, Vollbild ---------- */
+  function praesDlg(e, nr, pass) {
+    const E = ET[e], A = E.aufgaben;
+    const own = A.map((a, t) => ({ a, x: S.ans[k(e, t)] })).filter(({ a, x }) => (a.typ === "schreiben" || a.typ === "gestalten") && x && x.v)
+      .map(({ a, x }) => typeof x.v === "string" ? { titel: a.titel || KIND[a.typ], text: x.v } : { titel: x.v.titel || a.titel || KIND[a.typ], text: x.v.text || "", farbe: x.v.farbe });
+    const txt = A.map(a => [a.text, a.frage, a.aussage, a.auftrag].join(" ")).join(" ");
+    const words = LEX.filter(w => new RegExp("(^|[^\\wäöüÄÖÜß])" + w.wort.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(?=[^\\wäöüÄÖÜß]|$)", "i").test(txt)).slice(0, 4);
+    const ideas = A.filter(a => !scorable(a) && a.titel).map(a => a.titel).slice(0, 4);
+    const ov = dlg(`<div class="praes" id="praesBox"><h2>🎤 Etappe ${e + 1} präsentieren${nr}</h2>
+      <div class="praes-head" style="--ec:${["#E3A300", "#1F9D68", "#2E6BE6", "#DD4646", "#7B4CEF", "#00B3C7"][e % 6]}"><span>${esc(E.emoji || "⭐")}</span><div><b>${esc(E.titel)}</b>${E.ziel ? `<small>${esc(E.ziel)}</small>` : ""}</div><em>★ ${etStars(e)} / ${etMax(e)}</em></div>
+      <p class="praes-lead">${who() ? esc(who()) + ": " : ""}Erzählt der Klasse oder eurer Lehrperson, was ihr in dieser Etappe herausgefunden habt.</p>
+      <ol class="praes-list">
+        <li><b>Worum ging es?</b> ${E.ziel ? esc(E.ziel) : "Erklärt das Thema in zwei Sätzen."}</li>
+        ${ideas.length ? `<li><b>Das haben wir gelernt:</b> ${ideas.map(esc).join(" · ")}</li>` : ""}
+        ${words.length ? `<li><b>Erklärt diese Fachwörter:</b> ${words.map(w => `<span class="pw">${esc(w.wort)}</span>`).join(" ")}</li>` : `<li><b>Ein schwieriges Wort</b> aus der Etappe erklären.</li>`}
+        <li><b>Das war spannend oder schwierig:</b> Was nehmt ihr mit?</li>
+      </ol>
+      ${own.length ? `<h3>Unser Produkt</h3><div class="praes-own">${own.map(o => `<div class="po" style="--pc:${/^#[0-9a-f]{6}$/i.test(o.farbe || "") ? o.farbe : "var(--mc)"}"><b>${esc(o.titel)}</b><p>${esc(o.text).replace(/\n/g, "<br>")}</p></div>`).join("")}</div>` : ""}
+      <div class="row praes-act"><button type="button" class="btn" data-full>⛶ Vollbild für die Klasse</button><button type="button" class="btn primary" data-done>✓ Wir haben präsentiert</button></div></div>`);
+    $("[data-x]", ov).textContent = "Später";
+    const box = $(".dlg", ov);
+    $("[data-full]", ov).onclick = () => { try { if (document.fullscreenElement) document.exitFullscreen(); else box.requestFullscreen(); } catch (err) { box.classList.toggle("big"); } };
+    $("[data-done]", ov).onclick = () => { try { if (document.fullscreenElement) document.exitFullscreen(); } catch (err) { /* egal */ } ov.remove(); confetti(30); say("Applaus! 👏 Toll präsentiert.", "cool", 5000); pass(); };
   }
   function readAloud(text) {
     try { const u = new SpeechSynthesisUtterance(String(text).replace(/\*\*/g, "")); u.lang = "de-CH"; u.rate = .95; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { say("Vorlesen geht auf diesem Gerät leider nicht.", "sad", 4000); }
@@ -802,8 +900,8 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
     $("#stage").innerHTML = `<div class="stage-card ziel-card"><div class="eyebrow"><span>Ziel</span><span>${B.filter((_, i) => bDone(i)).length} von ${B.length} Bausteinen</span></div>
       <h1>${all ? "Geschafft! 🎉" : "Fast am Ziel"}</h1>
       <div class="ziel-hero">${gl(all ? "cool" : "wink", "huge")}<div><p class="ziel-stars">★ ${st} <small>von ${mx}</small></p><p>${esc(all ? (M.schluss || "Super, ihr habt alles geschafft!") : "Löst die offenen Bausteine (ohne ✓ in der Leiste oben), dann seid ihr am Ziel.")}</p></div></div>
-      ${DIP.length ? `<h3>Diplome</h3><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e" aria-hidden="true">${esc(d.emoji || "🏅")}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>` : ""}
-      ${O.freigabe === "selbst" && Object.keys(S.selbst).length ? `<h3>Eure Selbsteinschätzung</h3><div class="selbst-list">${ET.map((E, e) => { const se = S.selbst[e], x = se && SELBST.find(y => y[0] === se.w); return x ? `<div><span>${x[1]}</span><b>${esc(E.titel)}</b><small>${esc(x[2])}${se.t ? " · «" + esc(se.t) + "»" : ""}</small></div>` : ""; }).join("")}</div>` : ""}
+      ${DIP.length ? `<h3>Diplome</h3><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e wall" aria-hidden="true">${wall(d)}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>` : ""}
+      ${GATES.includes("selbst") && Object.keys(S.selbst).length ? `<h3>Eure Selbsteinschätzung</h3><div class="selbst-list">${ET.map((E, e) => { const se = S.selbst[e], x = se && SELBST.find(y => y[0] === se.w); return x ? `<div><span>${x[1]}</span><b>${esc(E.titel)}</b><small>${esc(x[2])}${se.t ? " · «" + esc(se.t) + "»" : ""}</small></div>` : ""; }).join("")}</div>` : ""}
       ${O.pdf ? `<div class="pdf-box"><span>📄</span><div><b>Zusammenfassung als PDF</b><small>Alles Wichtige aus dem Modul${LEX.length ? ", die Fachwörter" : ""} und eure Sterne zum Aufbewahren.</small></div><button type="button" class="btn" data-pdf>Herunterladen</button></div>` : ""}
       <div class="nav"><button type="button" class="btn" data-prev>← Zurück</button>${HUB ? `<button type="button" class="btn primary" data-exit>Zurück zum Hub</button>` : ""}</div></div>`;
     $("[data-prev]").onclick = () => goB(B.length - 1);
@@ -821,7 +919,7 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
     save(); if (ok) { report(e); confetti(); }
     checkDips(); paintSide(); paintTabs();
     const nach = $("#nach"); if (ok && nach) nach.hidden = false;
-    if (ok && !wasDone && etDone(e)) { setTimeout(() => say(`${ET[e].lob || "Etappe geschafft!"} ⭐`, "cool", 9000), 900); if (gateNeeded(e) && !S.gate[e]) { const when = () => { if (S.gate[e]) return; if (document.querySelector(".ov")) return setTimeout(when, 500); gateDlg(e); }; setTimeout(when, 2200); } }
+    if (ok && !wasDone && etDone(e)) { setTimeout(() => say(`${ET[e].lob || "Etappe geschafft!"} ⭐`, "cool", 9000), 900); if (gateNeeded(e) && !gateDone(e)) { const when = () => { if (gateDone(e)) return; if (document.querySelector(".ov")) return setTimeout(when, 500); gateDlg(e); }; setTimeout(when, 2200); } }
   }
   function fb(ok, text) {
     const f = document.createElement("div"); f.className = "fb " + (ok ? "ok" : "bad");
@@ -1045,8 +1143,8 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
     paint(""); $("#lq", ov).oninput = ev => paint(ev.target.value);
     if (word) { const w = LEX.find(x => x.wort === word); if (w) { $("#ll", ov).insertAdjacentHTML("beforebegin", `<div class="bubble" style="margin-bottom:12px"><b>${esc(w.wort)}</b><p>${esc(w.erklaerung)}</p></div>`); } }
   }
-  function showDips() { dlg(`<h2>🏅 Diplome</h2><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e" aria-hidden="true">${esc(d.emoji || "🏅")}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>`); }
-  function showDip(d) { confetti(40); showMsg("cool", `🏅 **Neues Diplom: ${d.name}!**\n\n${d.beschreibung || ""}${HUB ? "\n\nSchaut in gLiTChs Zimmer: Vielleicht gibt es dort etwas Neues." : ""}`, "Juhui!"); }
+  function showDips() { dlg(`<h2>🏅 Diplome</h2><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e wall" aria-hidden="true">${wall(d)}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>`); }
+  function showDip(d) { confetti(40); setTimeout(() => { const h = document.querySelector(".ov .hero"); if (h) h.insertAdjacentHTML("afterend", `<div class="dip-new">${wall(d)}</div>`); }, 0); showMsg("cool", `🏅 **Neues Diplom: ${d.name}!**\n\n${d.beschreibung || ""}${HUB ? "\n\nSchaut in gLiTChs Zimmer: Vielleicht gibt es dort etwas Neues." : ""}`, "Juhui!"); }
   function showLinks() { dlg(`<h2>🔗 Links</h2><ul class="links">${(M.links || []).map(l => `<li><a href="${esc(/^https?:\/\//i.test(l.url) ? l.url : "#")}" target="_blank" rel="noopener">${esc(l.titel || l.url)}</a>${l.titel ? `<br><small>${esc(l.url)}</small>` : ""}</li>`).join("")}</ul>`); }
   function confetti(n = 18) {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -1135,6 +1233,42 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
 
   window.GLGlitch = { svg, shades };
 })();
+
+/* =====================================================================
+   gLiTCh · Diplome als Gegenstände an der Wand (20 × 20, ohne Hintergrund)
+   Gleicher Stil wie die Diplome der NMG- und M&I-Module im gLiTCh-Lab.
+   GLWall.svg(art, emoji, farbe) → SVG-Text. art: siehe GLWall.KINDS
+   ===================================================================== */
+window.GLWall = window.GLWall || (function () {
+  const NAIL = '<circle cx="10" cy="1.2" r=".8" fill="#3A2410"/>';
+  const STR = (a, b, y) => `<path d="M${a} ${y}L10 1.2L${b} ${y}" stroke="#3A2410" stroke-width=".35" fill="none"/>`;
+  const SHELF = '<rect x="2.4" y="16" width="15.2" height="1.3" rx=".3" fill="#8B5A2B"/><path d="M4.4 17.3l1.4 1.6M15.6 17.3l-1.4 1.6" stroke="#5D3A1A" stroke-width=".6"/>';
+  const clean = e => String(e || "🏅").replace(/[<>&"']/g, "").slice(0, 8) || "🏅";
+  const col = c => /^#[0-9a-f]{6}$/i.test(String(c || "")) ? c : "#7B4CEF";
+  const mix = (c, t, f) => "#" + [1, 3, 5].map(i => { const v = parseInt(c.slice(i, i + 2), 16); return Math.round(v + (t - v) * f).toString(16).padStart(2, "0"); }).join("");
+  const dk = c => mix(c, 0, .38), lt = (c, f = .8) => mix(c, 255, f);
+  const em = (e, x, y, s) => `<text x="${x}" y="${y}" font-size="${s}" text-anchor="middle" dominant-baseline="central">${e}</text>`;
+  const spark = (x, y, d) => `<path class="wl-flake" style="animation-delay:-${d}s" d="M${x} ${y - .9}v1.8M${x - .9} ${y}h1.8" stroke="#FFF3B0" stroke-width=".35"/>`;
+  const star = (cx, cy, ro, ri) => "M" + Array.from({ length: 10 }, (_, k) => { const a = -Math.PI / 2 + Math.PI * k / 5, r = k % 2 ? ri : ro; return `${(cx + r * Math.cos(a)).toFixed(2)} ${(cy + r * Math.sin(a)).toFixed(2)}`; }).join("L") + "z";
+  const K = {
+    rahmen: (e, c) => STR(4, 16, 5) + `<rect x="2.5" y="5" width="15" height="13" rx=".6" fill="#7A4A22"/><rect x="3.6" y="6.1" width="12.8" height="10.8" fill="${lt(c)}"/><rect x="3.6" y="14.6" width="12.8" height="2.3" fill="${lt(c, .55)}"/><g class="wl-fly">${em(e, 10, 11, 6.2)}</g>` + NAIL,
+    wimpel: (e, c) => `<path d="M10 1.2V3" stroke="#3A2410" stroke-width=".4"/><g class="wl-sway"><rect x="2.4" y="2.6" width="15.2" height="1.1" rx=".55" fill="#8B5A2B"/><path d="M3.2 3.7h13.6L10 18.8z" fill="${c}" stroke="${dk(c)}" stroke-width=".4"/><path d="M4.6 5.2h10.8" stroke="${lt(c, .5)}" stroke-width=".5"/>${em(e, 10, 8.8, 5)}</g>` + NAIL,
+    schild: (e, c) => STR(6, 14, 4.6) + `<g class="wl-sway"><path d="M10 4.4l5.6 2v4.2c0 3.8-2.7 6.1-5.6 7.3-2.9-1.2-5.6-3.5-5.6-7.3V6.4z" fill="${c}" stroke="${dk(c)}" stroke-width=".45"/><path d="M10 5.5l4.3 1.6v3.5c0 3-2 4.8-4.3 5.8z" fill="${lt(c, .25)}"/>${em(e, 10, 10.8, 5.2)}</g>` + NAIL,
+    pokal: (e, c) => SHELF + `<path d="M6.2 4.2h7.6v3.6c0 2.6-1.7 4.2-3.8 4.2s-3.8-1.6-3.8-4.2z" fill="#F2C94C" stroke="#8B6914" stroke-width=".35"/><path d="M6.2 5.4H4.6c0 2 .8 3 2 3.2M13.8 5.4h1.6c0 2-.8 3-2 3.2" stroke="#C9A227" stroke-width=".55" fill="none"/><rect x="9.3" y="12" width="1.4" height="1.8" fill="#C9A227"/><rect x="7" y="13.8" width="6" height="2.2" rx=".3" fill="${dk(c)}"/>${em(e, 10, 7.7, 3.8)}` + spark(4.2, 3.2, 0) + spark(15.8, 10.6, 1),
+    medaille: (e, c) => `<g class="wl-sway"><path d="M10 1.2 5.8 9.6h2.6L10 5.2z" fill="${c}"/><path d="M10 1.2l4.2 8.4h-2.6L10 5.2z" fill="${dk(c)}"/><circle cx="10" cy="13.4" r="5.2" fill="#F2C94C" stroke="#8B6914" stroke-width=".5"/><circle cx="10" cy="13.4" r="4" fill="#FFE680" stroke="#C98A00" stroke-width=".3"/>${em(e, 10, 13.6, 4.6)}<path class="wl-glow" d="M6.6 11.2a4.2 4.2 0 0 1 2-2" stroke="#fff" stroke-width=".6" fill="none"/></g>` + NAIL,
+    rolle: (e, c) => STR(5, 15, 4) + `<rect x="4" y="4" width="12" height="13" fill="#F1E2BC" stroke="#B89A5E" stroke-width=".4"/><rect x="3.4" y="3.2" width="13.2" height="1.8" rx=".9" fill="#D9C28E"/><rect x="3.4" y="16.2" width="13.2" height="1.8" rx=".9" fill="#D9C28E"/>${em(e, 10, 9.4, 4.6)}<path d="M6 13h8" stroke="#6B4A2B" stroke-width=".45"/><path d="M13.4 17.4v1.4" stroke="${dk(c)}" stroke-width=".5"/><circle class="wl-sway" cx="13.4" cy="18.9" r="1.2" fill="${c}"/>` + NAIL,
+    holz: (e, c) => `<g class="wl-sway">` + STR(5, 15, 6.2) + `<rect x="2.6" y="6.2" width="14.8" height="9.4" rx="1" fill="#C68A4E" stroke="#7A4A22" stroke-width=".5"/><path d="M3.6 8.4h12.8M3.6 13.4h12.8" stroke="#A86F38" stroke-width=".3"/><rect x="2.6" y="14.2" width="14.8" height="1.4" fill="${c}"/>${em(e, 10, 10.6, 5)}</g>` + NAIL,
+    stern: (e, c) => STR(6, 14, 4) + `<g class="wl-sway"><path d="${star(10, 11, 7.4, 3.4)}" fill="${c}" stroke="${dk(c)}" stroke-width=".45"/><path d="${star(10, 11, 5.6, 2.6)}" fill="${lt(c, .35)}"/>${em(e, 10, 11.4, 4.2)}</g>` + spark(3.4, 5.4, .4) + spark(16.4, 16, 1.2) + NAIL
+  };
+  const KINDS = [["rahmen", "Bilderrahmen"], ["wimpel", "Wimpel"], ["schild", "Wappenschild"], ["pokal", "Pokal"], ["medaille", "Medaille"], ["rolle", "Urkunde"], ["holz", "Holzschild"], ["stern", "Stern"]];
+  const pick = id => { let h = 0; String(id || "").split("").forEach(ch => { h = (h * 31 + ch.charCodeAt(0)) >>> 0; }); return KINDS[h % KINDS.length][0]; };
+  const svg = (art, emoji, c, id) => `<svg viewBox="0 0 20 20" aria-hidden="true" class="wl-art">${(K[art] || K[pick(id || emoji)])(clean(emoji), col(c))}</svg>`;
+  const CSS = ".wl-sway{transform-box:fill-box;transform-origin:50% 0;animation:wlSway 3.2s ease-in-out infinite}.wl-wave{transform-box:fill-box;transform-origin:0 50%;animation:wlWave 1.6s ease-in-out infinite}.wl-fly{animation:wlFly 3s ease-in-out infinite}.wl-flake{animation:wlFlake 2.6s linear infinite}.wl-glow{animation:wlGlow 2.2s ease-in-out infinite}"
+    + "@keyframes wlSway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}@keyframes wlWave{0%,100%{transform:skewY(0) scaleX(1)}50%{transform:skewY(-5deg) scaleX(.93)}}@keyframes wlFly{50%{transform:translateY(-.8px)}}@keyframes wlFlake{0%{opacity:0}20%{opacity:1}80%{opacity:1}100%{opacity:0}}@keyframes wlGlow{0%,100%{opacity:1}50%{opacity:.35}}"
+    + "@media (prefers-reduced-motion: reduce){.wl-sway,.wl-wave,.wl-fly,.wl-flake,.wl-glow{animation:none}}";
+  try { if (!window.GLWALL_NOCSS && !document.getElementById("glWallCss")) { const st = document.createElement("style"); st.id = "glWallCss"; st.textContent = CSS; (document.head || document.documentElement).appendChild(st); } } catch (e) { /* ohne DOM */ }
+  return { svg, KINDS, pick, CSS };
+})();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
@@ -1168,10 +1302,11 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
   const KEY = "gle.draft.v1";
   const fresh = () => ({ typenV2: true, titel: "", fach: "nmg", hubThema: "", hubNeu: "", klasse: "6", minuten: "45", etappen: "4", rahmen: "auto", ideen: "", typen: TYPES.map(t => t[0]), material: [], links: "", belIdeen: "",
     diplome: [], outfits: [], emotes: [], zimmer: [], hintergruende: [], plan: null, inhalt: [], step: 1, opt: freshOpt() });
-  const freshOpt = () => ({ tipps: true, vorlesen: true, lexikon: true, pdf: true, freigabe: "keine", code: "" });
+  const freshOpt = () => ({ tipps: true, vorlesen: true, lexikon: true, pdf: true, gates: [], code: "" });
   let D = fresh();
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === "object") D = Object.assign(fresh(), s); } catch (e) { /* kein Speicher */ }
   D.opt = Object.assign(freshOpt(), D.opt || {});
+  if (!Array.isArray(D.opt.gates)) D.opt.gates = D.opt.freigabe === "selbst" ? ["selbst"] : D.opt.freigabe === "lp" ? ["lp"] : [];
   if (!D.typenV2) { D.typen = [...new Set([...D.typen, "mehrfach", "memory", "sortieren", "zeitmaschine", "raetsel", "schaetzen", "gestalten"])]; D.typenV2 = true; }
   let saveT = null;
   const save = () => { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) { try { localStorage.setItem(KEY, JSON.stringify(Object.assign({}, D, { material: D.material.map(m => Object.assign({}, m, { text: m.text.slice(0, 20000) })) }))); } catch (e2) { /* zu gross */ } } }, 400); };
@@ -1229,16 +1364,21 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
   /* ---------- Funktionen und Freigabe ---------- */
   const TOGGLES = [["tipps", "💡 Tipps von gLiTCh", "Tipp-Knopf bei jeder Aufgabe und Hilfe bei Fehlern"], ["vorlesen", "🔊 Vorlesen", "«gLiTCh erklärt» lässt sich vorlesen"],
     ["lexikon", "📖 Fachwörter-Lexikon", "Schwierige Wörter antippen, gLiTCh erklärt sie"], ["pdf", "📄 Zusammenfassung als PDF", "Die Kinder laden am Schluss alles Wichtige als PDF herunter"]];
-  const FREI = [["keine", "Keine Freigabe", "Die Kinder gehen frei von Etappe zu Etappe."], ["selbst", "🪞 Selbsteinschätzung", "Nach jeder Etappe schätzen sich die Kinder ein (4 Stufen und ein Satz). Erst dann geht die nächste auf."],
-    ["lp", "🔐 Freigabe mit LP-Code", "Nach jeder Etappe gibt die Lehrperson mit ihrem Code frei. Im Hub gilt der Code jeder Lehrperson der Klasse."]];
+  const FREI = [["keine", "Keine Freigabe", "Die Kinder gehen frei von Etappe zu Etappe."], ["selbst", "🪞 Selbsteinschätzung", "Die Kinder schätzen sich ein (4 Stufen und ein Satz)."],
+    ["praes", "🎤 Präsentation", "Wie im M&I-Lab: Die Gruppe präsentiert die Etappe mit Stichworten, Fachwörtern und ihrem Produkt, auch im Vollbild."],
+    ["lp", "🔐 Freigabe mit LP-Code", "Die Lehrperson gibt mit ihrem Code frei. Im Hub gilt der Code jeder Lehrperson der Klasse."]];
   function paintOpts() {
     const O = D.opt;
     $("#toggles").innerHTML = TOGGLES.map(([k, n, d]) => `<label class="tg"><input type="checkbox" data-opt="${k}"${O[k] ? " checked" : ""}><i aria-hidden="true"></i><span><b>${esc(n)}</b><small>${esc(d)}</small></span></label>`).join("");
     $$("[data-opt]").forEach(c => c.onchange = () => { O[c.dataset.opt] = c.checked; save(); if (D.step === 4) renderResult(); });
-    $("#freigabe").innerHTML = FREI.map(([v, n, d]) => `<button type="button" role="radio" aria-checked="${O.freigabe === v}" class="${O.freigabe === v ? "on" : ""}" data-fr="${v}"><b>${esc(n)}</b><small>${esc(d)}</small></button>`).join("");
-    $$("[data-fr]").forEach(b => b.onclick = () => { O.freigabe = b.dataset.fr; save(); paintOpts(); if (D.step === 4) renderResult(); });
-    $("#codeWrap").hidden = O.freigabe !== "lp";
-    $("#frHint").textContent = O.freigabe === "lp" ? "Im Hub gilt der Freigabe-Code jeder Lehrperson der Klasse (deiner und die der weiteren Lehrpersonen). Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Hub geöffnet wird (leer = 1234)." : "";
+    const G = O.gates;
+    $("#freigabe").innerHTML = FREI.map(([v, n, d]) => { const on = v === "keine" ? !G.length : G.includes(v);
+      return `<button type="button" role="${v === "keine" ? "radio" : "checkbox"}" aria-checked="${on}" class="${on ? "on" : ""}${v === "keine" ? "" : " multi"}" data-fr="${v}"><b>${v === "keine" ? "" : `<span class="ck" aria-hidden="true">${on ? "✓" : ""}</span>`}${esc(n)}</b><small>${esc(d)}</small></button>`; }).join("");
+    $$("[data-fr]").forEach(b => b.onclick = () => { const v = b.dataset.fr;
+      if (v === "keine") O.gates = []; else O.gates = G.includes(v) ? G.filter(x => x !== v) : ["selbst", "praes", "lp"].filter(x => x === v || G.includes(x));
+      save(); paintOpts(); if (D.step === 4) renderResult(); });
+    $("#codeWrap").hidden = !G.includes("lp");
+    $("#frHint").textContent = (G.length > 1 ? `Nach jeder Etappe in dieser Reihenfolge: ${G.map(g => ({ selbst: "Selbsteinschätzung", praes: "Präsentation", lp: "LP-Code" })[g]).join(" → ")}. ` : G.length ? "" : "Wähle eine, zwei oder alle drei Freigaben. ") + (G.includes("lp") ? "Im Hub gilt der Freigabe-Code jeder Lehrperson der Klasse (deiner und die der weiteren Lehrpersonen). Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Hub geöffnet wird (leer = 1234)." : "");
     const c = $("#optCode"); c.value = O.code || ""; c.oninput = () => { O.code = c.value.replace(/\D/g, "").slice(0, 8); save(); };
     c.onchange = () => { c.value = O.code; if (D.step === 4) renderResult(); };
   }
@@ -1290,7 +1430,7 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
 
   /* ---------- 3 Belohnungen ---------- */
   const CATS = [
-    { k: "diplome", n: "Diplome", ic: "🏅", d: "Auszeichnungen im Modul. Im Hub hängen sie als Bild an gLiTChs Wand (10 Plätze). Sie können auch Extras freischalten." },
+    { k: "diplome", n: "Diplome", ic: "🏅", d: "Auszeichnungen im Modul. Im Hub hängen sie als Gegenstand an gLiTChs Wand (10 Plätze), im gleichen Stil wie die NMG- und M&I-Diplome. Wähle pro Diplom, was an der Wand hängt. Sie können auch Extras freischalten." },
     { k: "outfits", n: "Outfits für gLiTCh", ic: "👕", d: "Kleider und Accessoires für die Garderobe." },
     { k: "emotes", n: "Emotes", ic: "✨", d: "Kleine Animationen, die gLiTCh vorführt." },
     { k: "zimmer", n: "Zimmer-Gegenstände", ic: "🛋️", d: "Möbel und Deko für gLiTChs Zimmer." },
@@ -1305,7 +1445,8 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
     const emo = `<input class="in emo" data-f="${c.k}:${i}:emoji" value="${esc(x.emoji)}" maxlength="8" aria-label="Emoji">`;
     const name = `<input class="in" data-f="${c.k}:${i}:name" value="${esc(x.name)}" maxlength="40" aria-label="Name">`;
     const unl = sel(UNLOCK(), x.freischalten, `data-f="${c.k}:${i}:freischalten" aria-label="Freischalten"`);
-    if (c.k === "diplome") return `<div class="item dip">${emo}${name}<input class="in" data-f="${c.k}:${i}:beschreibung" value="${esc(x.beschreibung)}" maxlength="120" aria-label="Beschreibung" placeholder="Wofür gibt es das Diplom?">${sel(DIP_COND(), x.bedingung, `data-f="${c.k}:${i}:bedingung" aria-label="Bedingung"`)}${del}</div>`;
+    if (c.k === "diplome") { if (!x.wand) x.wand = GLWall.pick(x.id || x.name);
+      return `<div class="item dip"><span class="wl-prev" title="So hängt es an gLiTChs Wand">${GLWall.svg(x.wand, x.emoji, (D.plan && D.plan.farbe) || "#7B4CEF")}</span>${emo}${name}<input class="in" data-f="${c.k}:${i}:beschreibung" value="${esc(x.beschreibung)}" maxlength="120" aria-label="Beschreibung" placeholder="Wofür gibt es das Diplom?">${sel(DIP_COND(), x.bedingung, `data-f="${c.k}:${i}:bedingung" aria-label="Bedingung"`)}${sel(GLWall.KINDS, x.wand, `data-f="${c.k}:${i}:wand" aria-label="Wandgegenstand"`)}${del}</div>`; }
     if (c.k === "outfits") return `<div class="item">${emo}${name}${sel(OUT_SLOTS, x.platz, `data-f="${c.k}:${i}:platz" aria-label="Platz"`)}${unl}${del}</div>`;
     if (c.k === "emotes") return `<div class="item">${emo}${name}${sel(ANIMS, x.animation, `data-f="${c.k}:${i}:animation" aria-label="Animation"`)}${unl}${del}</div>`;
     if (c.k === "zimmer") return `<div class="item">${emo}${name}${sel(ROOM_SLOTS, x.platz, `data-f="${c.k}:${i}:platz" aria-label="Platz"`)}${unl}${del}</div>`;
@@ -1322,6 +1463,7 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
       if (f === "wand0" || f === "wand1") { x.wand = x.wand || []; x.wand[+f.slice(-1)] = el.value; }
       else if (f === "boden0" || f === "boden1") { x.boden = x.boden || []; x.boden[+f.slice(-1)] = el.value; }
       else x[f] = el.value;
+      if (k === "diplome" && (f === "wand" || f === "emoji")) { const pv = el.closest(".item").querySelector(".wl-prev"); if (pv) pv.innerHTML = GLWall.svg(x.wand, x.emoji, (D.plan && D.plan.farbe) || "#7B4CEF"); }
       if (k === "diplome" && f === "name" && el.tagName === "INPUT") { /* Name ändert die id nicht, damit Freischaltungen gültig bleiben */ }
       save(); paintSteps(); if (k === "diplome" && f === "name") $$("select[data-f$=':freischalten']", $("#cats")).forEach(s => { const v = s.value; s.innerHTML = opts(UNLOCK(), v); });
     }; });
@@ -1567,7 +1709,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
     return {
       titel: P.titel, fach: D.fach, thema: hubThemaName(), beschreibung: P.beschreibung || "", minuten: +D.minuten, farbe: P.farbe, emoji: P.emoji,
       aufgaben: D.inhalt.map((e, i) => ({ id: "etappe-" + (i + 1), titel: e.titel, sterne: etSterne(e) })),
-      diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung })),
+      diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, wand: d.wand || GLWall.pick(d.id) })),
       extras: {
         outfits: D.outfits.map(x => ({ id: x.id, name: x.name, platz: x.platz, emoji: x.emoji, spruch: x.spruch || "", freischalten: un(x) })),
         emotes: D.emotes.map(x => ({ id: x.id, name: x.name, emoji: x.emoji, text: x.text || x.name, animation: x.animation, farben: x.farben || [], beschreibung: `Aus dem Modul «${P.titel}».`, freischalten: un(x) })),
@@ -1580,7 +1722,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
   function buildModule() {
     const P = D.plan, j = o => JSON.stringify(o).replace(/</g, "\\u003c");
     const mod = { titel: P.titel, beschreibung: P.beschreibung, emoji: P.emoji, farbe: P.farbe, intro: P.intro, schluss: P.schluss, fachname: fachName(), fachkurz: ({ mi: "M&I", nmg: "NMG", de: "DE", ma: "MA", en: "EN", fr: "FR", sp: "SPORT", mg: "GAMES" })[D.fach] || "",
-      etappen: D.inhalt, lexikon: P.lexikon, opt: Object.assign({}, D.opt), diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, bedingung: d.bedingung })), links: linkList() };
+      etappen: D.inhalt, lexikon: P.lexikon, opt: Object.assign({}, D.opt), diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, bedingung: d.bedingung, wand: d.wand || GLWall.pick(d.id) })), links: linkList() };
     const T = id => document.getElementById(id).textContent;
     const SC = "<" + "/script>";
     return `<!doctype html>

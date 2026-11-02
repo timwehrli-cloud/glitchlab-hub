@@ -2,7 +2,7 @@ import pathlib
 S = pathlib.Path(__file__).parent / "src"
 t = (S / "editor.html").read_text(encoding="utf-8")
 rep = {"/*@GLITCH_CSS@*/": (S / "glitch.css").read_text(encoding="utf-8"), "/*@RUNTIME_CSS@*/": (S / "runtime.css").read_text(encoding="utf-8"),
-       "/*@GLITCH_JS@*/": (S / "glitch.js").read_text(encoding="utf-8"), "/*@RUNTIME_JS@*/": (S / "runtime.js").read_text(encoding="utf-8"),
+       "/*@GLITCH_JS@*/": (S / "glitch.js").read_text(encoding="utf-8") + "\n" + (S / "wallart.js").read_text(encoding="utf-8"), "/*@RUNTIME_JS@*/": (S / "runtime.js").read_text(encoding="utf-8"),
        "/*@EDITOR_JS@*/": (S / "editor.js").read_text(encoding="utf-8")}
 for k, v in rep.items():
     assert "</script" not in v.lower(), k

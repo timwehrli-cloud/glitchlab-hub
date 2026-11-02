@@ -93,7 +93,7 @@
       svg: safeSvg(x.svg), unlock: unlock(x.freischalten || x.unlock)
     }));
     const dips = (Array.isArray(g("diplome", "badges")) ? g("diplome", "badges") : []).slice(0, 20).map((x, k) => ({
-      id: slug(x.id || x.name || "diplom-" + (k + 1)) || "diplom-" + (k + 1), n: str(x.name || x.n || "Diplom", 40), emoji: str(x.emoji, 8) || "🏅", d: str(x.beschreibung || x.d, 160)
+      id: slug(x.id || x.name || "diplom-" + (k + 1)) || "diplom-" + (k + 1), n: str(x.name || x.n || "Diplom", 40), emoji: str(x.emoji, 8) || "🏅", d: str(x.beschreibung || x.d, 160), wand: ["rahmen", "wimpel", "schild", "pokal", "medaille", "rolle", "holz", "stern"].includes(x.wand) ? x.wand : ""
     })).filter((x, k, a) => a.findIndex(y => y.id === x.id) === k);
     return {
       title: str(g("titel", "title") || "Neues Modul", 60), dips, teaser: str(g("beschreibung", "teaser", "description"), 160),
@@ -160,7 +160,7 @@
       const base = x => { const id = `up_${m.uploadId.slice(0, 8)}_${x.id}`, badge = `up:${m.uploadId}:${x.id}`; if (ok(x.unlock)) earned.push(badge); return { id, badge, reqTxt: H.unlockText(x.unlock, m.title), mod: m.title }; };
       const c = m.meta.c || (H.modArt && H.modArt[m.id] || {}).c || "#8B5CFF";
       if ((m.meta.dips || []).length) out.mods.push({ id: m.id, n: m.title, c, emoji: m.meta.emoji || "🧩" });
-      (m.meta.dips || []).forEach(x => { const id = `upd:${m.uploadId}:${x.id}`; if (all || have.has(x.id)) earned.push(id); out.dips.push({ id, n: x.n, d: x.d, emoji: x.emoji, mod: m.title, modId: m.id, c }); });
+      (m.meta.dips || []).forEach(x => { const id = `upd:${m.uploadId}:${x.id}`; if (all || have.has(x.id)) earned.push(id); out.dips.push({ id, n: x.n, d: x.d, emoji: x.emoji, wand: x.wand || "", mod: m.title, modId: m.id, c }); });
       (e.outfits || []).forEach(x => { const [cx, cy, s] = OUT_POS[x.slot] || OUT_POS.kopf; out.outfits.push(Object.assign(base(x), { slot: x.slot, n: x.n, say: x.say, svg: x.svg || emojiText(x.emoji, cx, cy, s) })); });
       (e.emotes || []).forEach(x => out.emotes.push(Object.assign(base(x), { n: x.n, d: x.d || `Aus dem Modul «${m.title}».`, ic: x.ic, text: x.text, anim: x.anim, farben: x.farben })));
       (e.room || []).forEach(x => { const b = ROOM_BOX[x.slot] || ROOM_BOX.deko, s = Math.min(b[2], b[3]) * .8; out.room.push(Object.assign(base(x), { slot: x.slot, n: x.n, box: b, svg: x.svg || emojiText(x.emoji, b[0] + b[2] / 2, b[1] + b[3] / 2, s) })); });

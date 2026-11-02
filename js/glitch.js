@@ -59,9 +59,12 @@
     return ["fuesse", "hals", "mund", "augen", "kopf", "hand", "haustier"].map(sl => { const it = list.find(x => x.id === o[sl]); return it ? it.svg : ""; }).join("");
   }
 
+  /* Hautfarben: 10 zum Auswählen (Standard Violett), Gold nur für Lehrpersonen */
+  const SKINS = [{"id": "violett", "n": "Violett", "base": "#8B5CFF", "light": "#B79CFF", "dark": "#6A3FE0", "hi": "#E3D6FF"}, {"id": "blau", "n": "Blau", "base": "#3D7BFF", "light": "#87ADFF", "dark": "#3060C7", "hi": "#C5D7FF"}, {"id": "tuerkis", "n": "Türkis", "base": "#14B8C4", "light": "#6DD3DA", "dark": "#109099", "hi": "#B8EAED"}, {"id": "gruen", "n": "Grün", "base": "#22B55E", "light": "#76D19B", "dark": "#1B8D49", "hi": "#BDE9CF"}, {"id": "limette", "n": "Limette", "base": "#8CC63F", "light": "#B8DC88", "dark": "#6D9A31", "hi": "#DCEEC5"}, {"id": "orange", "n": "Orange", "base": "#FF8A1F", "light": "#FFB674", "dark": "#C76C18", "hi": "#FFDCBC"}, {"id": "rot", "n": "Rot", "base": "#EF4444", "light": "#F58B8B", "dark": "#BA3535", "hi": "#FAC7C7"}, {"id": "pink", "n": "Pink", "base": "#FF4FA3", "light": "#FF92C6", "dark": "#C73E7F", "hi": "#FFCAE3"}, {"id": "braun", "n": "Schoggi", "base": "#A0663A", "light": "#C4A085", "dark": "#7D502D", "hi": "#E2D1C4"}, {"id": "silber", "n": "Silber", "base": "#8A94A6", "light": "#B6BDC8", "dark": "#6C7381", "hi": "#DCDFE4"}, {"id": "gold", "n": "Gold", "base": "#F2B705", "light": "#F7D264", "dark": "#BD8F04", "hi": "#FBE9B4"}];
+  const skinOf = (opts = {}) => { if (opts.lp) return SKINS.find(x => x.id === "gold"); const id = opts.skin || (opts.outfit && opts.outfit.skin); return SKINS.find(x => x.id === id && x.id !== "gold") || null; };
   function svg(mood = "normal", color = "#8B5CFF", opts = {}) {
     const [e, m] = MOOD[mood] || MOOD.normal;
-    const s = shades(color);
+    const s = skinOf(opts) || shades(color);
     const shade = y => y <= 3 ? s.light : y >= 11 ? s.dark : s.base;
     const d = (Math.random() * 3).toFixed(2);
     const blush = mood === "love" ? r(1, 7, 2, 2, "#FF4F7B") + r(11, 7, 2, 2, "#FF4F7B") : "";
@@ -75,5 +78,5 @@
     </svg>`;
   }
 
-  window.GLGlitch = { svg, shades };
+  window.GLGlitch = { svg, shades, SKINS };
 })();

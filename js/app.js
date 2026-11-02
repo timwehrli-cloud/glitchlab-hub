@@ -73,7 +73,7 @@
   const outfitOf = () => (S.me?.extras && S.me.extras.outfit) || {};
   /* gLiTCh eines Kindes so, wie es ausgerüstet ist (eigenes Outfit live, andere aus der Klassenliste) */
   const outfitFor = id => (S.me && S.me.student.id === id) ? outfitOf() : ((S.cls && S.cls.students.find(x => x.id === id)) || {}).outfit || {};
-  const kidG = (mood, k, cls = "") => `<span class="glitch kidg ${cls}" style="--kc:${k.color || "#8B5CFF"}">${G.svg(mood, "#8B5CFF", { outfit: outfitFor(k.id), calm: cls.includes("still") })}</span>`;
+  const kidG = (mood, k, cls = "") => `<span class="glitch kidg ${cls}" data-kg="${esc(k.id)}" style="--kc:${k.color || "#8B5CFF"}">${G.svg(mood, "#8B5CFF", { outfit: outfitFor(k.id), lp: !!k.is_teacher, calm: cls.includes("still") })}</span>`;
   /* Festes Lehrpersonen-Konto der Klasse: dort ist immer alles freigeschaltet */
   const isLP = () => !!(S.me && S.me.student && S.me.student.is_teacher);
   const lpName = k => k && k.is_teacher ? (CFG.TEACHER_NAME || "Lehrperson") : (k ? k.first_name : "");
@@ -286,6 +286,8 @@
     S.team = ok; saveTeam();
   }
   async function logout() {
+    if (extT && S.me) { clearTimeout(extT); extT = null; try { await S.be.saveExtras(S.token, S.me.extras); } catch (e) { /* egal */ } }
+    S.cls = null;   // Namensliste neu laden: zeigt die aktuellen gLiTChs (Outfit, Hautfarbe)
     for (const t of S.team) S.be.logout(t.token);
     S.be.logout(S.token);
     const n = S.me?.student?.first_name;
@@ -304,7 +306,7 @@
     app.innerHTML = topbar() + `<main class="wrap">
       <section class="home-room" aria-label="gLiTChs Zimmer">
         <div class="stage" id="roomPh">
-          <div class="stage-g"><span class="glitch">${G.svg("happy", "#8B5CFF", { outfit: outfitOf() })}</span><span class="floor"></span></div>
+          <div class="stage-g"><span class="glitch">${G.svg("happy", "#8B5CFF", { outfit: outfitOf(), lp: isLP() })}</span><span class="floor"></span></div>
           <div class="bubble"><p class="eyebrow">${esc(S.me.class_name || "")}</p><h1>${hello}</h1><p>gLiTCh räumt kurz sein Zimmer auf …</p></div>
         </div>
         <iframe class="roomframe" id="roomFrame" title="gLiTChs Zimmer mit Garderobe" src="lab/index.html#home"></iframe>
@@ -338,7 +340,7 @@
     const sparks = Array.from({ length: 12 }, (_, k) => `<i style="--x:${(k * 37 + 7) % 100}%;--y:${(k * 53 + 11) % 90}%;--d:${(k * .41) % 3}s;--k:${["#FFE680", "#00E5FF", "#FF2BD6", "#FFFFFF"][k % 4]}"></i>`).join("");
     return `<header class="hero-banner" style="--mc:${o.c};--mc2:${o.c2}">
       <div class="hb-scene">${scene}</div><div class="hb-sparks" aria-hidden="true">${sparks}</div>
-      <span class="hb-walker" aria-hidden="true"><span class="glitch">${G.svg("happy", "#8B5CFF", { outfit: outfitOf(), calm: true })}</span></span>
+      <span class="hb-walker" aria-hidden="true"><span class="glitch">${G.svg("happy", "#8B5CFF", { outfit: outfitOf(), lp: isLP(), calm: true })}</span></span>
       <div class="hb-plate"><p class="eyebrow">${esc(o.eyebrow)}</p><h1>${esc(o.title)}</h1>${o.sub ? `<p>${esc(o.sub)}</p>` : ""}</div>
     </header>`;
   }
@@ -409,7 +411,7 @@
     const s = H.subjects.find(x => x.id === m.subject);
     app.innerHTML = topbar() + `<main class="wrap">
       <div class="mod-head"><button type="button" class="btn small" data-back>← ${esc((H.themes.find(t => t.id === m.theme) || {}).title || s.short)}</button><h1>${esc(m.title)}</h1>
-        <div class="buddy"><span class="glitch">${G.svg("normal", "#8B5CFF", { outfit: outfitOf() })}</span><p id="buddySay" aria-live="polite">Los geht's!</p></div></div>
+        <div class="buddy"><span class="glitch">${G.svg("normal", "#8B5CFF", { outfit: outfitOf(), lp: isLP() })}</span><p id="buddySay" aria-live="polite">Los geht's!</p></div></div>
       <section class="mod-body" id="modBody"></section></main>${footer()}`;
     bindTop(); bindFoot();
     $("[data-back]").onclick = () => go({ name: "theme", id: m.theme });
@@ -513,7 +515,9 @@
   }
   let extT = null;
   function saveExtras(x) {
+    const oldO = JSON.stringify((S.me.extras || {}).outfit || {});
     S.me.extras = Object.assign({}, S.me.extras || {}, x);
+    if (JSON.stringify(S.me.extras.outfit || {}) !== oldO) $$(`[data-kg="${CSS.escape(S.me.student.id)}"]`).forEach(el => { el.innerHTML = G.svg(el.closest(".chip") ? "normal" : "happy", "#8B5CFF", { outfit: outfitOf(), lp: isLP(), calm: el.classList.contains("still") }); });
     clearTimeout(extT); extT = setTimeout(() => S.be.saveExtras(S.token, S.me.extras).catch(() => {}), 800);
   }
   let ovTimer = null;
@@ -539,7 +543,7 @@
         mods.hub.fed = 99; mods.hub.deaths = 9;
       }
       return {
-        me: k(S.me.student), team: S.team.map(t => k(t.student)), className: S.me.class_name || "",
+        lp: isLP(), me: k(S.me.student), team: S.team.map(t => k(t.student)), className: S.me.class_name || "",
         code: mainCode(), codes: classCodes().slice(1), teacher: CFG.TEACHER_NAME_DATIV || "Herrn Wehrli", quiz: [],
         group: initials(), mods, extras: S.me.extras || {}, workKey, custom: up.custom
       };
@@ -575,7 +579,7 @@
         toast(`Spezial-Aufgabe geschafft!${newly.earned.length ? " Schaut in gLiTChs Zimmer nach Neuem." : ""}`, "star");
       }).catch(err => toast(err.message, "err", 5000));
     },
-    glitchSvg(mood) { return G.svg(mood || "happy", "#8B5CFF", { outfit: outfitOf(), calm: true }); },
+    glitchSvg(mood) { return G.svg(mood || "happy", "#8B5CFF", { outfit: outfitOf(), lp: isLP(), calm: true }); },
     checkCode(c) { return classCodes().includes(String(c).trim()); },
     upDone(moduleId) { window.GLHubBridge.score(moduleId, "fertig", 1); },
     exit() { labFlush(); const v = S.view, m = v.name === "module" && H.modules.find(x => x.id === v.id); go(m ? { name: "theme", id: m.theme } : { name: "home" }); },
@@ -634,7 +638,7 @@
     if (m && !ownGlitch) {
       const LINES = ["Du schaffst das!", "Ich bin da, falls ihr Hilfe braucht.", "Wenn ihr fertig seid: oben auf «✓ Fertig» tippen!", "Pixel-Power! Weiter so!", "Kleine Pause? Kurz strecken, dann weiter!"];
       const cb = document.createElement("div"); cb.className = "corner-g";
-      cb.innerHTML = `<p class="corner-say" hidden></p><button type="button" class="corner-btn" aria-label="gLiTCh"><span class="glitch">${G.svg("happy", "#8B5CFF", { outfit: outfitOf() })}</span></button>`;
+      cb.innerHTML = `<p class="corner-say" hidden></p><button type="button" class="corner-btn" aria-label="gLiTCh"><span class="glitch">${G.svg("happy", "#8B5CFF", { outfit: outfitOf(), lp: isLP() })}</span></button>`;
       $(".labshell").appendChild(cb);
       let n = 0, tm = null;
       $(".corner-btn", cb).onclick = () => { const p = $(".corner-say", cb); p.textContent = LINES[n++ % LINES.length]; p.hidden = false; clearTimeout(tm); tm = setTimeout(() => { p.hidden = true; }, 4000); };

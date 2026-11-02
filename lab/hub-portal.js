@@ -90,16 +90,56 @@ const MI_WALL = {
   ki_adler: `<g class="wl-sway"><path d="M10 1.2 5 7.4M10 1.2l5 6.2" stroke="#3A2410" stroke-width=".5" fill="none"/><rect x="3.6" y="7" width="5.4" height="9" rx="1.4" fill="#2E3A55"/><rect x="11" y="7" width="5.4" height="9" rx="1.4" fill="#2E3A55"/><rect x="8.6" y="9" width="2.8" height="3" fill="#3A4A6A"/><circle cx="6.3" cy="14.6" r="2" fill="#9CD0EE" stroke="#1C2438" stroke-width=".4"/><circle cx="13.7" cy="14.6" r="2" fill="#9CD0EE" stroke="#1C2438" stroke-width=".4"/><path class="wl-flake" style="animation-delay:-0s" d="M5.7 13.1v1.8M4.8 14h1.8" stroke="#FFF3B0" stroke-width=".35"/><path class="wl-flake" style="animation-delay:-0.8s" d="M13.1 13.1v1.8M12.2 14h1.8" stroke="#FFF3B0" stroke-width=".35"/></g><circle cx="10" cy="1.2" r=".8" fill="#3A2410"/>`,
   ki_plakat: `<rect x="3.4" y="3" width="13.2" height="15.6" fill="#fff" stroke="#D7D2C6" stroke-width=".3"/><rect x="4.6" y="4.2" width="10.8" height="2.6" rx=".3" fill="#7B4CEF"/><path d="M6 5.5h8" stroke="#fff" stroke-width=".6"/><circle cx="5.6" cy="8.8" r=".6" fill="#1F9D68"/><path d="M7 8.8h7.4" stroke="#8A94A6" stroke-width=".45"/><circle cx="5.6" cy="11.200000000000001" r=".6" fill="#1F9D68"/><path d="M7 11.200000000000001h7.4" stroke="#8A94A6" stroke-width=".45"/><circle cx="5.6" cy="13.600000000000001" r=".6" fill="#1F9D68"/><path d="M7 13.600000000000001h7.4" stroke="#8A94A6" stroke-width=".45"/><rect x="4.6" y="15.6" width="5" height="1.6" rx=".3" fill="#FFC21A"/><path class="wl-wave" d="M16.6 18.6h-2.6l2.6-2.6z" fill="#E8E2D0"/><rect x="2.4" y="2.2" width="3" height="1.4" fill="#F4E7C8" fill-opacity=".9" transform="rotate(-30 3.9 2.9)"/><rect x="14.6" y="2.2" width="3" height="1.4" fill="#F4E7C8" fill-opacity=".9" transform="rotate(30 16.1 2.9)"/>`
 };
-const dipArt = (emoji, c) => { const e = String(emoji || "🏅").replace(/[<>&"]/g, ""), col = String(c || "#7B4CEF").replace(/[^#\w(),.% -]/g, "");
+window.GLWALL_NOCSS = true;
+/* =====================================================================
+   gLiTCh · Diplome als Gegenstände an der Wand (20 × 20, ohne Hintergrund)
+   Gleicher Stil wie die Diplome der NMG- und M&I-Module im gLiTCh-Lab.
+   GLWall.svg(art, emoji, farbe) → SVG-Text. art: siehe GLWall.KINDS
+   ===================================================================== */
+window.GLWall = window.GLWall || (function () {
+  const NAIL = '<circle cx="10" cy="1.2" r=".8" fill="#3A2410"/>';
+  const STR = (a, b, y) => `<path d="M${a} ${y}L10 1.2L${b} ${y}" stroke="#3A2410" stroke-width=".35" fill="none"/>`;
+  const SHELF = '<rect x="2.4" y="16" width="15.2" height="1.3" rx=".3" fill="#8B5A2B"/><path d="M4.4 17.3l1.4 1.6M15.6 17.3l-1.4 1.6" stroke="#5D3A1A" stroke-width=".6"/>';
+  const clean = e => String(e || "🏅").replace(/[<>&"']/g, "").slice(0, 8) || "🏅";
+  const col = c => /^#[0-9a-f]{6}$/i.test(String(c || "")) ? c : "#7B4CEF";
+  const mix = (c, t, f) => "#" + [1, 3, 5].map(i => { const v = parseInt(c.slice(i, i + 2), 16); return Math.round(v + (t - v) * f).toString(16).padStart(2, "0"); }).join("");
+  const dk = c => mix(c, 0, .38), lt = (c, f = .8) => mix(c, 255, f);
+  const em = (e, x, y, s) => `<text x="${x}" y="${y}" font-size="${s}" text-anchor="middle" dominant-baseline="central">${e}</text>`;
+  const spark = (x, y, d) => `<path class="wl-flake" style="animation-delay:-${d}s" d="M${x} ${y - .9}v1.8M${x - .9} ${y}h1.8" stroke="#FFF3B0" stroke-width=".35"/>`;
+  const star = (cx, cy, ro, ri) => "M" + Array.from({ length: 10 }, (_, k) => { const a = -Math.PI / 2 + Math.PI * k / 5, r = k % 2 ? ri : ro; return `${(cx + r * Math.cos(a)).toFixed(2)} ${(cy + r * Math.sin(a)).toFixed(2)}`; }).join("L") + "z";
+  const K = {
+    rahmen: (e, c) => STR(4, 16, 5) + `<rect x="2.5" y="5" width="15" height="13" rx=".6" fill="#7A4A22"/><rect x="3.6" y="6.1" width="12.8" height="10.8" fill="${lt(c)}"/><rect x="3.6" y="14.6" width="12.8" height="2.3" fill="${lt(c, .55)}"/><g class="wl-fly">${em(e, 10, 11, 6.2)}</g>` + NAIL,
+    wimpel: (e, c) => `<path d="M10 1.2V3" stroke="#3A2410" stroke-width=".4"/><g class="wl-sway"><rect x="2.4" y="2.6" width="15.2" height="1.1" rx=".55" fill="#8B5A2B"/><path d="M3.2 3.7h13.6L10 18.8z" fill="${c}" stroke="${dk(c)}" stroke-width=".4"/><path d="M4.6 5.2h10.8" stroke="${lt(c, .5)}" stroke-width=".5"/>${em(e, 10, 8.8, 5)}</g>` + NAIL,
+    schild: (e, c) => STR(6, 14, 4.6) + `<g class="wl-sway"><path d="M10 4.4l5.6 2v4.2c0 3.8-2.7 6.1-5.6 7.3-2.9-1.2-5.6-3.5-5.6-7.3V6.4z" fill="${c}" stroke="${dk(c)}" stroke-width=".45"/><path d="M10 5.5l4.3 1.6v3.5c0 3-2 4.8-4.3 5.8z" fill="${lt(c, .25)}"/>${em(e, 10, 10.8, 5.2)}</g>` + NAIL,
+    pokal: (e, c) => SHELF + `<path d="M6.2 4.2h7.6v3.6c0 2.6-1.7 4.2-3.8 4.2s-3.8-1.6-3.8-4.2z" fill="#F2C94C" stroke="#8B6914" stroke-width=".35"/><path d="M6.2 5.4H4.6c0 2 .8 3 2 3.2M13.8 5.4h1.6c0 2-.8 3-2 3.2" stroke="#C9A227" stroke-width=".55" fill="none"/><rect x="9.3" y="12" width="1.4" height="1.8" fill="#C9A227"/><rect x="7" y="13.8" width="6" height="2.2" rx=".3" fill="${dk(c)}"/>${em(e, 10, 7.7, 3.8)}` + spark(4.2, 3.2, 0) + spark(15.8, 10.6, 1),
+    medaille: (e, c) => `<g class="wl-sway"><path d="M10 1.2 5.8 9.6h2.6L10 5.2z" fill="${c}"/><path d="M10 1.2l4.2 8.4h-2.6L10 5.2z" fill="${dk(c)}"/><circle cx="10" cy="13.4" r="5.2" fill="#F2C94C" stroke="#8B6914" stroke-width=".5"/><circle cx="10" cy="13.4" r="4" fill="#FFE680" stroke="#C98A00" stroke-width=".3"/>${em(e, 10, 13.6, 4.6)}<path class="wl-glow" d="M6.6 11.2a4.2 4.2 0 0 1 2-2" stroke="#fff" stroke-width=".6" fill="none"/></g>` + NAIL,
+    rolle: (e, c) => STR(5, 15, 4) + `<rect x="4" y="4" width="12" height="13" fill="#F1E2BC" stroke="#B89A5E" stroke-width=".4"/><rect x="3.4" y="3.2" width="13.2" height="1.8" rx=".9" fill="#D9C28E"/><rect x="3.4" y="16.2" width="13.2" height="1.8" rx=".9" fill="#D9C28E"/>${em(e, 10, 9.4, 4.6)}<path d="M6 13h8" stroke="#6B4A2B" stroke-width=".45"/><path d="M13.4 17.4v1.4" stroke="${dk(c)}" stroke-width=".5"/><circle class="wl-sway" cx="13.4" cy="18.9" r="1.2" fill="${c}"/>` + NAIL,
+    holz: (e, c) => `<g class="wl-sway">` + STR(5, 15, 6.2) + `<rect x="2.6" y="6.2" width="14.8" height="9.4" rx="1" fill="#C68A4E" stroke="#7A4A22" stroke-width=".5"/><path d="M3.6 8.4h12.8M3.6 13.4h12.8" stroke="#A86F38" stroke-width=".3"/><rect x="2.6" y="14.2" width="14.8" height="1.4" fill="${c}"/>${em(e, 10, 10.6, 5)}</g>` + NAIL,
+    stern: (e, c) => STR(6, 14, 4) + `<g class="wl-sway"><path d="${star(10, 11, 7.4, 3.4)}" fill="${c}" stroke="${dk(c)}" stroke-width=".45"/><path d="${star(10, 11, 5.6, 2.6)}" fill="${lt(c, .35)}"/>${em(e, 10, 11.4, 4.2)}</g>` + spark(3.4, 5.4, .4) + spark(16.4, 16, 1.2) + NAIL
+  };
+  const KINDS = [["rahmen", "Bilderrahmen"], ["wimpel", "Wimpel"], ["schild", "Wappenschild"], ["pokal", "Pokal"], ["medaille", "Medaille"], ["rolle", "Urkunde"], ["holz", "Holzschild"], ["stern", "Stern"]];
+  const pick = id => { let h = 0; String(id || "").split("").forEach(ch => { h = (h * 31 + ch.charCodeAt(0)) >>> 0; }); return KINDS[h % KINDS.length][0]; };
+  const svg = (art, emoji, c, id) => `<svg viewBox="0 0 20 20" aria-hidden="true" class="wl-art">${(K[art] || K[pick(id || emoji)])(clean(emoji), col(c))}</svg>`;
+  const CSS = ".wl-sway{transform-box:fill-box;transform-origin:50% 0;animation:wlSway 3.2s ease-in-out infinite}.wl-wave{transform-box:fill-box;transform-origin:0 50%;animation:wlWave 1.6s ease-in-out infinite}.wl-fly{animation:wlFly 3s ease-in-out infinite}.wl-flake{animation:wlFlake 2.6s linear infinite}.wl-glow{animation:wlGlow 2.2s ease-in-out infinite}"
+    + "@keyframes wlSway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}@keyframes wlWave{0%,100%{transform:skewY(0) scaleX(1)}50%{transform:skewY(-5deg) scaleX(.93)}}@keyframes wlFly{50%{transform:translateY(-.8px)}}@keyframes wlFlake{0%{opacity:0}20%{opacity:1}80%{opacity:1}100%{opacity:0}}@keyframes wlGlow{0%,100%{opacity:1}50%{opacity:.35}}"
+    + "@media (prefers-reduced-motion: reduce){.wl-sway,.wl-wave,.wl-fly,.wl-flake,.wl-glow{animation:none}}";
+  try { if (!window.GLWALL_NOCSS && !document.getElementById("glWallCss")) { const st = document.createElement("style"); st.id = "glWallCss"; st.textContent = CSS; (document.head || document.documentElement).appendChild(st); } } catch (e) { /* ohne DOM */ }
+  return { svg, KINDS, pick, CSS };
+})();
+
+const dipArt = (emoji, c, wand, id) => window.GLWall ? GLWall.svg(wand || (id ? "" : "medaille"), emoji, c, id) : dipArtOld(emoji, c);
+const dipArtOld = (emoji, c) => { const e = String(emoji || "🏅").replace(/[<>&"]/g, ""), col = String(c || "#7B4CEF").replace(/[^#\w(),.% -]/g, "");
   return `<svg viewBox="0 0 20 20" aria-hidden="true"><g class="wl-medal"><path d="M10 1.2 5.8 9.6h2.6L10 5.2z" fill="${col}"/><path d="M10 1.2l4.2 8.4h-2.6L10 5.2z" fill="${col}" fill-opacity=".75"/>`
     + `<circle cx="10" cy="13.4" r="5.2" fill="#F2C94C" stroke="#8B6914" stroke-width=".5"/><circle cx="10" cy="13.4" r="4" fill="#FFE680" stroke="#C98A00" stroke-width=".3"/>`
     + `<text x="10" y="13.7" font-size="4.6" text-anchor="middle" dominant-baseline="central">${e}</text><path class="wl-glow" d="M6.6 11.2a4.2 4.2 0 0 1 2-2" stroke="#fff" stroke-width=".6" fill="none"/></g><circle cx="10" cy="1.2" r=".8" fill="#3A2410"/></svg>`; };
 (function(){ if (document.getElementById("wlMiCss")) return; const st = document.createElement("style"); st.id = "wlMiCss"; st.textContent = '.wl-glow{animation:wlGlow 2.2s ease-in-out infinite}.wl-spin{transform-box:fill-box; transform-origin:50% 50%; animation:wlSpin 7s linear infinite}.wl-wig{transform-origin:10px 11px; animation:wlWig .9s ease-in-out infinite}.wl-quiv{transform-origin:10px 12px; animation:wlQuiv 2.6s ease-in-out infinite}.wl-knock{transform-origin:15px 15px; animation:wlKnock 2.8s ease-in-out infinite}.wl-medal{transform-origin:10px 1.2px; animation:wlMedal 3.4s ease-in-out infinite}@keyframes wlGlow{0%,100%{opacity:1}50%{opacity:.35}}@keyframes wlSpin{to{transform:rotate(360deg)}}@keyframes wlWig{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.9)}}@keyframes wlQuiv{0%,86%,100%{transform:rotate(0)}90%{transform:rotate(-4deg)}94%{transform:rotate(3deg)}}@keyframes wlKnock{0%,70%,100%{transform:rotate(0)}80%{transform:rotate(-16deg)}88%{transform:rotate(2deg)}}@keyframes wlMedal{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}@media (prefers-reduced-motion: reduce){.wl-glow,.wl-spin,.wl-wig,.wl-quiv,.wl-knock,.wl-medal{animation:none}}'; (document.head || document.documentElement).appendChild(st); })();
 let D = {cls:null, prog:{}, me:null};
+window.GLAB_SKINS = [{"id": "violett", "n": "Violett", "base": "#8B5CFF", "light": "#B79CFF", "dark": "#6A3FE0", "hi": "#E3D6FF"}, {"id": "blau", "n": "Blau", "base": "#3D7BFF", "light": "#87ADFF", "dark": "#3060C7", "hi": "#C5D7FF"}, {"id": "tuerkis", "n": "Türkis", "base": "#14B8C4", "light": "#6DD3DA", "dark": "#109099", "hi": "#B8EAED"}, {"id": "gruen", "n": "Grün", "base": "#22B55E", "light": "#76D19B", "dark": "#1B8D49", "hi": "#BDE9CF"}, {"id": "limette", "n": "Limette", "base": "#8CC63F", "light": "#B8DC88", "dark": "#6D9A31", "hi": "#DCEEC5"}, {"id": "orange", "n": "Orange", "base": "#FF8A1F", "light": "#FFB674", "dark": "#C76C18", "hi": "#FFDCBC"}, {"id": "rot", "n": "Rot", "base": "#EF4444", "light": "#F58B8B", "dark": "#BA3535", "hi": "#FAC7C7"}, {"id": "pink", "n": "Pink", "base": "#FF4FA3", "light": "#FF92C6", "dark": "#C73E7F", "hi": "#FFCAE3"}, {"id": "braun", "n": "Schoggi", "base": "#A0663A", "light": "#C4A085", "dark": "#7D502D", "hi": "#E2D1C4"}, {"id": "silber", "n": "Silber", "base": "#8A94A6", "light": "#B6BDC8", "dark": "#6C7381", "hi": "#DCDFE4"}, {"id": "gold", "n": "Gold", "base": "#F2B705", "light": "#F7D264", "dark": "#BD8F04", "hi": "#FBE9B4"}];
 window.GLAB_CODE_OK = (v, primary) => { const x = String(v || "").trim().toLowerCase(); return !!x && [primary || "4313"].concat(window.GLAB_EXTRA_CODES || []).some(c => String(c).trim().toLowerCase() === x); };
 if (ctx){
   D.cls = {id:"hub", name: ctx.className, code: ctx.code, rev:0, students: [ctx.me].concat(ctx.team), groups:{}, kiQuiz: ctx.quiz || []};
   window.GLAB_EXTRA_CODES = (ctx.codes || []).map(String);
+  window.GLAB_IS_LP = !!ctx.lp; window.GLAB_CUR_SKIN = ((ctx.extras || {}).outfit || {}).skin || "";
   if (curMod){ D.cls.groups[curMod] = {}; D.cls.students.forEach(s=>{ D.cls.groups[curMod][s.id] = ctx.group; }); }
   D.me = ctx.me.id;
   D.prog[ctx.me.id] = Object.assign({mods: ctx.mods || {}, outfit:{}, outfitAt:0, seen:0}, ctx.extras || {});
@@ -195,7 +235,7 @@ function withFN(lib){
   (lib.OUTFITS || []).forEach(o=>{ if (o.badge && OUTFIT_MAP[o.badge]) o.alt = OUTFIT_MAP[o.badge]; if (o.id === "fahne") o.say = "Hopp Schwiiz! Von 1291 bis 1815 kenne ich jetzt alles."; });
   const outfitReq = x => { if (x.reqTxt) return x.reqTxt; if (x.badge){ const b = BADGES.find(b=>b.id === x.badge), a = x.alt && BADGES.find(b=>b.id === x.alt); return `Diplom «${b ? b.n : x.badge}»${a ? ` oder «${a.n}»` : ""}`; } return lib.outfitReq(x); };
   BADGES.forEach((b, k)=>{ if (!b.art) BADGES[k] = Object.assign({}, b, {art: MI_WALL[b.id] ? `<svg viewBox="0 0 20 20" aria-hidden="true">${MI_WALL[b.id]}</svg>` : dipArt("🏅", "#7B4CEF")}); });
-  CU.dips.forEach(b=>{ if (!BADGES.some(x=>x.id === b.id)) BADGES.push({id:b.id, n:b.n, d:b.d || `Aus dem Modul «${b.mod}».`, mod:b.modId, art:dipArt(b.emoji, b.c)}); });
+  CU.dips.forEach(b=>{ if (!BADGES.some(x=>x.id === b.id)) BADGES.push({id:b.id, n:b.n, d:b.d || `Aus dem Modul «${b.mod}».`, mod:b.modId, art:dipArt(b.emoji, b.c, b.wand, b.id)}); });
   return Object.assign({}, lib, {BADGES, outfitReq, OUTFITS: lib.OUTFITS.slice()});
 }
 function totalsFor(sid, live){
@@ -890,6 +930,7 @@ function wardrobeHTML(){
     <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptWdT">Garderobe</h2><p>${unl} von ${LIB.OUTFITS.length} freigeschaltet. Dein gLiTCh trägt das auch in den Modulen. Pro Körperteil eines antippen, nochmals tippen nimmt es wieder ab.</p></div>
       <button type="button" class="btn" data-pt="wd-close">Fertig</button></div>
     <div class="wd-stage"><span class="glitch wd-g">${LIB.glitchSVG("cool", {outfit:o})}</span></div>
+    ${skinPickHTML(o)}
     ${LIB.SLOTS.map((sl,si)=>{
       const its = LIB.OUTFITS.filter(x=>x.slot===sl.id), cur = its.find(x=>o[sl.id]===x.id);
       return window.GLAB_ACC("wd", sl.id, sl.n, {cur: cur ? esc(cur.n) : "", glitch:true, prev: LIB.glitchSVG("normal", {outfit: cur ? {[sl.id]:cur.id} : {}}), n: its.filter(x=>outfitOpenFor(x, T)).length, t: its.length}, si === 0) + `<div class="wd-grid">${its.map(x=>{
@@ -899,6 +940,25 @@ function wardrobeHTML(){
         <b>${esc(x.n)}</b><small>${open ? (on ? "angezogen" : "antippen") : esc(LIB.outfitReq(x))}</small>${open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`;
     }).join("")}</div></details>`; }).join("")}</div>`;
 }
+function skinPickHTML(o){
+  const L = (window.GLAB_SKINS || []).filter(x=>x.id !== "gold"), cur = o.skin || "violett";
+  if (window.GLAB_IS_LP) return `<div class="wd-skin"><b>Hautfarbe</b><div class="wd-skins"><span class="wd-sk on gold" style="--sk:#F2B705" aria-label="Gold"><span class="glitch">${LIB.glitchSVG("happy")}</span><small>Gold</small></span></div><p class="wd-skin-note">✨ Lehrpersonen sind immer golden. Diese Farbe gibt es nur für Lehrpersonen.</p></div>`;
+  return `<div class="wd-skin"><b>Hautfarbe</b><div class="wd-skins" role="radiogroup" aria-label="Hautfarbe von gLiTCh">${L.map(x=>`<button type="button" class="wd-sk${cur === x.id ? " on" : ""}" data-pt-skin="${x.id}" role="radio" aria-checked="${cur === x.id}" style="--sk:${x.base}"><span class="glitch">${LIB.glitchSVG("normal", {outfit:{skin:x.id}})}</span><small>${esc(x.n)}</small></button>`).join("")}</div></div>`;
+}
+function pickSkin(id){
+  if (window.GLAB_IS_LP || id === "gold" || !(window.GLAB_SKINS || []).some(x=>x.id === id)) return;
+  const s = student(D.me), p = prog(s.id), ov = document.getElementById("ptWd");
+  p.outfit = Object.assign({}, p.outfit, {skin: id === "violett" ? null : id}); p.outfitAt = now(); window.GLAB_CUR_SKIN = id === "violett" ? "" : id; saveD();
+  if (ov){ const sc = ov.scrollTop; ov.innerHTML = wardrobeHTML(); ov.scrollTop = sc; }
+}
+document.addEventListener("click", e=>{ const b = e.target.closest && e.target.closest("[data-pt-skin]"); if (b){ e.preventDefault(); pickSkin(b.dataset.ptSkin); } });
+(function(){ if (document.getElementById("wdSkinCss")) return; const st = document.createElement("style"); st.id = "wdSkinCss";
+  st.textContent = ".wd-skin{margin:4px 0 14px}.wd-skin > b{display:block;margin:0 0 8px;font:800 .95rem/1.2 system-ui,sans-serif}.wd-skins{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px}"
+  + ".wd-sk{all:unset;box-sizing:border-box;cursor:pointer;display:grid;justify-items:center;gap:2px;padding:8px 4px 6px;border-radius:14px;background:rgba(255,255,255,.06);border:2px solid transparent;text-align:center}"
+  + ".wd-sk .glitch{width:40px;height:40px;display:block}.wd-sk .glitch svg{width:100%;height:100%}.wd-sk small{font:700 .72rem/1.1 system-ui,sans-serif;opacity:.85}"
+  + ".wd-sk.on{border-color:var(--sk);background:color-mix(in srgb, var(--sk) 22%, transparent)}.wd-sk:focus-visible{outline:3px solid #FFC21A;outline-offset:2px}"
+  + ".wd-skin-note{margin:8px 0 0;font-size:.85rem;opacity:.85}";
+  (document.head || document.documentElement).appendChild(st); })();
 function openWardrobe(){
   closeOv("ptWd");
   const s = student(D.me), p = prog(s.id), T = totalsFor(s.id);

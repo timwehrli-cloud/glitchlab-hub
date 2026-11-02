@@ -132,3 +132,14 @@ portal = portal.replace(a, a + '''
   window.GLAB_EXTRA_CODES = (ctx.codes || []).map(String);''', 1)
 portal = portal.replace("let D = {cls:null, prog:{}, me:null};", '''let D = {cls:null, prog:{}, me:null};
 window.GLAB_CODE_OK = (v, primary) => { const x = String(v || "").trim().toLowerCase(); return !!x && [primary || "4313"].concat(window.GLAB_EXTRA_CODES || []).some(c => String(c).trim().toLowerCase() === x); };''', 1)
+
+
+# ---------- Diplome aus hochgeladenen Modulen: gleiche Wand-Gegenstände wie im Editor (editor/src/wallart.js) ----------
+_wall = (pathlib.Path(__file__).parent.parent / "editor" / "src" / "wallart.js").read_text(encoding="utf-8")
+a = "const dipArt = (emoji, c) => {"
+assert a in portal
+portal = portal.replace(a, "window.GLWALL_NOCSS = true;\n" + _wall + "\nconst dipArtOld = (emoji, c) => {", 1)
+portal = portal.replace("const dipArtOld = (emoji, c) => {", "const dipArt = (emoji, c, wand, id) => window.GLWall ? GLWall.svg(wand || (id ? \"\" : \"medaille\"), emoji, c, id) : dipArtOld(emoji, c);\nconst dipArtOld = (emoji, c) => {", 1)
+a = "art:dipArt(b.emoji, b.c)}"
+assert a in portal
+portal = portal.replace(a, "art:dipArt(b.emoji, b.c, b.wand, b.id)}", 1)
