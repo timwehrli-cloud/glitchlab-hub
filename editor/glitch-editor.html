@@ -151,6 +151,12 @@ option,optgroup{background:var(--surface);color:var(--ink)}
 .seg button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .seg .ck{display:inline-grid;place-items:center;width:18px;height:18px;margin-right:6px;border-radius:5px;border:1.5px solid var(--muted);font-size:.75rem;vertical-align:-3px}
 .seg button.on .ck{background:var(--teal);border-color:var(--teal);color:#0B0618}
+.mas-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.mas{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface2)}
+.mas .pic{width:64px;height:64px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(#2A1466,#14062E)}.mas .pic svg{width:54px;height:54px}
+.mas .pic .glitch{width:54px;height:54px;display:block}.mas b{display:block}.mas small{color:var(--muted);font-size:.78rem;line-height:1.3}
+.mas.on{border-color:var(--teal);background:linear-gradient(135deg,rgba(46,230,214,.18),rgba(160,124,255,.14))}
+.mas:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 </style>
 
 <div class="wrap">
@@ -200,6 +206,15 @@ option,optgroup{background:var(--surface);color:var(--ink)}
       <div class="f"><span>Zwischen den Etappen</span><div class="seg" id="freigabe" role="group" aria-label="Freigabe zwischen den Etappen: keine oder eine bis drei kombinieren"></div></div>
       <p class="hint" id="frHint"></p>
       <label class="f" id="codeWrap"><span>Code zum Testen ohne Hub</span><input class="in" id="optCode" inputmode="numeric" maxlength="8" placeholder="1234" style="max-width:180px"></label>
+    </div>
+    <div class="card" id="masCard">
+      <div class="card-h"><div><p class="eyebrow">Maskottchen</p><h2>Wer führt durchs Modul?</h2></div><p>Das Maskottchen erklärt, gibt Tipps und lobt. gLiTCh trägt im Hub das Outfit und die Hautfarbe des Kindes. Mit einem anderen Maskottchen erscheint gLiTCh nicht zusätzlich in der Ecke.</p></div>
+      <div class="mas-opts" id="masOpts" role="radiogroup" aria-label="Maskottchen"></div>
+      <div id="masOwn" hidden>
+        <label class="f"><span>Beschreibe dein Maskottchen</span><textarea class="in" id="masDesc" style="min-height:64px" maxlength="400" placeholder="z. B. Eine kleine Lava-Echse mit Helm, orange und rot, frech und neugierig"></textarea></label>
+        <div class="row" style="align-items:flex-end;gap:10px;flex-wrap:wrap"><label class="f" style="margin:0"><span>Name</span><input class="in" id="masName" maxlength="24" placeholder="z. B. Lavi" style="max-width:200px"></label>
+          <button type="button" class="btn teal" id="masGen">✨ Maskottchen generieren</button><span class="hint" id="masMsg"></span></div>
+      </div>
     </div>
     <div class="foot"><span></span><button type="button" class="btn primary" data-goto="2">Weiter zum Material →</button></div>
   </section>
@@ -631,6 +646,77 @@ window.GLWall = window.GLWall || (function () {
   try { if (!window.GLWALL_NOCSS && !document.getElementById("glWallCss")) { const st = document.createElement("style"); st.id = "glWallCss"; st.textContent = CSS; (document.head || document.documentElement).appendChild(st); } } catch (e) { /* ohne DOM */ }
   return { svg, KINDS, pick, CSS };
 })();
+
+/* =====================================================================
+   Maskottchen für Editor-Module: gLiTCh (Standard), Fenni der Wüstenfuchs
+   oder ein eigenes Pixel-Maskottchen (Raster mit Farbpalette).
+   ===================================================================== */
+window.GLMascot = window.GLMascot || (function () {
+  let fenniCache = "";
+  function fenni() {
+    if (fenniCache) return fenniCache;
+
+ const N=40,C={body:"#e9cd98",shade:"#d2a96b",light:"#fbf1dc",ear:"#f1b3a0",out:"#5a3b1f",eye:"#1b1210",hl:"#ffffff",nose:"#1b1210",tip:"#5a3b1f",mark:"#b07c45"};
+ const ell=(cx,cy,rx,ry,rot=0)=>(x,y)=>{const a=rot*Math.PI/180,dx=x-cx,dy=y-cy,u=dx*Math.cos(a)+dy*Math.sin(a),v=-dx*Math.sin(a)+dy*Math.cos(a);return (u*u)/(rx*rx)+(v*v)/(ry*ry)<=1};
+ const tri=(p)=>(x,y)=>{let s=0;for(let i=0;i<3;i++){const [x1,y1]=p[i],[x2,y2]=p[(i+1)%3];const c=(x2-x1)*(y-y1)-(y2-y1)*(x-x1);if(c===0)continue;if(!s)s=Math.sign(c);else if(Math.sign(c)!==s)return false}return true};
+ const rect=(x0,y0,x1,y1)=>(x,y)=>x>=x0&&x<=x1&&y>=y0&&y<=y1;
+ const mir=f=>(x,y)=>f(N-x,y);
+ const L=[ /* hinten nach vorne: [Test, Farbe, Ebene] */
+  [ell(31,33,8,4,-25),"body"],[ell(37,29.5,2.6,2.6),"tip"],
+  [ell(20,31,9,7.5),"body"],
+  [rect(14.5,32,18.5,38.6),"body"],[rect(21.5,32,25.5,38.6),"body"],
+  [ell(16.5,38,2.6,1.4),"light"],[ell(23.5,38,2.6,1.4),"light"],
+  [ell(20,29,4.6,6),"light"],
+  [tri([[2.5,0.5],[17,10],[9,17]]),"body"],[mir(tri([[2.5,0.5],[17,10],[9,17]])),"body"],
+  [tri([[5,3.5],[14.5,10.5],[9.5,14.5]]),"ear"],[mir(tri([[5,3.5],[14.5,10.5],[9.5,14.5]])),"ear"],
+  [ell(20,17,8.6,6.8),"body"],
+  [ell(20,21.4,5.2,3.4),"light"],[ell(13.5,19.5,2.2,1.6),"light"],[ell(26.5,19.5,2.2,1.6),"light"],
+ ];
+ const grid=[];for(let y=0;y<N;y++){grid[y]=[];for(let x=0;x<N;x++){let c=null;const px=x+.5,py=y+.5;for(const [f,col] of L)if(f(px,py))c=col;grid[y][x]=c}}
+ // Schattierung am Körperrand und Hinterkopf
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){const c=grid[y][x];if(c==="body"&&((y>=26&&Math.abs(x+.5-20)>6.3)||(y>=11&&y<=13&&Math.abs(x+.5-20)<5)))grid[y][x]="shade"}
+ // Augenstreifen (typisch Fennek)
+ [[15,19],[14,20],[25,19],[26,20]].forEach(([x,y])=>{if(grid[y][x])grid[y][x]="mark"});
+ // Umriss
+ const fill=(x,y)=>y>=0&&y<N&&x>=0&&x<N&&grid[y][x];
+ const out=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(grid[y][x]&&grid[y][x]!=="tip"&&(!fill(x-1,y)||!fill(x+1,y)||!fill(x,y-1)||!fill(x,y+1)))out.push([x,y])}
+ out.forEach(([x,y])=>grid[y][x]="out");
+ // Mittellinie zwischen Brust und Beinen
+ for(let y=33;y<39;y++){if(grid[y][19]&&grid[y][19]!=="out")grid[y][19]="shade";if(grid[y][20]&&grid[y][20]!=="out")grid[y][20]="shade"}
+ let r="";for(let y=0;y<N;y++){let x=0;while(x<N){const c=grid[y][x];if(!c){x++;continue}let w=1;while(x+w<N&&grid[y][x+w]===c)w++;r+=`<rect x="${x}" y="${y}" width="${w+.02}" height="1.02" fill="${C[c]}"/>`;x+=w}}
+ // Augen, Nase, Mund separat (Augen blinzeln)
+ const px=(x,y,w,h,c)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+ const eyes=`<g class="f-eyes">${px(15,15,3,3,C.eye)}${px(22,15,3,3,C.eye)}${px(15,15,1,1,C.hl)}${px(22,15,1,1,C.hl)}</g>`;
+ const face=px(19,21,2,1.6,C.nose)+px(18.5,20.6,3,1,C.nose)+px(19.5,22.6,1,1,C.out)+px(18,23.4,1.5,.8,C.out)+px(20.5,23.4,1.5,.8,C.out);
+ const blush=`<g class="f-blush" opacity="0">${px(12,20,2,1,"#f19a8c")}${px(26,20,2,1,"#f19a8c")}</g>`;
+ 
+    fenniCache = `<svg viewBox="-1 -1 42 42" shape-rendering="crispEdges" aria-hidden="true">${r}${eyes}${face}${blush}</svg>`;
+    return fenniCache;
+  }
+  /* Eigenes Maskottchen: pixel = Zeilen aus Buchstaben (Punkt = leer), palette = {Buchstabe: "#hex"} */
+  function clean(pix, pal) {
+    const P = {}; Object.entries(pal || {}).forEach(([k, v]) => { if (/^[a-z]$/i.test(k) && /^#[0-9a-f]{6}$/i.test(String(v))) P[k] = v; });
+    let rows = (Array.isArray(pix) ? pix : []).map(r => String(r).replace(/\s/g, "")).filter(r => r.length).slice(0, 24);
+    const n = Math.max(8, Math.min(24, Math.max(rows.length, ...rows.map(r => r.length))));
+    rows = rows.map(r => (r + ".".repeat(n)).slice(0, n).split("").map(c => P[c] ? c : ".").join(""));
+    while (rows.length < n) rows.push(".".repeat(n));
+    return { pix: rows, pal: P, n };
+  }
+  function pixel(pix, pal) {
+    const c = clean(pix, pal); let r = "";
+    c.pix.forEach((row, y) => { let x = 0; while (x < c.n) { const ch = row[x]; if (ch === ".") { x++; continue; } let w = 1; while (row[x + w] === ch) w++; r += `<rect x="${x}" y="${y}" width="${w + .02}" height="1.02" fill="${c.pal[ch]}"/>`; x += w; } });
+    return `<svg viewBox="-1 -1 ${c.n + 2} ${c.n + 2}" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`;
+  }
+  /* Bild für ein Modul-Maskottchen (null = gLiTCh) */
+  function svg(m) {
+    if (!m || m.typ === "glitch") return null;
+    if (m.typ === "fenni") return fenni();
+    if (m.typ === "eigen" && m.pix) return pixel(m.pix, m.pal);
+    return null;
+  }
+  const nameOf = m => !m || m.typ === "glitch" ? "gLiTCh" : m.typ === "fenni" ? (m.name || "Fenni") : (String(m.name || "").trim().slice(0, 24) || "Mascotti");
+  return { fenni, pixel, clean, svg, nameOf };
+})();
 </script>
 <script type="text/plain" id="rt-js">/* gLiTCh-Modul · Laufzeit (vom gLiTCh-Editor in jede Moduldatei eingebaut)
    Daten: window.MODUL = { titel, beschreibung, emoji, farbe, intro, schluss,
@@ -645,7 +731,12 @@ window.GLWall = window.GLWall || (function () {
   const slug = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, " ").trim();
   /* gLiTCh so, wie das Kind ihn im Hub angezogen hat (ohne Hub: ohne Outfit) */
-  const gsvg = mood => { try { const x = HUB && HUB.glitch && HUB.glitch(mood); if (x) return x; } catch (e) { /* ohne Hub */ } return G ? G.svg(mood, "#8B5CFF") : ""; };
+  /* Maskottchen aus dem Editor: gLiTCh (Standard), Fenni oder ein eigenes */
+  const MAS = (M.opt && M.opt.mascot) || { typ: "glitch" }, NAME = window.GLMascot ? GLMascot.nameOf(MAS) : "gLiTCh";
+  const MSVG = window.GLMascot ? GLMascot.svg(MAS) : null;
+  const nm = t => MSVG ? String(t ?? "").replace(/gLiTChs/g, NAME + "s").replace(/gLiTCh/g, NAME) : t;
+  if (MSVG) document.documentElement.classList.add("own-mascot");
+  const gsvg = mood => { if (MSVG) return MSVG; try { const x = HUB && HUB.glitch && HUB.glitch(mood); if (x) return x; } catch (e) { /* ohne Hub */ } return G ? G.svg(mood, "#8B5CFF") : ""; };
   const gl = (mood, cls = "") => `<span class="glitch ${cls}">${gsvg(mood)}</span>`;
   /* Schalter aus dem Editor: was das Modul anbietet und wie es zwischen den Etappen weitergeht */
   const O = Object.assign({ tipps: true, vorlesen: true, lexikon: true, pdf: true, freigabe: "keine", code: "" }, M.opt || {});
@@ -713,7 +804,7 @@ window.GLWall = window.GLWall || (function () {
 
   /* ---------- Text mit Fachwörtern (antippen = Erklärung) ---------- */
   function rich(txt) {
-    const raw = String(txt ?? ""), taken = [];
+    const raw = String(nm(txt) ?? ""), taken = [];
     LEX.slice().sort((a, b) => b.wort.length - a.wort.length).forEach(w => {
       const re = new RegExp("(^|[^\\wäöüÄÖÜß])(" + w.wort.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")(?=[^\\wäöüÄÖÜß]|$)", "i");
       const m = re.exec(raw); if (!m) return;
@@ -751,7 +842,7 @@ window.GLWall = window.GLWall || (function () {
   let view = { b: 0 }, sayT = null;
   function say(text, mood = "happy", ms) {
     const t = $("#sayT"), g = $("#bigG"); if (!t) return;
-    t.innerHTML = rich(text).replace(/^<p>|<\/p>$/g, ""); if (g) g.innerHTML = gsvg(mood);
+    t.innerHTML = rich(nm(text)).replace(/^<p>|<\/p>$/g, ""); if (g) g.innerHTML = gsvg(mood);
     $$(".lex", t).forEach(b => b.onclick = () => showLex(b.dataset.lex));
     const bub = $("#say"); if (bub) { bub.classList.remove("pop"); void bub.offsetWidth; bub.classList.add("pop"); }
     clearTimeout(sayT); if (ms) sayT = setTimeout(() => { const x = B[view.b]; say(x ? `Baustein ${view.b + 1}: ${short(ET[x.e].aufgaben[x.t] || x.erkl[0] || {})}. ${TIPS_START}` : "", "normal"); }, ms);
@@ -762,7 +853,7 @@ window.GLWall = window.GLWall || (function () {
         <button type="button" class="menu-btn" id="menuBtn" aria-haspopup="true" aria-expanded="false">☰ Menü</button>
         <div class="logo"><span class="logo-g">gLiTCh</span><span class="logo-l">-Lab</span><span class="logo-chip">${esc(M.fachkurz || M.fachname || "Modul")}</span>
           <small>${esc(M.emoji || "")} ${esc(M.titel || "")}${HUB ? "" : ' · <b class="test">Testmodus</b>'}</small></div>
-        <div class="talk"><div class="say-bub" id="say" aria-live="polite"><b>gLiTCh</b><p id="sayT"></p></div><span class="glitch big" id="bigG">${gsvg("happy")}</span></div>
+        <div class="talk"><div class="say-bub" id="say" aria-live="polite"><b>${esc(NAME)}</b><p id="sayT"></p></div><span class="glitch big" id="bigG">${gsvg("happy")}</span></div>
       </header>
       <div class="menu" id="menu" hidden>
         ${LEX.length ? `<button type="button" data-go="lex">📖 Lexikon <small>${LEX.length} Fachwörter</small></button>` : ""}
@@ -794,12 +885,12 @@ window.GLWall = window.GLWall || (function () {
     const st = total(), mx = totalMax(), dn = B.filter((_, i) => bDone(i)).length;
     sd.innerHTML = `<div class="side-card lvl"><div class="ring" style="--p:${mx ? Math.round(st / mx * 100) : 0}"><span>★</span></div><div><small>Sterne in diesem Modul</small><b>${st} von ${mx}</b>${who() ? `<small>Team: ${esc(who())}</small>` : ""}</div></div>
       ${DIP.length ? `<div class="side-card"><small class="cap">Diplome: ${esc(M.titel || "")}</small><div class="hexes">${DIP.map(d => `<button type="button" class="hex${S.dips.includes(d.id) ? " got" : ""}" data-dip="${esc(d.id)}" title="${esc(d.name)}">${S.dips.includes(d.id) ? wall(d) : "🔒"}</button>`).join("")}</div>
-        <p class="side-note">Tippt ein Diplom an, dann verrät gLiTCh, wie ihr es bekommt.</p></div>` : ""}
+        <p class="side-note">Tippt ein Diplom an, dann verrät ${esc(NAME)}, wie ihr es bekommt.</p></div>` : ""}
       <div class="side-card"><div class="prog-h"><b>Fortschritt</b><span>${dn} / ${B.length}</span></div><div class="pbar"><i style="width:${B.length ? Math.round(dn / B.length * 100) : 0}%"></i></div>
         ${ET.map((E, e) => { const se = S.selbst[e] && SELBST.find(x => x[0] === S.selbst[e].w);
           return `<div class="et-row${etDone(e) ? " ok" : ""}${etUnlocked(e) ? "" : " lock"}"><span>${etUnlocked(e) ? esc(E.emoji || "⭐") : "🔒"}</span><span>${esc(E.titel)}</span><small>${se ? se[1] + " " : ""}${etDone(e) ? (!gateNeeded(e) || gateDone(e) ? "✓" : "✓ · " + ({ selbst: "Einschätzung", praes: "Präsentation", lp: "Freigabe" })[missing(e)[0]] + " fehlt") : `★ ${etStars(e)}/${etMax(e)}`}</small></div>`; }).join("")}
         ${GATES.length ? `<p class="side-note">Nach jeder Etappe: ${andList(GATES.map(g => ({ selbst: "🪞 Selbsteinschätzung", praes: "🎤 Präsentation", lp: "🔐 Freigabe mit dem Code der Lehrperson" })[g]))}.</p>` : ""}</div>
-      ${LEX.length ? `<div class="side-card"><div class="prog-h"><b>📖 Fachwörter</b><span>${(S.words || []).length} / ${LEX.length}</span></div><p class="side-note">Wörter mit gepunkteter Linie antippen: gLiTCh erklärt sie.</p><button type="button" class="btn small" data-golex>Lexikon öffnen</button></div>` : ""}`;
+      ${LEX.length ? `<div class="side-card"><div class="prog-h"><b>📖 Fachwörter</b><span>${(S.words || []).length} / ${LEX.length}</span></div><p class="side-note">Wörter mit gepunkteter Linie antippen: ${esc(NAME)} erklärt sie.</p><button type="button" class="btn small" data-golex>Lexikon öffnen</button></div>` : ""}`;
     $$("[data-dip]", sd).forEach(b => b.onclick = () => { const d = DIP.find(x => x.id === b.dataset.dip); say(S.dips.includes(d.id) ? `${d.emoji || "🏅"} **${d.name}**: geschafft! ${d.beschreibung || ""}` : `${d.emoji || "🏅"} **${d.name}**: ${d.beschreibung || "Löst die Bausteine, dann bekommt ihr es."}`, S.dips.includes(d.id) ? "cool" : "wink", 7000); });
     const gl2 = $("[data-golex]", sd); if (gl2) gl2.onclick = () => showLex();
   }
@@ -822,7 +913,7 @@ window.GLWall = window.GLWall || (function () {
     const pass = () => { S.gs[e] = Object.assign({}, S.gs[e], { [step]: new Date().toISOString() }); save(); paintTabs(); paintSide(); if (gateDone(e)) finish(); else setTimeout(() => gateDlg(e, then), 350); };
     if (step === "praes") return praesDlg(e, nr, pass);
     if (step === "selbst") {
-      const ov = dlg(`<h2>🪞 Selbsteinschätzung${nr}</h2><div class="hero">${gl("wink")}<div class="bubble"><b>gLiTCh</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Wie gut kannst du das jetzt?</p></div></div></div>
+      const ov = dlg(`<h2>🪞 Selbsteinschätzung${nr}</h2><div class="hero">${gl("wink")}<div class="bubble"><b>${esc(NAME)}</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Wie gut kannst du das jetzt?</p></div></div></div>
         <div class="selbst" role="radiogroup" aria-label="Selbsteinschätzung">${SELBST.map(([v, ic, n]) => `<button type="button" class="sb" data-sb="${v}" role="radio" aria-checked="false"><span>${ic}</span>${esc(n)}</button>`).join("")}</div>
         <label class="f"><span>Das nehme ich mit (ein Satz, freiwillig)</span><textarea class="in" id="sbTxt" style="min-height:60px" placeholder="z. B. Ich weiss jetzt, dass …"></textarea></label>`);
       const ok = $("[data-x]", ov); ok.textContent = "Speichern und weiter →"; ok.disabled = true;
@@ -833,7 +924,7 @@ window.GLWall = window.GLWall || (function () {
       return;
     }
     let code = "";
-    const ov = dlg(`<h2>🔐 Freigabe durch die Lehrperson${nr}</h2><div class="hero">${gl("cool")}<div class="bubble"><b>gLiTCh</b><div><p>${GATES.includes("praes") ? `Präsentation von Etappe ${e + 1} geschafft! Jetzt gibt eure Lehrperson mit ihrem Code ${e < ET.length - 1 ? "die nächste Etappe" : "das Ziel"} frei.` : `Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Zeigt eure Arbeit eurer Lehrperson. Sie gibt mit ihrem Code die nächste Etappe frei.`}</p></div></div></div>
+    const ov = dlg(`<h2>🔐 Freigabe durch die Lehrperson${nr}</h2><div class="hero">${gl("cool")}<div class="bubble"><b>${esc(NAME)}</b><div><p>${GATES.includes("praes") ? `Präsentation von Etappe ${e + 1} geschafft! Jetzt gibt eure Lehrperson mit ihrem Code ${e < ET.length - 1 ? "die nächste Etappe" : "das Ziel"} frei.` : `Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Zeigt eure Arbeit eurer Lehrperson. Sie gibt mit ihrem Code die nächste Etappe frei.`}</p></div></div></div>
       <div class="pin"><div class="pin-dots" id="pinD" aria-live="polite"></div><div class="pin-pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button type="button" data-pn="${n}">${n}</button>`).join("")}<button type="button" data-pn="del" aria-label="Löschen">⌫</button><button type="button" data-pn="0">0</button><button type="button" class="go" data-pn="ok">OK</button></div><p class="err" id="pinE" role="alert"></p></div>`);
     $("[data-x]", ov).textContent = "Später";
     const paint = () => { $("#pinD", ov).textContent = code ? "●".repeat(code.length) : "Code eingeben"; };
@@ -874,7 +965,7 @@ window.GLWall = window.GLWall || (function () {
     try { const u = new SpeechSynthesisUtterance(String(text).replace(/\*\*/g, "")); u.lang = "de-CH"; u.rate = .95; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { say("Vorlesen geht auf diesem Gerät leider nicht.", "sad", 4000); }
   }
   function erklHTML(list, cls = "") {
-    return list.map((a, n) => `<div class="erkl ${cls}"><div class="erkl-h">${gl("normal", "mini")}<b>gLiTCh erklärt</b>${a.titel ? `<span>· ${esc(a.titel)}</span>` : ""}${O.vorlesen ? `<button type="button" class="btn small" data-read="${n}">🔊 Vorlesen</button>` : ""}</div><div class="txt">${rich(a.text || "")}</div></div>`).join("");
+    return list.map((a, n) => `<div class="erkl ${cls}"><div class="erkl-h">${gl("normal", "mini")}<b>${esc(NAME)} erklärt</b>${a.titel ? `<span>· ${esc(a.titel)}</span>` : ""}${O.vorlesen ? `<button type="button" class="btn small" data-read="${n}">🔊 Vorlesen</button>` : ""}</div><div class="txt">${rich(a.text || "")}</div></div>`).join("");
   }
   function stage() {
     const sg = $("#stage");
@@ -999,7 +1090,7 @@ window.GLWall = window.GLWall || (function () {
         </div><div class="poster" id="gePv"></div></div><p class="hintline" id="geInfo"></p><button type="button" class="btn primary" data-check>Fertig gestaltet</button>`;
     }
     if (a.typ === "schreiben") body = `<h3>${rich(a.auftrag).replace(/^<p>|<\/p>$/g, "")}</h3><textarea class="in" id="wr" placeholder="Schreibe hier …">${esc(st.v || "")}</textarea><p style="color:var(--muted);margin:6px 0" id="wc"></p><button type="button" class="btn primary" data-check>Abgeben</button>`;
-    $("#task").innerHTML = `<div class="task"><div class="task-h"><span class="kind">${KIND[a.typ] || "Aufgabe"}${stars}</span>${O.tipps ? `<button type="button" class="tipbtn" data-tip>💡 Tipp von gLiTCh</button>` : ""}</div>${body}</div>
+    $("#task").innerHTML = `<div class="task"><div class="task-h"><span class="kind">${KIND[a.typ] || "Aufgabe"}${stars}</span>${O.tipps ? `<button type="button" class="tipbtn" data-tip>💡 Tipp von ${esc(NAME)}</button>` : ""}</div>${body}</div>
       <div class="nav"><button type="button" class="btn" data-prev ${view.b ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${last ? "Zum Ziel 🏁" : "Weiter →"}</button></div>`;
     if ($("[data-tip]")) $("[data-tip]").onclick = () => say(a.tipp || TIPS[a.typ] || "Lies nochmals in «gLiTCh erklärt» nach!", "wink", 10000);
     $$("#task .lex").forEach(b => b.onclick = () => showLex(b.dataset.lex));
@@ -1134,7 +1225,7 @@ window.GLWall = window.GLWall || (function () {
     document.addEventListener("keydown", function f(ev) { if (ev.key === "Escape") { close(); document.removeEventListener("keydown", f); } });
     setTimeout(() => $("[data-x]", ov).focus(), 20); return ov;
   }
-  function showMsg(mood, text, btn, then) { const ov = dlg(`<div class="hero">${gl(mood)}<div class="bubble"><b>gLiTCh</b><div>${rich(text)}</div></div></div>`, then); $("[data-x]", ov).textContent = btn; }
+  function showMsg(mood, text, btn, then) { const ov = dlg(`<div class="hero">${gl(mood)}<div class="bubble"><b>${esc(NAME)}</b><div>${rich(text)}</div></div></div>`, then); $("[data-x]", ov).textContent = btn; }
   function showLex(word) {
     if (!S.lex) { S.lex = true; save(); checkDips(); }
     if (word) { S.words = [...new Set([...(S.words || []), word])]; save(); paintSide(); }
@@ -1144,7 +1235,7 @@ window.GLWall = window.GLWall || (function () {
     if (word) { const w = LEX.find(x => x.wort === word); if (w) { $("#ll", ov).insertAdjacentHTML("beforebegin", `<div class="bubble" style="margin-bottom:12px"><b>${esc(w.wort)}</b><p>${esc(w.erklaerung)}</p></div>`); } }
   }
   function showDips() { dlg(`<h2>🏅 Diplome</h2><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e wall" aria-hidden="true">${wall(d)}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>`); }
-  function showDip(d) { confetti(40); setTimeout(() => { const h = document.querySelector(".ov .hero"); if (h) h.insertAdjacentHTML("afterend", `<div class="dip-new">${wall(d)}</div>`); }, 0); showMsg("cool", `🏅 **Neues Diplom: ${d.name}!**\n\n${d.beschreibung || ""}${HUB ? "\n\nSchaut in gLiTChs Zimmer: Vielleicht gibt es dort etwas Neues." : ""}`, "Juhui!"); }
+  function showDip(d) { confetti(40); setTimeout(() => { const h = document.querySelector(".ov .hero"); if (h) h.insertAdjacentHTML("afterend", `<div class="dip-new">${wall(d)}</div>`); }, 0); showMsg("cool", `🏅 **Neues Diplom: ${d.name}!**\n\n${d.beschreibung || ""}${HUB ? "\n\nSchaut im Hub in eurem Zimmer: Vielleicht gibt es dort etwas Neues." : ""}`, "Juhui!"); }
   function showLinks() { dlg(`<h2>🔗 Links</h2><ul class="links">${(M.links || []).map(l => `<li><a href="${esc(/^https?:\/\//i.test(l.url) ? l.url : "#")}" target="_blank" rel="noopener">${esc(l.titel || l.url)}</a>${l.titel ? `<br><small>${esc(l.url)}</small>` : ""}</li>`).join("")}</ul>`); }
   function confetti(n = 18) {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -1269,6 +1360,77 @@ window.GLWall = window.GLWall || (function () {
   try { if (!window.GLWALL_NOCSS && !document.getElementById("glWallCss")) { const st = document.createElement("style"); st.id = "glWallCss"; st.textContent = CSS; (document.head || document.documentElement).appendChild(st); } } catch (e) { /* ohne DOM */ }
   return { svg, KINDS, pick, CSS };
 })();
+
+/* =====================================================================
+   Maskottchen für Editor-Module: gLiTCh (Standard), Fenni der Wüstenfuchs
+   oder ein eigenes Pixel-Maskottchen (Raster mit Farbpalette).
+   ===================================================================== */
+window.GLMascot = window.GLMascot || (function () {
+  let fenniCache = "";
+  function fenni() {
+    if (fenniCache) return fenniCache;
+
+ const N=40,C={body:"#e9cd98",shade:"#d2a96b",light:"#fbf1dc",ear:"#f1b3a0",out:"#5a3b1f",eye:"#1b1210",hl:"#ffffff",nose:"#1b1210",tip:"#5a3b1f",mark:"#b07c45"};
+ const ell=(cx,cy,rx,ry,rot=0)=>(x,y)=>{const a=rot*Math.PI/180,dx=x-cx,dy=y-cy,u=dx*Math.cos(a)+dy*Math.sin(a),v=-dx*Math.sin(a)+dy*Math.cos(a);return (u*u)/(rx*rx)+(v*v)/(ry*ry)<=1};
+ const tri=(p)=>(x,y)=>{let s=0;for(let i=0;i<3;i++){const [x1,y1]=p[i],[x2,y2]=p[(i+1)%3];const c=(x2-x1)*(y-y1)-(y2-y1)*(x-x1);if(c===0)continue;if(!s)s=Math.sign(c);else if(Math.sign(c)!==s)return false}return true};
+ const rect=(x0,y0,x1,y1)=>(x,y)=>x>=x0&&x<=x1&&y>=y0&&y<=y1;
+ const mir=f=>(x,y)=>f(N-x,y);
+ const L=[ /* hinten nach vorne: [Test, Farbe, Ebene] */
+  [ell(31,33,8,4,-25),"body"],[ell(37,29.5,2.6,2.6),"tip"],
+  [ell(20,31,9,7.5),"body"],
+  [rect(14.5,32,18.5,38.6),"body"],[rect(21.5,32,25.5,38.6),"body"],
+  [ell(16.5,38,2.6,1.4),"light"],[ell(23.5,38,2.6,1.4),"light"],
+  [ell(20,29,4.6,6),"light"],
+  [tri([[2.5,0.5],[17,10],[9,17]]),"body"],[mir(tri([[2.5,0.5],[17,10],[9,17]])),"body"],
+  [tri([[5,3.5],[14.5,10.5],[9.5,14.5]]),"ear"],[mir(tri([[5,3.5],[14.5,10.5],[9.5,14.5]])),"ear"],
+  [ell(20,17,8.6,6.8),"body"],
+  [ell(20,21.4,5.2,3.4),"light"],[ell(13.5,19.5,2.2,1.6),"light"],[ell(26.5,19.5,2.2,1.6),"light"],
+ ];
+ const grid=[];for(let y=0;y<N;y++){grid[y]=[];for(let x=0;x<N;x++){let c=null;const px=x+.5,py=y+.5;for(const [f,col] of L)if(f(px,py))c=col;grid[y][x]=c}}
+ // Schattierung am Körperrand und Hinterkopf
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){const c=grid[y][x];if(c==="body"&&((y>=26&&Math.abs(x+.5-20)>6.3)||(y>=11&&y<=13&&Math.abs(x+.5-20)<5)))grid[y][x]="shade"}
+ // Augenstreifen (typisch Fennek)
+ [[15,19],[14,20],[25,19],[26,20]].forEach(([x,y])=>{if(grid[y][x])grid[y][x]="mark"});
+ // Umriss
+ const fill=(x,y)=>y>=0&&y<N&&x>=0&&x<N&&grid[y][x];
+ const out=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(grid[y][x]&&grid[y][x]!=="tip"&&(!fill(x-1,y)||!fill(x+1,y)||!fill(x,y-1)||!fill(x,y+1)))out.push([x,y])}
+ out.forEach(([x,y])=>grid[y][x]="out");
+ // Mittellinie zwischen Brust und Beinen
+ for(let y=33;y<39;y++){if(grid[y][19]&&grid[y][19]!=="out")grid[y][19]="shade";if(grid[y][20]&&grid[y][20]!=="out")grid[y][20]="shade"}
+ let r="";for(let y=0;y<N;y++){let x=0;while(x<N){const c=grid[y][x];if(!c){x++;continue}let w=1;while(x+w<N&&grid[y][x+w]===c)w++;r+=`<rect x="${x}" y="${y}" width="${w+.02}" height="1.02" fill="${C[c]}"/>`;x+=w}}
+ // Augen, Nase, Mund separat (Augen blinzeln)
+ const px=(x,y,w,h,c)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+ const eyes=`<g class="f-eyes">${px(15,15,3,3,C.eye)}${px(22,15,3,3,C.eye)}${px(15,15,1,1,C.hl)}${px(22,15,1,1,C.hl)}</g>`;
+ const face=px(19,21,2,1.6,C.nose)+px(18.5,20.6,3,1,C.nose)+px(19.5,22.6,1,1,C.out)+px(18,23.4,1.5,.8,C.out)+px(20.5,23.4,1.5,.8,C.out);
+ const blush=`<g class="f-blush" opacity="0">${px(12,20,2,1,"#f19a8c")}${px(26,20,2,1,"#f19a8c")}</g>`;
+ 
+    fenniCache = `<svg viewBox="-1 -1 42 42" shape-rendering="crispEdges" aria-hidden="true">${r}${eyes}${face}${blush}</svg>`;
+    return fenniCache;
+  }
+  /* Eigenes Maskottchen: pixel = Zeilen aus Buchstaben (Punkt = leer), palette = {Buchstabe: "#hex"} */
+  function clean(pix, pal) {
+    const P = {}; Object.entries(pal || {}).forEach(([k, v]) => { if (/^[a-z]$/i.test(k) && /^#[0-9a-f]{6}$/i.test(String(v))) P[k] = v; });
+    let rows = (Array.isArray(pix) ? pix : []).map(r => String(r).replace(/\s/g, "")).filter(r => r.length).slice(0, 24);
+    const n = Math.max(8, Math.min(24, Math.max(rows.length, ...rows.map(r => r.length))));
+    rows = rows.map(r => (r + ".".repeat(n)).slice(0, n).split("").map(c => P[c] ? c : ".").join(""));
+    while (rows.length < n) rows.push(".".repeat(n));
+    return { pix: rows, pal: P, n };
+  }
+  function pixel(pix, pal) {
+    const c = clean(pix, pal); let r = "";
+    c.pix.forEach((row, y) => { let x = 0; while (x < c.n) { const ch = row[x]; if (ch === ".") { x++; continue; } let w = 1; while (row[x + w] === ch) w++; r += `<rect x="${x}" y="${y}" width="${w + .02}" height="1.02" fill="${c.pal[ch]}"/>`; x += w; } });
+    return `<svg viewBox="-1 -1 ${c.n + 2} ${c.n + 2}" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`;
+  }
+  /* Bild für ein Modul-Maskottchen (null = gLiTCh) */
+  function svg(m) {
+    if (!m || m.typ === "glitch") return null;
+    if (m.typ === "fenni") return fenni();
+    if (m.typ === "eigen" && m.pix) return pixel(m.pix, m.pal);
+    return null;
+  }
+  const nameOf = m => !m || m.typ === "glitch" ? "gLiTCh" : m.typ === "fenni" ? (m.name || "Fenni") : (String(m.name || "").trim().slice(0, 24) || "Mascotti");
+  return { fenni, pixel, clean, svg, nameOf };
+})();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
@@ -1302,10 +1464,11 @@ window.GLWall = window.GLWall || (function () {
   const KEY = "gle.draft.v1";
   const fresh = () => ({ typenV2: true, titel: "", fach: "nmg", hubThema: "", hubNeu: "", klasse: "6", minuten: "45", etappen: "4", rahmen: "auto", ideen: "", typen: TYPES.map(t => t[0]), material: [], links: "", belIdeen: "",
     diplome: [], outfits: [], emotes: [], zimmer: [], hintergruende: [], plan: null, inhalt: [], step: 1, opt: freshOpt() });
-  const freshOpt = () => ({ tipps: true, vorlesen: true, lexikon: true, pdf: true, gates: [], code: "" });
+  const freshOpt = () => ({ tipps: true, vorlesen: true, lexikon: true, pdf: true, gates: [], code: "", mascot: { typ: "glitch" } });
   let D = fresh();
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === "object") D = Object.assign(fresh(), s); } catch (e) { /* kein Speicher */ }
   D.opt = Object.assign(freshOpt(), D.opt || {});
+  if (!D.opt.mascot || !D.opt.mascot.typ) D.opt.mascot = { typ: "glitch" };
   if (!Array.isArray(D.opt.gates)) D.opt.gates = D.opt.freigabe === "selbst" ? ["selbst"] : D.opt.freigabe === "lp" ? ["lp"] : [];
   if (!D.typenV2) { D.typen = [...new Set([...D.typen, "mehrfach", "memory", "sortieren", "zeitmaschine", "raetsel", "schaetzen", "gestalten"])]; D.typenV2 = true; }
   let saveT = null;
@@ -1357,7 +1520,7 @@ window.GLWall = window.GLWall || (function () {
     $("#hubThema").onchange = e => { D.hubThema = e.target.value; $("#neuWrap").hidden = D.hubThema !== "__neu"; save(); };
     paintThemes();
     $("#typen").innerHTML = TYPES.map(([v, n]) => `<label class="chip"><input type="checkbox" value="${v}"${D.typen.includes(v) ? " checked" : ""}> ${esc(n)}</label>`).join("");
-    paintOpts();
+    paintOpts(); paintMascot();
     $$("#typen input").forEach(c => c.onchange = () => { D.typen = $$("#typen input:checked").map(x => x.value); if (!D.typen.length) { c.checked = true; D.typen = [c.value]; toast("Mindestens eine Aufgabenart muss gewählt sein."); } save(); });
   }
 
@@ -1381,6 +1544,43 @@ window.GLWall = window.GLWall || (function () {
     $("#frHint").textContent = (G.length > 1 ? `Nach jeder Etappe in dieser Reihenfolge: ${G.map(g => ({ selbst: "Selbsteinschätzung", praes: "Präsentation", lp: "LP-Code" })[g]).join(" → ")}. ` : G.length ? "" : "Wähle eine, zwei oder alle drei Freigaben. ") + (G.includes("lp") ? "Im Hub gilt der Freigabe-Code jeder Lehrperson der Klasse (deiner und die der weiteren Lehrpersonen). Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Hub geöffnet wird (leer = 1234)." : "");
     const c = $("#optCode"); c.value = O.code || ""; c.oninput = () => { O.code = c.value.replace(/\D/g, "").slice(0, 8); save(); };
     c.onchange = () => { c.value = O.code; if (D.step === 4) renderResult(); };
+  }
+
+  /* ---------- Maskottchen ---------- */
+  function paintMascot() {
+    const ms = D.opt.mascot, own = ms.pix ? GLMascot.pixel(ms.pix, ms.pal) : "";
+    const L = [["glitch", "gLiTCh", "Das Pixel-Maskottchen des Hubs, mit Outfit und Hautfarbe des Kindes.", G ? `<span class="glitch">${G.svg("happy", "#8B5CFF")}</span>` : ""],
+      ["fenni", "Fenni", "Der Wüstenfuchs aus dem Wüsten-Game.", GLMascot.fenni()],
+      ["eigen", ms.typ === "eigen" && ms.name ? ms.name : "Eigenes", own ? "Dein eigenes Maskottchen. Beschreibung ändern und neu generieren geht jederzeit." : "Beschreibe es, gLiTCh zeichnet es als Pixel-Figur.", own || '<span style="font-size:28px">✨</span>']];
+    $("#masOpts").innerHTML = L.map(([v, n, d, pic]) => `<button type="button" class="mas${ms.typ === v ? " on" : ""}" role="radio" aria-checked="${ms.typ === v}" data-mas="${v}"><span class="pic">${pic}</span><span><b>${esc(n)}</b><small>${esc(d)}</small></span></button>`).join("");
+    $$("[data-mas]").forEach(b => b.onclick = () => { ms.typ = b.dataset.mas; if (ms.typ === "fenni") ms.name = "Fenni"; save(); paintMascot(); if (D.step === 4) renderResult(); });
+    $("#masOwn").hidden = ms.typ !== "eigen";
+    const d = $("#masDesc"), n = $("#masName"); d.value = ms.desc || ""; n.value = ms.typ === "eigen" ? ms.name || "" : "";
+    d.oninput = () => { ms.desc = d.value; save(); }; n.oninput = () => { ms.name = n.value.trim().slice(0, 24); save(); };
+    n.onchange = () => { paintMascot(); if (D.step === 4) renderResult(); };
+    $("#masGen").disabled = !SAMPLE;
+    if (!SAMPLE) $("#masMsg").textContent = "Generieren geht nur, wenn der Editor in claude.ai geöffnet ist.";
+    $("#masGen").onclick = genMascot;
+  }
+  async function genMascot() {
+    const ms = D.opt.mascot, b = $("#masGen"); if (!SAMPLE) return;
+    if (!(ms.desc || "").trim()) { $("#masMsg").textContent = "Beschreibe zuerst, wie es aussehen soll."; $("#masDesc").focus(); return; }
+    const t = b.textContent; b.disabled = true; b.textContent = "gLiTCh zeichnet …"; $("#masMsg").textContent = "Das dauert etwa 20 Sekunden.";
+    const prompt = `Zeichne ein Pixel-Art-Maskottchen für ein Lernmodul einer Schweizer Primarschule (${stufe()}).
+Beschreibung der Lehrperson: ${ms.desc.trim()}
+${ms.name ? `Name: ${ms.name}` : "Erfinde einen kurzen, freundlichen Namen (1 Wort)."}
+
+Stil wie gLiTCh (ein Pixel-Monster) und Fenni (ein Pixel-Wüstenfuchs): niedlich, freundlich, grosse Augen mit weissem Glanzpunkt, kräftige Farben, dunkle Umrisslinie, frontal, Figur füllt das Raster gut aus und steht mittig.
+Raster: genau 20 Zeilen mit je genau 20 Zeichen. «.» = leer (durchsichtig). Jeder andere Buchstabe (a–h) ist eine Farbe aus der Palette. Höchstens 8 Farben, eine davon ist die Umrisslinie.
+Gib NUR JSON zurück: {"name":"…","palette":{"a":"#rrggbb", …},"pixel":["....................", … 20 Zeilen]}`;
+    try {
+      const r = await SAMPLE.json(prompt, { modelTier: "complex", cache: false });
+      const c = GLMascot.clean(r && r.pixel, r && r.palette);
+      if (!Object.keys(c.pal).length || c.pix.join("").replace(/\./g, "").length < 40) throw new Error("leer");
+      ms.typ = "eigen"; ms.pix = c.pix; ms.pal = c.pal; if (!ms.name && r.name) ms.name = String(r.name).trim().slice(0, 24);
+      save(); paintMascot(); if (D.step === 4) renderResult(); $("#masMsg").textContent = "Fertig! Gefällt es dir nicht? Beschreibung anpassen und nochmals generieren.";
+    } catch (e) { $("#masMsg").textContent = "Das hat nicht geklappt. " + (typeof errMsg === "function" ? errMsg(e) : "Versuch es nochmals."); }
+    b.disabled = false; b.textContent = t;
   }
 
   /* ---------- 2 Material ---------- */
@@ -1493,7 +1693,8 @@ window.GLWall = window.GLWall || (function () {
   const linkList = () => D.links.split("\n").map(l => l.trim()).filter(Boolean).map(l => { const p = l.split("|"); const url = (p.length > 1 ? p.slice(1).join("|") : p[0]).trim(); return { titel: p.length > 1 ? p[0].trim() : "", url }; }).filter(l => /^https?:\/\//i.test(l.url));
   function context() {
     const L = linkList();
-    return `Du bist gLiTCh, das freundliche Pixel-Maskottchen des «Glitchlab-Hub», einer Lernplattform einer Schweizer Primarschule. Du baust Lernmodule im Stil der gLiTCh-Lab-Module für NMG und Medien & Informatik: eine Rahmengeschichte, mehrere Etappen wie Missionen, gLiTCh spricht die Kinder in einer Sprechblase an, kurze Infotexte, abwechslungsreiche Aufgaben, Fachwörter im Lexikon, Diplome als Belohnung.
+    const MS = D.opt.mascot, MN = GLMascot.nameOf(MS), mNote = MS.typ === "glitch" ? "" : `\n\nWICHTIG: In diesem Modul spricht nicht gLiTCh, sondern das Maskottchen «${MN}»${MS.typ === "fenni" ? " (ein freundlicher Wüstenfuchs)" : MS.desc ? ` (${MS.desc.trim().slice(0, 200)})` : ""}. Überall, wo unten gLiTCh steht, schreibst du in den Texten «${MN}» und lässt ${MN} sprechen.`;
+    return `Du bist gLiTCh, das freundliche Pixel-Maskottchen des «Glitchlab-Hub», einer Lernplattform einer Schweizer Primarschule. Du baust Lernmodule im Stil der gLiTCh-Lab-Module für NMG und Medien & Informatik: eine Rahmengeschichte, mehrere Etappen wie Missionen, gLiTCh spricht die Kinder in einer Sprechblase an, kurze Infotexte, abwechslungsreiche Aufgaben, Fachwörter im Lexikon, Diplome als Belohnung.${mNote}
 
 MODUL
 - Thema: ${D.titel.trim() || "(noch kein Titel)"}
@@ -1716,7 +1917,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
         zimmer: D.zimmer.map(x => ({ id: x.id, name: x.name, platz: x.platz, emoji: x.emoji, freischalten: un(x) })),
         hintergruende: D.hintergruende.map(x => ({ id: x.id, name: x.name, emoji: x.emoji, wand: x.wand || [], boden: x.boden || [], freischalten: un(x) }))
       },
-      erstellt: "gLiTCh-Editor", maskottchen: "glitch"
+      erstellt: "gLiTCh-Editor", maskottchen: (D.opt.mascot || {}).typ || "glitch"
     };
   }
   function buildModule() {

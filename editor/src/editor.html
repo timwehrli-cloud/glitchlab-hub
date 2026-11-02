@@ -136,6 +136,12 @@ option,optgroup{background:var(--surface);color:var(--ink)}
 .seg button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .seg .ck{display:inline-grid;place-items:center;width:18px;height:18px;margin-right:6px;border-radius:5px;border:1.5px solid var(--muted);font-size:.75rem;vertical-align:-3px}
 .seg button.on .ck{background:var(--teal);border-color:var(--teal);color:#0B0618}
+.mas-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.mas{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface2)}
+.mas .pic{width:64px;height:64px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(#2A1466,#14062E)}.mas .pic svg{width:54px;height:54px}
+.mas .pic .glitch{width:54px;height:54px;display:block}.mas b{display:block}.mas small{color:var(--muted);font-size:.78rem;line-height:1.3}
+.mas.on{border-color:var(--teal);background:linear-gradient(135deg,rgba(46,230,214,.18),rgba(160,124,255,.14))}
+.mas:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 </style>
 
 <div class="wrap">
@@ -185,6 +191,15 @@ option,optgroup{background:var(--surface);color:var(--ink)}
       <div class="f"><span>Zwischen den Etappen</span><div class="seg" id="freigabe" role="group" aria-label="Freigabe zwischen den Etappen: keine oder eine bis drei kombinieren"></div></div>
       <p class="hint" id="frHint"></p>
       <label class="f" id="codeWrap"><span>Code zum Testen ohne Hub</span><input class="in" id="optCode" inputmode="numeric" maxlength="8" placeholder="1234" style="max-width:180px"></label>
+    </div>
+    <div class="card" id="masCard">
+      <div class="card-h"><div><p class="eyebrow">Maskottchen</p><h2>Wer führt durchs Modul?</h2></div><p>Das Maskottchen erklärt, gibt Tipps und lobt. gLiTCh trägt im Hub das Outfit und die Hautfarbe des Kindes. Mit einem anderen Maskottchen erscheint gLiTCh nicht zusätzlich in der Ecke.</p></div>
+      <div class="mas-opts" id="masOpts" role="radiogroup" aria-label="Maskottchen"></div>
+      <div id="masOwn" hidden>
+        <label class="f"><span>Beschreibe dein Maskottchen</span><textarea class="in" id="masDesc" style="min-height:64px" maxlength="400" placeholder="z. B. Eine kleine Lava-Echse mit Helm, orange und rot, frech und neugierig"></textarea></label>
+        <div class="row" style="align-items:flex-end;gap:10px;flex-wrap:wrap"><label class="f" style="margin:0"><span>Name</span><input class="in" id="masName" maxlength="24" placeholder="z. B. Lavi" style="max-width:200px"></label>
+          <button type="button" class="btn teal" id="masGen">✨ Maskottchen generieren</button><span class="hint" id="masMsg"></span></div>
+      </div>
     </div>
     <div class="foot"><span></span><button type="button" class="btn primary" data-goto="2">Weiter zum Material →</button></div>
   </section>

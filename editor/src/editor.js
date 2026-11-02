@@ -26,10 +26,11 @@
   const KEY = "gle.draft.v1";
   const fresh = () => ({ typenV2: true, titel: "", fach: "nmg", hubThema: "", hubNeu: "", klasse: "6", minuten: "45", etappen: "4", rahmen: "auto", ideen: "", typen: TYPES.map(t => t[0]), material: [], links: "", belIdeen: "",
     diplome: [], outfits: [], emotes: [], zimmer: [], hintergruende: [], plan: null, inhalt: [], step: 1, opt: freshOpt() });
-  const freshOpt = () => ({ tipps: true, vorlesen: true, lexikon: true, pdf: true, gates: [], code: "" });
+  const freshOpt = () => ({ tipps: true, vorlesen: true, lexikon: true, pdf: true, gates: [], code: "", mascot: { typ: "glitch" } });
   let D = fresh();
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === "object") D = Object.assign(fresh(), s); } catch (e) { /* kein Speicher */ }
   D.opt = Object.assign(freshOpt(), D.opt || {});
+  if (!D.opt.mascot || !D.opt.mascot.typ) D.opt.mascot = { typ: "glitch" };
   if (!Array.isArray(D.opt.gates)) D.opt.gates = D.opt.freigabe === "selbst" ? ["selbst"] : D.opt.freigabe === "lp" ? ["lp"] : [];
   if (!D.typenV2) { D.typen = [...new Set([...D.typen, "mehrfach", "memory", "sortieren", "zeitmaschine", "raetsel", "schaetzen", "gestalten"])]; D.typenV2 = true; }
   let saveT = null;
@@ -81,7 +82,7 @@
     $("#hubThema").onchange = e => { D.hubThema = e.target.value; $("#neuWrap").hidden = D.hubThema !== "__neu"; save(); };
     paintThemes();
     $("#typen").innerHTML = TYPES.map(([v, n]) => `<label class="chip"><input type="checkbox" value="${v}"${D.typen.includes(v) ? " checked" : ""}> ${esc(n)}</label>`).join("");
-    paintOpts();
+    paintOpts(); paintMascot();
     $$("#typen input").forEach(c => c.onchange = () => { D.typen = $$("#typen input:checked").map(x => x.value); if (!D.typen.length) { c.checked = true; D.typen = [c.value]; toast("Mindestens eine Aufgabenart muss gewählt sein."); } save(); });
   }
 
@@ -105,6 +106,43 @@
     $("#frHint").textContent = (G.length > 1 ? `Nach jeder Etappe in dieser Reihenfolge: ${G.map(g => ({ selbst: "Selbsteinschätzung", praes: "Präsentation", lp: "LP-Code" })[g]).join(" → ")}. ` : G.length ? "" : "Wähle eine, zwei oder alle drei Freigaben. ") + (G.includes("lp") ? "Im Hub gilt der Freigabe-Code jeder Lehrperson der Klasse (deiner und die der weiteren Lehrpersonen). Der Code hier gilt nur in der Vorschau und wenn das Modul ohne Hub geöffnet wird (leer = 1234)." : "");
     const c = $("#optCode"); c.value = O.code || ""; c.oninput = () => { O.code = c.value.replace(/\D/g, "").slice(0, 8); save(); };
     c.onchange = () => { c.value = O.code; if (D.step === 4) renderResult(); };
+  }
+
+  /* ---------- Maskottchen ---------- */
+  function paintMascot() {
+    const ms = D.opt.mascot, own = ms.pix ? GLMascot.pixel(ms.pix, ms.pal) : "";
+    const L = [["glitch", "gLiTCh", "Das Pixel-Maskottchen des Hubs, mit Outfit und Hautfarbe des Kindes.", G ? `<span class="glitch">${G.svg("happy", "#8B5CFF")}</span>` : ""],
+      ["fenni", "Fenni", "Der Wüstenfuchs aus dem Wüsten-Game.", GLMascot.fenni()],
+      ["eigen", ms.typ === "eigen" && ms.name ? ms.name : "Eigenes", own ? "Dein eigenes Maskottchen. Beschreibung ändern und neu generieren geht jederzeit." : "Beschreibe es, gLiTCh zeichnet es als Pixel-Figur.", own || '<span style="font-size:28px">✨</span>']];
+    $("#masOpts").innerHTML = L.map(([v, n, d, pic]) => `<button type="button" class="mas${ms.typ === v ? " on" : ""}" role="radio" aria-checked="${ms.typ === v}" data-mas="${v}"><span class="pic">${pic}</span><span><b>${esc(n)}</b><small>${esc(d)}</small></span></button>`).join("");
+    $$("[data-mas]").forEach(b => b.onclick = () => { ms.typ = b.dataset.mas; if (ms.typ === "fenni") ms.name = "Fenni"; save(); paintMascot(); if (D.step === 4) renderResult(); });
+    $("#masOwn").hidden = ms.typ !== "eigen";
+    const d = $("#masDesc"), n = $("#masName"); d.value = ms.desc || ""; n.value = ms.typ === "eigen" ? ms.name || "" : "";
+    d.oninput = () => { ms.desc = d.value; save(); }; n.oninput = () => { ms.name = n.value.trim().slice(0, 24); save(); };
+    n.onchange = () => { paintMascot(); if (D.step === 4) renderResult(); };
+    $("#masGen").disabled = !SAMPLE;
+    if (!SAMPLE) $("#masMsg").textContent = "Generieren geht nur, wenn der Editor in claude.ai geöffnet ist.";
+    $("#masGen").onclick = genMascot;
+  }
+  async function genMascot() {
+    const ms = D.opt.mascot, b = $("#masGen"); if (!SAMPLE) return;
+    if (!(ms.desc || "").trim()) { $("#masMsg").textContent = "Beschreibe zuerst, wie es aussehen soll."; $("#masDesc").focus(); return; }
+    const t = b.textContent; b.disabled = true; b.textContent = "gLiTCh zeichnet …"; $("#masMsg").textContent = "Das dauert etwa 20 Sekunden.";
+    const prompt = `Zeichne ein Pixel-Art-Maskottchen für ein Lernmodul einer Schweizer Primarschule (${stufe()}).
+Beschreibung der Lehrperson: ${ms.desc.trim()}
+${ms.name ? `Name: ${ms.name}` : "Erfinde einen kurzen, freundlichen Namen (1 Wort)."}
+
+Stil wie gLiTCh (ein Pixel-Monster) und Fenni (ein Pixel-Wüstenfuchs): niedlich, freundlich, grosse Augen mit weissem Glanzpunkt, kräftige Farben, dunkle Umrisslinie, frontal, Figur füllt das Raster gut aus und steht mittig.
+Raster: genau 20 Zeilen mit je genau 20 Zeichen. «.» = leer (durchsichtig). Jeder andere Buchstabe (a–h) ist eine Farbe aus der Palette. Höchstens 8 Farben, eine davon ist die Umrisslinie.
+Gib NUR JSON zurück: {"name":"…","palette":{"a":"#rrggbb", …},"pixel":["....................", … 20 Zeilen]}`;
+    try {
+      const r = await SAMPLE.json(prompt, { modelTier: "complex", cache: false });
+      const c = GLMascot.clean(r && r.pixel, r && r.palette);
+      if (!Object.keys(c.pal).length || c.pix.join("").replace(/\./g, "").length < 40) throw new Error("leer");
+      ms.typ = "eigen"; ms.pix = c.pix; ms.pal = c.pal; if (!ms.name && r.name) ms.name = String(r.name).trim().slice(0, 24);
+      save(); paintMascot(); if (D.step === 4) renderResult(); $("#masMsg").textContent = "Fertig! Gefällt es dir nicht? Beschreibung anpassen und nochmals generieren.";
+    } catch (e) { $("#masMsg").textContent = "Das hat nicht geklappt. " + (typeof errMsg === "function" ? errMsg(e) : "Versuch es nochmals."); }
+    b.disabled = false; b.textContent = t;
   }
 
   /* ---------- 2 Material ---------- */
@@ -217,7 +255,8 @@
   const linkList = () => D.links.split("\n").map(l => l.trim()).filter(Boolean).map(l => { const p = l.split("|"); const url = (p.length > 1 ? p.slice(1).join("|") : p[0]).trim(); return { titel: p.length > 1 ? p[0].trim() : "", url }; }).filter(l => /^https?:\/\//i.test(l.url));
   function context() {
     const L = linkList();
-    return `Du bist gLiTCh, das freundliche Pixel-Maskottchen des «Glitchlab-Hub», einer Lernplattform einer Schweizer Primarschule. Du baust Lernmodule im Stil der gLiTCh-Lab-Module für NMG und Medien & Informatik: eine Rahmengeschichte, mehrere Etappen wie Missionen, gLiTCh spricht die Kinder in einer Sprechblase an, kurze Infotexte, abwechslungsreiche Aufgaben, Fachwörter im Lexikon, Diplome als Belohnung.
+    const MS = D.opt.mascot, MN = GLMascot.nameOf(MS), mNote = MS.typ === "glitch" ? "" : `\n\nWICHTIG: In diesem Modul spricht nicht gLiTCh, sondern das Maskottchen «${MN}»${MS.typ === "fenni" ? " (ein freundlicher Wüstenfuchs)" : MS.desc ? ` (${MS.desc.trim().slice(0, 200)})` : ""}. Überall, wo unten gLiTCh steht, schreibst du in den Texten «${MN}» und lässt ${MN} sprechen.`;
+    return `Du bist gLiTCh, das freundliche Pixel-Maskottchen des «Glitchlab-Hub», einer Lernplattform einer Schweizer Primarschule. Du baust Lernmodule im Stil der gLiTCh-Lab-Module für NMG und Medien & Informatik: eine Rahmengeschichte, mehrere Etappen wie Missionen, gLiTCh spricht die Kinder in einer Sprechblase an, kurze Infotexte, abwechslungsreiche Aufgaben, Fachwörter im Lexikon, Diplome als Belohnung.${mNote}
 
 MODUL
 - Thema: ${D.titel.trim() || "(noch kein Titel)"}
@@ -440,7 +479,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
         zimmer: D.zimmer.map(x => ({ id: x.id, name: x.name, platz: x.platz, emoji: x.emoji, freischalten: un(x) })),
         hintergruende: D.hintergruende.map(x => ({ id: x.id, name: x.name, emoji: x.emoji, wand: x.wand || [], boden: x.boden || [], freischalten: un(x) }))
       },
-      erstellt: "gLiTCh-Editor", maskottchen: "glitch"
+      erstellt: "gLiTCh-Editor", maskottchen: (D.opt.mascot || {}).typ || "glitch"
     };
   }
   function buildModule() {

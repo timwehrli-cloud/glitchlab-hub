@@ -11,7 +11,12 @@
   const slug = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, " ").trim();
   /* gLiTCh so, wie das Kind ihn im Hub angezogen hat (ohne Hub: ohne Outfit) */
-  const gsvg = mood => { try { const x = HUB && HUB.glitch && HUB.glitch(mood); if (x) return x; } catch (e) { /* ohne Hub */ } return G ? G.svg(mood, "#8B5CFF") : ""; };
+  /* Maskottchen aus dem Editor: gLiTCh (Standard), Fenni oder ein eigenes */
+  const MAS = (M.opt && M.opt.mascot) || { typ: "glitch" }, NAME = window.GLMascot ? GLMascot.nameOf(MAS) : "gLiTCh";
+  const MSVG = window.GLMascot ? GLMascot.svg(MAS) : null;
+  const nm = t => MSVG ? String(t ?? "").replace(/gLiTChs/g, NAME + "s").replace(/gLiTCh/g, NAME) : t;
+  if (MSVG) document.documentElement.classList.add("own-mascot");
+  const gsvg = mood => { if (MSVG) return MSVG; try { const x = HUB && HUB.glitch && HUB.glitch(mood); if (x) return x; } catch (e) { /* ohne Hub */ } return G ? G.svg(mood, "#8B5CFF") : ""; };
   const gl = (mood, cls = "") => `<span class="glitch ${cls}">${gsvg(mood)}</span>`;
   /* Schalter aus dem Editor: was das Modul anbietet und wie es zwischen den Etappen weitergeht */
   const O = Object.assign({ tipps: true, vorlesen: true, lexikon: true, pdf: true, freigabe: "keine", code: "" }, M.opt || {});
@@ -79,7 +84,7 @@
 
   /* ---------- Text mit Fachwörtern (antippen = Erklärung) ---------- */
   function rich(txt) {
-    const raw = String(txt ?? ""), taken = [];
+    const raw = String(nm(txt) ?? ""), taken = [];
     LEX.slice().sort((a, b) => b.wort.length - a.wort.length).forEach(w => {
       const re = new RegExp("(^|[^\\wäöüÄÖÜß])(" + w.wort.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")(?=[^\\wäöüÄÖÜß]|$)", "i");
       const m = re.exec(raw); if (!m) return;
@@ -117,7 +122,7 @@
   let view = { b: 0 }, sayT = null;
   function say(text, mood = "happy", ms) {
     const t = $("#sayT"), g = $("#bigG"); if (!t) return;
-    t.innerHTML = rich(text).replace(/^<p>|<\/p>$/g, ""); if (g) g.innerHTML = gsvg(mood);
+    t.innerHTML = rich(nm(text)).replace(/^<p>|<\/p>$/g, ""); if (g) g.innerHTML = gsvg(mood);
     $$(".lex", t).forEach(b => b.onclick = () => showLex(b.dataset.lex));
     const bub = $("#say"); if (bub) { bub.classList.remove("pop"); void bub.offsetWidth; bub.classList.add("pop"); }
     clearTimeout(sayT); if (ms) sayT = setTimeout(() => { const x = B[view.b]; say(x ? `Baustein ${view.b + 1}: ${short(ET[x.e].aufgaben[x.t] || x.erkl[0] || {})}. ${TIPS_START}` : "", "normal"); }, ms);
@@ -128,7 +133,7 @@
         <button type="button" class="menu-btn" id="menuBtn" aria-haspopup="true" aria-expanded="false">☰ Menü</button>
         <div class="logo"><span class="logo-g">gLiTCh</span><span class="logo-l">-Lab</span><span class="logo-chip">${esc(M.fachkurz || M.fachname || "Modul")}</span>
           <small>${esc(M.emoji || "")} ${esc(M.titel || "")}${HUB ? "" : ' · <b class="test">Testmodus</b>'}</small></div>
-        <div class="talk"><div class="say-bub" id="say" aria-live="polite"><b>gLiTCh</b><p id="sayT"></p></div><span class="glitch big" id="bigG">${gsvg("happy")}</span></div>
+        <div class="talk"><div class="say-bub" id="say" aria-live="polite"><b>${esc(NAME)}</b><p id="sayT"></p></div><span class="glitch big" id="bigG">${gsvg("happy")}</span></div>
       </header>
       <div class="menu" id="menu" hidden>
         ${LEX.length ? `<button type="button" data-go="lex">📖 Lexikon <small>${LEX.length} Fachwörter</small></button>` : ""}
@@ -160,12 +165,12 @@
     const st = total(), mx = totalMax(), dn = B.filter((_, i) => bDone(i)).length;
     sd.innerHTML = `<div class="side-card lvl"><div class="ring" style="--p:${mx ? Math.round(st / mx * 100) : 0}"><span>★</span></div><div><small>Sterne in diesem Modul</small><b>${st} von ${mx}</b>${who() ? `<small>Team: ${esc(who())}</small>` : ""}</div></div>
       ${DIP.length ? `<div class="side-card"><small class="cap">Diplome: ${esc(M.titel || "")}</small><div class="hexes">${DIP.map(d => `<button type="button" class="hex${S.dips.includes(d.id) ? " got" : ""}" data-dip="${esc(d.id)}" title="${esc(d.name)}">${S.dips.includes(d.id) ? wall(d) : "🔒"}</button>`).join("")}</div>
-        <p class="side-note">Tippt ein Diplom an, dann verrät gLiTCh, wie ihr es bekommt.</p></div>` : ""}
+        <p class="side-note">Tippt ein Diplom an, dann verrät ${esc(NAME)}, wie ihr es bekommt.</p></div>` : ""}
       <div class="side-card"><div class="prog-h"><b>Fortschritt</b><span>${dn} / ${B.length}</span></div><div class="pbar"><i style="width:${B.length ? Math.round(dn / B.length * 100) : 0}%"></i></div>
         ${ET.map((E, e) => { const se = S.selbst[e] && SELBST.find(x => x[0] === S.selbst[e].w);
           return `<div class="et-row${etDone(e) ? " ok" : ""}${etUnlocked(e) ? "" : " lock"}"><span>${etUnlocked(e) ? esc(E.emoji || "⭐") : "🔒"}</span><span>${esc(E.titel)}</span><small>${se ? se[1] + " " : ""}${etDone(e) ? (!gateNeeded(e) || gateDone(e) ? "✓" : "✓ · " + ({ selbst: "Einschätzung", praes: "Präsentation", lp: "Freigabe" })[missing(e)[0]] + " fehlt") : `★ ${etStars(e)}/${etMax(e)}`}</small></div>`; }).join("")}
         ${GATES.length ? `<p class="side-note">Nach jeder Etappe: ${andList(GATES.map(g => ({ selbst: "🪞 Selbsteinschätzung", praes: "🎤 Präsentation", lp: "🔐 Freigabe mit dem Code der Lehrperson" })[g]))}.</p>` : ""}</div>
-      ${LEX.length ? `<div class="side-card"><div class="prog-h"><b>📖 Fachwörter</b><span>${(S.words || []).length} / ${LEX.length}</span></div><p class="side-note">Wörter mit gepunkteter Linie antippen: gLiTCh erklärt sie.</p><button type="button" class="btn small" data-golex>Lexikon öffnen</button></div>` : ""}`;
+      ${LEX.length ? `<div class="side-card"><div class="prog-h"><b>📖 Fachwörter</b><span>${(S.words || []).length} / ${LEX.length}</span></div><p class="side-note">Wörter mit gepunkteter Linie antippen: ${esc(NAME)} erklärt sie.</p><button type="button" class="btn small" data-golex>Lexikon öffnen</button></div>` : ""}`;
     $$("[data-dip]", sd).forEach(b => b.onclick = () => { const d = DIP.find(x => x.id === b.dataset.dip); say(S.dips.includes(d.id) ? `${d.emoji || "🏅"} **${d.name}**: geschafft! ${d.beschreibung || ""}` : `${d.emoji || "🏅"} **${d.name}**: ${d.beschreibung || "Löst die Bausteine, dann bekommt ihr es."}`, S.dips.includes(d.id) ? "cool" : "wink", 7000); });
     const gl2 = $("[data-golex]", sd); if (gl2) gl2.onclick = () => showLex();
   }
@@ -188,7 +193,7 @@
     const pass = () => { S.gs[e] = Object.assign({}, S.gs[e], { [step]: new Date().toISOString() }); save(); paintTabs(); paintSide(); if (gateDone(e)) finish(); else setTimeout(() => gateDlg(e, then), 350); };
     if (step === "praes") return praesDlg(e, nr, pass);
     if (step === "selbst") {
-      const ov = dlg(`<h2>🪞 Selbsteinschätzung${nr}</h2><div class="hero">${gl("wink")}<div class="bubble"><b>gLiTCh</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Wie gut kannst du das jetzt?</p></div></div></div>
+      const ov = dlg(`<h2>🪞 Selbsteinschätzung${nr}</h2><div class="hero">${gl("wink")}<div class="bubble"><b>${esc(NAME)}</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Wie gut kannst du das jetzt?</p></div></div></div>
         <div class="selbst" role="radiogroup" aria-label="Selbsteinschätzung">${SELBST.map(([v, ic, n]) => `<button type="button" class="sb" data-sb="${v}" role="radio" aria-checked="false"><span>${ic}</span>${esc(n)}</button>`).join("")}</div>
         <label class="f"><span>Das nehme ich mit (ein Satz, freiwillig)</span><textarea class="in" id="sbTxt" style="min-height:60px" placeholder="z. B. Ich weiss jetzt, dass …"></textarea></label>`);
       const ok = $("[data-x]", ov); ok.textContent = "Speichern und weiter →"; ok.disabled = true;
@@ -199,7 +204,7 @@
       return;
     }
     let code = "";
-    const ov = dlg(`<h2>🔐 Freigabe durch die Lehrperson${nr}</h2><div class="hero">${gl("cool")}<div class="bubble"><b>gLiTCh</b><div><p>${GATES.includes("praes") ? `Präsentation von Etappe ${e + 1} geschafft! Jetzt gibt eure Lehrperson mit ihrem Code ${e < ET.length - 1 ? "die nächste Etappe" : "das Ziel"} frei.` : `Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Zeigt eure Arbeit eurer Lehrperson. Sie gibt mit ihrem Code die nächste Etappe frei.`}</p></div></div></div>
+    const ov = dlg(`<h2>🔐 Freigabe durch die Lehrperson${nr}</h2><div class="hero">${gl("cool")}<div class="bubble"><b>${esc(NAME)}</b><div><p>${GATES.includes("praes") ? `Präsentation von Etappe ${e + 1} geschafft! Jetzt gibt eure Lehrperson mit ihrem Code ${e < ET.length - 1 ? "die nächste Etappe" : "das Ziel"} frei.` : `Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Zeigt eure Arbeit eurer Lehrperson. Sie gibt mit ihrem Code die nächste Etappe frei.`}</p></div></div></div>
       <div class="pin"><div class="pin-dots" id="pinD" aria-live="polite"></div><div class="pin-pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button type="button" data-pn="${n}">${n}</button>`).join("")}<button type="button" data-pn="del" aria-label="Löschen">⌫</button><button type="button" data-pn="0">0</button><button type="button" class="go" data-pn="ok">OK</button></div><p class="err" id="pinE" role="alert"></p></div>`);
     $("[data-x]", ov).textContent = "Später";
     const paint = () => { $("#pinD", ov).textContent = code ? "●".repeat(code.length) : "Code eingeben"; };
@@ -240,7 +245,7 @@
     try { const u = new SpeechSynthesisUtterance(String(text).replace(/\*\*/g, "")); u.lang = "de-CH"; u.rate = .95; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { say("Vorlesen geht auf diesem Gerät leider nicht.", "sad", 4000); }
   }
   function erklHTML(list, cls = "") {
-    return list.map((a, n) => `<div class="erkl ${cls}"><div class="erkl-h">${gl("normal", "mini")}<b>gLiTCh erklärt</b>${a.titel ? `<span>· ${esc(a.titel)}</span>` : ""}${O.vorlesen ? `<button type="button" class="btn small" data-read="${n}">🔊 Vorlesen</button>` : ""}</div><div class="txt">${rich(a.text || "")}</div></div>`).join("");
+    return list.map((a, n) => `<div class="erkl ${cls}"><div class="erkl-h">${gl("normal", "mini")}<b>${esc(NAME)} erklärt</b>${a.titel ? `<span>· ${esc(a.titel)}</span>` : ""}${O.vorlesen ? `<button type="button" class="btn small" data-read="${n}">🔊 Vorlesen</button>` : ""}</div><div class="txt">${rich(a.text || "")}</div></div>`).join("");
   }
   function stage() {
     const sg = $("#stage");
@@ -365,7 +370,7 @@
         </div><div class="poster" id="gePv"></div></div><p class="hintline" id="geInfo"></p><button type="button" class="btn primary" data-check>Fertig gestaltet</button>`;
     }
     if (a.typ === "schreiben") body = `<h3>${rich(a.auftrag).replace(/^<p>|<\/p>$/g, "")}</h3><textarea class="in" id="wr" placeholder="Schreibe hier …">${esc(st.v || "")}</textarea><p style="color:var(--muted);margin:6px 0" id="wc"></p><button type="button" class="btn primary" data-check>Abgeben</button>`;
-    $("#task").innerHTML = `<div class="task"><div class="task-h"><span class="kind">${KIND[a.typ] || "Aufgabe"}${stars}</span>${O.tipps ? `<button type="button" class="tipbtn" data-tip>💡 Tipp von gLiTCh</button>` : ""}</div>${body}</div>
+    $("#task").innerHTML = `<div class="task"><div class="task-h"><span class="kind">${KIND[a.typ] || "Aufgabe"}${stars}</span>${O.tipps ? `<button type="button" class="tipbtn" data-tip>💡 Tipp von ${esc(NAME)}</button>` : ""}</div>${body}</div>
       <div class="nav"><button type="button" class="btn" data-prev ${view.b ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${last ? "Zum Ziel 🏁" : "Weiter →"}</button></div>`;
     if ($("[data-tip]")) $("[data-tip]").onclick = () => say(a.tipp || TIPS[a.typ] || "Lies nochmals in «gLiTCh erklärt» nach!", "wink", 10000);
     $$("#task .lex").forEach(b => b.onclick = () => showLex(b.dataset.lex));
@@ -500,7 +505,7 @@
     document.addEventListener("keydown", function f(ev) { if (ev.key === "Escape") { close(); document.removeEventListener("keydown", f); } });
     setTimeout(() => $("[data-x]", ov).focus(), 20); return ov;
   }
-  function showMsg(mood, text, btn, then) { const ov = dlg(`<div class="hero">${gl(mood)}<div class="bubble"><b>gLiTCh</b><div>${rich(text)}</div></div></div>`, then); $("[data-x]", ov).textContent = btn; }
+  function showMsg(mood, text, btn, then) { const ov = dlg(`<div class="hero">${gl(mood)}<div class="bubble"><b>${esc(NAME)}</b><div>${rich(text)}</div></div></div>`, then); $("[data-x]", ov).textContent = btn; }
   function showLex(word) {
     if (!S.lex) { S.lex = true; save(); checkDips(); }
     if (word) { S.words = [...new Set([...(S.words || []), word])]; save(); paintSide(); }
@@ -510,7 +515,7 @@
     if (word) { const w = LEX.find(x => x.wort === word); if (w) { $("#ll", ov).insertAdjacentHTML("beforebegin", `<div class="bubble" style="margin-bottom:12px"><b>${esc(w.wort)}</b><p>${esc(w.erklaerung)}</p></div>`); } }
   }
   function showDips() { dlg(`<h2>🏅 Diplome</h2><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e wall" aria-hidden="true">${wall(d)}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>`); }
-  function showDip(d) { confetti(40); setTimeout(() => { const h = document.querySelector(".ov .hero"); if (h) h.insertAdjacentHTML("afterend", `<div class="dip-new">${wall(d)}</div>`); }, 0); showMsg("cool", `🏅 **Neues Diplom: ${d.name}!**\n\n${d.beschreibung || ""}${HUB ? "\n\nSchaut in gLiTChs Zimmer: Vielleicht gibt es dort etwas Neues." : ""}`, "Juhui!"); }
+  function showDip(d) { confetti(40); setTimeout(() => { const h = document.querySelector(".ov .hero"); if (h) h.insertAdjacentHTML("afterend", `<div class="dip-new">${wall(d)}</div>`); }, 0); showMsg("cool", `🏅 **Neues Diplom: ${d.name}!**\n\n${d.beschreibung || ""}${HUB ? "\n\nSchaut im Hub in eurem Zimmer: Vielleicht gibt es dort etwas Neues." : ""}`, "Juhui!"); }
   function showLinks() { dlg(`<h2>🔗 Links</h2><ul class="links">${(M.links || []).map(l => `<li><a href="${esc(/^https?:\/\//i.test(l.url) ? l.url : "#")}" target="_blank" rel="noopener">${esc(l.titel || l.url)}</a>${l.titel ? `<br><small>${esc(l.url)}</small>` : ""}</li>`).join("")}</ul>`); }
   function confetti(n = 18) {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
