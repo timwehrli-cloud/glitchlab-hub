@@ -515,8 +515,8 @@
       ${tag ? `<span class="mod-where">${esc(tag)}</span>` : ""}${lab ? `<span class="mod-tag">gLiTCh-Lab · Teamarbeit</span>` : ""}${lpStat(m) === "fertig" ? `<span class="mod-stat done">✓ Abgeschlossen</span>` : lpStat(m) === "arbeit" ? `<span class="mod-stat">In Bearbeitung</span>` : ""}
       <h3>${esc(m.title)}</h3><p>${esc(open || m.soon ? (m.teaser || "") : lockTxt(m))}</p>
       ${lab || m.custom || m.kind === "frame" ? "" : `<div class="acts">${m.activities.map(x => { const p = progOf(m.id, x.id); return `<span class="act${p && p.stars > 0 ? " done" : ""}">${esc(x.title)}</span>`; }).join("")}</div>`}
-      <div class="row"><span>${m.minutes ? `ca. ${m.minutes} Min.` : ""}</span>${m.alias ? `<span class="stars" title="Sterne zählen zusammen mit Teil 1">★ <b style="color:var(--ink)">${modStars(H.modules.find(x => x.id === m.alias) || m)}</b></span>` : H.openEnded(m) ? `<span class="stars">★ <b style="color:var(--ink)">${got}</b></span>` : starRow(got, max)}</div>
-      ${H.openEnded(m) || m.alias ? "" : `<span class="bar" style="--c:${a.c}"><i style="width:${max ? Math.round(got / max * 100) : 0}%"></i></span>`}
+      <div class="row"><span>${m.minutes ? `ca. ${m.minutes} Min.` : ""}</span>${m.noStars ? `<span class="hint" style="margin:0">Zum Ausprobieren · ohne Sterne</span>` : m.alias ? `<span class="stars" title="Sterne zählen zusammen mit Teil 1">★ <b style="color:var(--ink)">${modStars(H.modules.find(x => x.id === m.alias) || m)}</b></span>` : H.openEnded(m) ? `<span class="stars">★ <b style="color:var(--ink)">${got}</b></span>` : starRow(got, max)}</div>
+      ${H.openEnded(m) || m.alias || m.noStars ? "" : `<span class="bar" style="--c:${a.c}"><i style="width:${max ? Math.round(got / max * 100) : 0}%"></i></span>`}
     </button>`;
   }
 
@@ -747,7 +747,7 @@
     if (m) stop = await workPrepare(lab);
     if (S.view.name !== (m ? "module" : "room")) { if (stop) stop(); return; }
     const fr = document.createElement("iframe");
-    fr.className = "labframe"; fr.title = m ? m.title : "gLiTChs Zimmer";
+    fr.className = "labframe"; fr.title = m ? m.title : "gLiTChs Zimmer"; fr.allow = "fullscreen";
     if (upHtml != null) fr.srcdoc = H.uploadDoc(upHtml, m, workKey(lab), S.me.student.first_name, S.team.map(t => t.student.first_name));
     else { const qv = window.GL_V ? "?v=" + window.GL_V : ""; fr.src = m && m.src ? m.src + qv : "lab/index.html" + qv + "#" + ((m && m.hash) || lab); }
     if (m && m.frameBg) fr.style.background = m.frameBg;
@@ -892,8 +892,8 @@
       ${accessPanelHTML(c)}
       ${kidModsPanelHTML()}
       <section class="panel"><h2>Fortschritt pro Modul</h2>
-        ${H.modules.length && LP.kids.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Kind</th>${H.modules.map(m => `<th class="num" title="${esc(m.title)}">${esc(m.title)}</th>`).join("")}</tr></thead><tbody>
-          ${LP.kids.map(k => `<tr><td class="kid">${esc(k.first_name)}</td>${H.modules.map(m => {
+        ${H.modules.length && LP.kids.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Kind</th>${H.modules.filter(m => !m.noStars).map(m => `<th class="num" title="${esc(m.title)}">${esc(m.title)}</th>`).join("")}</tr></thead><tbody>
+          ${LP.kids.map(k => `<tr><td class="kid">${esc(k.first_name)}</td>${H.modules.filter(m => !m.noStars).map(m => {
             const got = kidModStars(LP.prog, k.id, m);
             const team = [...new Set(LP.prog.filter(p => p.student_id === k.id && p.module_id === m.id).flatMap(p => p.team || []))];
             return `<td class="num" title="${team.length ? "Mit: " + esc(team.join(", ")) : ""}">${H.openEnded(m) ? "★ " + got : got + " / " + H.maxStars(m)}${team.length ? " 👥" : ""}</td>`;
@@ -1072,7 +1072,7 @@
       <div class="km-all row"><span class="hint" style="margin:0">Alles auf einmal für ${ALL ? "die ganze Klasse" : esc(k.first_name)}:</span><button type="button" class="btn small" data-kall="fertig">Alle Module abschliessen</button><button type="button" class="btn small" data-kall="">Alle automatisch</button></div>
       <div class="acc">${subjects.map(sj => `<div class="acc-s"><h3 style="--c:${sj.color}"><span>${esc(sj.short)}</span>${esc(sj.name)}</h3>
         ${H.themes.filter(t => t.subject === sj.id && H.modules.some(m => m.theme === t.id && !m.soon && !m.lpOnly)).map(t => `<div class="acc-t"><small>${esc(t.title)}</small>
-          ${H.modules.filter(m => m.theme === t.id && !m.soon && !m.lpOnly && !m.alias).map(row).join("")}</div>`).join("")}</div>`).join("")}</div></section>`;
+          ${H.modules.filter(m => m.theme === t.id && !m.soon && !m.lpOnly && !m.alias && !m.noStars).map(row).join("")}</div>`).join("")}</div>`).join("")}</div></section>`;
   }
   function bindKidModsPanel() {
     const keep = async fn => { const y = window.scrollY; await fn(); await render(); window.scrollTo(0, y); };

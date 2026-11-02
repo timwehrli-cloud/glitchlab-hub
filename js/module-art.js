@@ -119,6 +119,15 @@ const MOD_ART = {
     <g class="ma-twinkle">${r(12, 18, 2, 2, "#FFC21A")}${r(24, 30, 2, 2, "#FF8A1F")}${r(108, 44, 2, 2, "#FFC21A")}</g>
     ${MINI_G(8, 38, 1)}`);
 
+  /* ---- neu: Web-App-Galerie (sechs App-Kacheln, eine leuchtet auf) ---- */
+  const galerie = svg(`
+    ${r(0, 0, 120, 60, "#FFF8EE")}
+    ${[["#1E88C7", 30, 10], ["#D3001A", 52, 10], ["#14836B", 74, 10], ["#5A3BD6", 30, 32], ["#E0498C", 52, 32], ["#7A5CC9", 74, 32]].map(([c, x, y], k) =>
+      `<g>${r(x, y, 18, 18, c)}${r(x + 2, y + 2, 14, 9, "#FFFFFF")}${r(x + 4, y + 13, 10, 2, "#FFFFFF")}${r(x + 6, y + 4, 6, 4, c)}</g>`).join("")}
+    <g class="ma-pop p2"><rect x="50" y="8" width="22" height="22" fill="none" stroke="#FFC21A" stroke-width="2"/></g>
+    <g class="ma-twinkle">${r(22, 8, 2, 2, "#FFC21A")}${r(96, 48, 2, 2, "#FFC21A")}</g>
+    ${MINI_G(96, 26, .8)}`);
+
   H.modArt = {
     "mi-start": { c: "#8B5CFF", c2: "#3A1D7A", svg: hallo },
     "lab-prompt": { c: "#8B5CFF", c2: "#3A1D7A", svg: MOD_ART.prompt },
@@ -127,7 +136,8 @@ const MOD_ART = {
     "de-wueste": { c: "#F2C14E", c2: "#B5651D", svg: wueste },
     "de-dschungel": { c: "#2BB57A", c2: "#0B3D24", svg: dschungel },
     "de-tundra": { c: "#5B8CFF", c2: "#0B1D3A", svg: tundra },
-    "de-lava": { c: "#FF6A00", c2: "#2A0A12", svg: lava }
+    "de-lava": { c: "#FF6A00", c2: "#2A0A12", svg: lava },
+    "mi-app-galerie": { c: "#7B4CEF", c2: "#FFF8EE", svg: galerie }
   };
   /* Bilder der Schweiz-Module (aus dem gLiTCh-Lab «NMG Schweiz») */
   ((window.GL_DATA && window.GL_DATA.LABMODS) || []).forEach(m => {

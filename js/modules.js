@@ -159,6 +159,10 @@
       req: { badge: "fn_alle", txt: "Wird frei, sobald du alle 6 Fallakten im Fake-News-Detektiv gelöst hast." } }
   ];
   LAB.forEach(m => H.registerModule(Object.assign({ subject: "mi", kind: "lab", activities: m.alias ? [] : [{ id: "lab", title: m.title, maxStars: null }] }, m)));
+  /* Web-App-Galerie: die Apps der Gruppen zum Ausprobieren (ohne Sterne und ohne Belohnungen) */
+  H.registerModule({ id: "mi-app-galerie", subject: "mi", theme: "mi-ki", kind: "frame", src: "games/web-app-galerie/index.html", noStars: true,
+    title: "Web-App-Galerie", frameBg: "#FFF8EE", activities: [],
+    teaser: "Die Apps der sechs Gruppen ausprobieren: Tippe auf eine Gruppe, dann startet ihre App." });
 
   /* ---------------------------------------------------------------
      Deutsch · Gespräche führen: Wüsten-Game (games/wueste) + Platzhalter
