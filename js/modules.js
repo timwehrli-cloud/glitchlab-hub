@@ -146,7 +146,7 @@
       req: { badge: "buehne", txt: "Wird frei, sobald du im Prompt-Labor 1 alle 4 Etappen präsentiert hast." } },
     { id: "lab-fakenews", lab: "fakenews", theme: "mi-medien", title: "Fake-News-Detektiv", minutes: 90,
       teaser: "Echte Meldung oder Falle? Spuren sichern, Bilder rückwärts suchen und eine Faktencheck-Karte gestalten.",
-      req: { badge: "buehne", txt: "Wird frei, sobald du im Prompt-Labor alle 4 Etappen präsentiert hast." } },
+      req: { badge: "buehne", txt: "Wird frei, sobald du im Prompt-Labor 1 alle 4 Etappen präsentiert hast." } },
     { id: "lab-kibilder", lab: "kibilder", theme: "mi-medien", title: "KI-Bild oder echt?", minutes: 90,
       teaser: "Wie entstehen KI-Bilder und Filter? Unterschiede entdecken und ein eigenes Vorher-Nachher erklären.",
       req: { badge: "fn_alle", txt: "Wird frei, sobald du alle 6 Fallakten im Fake-News-Detektiv gelöst hast." } }

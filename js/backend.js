@@ -129,6 +129,51 @@
       await this.q(this.sb.from("work").delete().eq("student_id", studentId));
       await this.q(this.sb.from("extras").delete().eq("student_id", studentId));
     }
+    /* ---------- Klasse als Datei sichern und wiederherstellen ---------- */
+    async exportClass(classId, withModules) {
+      const cls = await this.q(this.sb.from("classes").select("name,code,settings").eq("id", classId).single());
+      const students = await this.q(this.sb.from("students").select("id,first_name,color,pin,is_teacher").eq("class_id", classId));
+      const ids = students.map(s => s.id);
+      const [progress, extras, work] = ids.length ? await Promise.all([
+        this.q(this.sb.from("progress").select("student_id,module_id,activity_id,stars,data,team").in("student_id", ids)),
+        this.q(this.sb.from("extras").select("student_id,data").in("student_id", ids)),
+        this.q(this.sb.from("work").select("student_id,module_id,data").in("student_id", ids))]) : [[], [], []];
+      const out = { cls, students, progress, extras, work };
+      if (withModules) {
+        out.uploads = await this.q(this.sb.from("teacher_uploads").select("id,meta,html,published"));
+        out.mods = await this.q(this.sb.from("teacher_modules").select("id,data,published"));
+      }
+      return out;
+    }
+    async importClass(b) {
+      let cls = null;
+      for (let i = 0; i < 6 && !cls; i++) {
+        const code = i === 0 && b.cls.code ? b.cls.code : randCode();
+        const { data, error } = await this.sb.from("classes").insert({ name: cleanName(b.cls.name).slice(0, 40) || "Klasse", code, settings: b.cls.settings || {} }).select().single();
+        if (!error) cls = data; else if (!/duplicate|unique/i.test(String(error.message))) throw new Error(error.message);
+      }
+      if (!cls) throw new Error("Kein freier Klassencode gefunden. Versuch es nochmal.");
+      const map = {}, oldLp = b.students.find(s => s.is_teacher), kids = b.students.filter(s => !s.is_teacher);
+      const lp = (await this.q(this.sb.from("students").select("id").eq("class_id", cls.id).eq("is_teacher", true)))[0];
+      if (oldLp && lp) { map[oldLp.id] = lp.id; await this.q(this.sb.from("students").update({ pin: oldLp.pin }).eq("id", lp.id)); }
+      if (kids.length) {
+        const rows = await this.q(this.sb.from("students").insert(kids.map(s => ({ class_id: cls.id, first_name: cleanName(s.first_name), color: s.color, pin: s.pin }))).select("id,first_name"));
+        kids.forEach((s, i) => { const r = rows[i] && rows[i].first_name === cleanName(s.first_name) ? rows[i] : rows.find(x => x.first_name === cleanName(s.first_name)); if (r) map[s.id] = r.id; });
+      }
+      const chunk = async (table, list, conflict) => { for (let i = 0; i < list.length; i += 200) await this.q(this.sb.from(table).upsert(list.slice(i, i + 200), { onConflict: conflict })); };
+      if (b.uploads && b.uploads.length) {
+        const have = new Set((await this.q(this.sb.from("teacher_uploads").select("id"))).map(x => x.id));
+        for (const u of b.uploads) if (!have.has(u.id)) await this.q(this.sb.from("teacher_uploads").insert({ id: u.id, meta: u.meta, html: u.html, published: !!u.published }));
+      }
+      if (b.mods && b.mods.length) {
+        const have = new Set((await this.q(this.sb.from("teacher_modules").select("id"))).map(x => x.id));
+        for (const m of b.mods) if (!have.has(m.id)) await this.q(this.sb.from("teacher_modules").insert({ id: m.id, data: m.data, published: !!m.published }));
+      }
+      await chunk("progress", (b.progress || []).filter(p => map[p.student_id]).map(p => ({ student_id: map[p.student_id], module_id: p.module_id, activity_id: p.activity_id, stars: p.stars, data: p.data || {}, team: p.team || [] })), "student_id,module_id,activity_id");
+      await chunk("extras", (b.extras || []).filter(x => map[x.student_id]).map(x => ({ student_id: map[x.student_id], data: x.data || {} })), "student_id");
+      for (const w of (b.work || []).filter(x => map[x.student_id])) await this.q(this.sb.from("work").upsert({ student_id: map[w.student_id], module_id: w.module_id, data: w.data }, { onConflict: "student_id,module_id" }));
+      return cls;
+    }
     setModStatus(studentId, moduleId, status) {
       if (!status) return this.q(this.sb.from("progress").delete().eq("student_id", studentId).eq("module_id", moduleId).eq("activity_id", "lp-status"));
       return this.q(this.sb.from("progress").upsert({ student_id: studentId, module_id: moduleId, activity_id: "lp-status", stars: 0, data: { status, at: new Date().toISOString() } }));
@@ -313,6 +358,35 @@
       this.db.progress = this.db.progress.filter(p => p.student_id !== studentId);
       this.db.work = this.db.work.filter(w => w.student_id !== studentId);
       delete this.db.extras[studentId]; this.save();
+    }
+    /* ---------- Klasse als Datei sichern und wiederherstellen (Demo) ---------- */
+    async exportClass(classId, withModules) {
+      const c = this.db.classes.find(x => x.id === classId); if (!c) throw new Error("Klasse nicht gefunden.");
+      const students = this.db.students.filter(s => s.class_id === classId).map(s => ({ id: s.id, first_name: s.first_name, color: s.color, pin: s.pin, is_teacher: !!s.is_teacher }));
+      const ids = students.map(s => s.id);
+      const out = { cls: { name: c.name, code: c.code, settings: c.settings || {} }, students,
+        progress: this.db.progress.filter(p => ids.includes(p.student_id)).map(({ updated_at, ...p }) => p),
+        extras: ids.filter(id => this.db.extras[id]).map(id => ({ student_id: id, data: this.db.extras[id] })),
+        work: this.db.work.filter(w => ids.includes(w.student_id)).map(w => ({ student_id: w.student_id, module_id: w.module_id, data: w.data })) };
+      if (withModules) {
+        out.uploads = []; for (const u of this.db.uploads) out.uploads.push({ id: u.id, meta: u.meta, published: !!u.published, html: await this.htmlGet(u.id) });
+        out.mods = this.db.mods.map(m => ({ id: m.id, data: m.data, published: !!m.published }));
+      }
+      return this.wait(out);
+    }
+    async importClass(b) {
+      let code = b.cls.code; if (!code || this.db.classes.some(c => c.code === code)) { do { code = randCode(); } while (this.db.classes.some(c => c.code === code)); }
+      const c = { id: this.uid(), name: cleanName(b.cls.name).slice(0, 40) || "Klasse", code, settings: b.cls.settings || {}, teacher: "demo", created_at: new Date().toISOString() };
+      this.db.classes.push(c);
+      const map = {};
+      b.students.forEach((s, i) => { const id = this.uid(); map[s.id] = id; this.db.students.push({ id, class_id: c.id, first_name: cleanName(s.first_name), pin: s.pin, color: s.color, is_teacher: !!s.is_teacher, fails: 0, locked_until: 0 }); });
+      if (!b.students.some(s => s.is_teacher)) this.db.students.push({ id: this.uid(), class_id: c.id, first_name: "Lehrperson", pin: randPin(), color: "#FFC21A", is_teacher: true, fails: 0, locked_until: 0 });
+      (b.progress || []).filter(p => map[p.student_id]).forEach(p => this.db.progress.push(Object.assign({}, p, { student_id: map[p.student_id], updated_at: new Date().toISOString() })));
+      (b.extras || []).filter(x => map[x.student_id]).forEach(x => { this.db.extras[map[x.student_id]] = x.data || {}; });
+      (b.work || []).filter(x => map[x.student_id]).forEach(w => this.db.work.push({ student_id: map[w.student_id], module_id: w.module_id, data: w.data, updated_at: new Date().toISOString() }));
+      for (const u of (b.uploads || [])) if (!this.db.uploads.some(x => x.id === u.id)) { this.db.uploads.push({ id: u.id, meta: u.meta, published: !!u.published, updated_at: new Date().toISOString() }); if (u.html) await this.htmlPut(u.id, u.html); }
+      for (const m of (b.mods || [])) if (!this.db.mods.some(x => x.id === m.id)) this.db.mods.push({ id: m.id, data: m.data, published: !!m.published, updated_at: new Date().toISOString() });
+      this.save(); return this.wait(c);
     }
     async setModStatus(studentId, moduleId, status) {
       this.db.progress = this.db.progress.filter(p => !(p.student_id === studentId && p.module_id === moduleId && p.activity_id === "lp-status"));

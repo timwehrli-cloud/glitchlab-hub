@@ -85,7 +85,11 @@
   const classCodes = () => [mainCode()].concat(coTeachers(S.me?.class_settings).map(t => String(t.code)));
   const newTeacherCode = taken => { let c; do { c = Array.from({ length: 4 }, () => 1 + Math.floor(Math.random() * 9)).join(""); } while (taken.includes(c)); return c; };
   const modSet = m => ((S.me?.class_settings || {}).mods || {})[m.id] || "";
-  const modPrev = m => { const list = H.modules.filter(x => x.theme === m.theme && !x.soon); const i = list.findIndex(x => x.id === m.id); return i > 0 ? list[i - 1] : null; };
+  /* Reihenfolge pro Klasse (Lehrperson verschiebt Themen und Module) */
+  const byOrder = (list, ord) => { if (!Array.isArray(ord) || !ord.length) return list; const ix = (x, k) => { const i = ord.indexOf(x.id); return i < 0 ? 1e4 + k : i; }; return list.map((x, k) => [x, ix(x, k)]).sort((a, b) => a[1] - b[1]).map(a => a[0]); };
+  const sortThemes = (list, subj, st) => byOrder(list, (((st || {}).order || {}).themes || {})[subj]);
+  const sortMods = (list, theme, st) => byOrder(list, (((st || {}).order || {}).mods || {})[theme]);
+  const modPrev = m => { const list = sortMods(H.modules.filter(x => x.theme === m.theme && !x.soon), m.theme, S.me?.class_settings); const i = list.findIndex(x => x.id === m.id); return i > 0 ? list[i - 1] : null; };
   const modSolved = m0 => { const m = m0.alias ? (H.modules.find(x => x.id === m0.alias) || m0) : m0; const st = modStars(m), mx = H.maxStars(m); return H.openEnded(m) || !mx ? st > 0 : st >= Math.ceil(mx / 2); };
   const modOpen = m => {
     if (m.soon) return false; if (isLP()) return true; if (m.lpOnly) return false;
@@ -334,8 +338,8 @@
      4) Fachseite
      ================================================================= */
   const art = (key, c, c2, cls = "") => `<span class="art-banner ${cls}" style="--mc:${c};--mc2:${c2}">${(H.themeArt && H.themeArt[key]) || ""}</span>`;
-  const themesOf = id => H.themes.filter(t => t.subject === id && (!t.lpOnly || isLP()));
-  const themeMods = id => H.modules.filter(m => m.theme === id && visMod(m));
+  const themesOf = id => sortThemes(H.themes.filter(t => t.subject === id && (!t.lpOnly || isLP())), id, S.me?.class_settings);
+  const themeMods = id => sortMods(H.modules.filter(m => m.theme === id && visMod(m)), id, S.me?.class_settings);
 
   /* Grosser animierter Kopf-Banner: Szene über die ganze Breite, Pixel-Funken und ein gLiTCh, der durchläuft */
   function heroBanner(o) {
@@ -699,11 +703,15 @@
           <div class="row"><input class="input" id="clsName" placeholder="z. B. 6i Gartenhof" maxlength="40" required style="flex:1;min-width:200px"><button class="btn primary" type="submit">Klasse anlegen</button></div>
           <label class="f" for="clsTeachers" style="margin-top:12px">Weitere Lehrpersonen (freiwillig, ein Name pro Zeile)<textarea class="input" id="clsTeachers" placeholder="Frau Muster&#10;Herr Beispiel" style="min-height:64px"></textarea></label>
           <p class="hint" style="margin:0">Jede weitere Lehrperson bekommt einen eigenen Freigabe-Code. Damit gibt sie den Kindern in den Modulen die nächste Etappe frei, genau wie du mit deinem Code.</p></form>
+        <section class="panel" id="restore"><h2>Klasse aus Datei wiederherstellen</h2>
+          <p class="hint">Hast du eine Klasse mit «💾 Klasse sichern» als Datei gespeichert? Lade sie hier hoch. Die Klasse kommt mit allen Kindern, Bild-Passwörtern, Sternen, Diplomen, Garderoben, gespeicherten Arbeiten und Einstellungen zurück. Die Kinder melden sich danach genau wie vorher an.</p>
+          <label class="btn" style="cursor:pointer">📂 Sicherungsdatei wählen<input type="file" id="restoreFile" accept=".json,application/json" hidden></label>
+          <div id="restoreInfo"></div></section>
         ${uploadsPanelHTML()}
         ${modsPanelHTML()}
         ${S.be.mode === "demo" ? `<p class="hint">Demo-Modus aktiv. <button type="button" class="link" data-resetdemo>Demo-Daten zurücksetzen</button></p>` : ""}
       </main>`;
-      bindLpTop(); bindModsPanel(); bindUploadsPanel();
+      bindLpTop(); bindModsPanel(); bindUploadsPanel(); bindRestore();
       $$("[data-cls]").forEach(b => b.onclick = () => { LP.cur = LP.classes.find(c => c.id === b.dataset.cls); LP.cards = false; render(); });
       $("#newCls").onsubmit = async e => {
         e.preventDefault();
@@ -747,6 +755,8 @@
       <section class="panel"><div class="row" style="justify-content:space-between"><div><p class="eyebrow">Klasse</p><h1 style="font-size:30px">${esc(c.name)}</h1></div>
         <div style="text-align:right"><p class="hint">Klassencode</p><span class="code-big">${esc(c.code)}</span></div></div>
         <div class="row"><button type="button" class="btn small" data-cards ${LP.kids.length ? "" : "disabled"}>Login-Karten zeigen</button>
+          <button type="button" class="btn small" data-backup title="Speichert die ganze Klasse als Datei: Kinder, Bild-Passwörter, Sterne, Diplome, Garderobe, Arbeiten und Einstellungen">💾 Klasse sichern</button>
+          <label class="hint" style="display:inline-flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="backupMods" checked> mit hochgeladenen Modulen</label>
           <button type="button" class="btn small danger" data-delcls>${LP.confirm === "cls" ? "Wirklich ganze Klasse löschen?" : "Klasse löschen"}</button></div></section>
       <section class="panel"><h2>Kinder (${LP.kids.filter(k => !k.is_teacher).length}) + Lehrpersonen-Konto</h2>
         <p class="hint">Das Konto «${esc(CFG.TEACHER_NAME || "Lehrperson")}» steht in jeder Klasse zuoberst. Dort ist immer alles freigeschaltet: alle Module, Level, Diplome, Outfits, Emotes und das Chalet. Ideal zum Vorzeigen.</p>
@@ -778,6 +788,15 @@
     bindLpTop();
     $("[data-allcls]").onclick = () => { LP.cur = null; LP.confirm = null; render(); };
     $("[data-cards]").onclick = () => { LP.cards = true; render(); };
+    $("[data-backup]").onclick = async ev => { const b = ev.currentTarget, t = b.textContent; b.disabled = true; b.textContent = "Wird gesichert …";
+      try {
+        const data = await S.be.exportClass(c.id, $("#backupMods").checked);
+        const file = Object.assign({ format: "glitchlab-klasse", version: 1, saved_at: new Date().toISOString() }, data);
+        const d = new Date(), stamp = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        await saveFile(new Blob([JSON.stringify(file)], { type: "application/json" }), `Glitchlab-Klasse-${c.name.replace(/[^\wäöüÄÖÜ-]+/g, "-")}-${stamp}.json`);
+        toast(`Klasse «${c.name}» gesichert: ${data.students.filter(k => !k.is_teacher).length} Kinder, ${data.progress.length} Spielstände.`, "star", 5000);
+      } catch (err) { toast("Sichern ging nicht: " + (err.message || err), "err", 6000); }
+      b.disabled = false; b.textContent = t; };
     $("[data-delcls]").onclick = async () => {
       if (LP.confirm !== "cls") { LP.confirm = "cls"; return render(); }
       await S.be.deleteClass(c.id); LP.cur = null; LP.confirm = null; toast("Klasse gelöscht."); render();
@@ -802,6 +821,24 @@
       if (!names.length) return;
       try { const r = await S.be.addStudents(c.id, names); toast(`${r.length} ${r.length === 1 ? "Kind" : "Kinder"} hinzugefügt.`); render(); }
       catch (err) { toast(err.message, "err"); }
+    };
+  }
+  /* ---------- Klasse aus Datei wiederherstellen ---------- */
+  function bindRestore() {
+    const inp = $("#restoreFile"); if (!inp) return;
+    inp.onchange = async () => {
+      const f = inp.files && inp.files[0]; inp.value = ""; if (!f) return;
+      let b = null; try { b = JSON.parse(await f.text()); } catch (e) { b = null; }
+      const box = $("#restoreInfo");
+      if (!b || b.format !== "glitchlab-klasse" || !b.cls || !Array.isArray(b.students)) { box.innerHTML = `<p class="err">Diese Datei ist keine Klassen-Sicherung aus dem Glitchlab-Hub.</p>`; return; }
+      const kids = b.students.filter(k => !k.is_teacher), taken = LP.classes.some(x => x.code === b.cls.code);
+      box.innerHTML = `<div class="restore-card"><b>${esc(b.cls.name)}</b><small>Gesichert am ${esc(new Date(b.saved_at).toLocaleString("de-CH"))} · ${kids.length} Kinder · ${(b.progress || []).length} Spielstände${(b.uploads || []).length ? ` · ${b.uploads.length} hochgeladene Module` : ""}</small>
+        <p class="hint" style="margin:6px 0">${taken ? `Eine Klasse mit dem Code ${esc(b.cls.code)} gibt es schon. Die wiederhergestellte Klasse bekommt einen neuen Klassencode.` : `Die Klasse bekommt wieder den Code <b>${esc(b.cls.code)}</b>, wenn er noch frei ist.`}</p>
+        <div class="row"><button type="button" class="btn primary" id="restoreGo">Klasse wiederherstellen</button><button type="button" class="btn" id="restoreNo">Abbrechen</button></div></div>`;
+      $("#restoreNo").onclick = () => { box.innerHTML = ""; };
+      $("#restoreGo").onclick = async ev => { const btn = ev.currentTarget; btn.disabled = true; btn.textContent = "Wird wiederhergestellt …";
+        try { const cls = await S.be.importClass(b); LP.cur = cls; LP.cards = false; toast(`Klasse «${cls.name}» ist zurück. Klassencode: ${cls.code}`, "star", 6000); render(); }
+        catch (err) { btn.disabled = false; btn.textContent = "Klasse wiederherstellen"; toast("Wiederherstellen ging nicht: " + (err.message || err), "err", 7000); } };
     };
   }
   /* ---------- Login-Karten als PDF: 8 Karten pro A4 (2 × 4), zum Ausschneiden ---------- */
@@ -946,11 +983,11 @@
     const subjects = H.subjects.filter(sj => H.modules.some(m => m.subject === sj.id && !m.soon));
     return `<section class="panel"><div class="row" style="justify-content:space-between"><h2>Module für diese Klasse</h2>
         <span class="row"><button type="button" class="btn small" data-accall="offen">Alle offen</button><button type="button" class="btn small" data-accall="kette">Alle als Kette</button><button type="button" class="btn small" data-accall="">Alle Standard</button></span></div>
-      <p class="hint"><b>Offen:</b> sofort frei. <b>Gesperrt:</b> die Kinder sehen das Modul, können es aber nicht öffnen. <b>Nach dem Modul davor:</b> frei, sobald das vorherige Modul im selben Thema geschafft ist (mindestens die Hälfte der Sterne). <b>Standard:</b> so, wie das Modul gebaut ist. Das Lehrpersonen-Konto sieht immer alles.</p>
+      <p class="hint">Mit ↑ ↓ verschiebst du Themen im Fach und Module im Thema. So sehen es die Kinder dieser Klasse. <b>Offen:</b> sofort frei. <b>Gesperrt:</b> die Kinder sehen das Modul, können es aber nicht öffnen. <b>Nach dem Modul davor:</b> frei, sobald das vorherige Modul im selben Thema geschafft ist (mindestens die Hälfte der Sterne). <b>Standard:</b> so, wie das Modul gebaut ist. Das Lehrpersonen-Konto sieht immer alles.</p>
       <div class="acc">${subjects.map(sj => `<div class="acc-s"><h3 style="--c:${sj.color}"><span>${esc(sj.short)}</span>${esc(sj.name)}</h3>
-        ${H.themes.filter(t => t.subject === sj.id && H.modules.some(m => m.theme === t.id && !m.soon)).map(t => `<div class="acc-t"><small>${esc(t.title)}</small>
-          ${H.modules.filter(m => m.theme === t.id && !m.soon).map((m, i) => `<div class="acc-r"><span class="acc-n"><b>${i + 1}. ${esc(m.title)}</b><small>${esc(stdTxt(m))}</small></span>
-            <select class="input acc-sel" data-acc="${esc(m.id)}" aria-label="Freischaltung für ${esc(m.title)}">${ACCESS.map(([v, n]) => `<option value="${v}"${(set[m.id] || "") === v ? " selected" : ""}${v === "kette" && i === 0 ? " disabled" : ""}>${n}</option>`).join("")}</select></div>`).join("")}</div>`).join("")}</div>`).join("")}</div>
+        ${(() => { const TL = sortThemes(H.themes.filter(t => t.subject === sj.id && H.modules.some(m => m.theme === t.id && !m.soon)), sj.id, c.settings); return TL.map((t, ti) => { const ML = sortMods(H.modules.filter(m => m.theme === t.id && !m.soon), t.id, c.settings); return `<div class="acc-t"><div class="acc-th"><small>${esc(t.title)}</small>${TL.length > 1 ? `<span class="mv"><button type="button" class="mv-b" data-tmv="${esc(sj.id)}|${esc(t.id)}|-1" ${ti ? "" : "disabled"} aria-label="Thema «${esc(t.title)}» nach oben">↑</button><button type="button" class="mv-b" data-tmv="${esc(sj.id)}|${esc(t.id)}|1" ${ti < TL.length - 1 ? "" : "disabled"} aria-label="Thema «${esc(t.title)}» nach unten">↓</button></span>` : ""}</div>
+          ${ML.map((m, i) => `<div class="acc-r"><span class="acc-n"><b>${i + 1}. ${esc(m.title)}</b><small>${esc(stdTxt(m))}</small></span>${ML.length > 1 ? `<span class="mv"><button type="button" class="mv-b" data-mmv="${esc(t.id)}|${esc(m.id)}|-1" ${i ? "" : "disabled"} aria-label="«${esc(m.title)}» nach oben">↑</button><button type="button" class="mv-b" data-mmv="${esc(t.id)}|${esc(m.id)}|1" ${i < ML.length - 1 ? "" : "disabled"} aria-label="«${esc(m.title)}» nach unten">↓</button></span>` : `<span></span>`}
+            <select class="input acc-sel" data-acc="${esc(m.id)}" aria-label="Freischaltung für ${esc(m.title)}">${ACCESS.map(([v, n]) => `<option value="${v}"${(set[m.id] || "") === v ? " selected" : ""}${v === "kette" && i === 0 ? " disabled" : ""}>${n}</option>`).join("")}</select></div>`).join("")}</div>`; }).join(""); })()}</div>`).join("")}</div>
     </section>`;
   }
   function bindAccessPanel(c) {
@@ -963,9 +1000,19 @@
       const m = H.modules.find(x => x.id === sel.dataset.acc);
       store(mods, `«${m ? m.title : "Modul"}»: ${(ACCESS.find(a => a[0] === sel.value) || ACCESS[0])[1]}`);
     });
+    /* Reihenfolge: Themen im Fach, Module im Thema */
+    const saveOrder = async (order, msg) => { const settings = Object.assign({}, c.settings || {}, { order }); const y = window.scrollY;
+      try { await S.be.saveClassSettings(c.id, settings); c.settings = settings; toast(msg); } catch (err) { toast(err.message, "err"); } await render(); window.scrollTo(0, y); };
+    const move = (list, id, d) => { const i = list.indexOf(id), j = i + d; if (i < 0 || j < 0 || j >= list.length) return list; const l = list.slice(); [l[i], l[j]] = [l[j], l[i]]; return l; };
+    $$("[data-tmv]").forEach(b => b.onclick = () => { const [sj, tid, d] = b.dataset.tmv.split("|"), o = JSON.parse(JSON.stringify((c.settings || {}).order || {}));
+      const cur = sortThemes(H.themes.filter(t => t.subject === sj && H.modules.some(m => m.theme === t.id && !m.soon)), sj, c.settings).map(t => t.id);
+      o.themes = Object.assign({}, o.themes, { [sj]: move(cur, tid, +d) }); saveOrder(o, `Thema «${(H.themes.find(t => t.id === tid) || {}).title}» verschoben.`); });
+    $$("[data-mmv]").forEach(b => b.onclick = () => { const [tid, mid, d] = b.dataset.mmv.split("|"), o = JSON.parse(JSON.stringify((c.settings || {}).order || {}));
+      const cur = sortMods(H.modules.filter(m => m.theme === tid && !m.soon), tid, c.settings).map(m => m.id);
+      o.mods = Object.assign({}, o.mods, { [tid]: move(cur, mid, +d) }); saveOrder(o, `«${(H.modules.find(m => m.id === mid) || {}).title}» verschoben.`); });
     $$("[data-accall]").forEach(b => b.onclick = async () => {
       const v = b.dataset.accall, mods = {};
-      if (v) H.modules.filter(m => !m.soon).forEach(m => { const first = H.modules.filter(x => x.theme === m.theme && !x.soon)[0] === m; mods[m.id] = v === "kette" && first ? "offen" : v; });
+      if (v) H.modules.filter(m => !m.soon).forEach(m => { const first = sortMods(H.modules.filter(x => x.theme === m.theme && !x.soon), m.theme, c.settings)[0] === m; mods[m.id] = v === "kette" && first ? "offen" : v; });
       await store(mods, v === "offen" ? "Alle Module sind offen." : v === "kette" ? "Alle Module als Kette: das erste je Thema ist offen." : "Alle Module auf Standard.");
       render();
     });
