@@ -137,7 +137,9 @@ const dipArtOld = (emoji, c) => { const e = String(emoji || "🏅").replace(/[<>
     + `<text x="10" y="13.7" font-size="4.6" text-anchor="middle" dominant-baseline="central">${e}</text><path class="wl-glow" d="M6.6 11.2a4.2 4.2 0 0 1 2-2" stroke="#fff" stroke-width=".6" fill="none"/></g><circle cx="10" cy="1.2" r=".8" fill="#3A2410"/></svg>`; };
 (function(){ if (document.getElementById("wlMiCss")) return; const st = document.createElement("style"); st.id = "wlMiCss"; st.textContent = '.wl-glow{animation:wlGlow 2.2s ease-in-out infinite}.wl-spin{transform-box:fill-box; transform-origin:50% 50%; animation:wlSpin 7s linear infinite}.wl-wig{transform-origin:10px 11px; animation:wlWig .9s ease-in-out infinite}.wl-quiv{transform-origin:10px 12px; animation:wlQuiv 2.6s ease-in-out infinite}.wl-knock{transform-origin:15px 15px; animation:wlKnock 2.8s ease-in-out infinite}.wl-medal{transform-origin:10px 1.2px; animation:wlMedal 3.4s ease-in-out infinite}@keyframes wlGlow{0%,100%{opacity:1}50%{opacity:.35}}@keyframes wlSpin{to{transform:rotate(360deg)}}@keyframes wlWig{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.9)}}@keyframes wlQuiv{0%,86%,100%{transform:rotate(0)}90%{transform:rotate(-4deg)}94%{transform:rotate(3deg)}}@keyframes wlKnock{0%,70%,100%{transform:rotate(0)}80%{transform:rotate(-16deg)}88%{transform:rotate(2deg)}}@keyframes wlMedal{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}@media (prefers-reduced-motion: reduce){.wl-glow,.wl-spin,.wl-wig,.wl-quiv,.wl-knock,.wl-medal{animation:none}}'; (document.head || document.documentElement).appendChild(st); })();
 let D = {cls:null, prog:{}, me:null};
+window.GLAB_PET = (g, on) => { try { const sp = g.querySelector(":scope > span"); if (!sp) return; if (on){ if (!g.dataset.petOld) g.dataset.petOld = sp.innerHTML; const p = (D.me && D.prog[D.me]) || {}; sp.innerHTML = LIB.glitchSVG("love", {outfit: p.outfit || {}}); } else if (g.dataset.petOld){ sp.innerHTML = g.dataset.petOld; delete g.dataset.petOld; } } catch(e){} };
 window.GLAB_SKINS = [{"id": "violett", "n": "Violett", "base": "#8B5CFF", "light": "#B79CFF", "dark": "#6A3FE0", "hi": "#E3D6FF"}, {"id": "blau", "n": "Blau", "base": "#3D7BFF", "light": "#87ADFF", "dark": "#3060C7", "hi": "#C5D7FF"}, {"id": "tuerkis", "n": "Türkis", "base": "#14B8C4", "light": "#6DD3DA", "dark": "#109099", "hi": "#B8EAED"}, {"id": "gruen", "n": "Grün", "base": "#22B55E", "light": "#76D19B", "dark": "#1B8D49", "hi": "#BDE9CF"}, {"id": "limette", "n": "Limette", "base": "#8CC63F", "light": "#B8DC88", "dark": "#6D9A31", "hi": "#DCEEC5"}, {"id": "orange", "n": "Orange", "base": "#FF8A1F", "light": "#FFB674", "dark": "#C76C18", "hi": "#FFDCBC"}, {"id": "rot", "n": "Rot", "base": "#EF4444", "light": "#F58B8B", "dark": "#BA3535", "hi": "#FAC7C7"}, {"id": "pink", "n": "Pink", "base": "#FF4FA3", "light": "#FF92C6", "dark": "#C73E7F", "hi": "#FFCAE3"}, {"id": "mint", "n": "Mint", "base": "#5BE3B6", "light": "#99EED2", "dark": "#47B18E", "hi": "#CEF7E9"}, {"id": "silber", "n": "Silber", "base": "#8A94A6", "light": "#B6BDC8", "dark": "#6C7381", "hi": "#DCDFE4"}, {"id": "gold", "n": "Gold", "base": "#F2B705", "light": "#F7D264", "dark": "#BD8F04", "hi": "#FBE9B4"}];
+window.GLAB_SKINS = window.GLAB_SKINS.concat([{"id": "sonne", "n": "Sonnenuntergang", "lv": 19, "base": "#FF7A3D", "light": "#FFD25A", "dark": "#C2255C", "hi": "#FFF1B8"}, {"id": "ozean", "n": "Ozean", "lv": 39, "base": "#1E88E5", "light": "#4DE3E0", "dark": "#123B8C", "hi": "#C9FBFF"}, {"id": "galaxie", "n": "Galaxie", "lv": 59, "base": "#6A2BD9", "light": "#FF5ED8", "dark": "#1A1060", "hi": "#FFD6F6"}, {"id": "lava", "n": "Lava", "lv": 79, "base": "#E8361C", "light": "#FFB21A", "dark": "#5A1208", "hi": "#FFE7A0"}, {"id": "aurora", "n": "Polarlicht", "lv": 99, "base": "#19C79A", "light": "#9BFF6B", "dark": "#5B2BB5", "hi": "#E4FFD2"}]).concat(((typeof CU !== 'undefined' && CU.skins) || []).map(x=>Object.assign({}, x)));
 window.GLAB_CODE_OK = (v, primary) => { const x = String(v || "").trim().toLowerCase(); return !!x && [primary || "4313"].concat(window.GLAB_EXTRA_CODES || []).some(c => String(c).trim().toLowerCase() === x); };
 if (ctx){
   D.cls = {id:"hub", name: ctx.className, code: ctx.code, rev:0, students: [ctx.me].concat(ctx.team), groups:{}, kiQuiz: ctx.quiz || []};
@@ -165,7 +167,7 @@ if (window.GLAB_R){
   CU.emotes.forEach(e=>{ if (!window.GLAB_R.EMOTES.some(x=>x.id === e.id)) window.GLAB_R.EMOTES.push({id:e.id, n:e.n, d:e.d || "", ic:e.ic || "✨", lv:9999, req: e.badge ? {badge:e.badge, mod:e.mod, txt:e.reqTxt} : null}); });
   CU.room.forEach(r=>{ if (!window.GLAB_R.ROOM.some(x=>x.id === r.id)) window.GLAB_R.ROOM.push({id:r.id, slot:r.slot, n:r.n, lv:0, box:r.box, svg:r.svg, badge:r.badge || null, reqTxt:r.reqTxt || ""}); });
 }
-const roomOpen = (x, li) => x.badge ? totalsFor(D.me).badges.has(x.badge) : x.lv <= li;
+const roomOpen = (x, li) => x.sw ? swCount(totalsFor(D.me)) >= x.sw : x.badge ? totalsFor(D.me).badges.has(x.badge) : x.lv <= li;
 const bgOpen = (b, T) => !b.badge || T.badges.has(b.badge);
 const emoteOpen = (x, T) => !x.req || T.badges.has(x.req.badge);
 const emoteReq = x => x.req ? (x.req.txt || `Modul «${x.req.mod}» schaffen`) : "von Anfang an";
@@ -230,7 +232,31 @@ const GLAB = window.GLAB = {
 
 const OUTFIT_MAP = {erfinder:"eidgenossen_1", namen:"eidgenossen_2", logo:"eidgenossen_3", buehne:"eidgenossen_4", daten:"helvetik_1", worte:"helvetik_2", tester:"helvetik_3", bug:"helvetik_4", feature:"mediation_1", zielgruppe:"mediation_2", gourmet:"mediation_3", lexikon:"mediation_4", lexmeister:"restauration_1", detektiv:"restauration_2", tierfreund:"restauration_3", meister:"restauration_4"};
 const OUTFIT_HIDE = ["vr","visor","robo","antennen","laser","astro","schnorchel"];
+
+/* ===== Belohnungen: Schweiz-Gegenstände gehören zu «Entdeckungsreise Schweiz», alles andere verteilt bis Level 100 ===== */
+const SW_MODS = [["eidgenossen", "Alte Eidgenossenschaft"], ["helvetik", "Helvetische Republik"], ["mediation", "Mediationszeit"], ["restauration", "Restauration und Wiener Kongress"], ["nachbarn", "Nachbarländer der Schweiz"], ["erfindungen", "Schweizer Erfindungen"], ["politik", "Schweizer Politik"], ["ebenen", "Die drei Ebenen"]], SW_OUT = {"socken": "eidgenossen_1", "fahne": "eidgenossen_1", "armbrust": "eidgenossen_2", "tellapfel": "eidgenossen_3", "fahnenschwinger": "eidgenossen_4", "sennenkaeppi": "helvetik_1", "edelweiss": "helvetik_2", "tracht": "helvetik_3", "treichel": "helvetik_4", "skibrille": "mediation_1", "alphorn": "mediation_2", "wanderschuhe": "mediation_3", "bernhardiner": "mediation_4", "schwingerhose": "restauration_1", "steinbock": "restauration_2", "sennenhut": "restauration_3", "murmeli": "restauration_4", "brezel": "nachbarn_1", "beret": "nachbarn_2", "pizza": "nachbarn_3", "fuerstenhut": "nachbarn_3", "tirolerhut": "nachbarn_4", "erfinderbrille": "erfindungen_1", "sackmesser": "erfindungen_2", "gluehbirne": "erfindungen_3", "laborkittel": "erfindungen_4", "klettschuhe": "erfindungen_4", "stimmcouvert": "politik_1", "megafon": "politik_2", "jaanstecker": "politik_3", "bundesratskrawatte": "politik_4", "feuerwehrhelm": "ebenen_1", "postmuetze": "ebenen_2", "baer": "ebenen_3", "kuh": "ebenen_4"}, SW_OUT_N = {"goldeuhr": 16, "edelweisskrone": 24, "legendencape": 32}, SW_ROOM = {"fahne": "eidgenossen_4", "girlande": "helvetik_4", "eiffel": "nachbarn_2", "europakarte": "nachbarn_4", "werkbank": "erfindungen_2", "zahnraduhr": "erfindungen_3", "urne": "politik_2", "bundeshausposter": "politik_3", "kartenteppich": "ebenen_2", "postauto": "ebenen_4"}, SW_ROOM_N = {"geranien": 1, "fenster": 2, "trychel": 3, "ofen": 4, "alphorn": 5, "kuckuck": 6, "lampe": 7, "kuhfell": 8, "schrank": 9, "milch": 10, "laterne": 11, "scherenschnitt": 12, "edelweiss": 13, "fondue": 14, "holzkuh": 15, "herzen": 17, "gondel": 20, "globus": 26, "sterne": 28, "thron": 32};
+const SW_BADGE = id => { const m = SW_MODS.find(x=>id.startsWith(x[0] + "_")); return m ? m[1] : ""; };
+const swCount = T => [...T.badges].filter(b=>SW_MODS.some(x=>b.startsWith(x[0] + "_"))).length;
+const swTxt = (badge, n) => n ? `${n} Diplome aus «Entdeckungsreise Schweiz»` : `Diplom aus «${SW_BADGE(badge)}»`;
+window.GLAB_LEVEL_SKINS = [{"id": "sonne", "n": "Sonnenuntergang", "lv": 19, "base": "#FF7A3D", "light": "#FFD25A", "dark": "#C2255C", "hi": "#FFF1B8"}, {"id": "ozean", "n": "Ozean", "lv": 39, "base": "#1E88E5", "light": "#4DE3E0", "dark": "#123B8C", "hi": "#C9FBFF"}, {"id": "galaxie", "n": "Galaxie", "lv": 59, "base": "#6A2BD9", "light": "#FF5ED8", "dark": "#1A1060", "hi": "#FFD6F6"}, {"id": "lava", "n": "Lava", "lv": 79, "base": "#E8361C", "light": "#FFB21A", "dark": "#5A1208", "hi": "#FFE7A0"}, {"id": "aurora", "n": "Polarlicht", "lv": 99, "base": "#19C79A", "light": "#9BFF6B", "dark": "#5B2BB5", "hi": "#E4FFD2"}];
+function rewardsFix(lib){
+  if (lib.__rw) return; lib.__rw = 1;
+  const dipName = id => { const b = (lib.BADGES || []).concat(window.GLAB_GE_BADGES || []).find(x=>x.id === id); return b ? b.n : ""; };
+  (lib.OUTFITS || []).forEach(o=>{
+    if (SW_OUT[o.id]){ o.badge = SW_OUT[o.id]; o.alt = null; o.lv = null; o.reqTxt = `Diplom «${dipName(o.badge) || o.badge}» (${SW_BADGE(o.badge)})`; }
+    else if (SW_OUT_N[o.id]){ o.sw = SW_OUT_N[o.id]; o.badge = null; o.alt = null; o.lv = null; o.reqTxt = swTxt("", o.sw); }
+  });
+  /* restliche Level-Belohnungen gleichmässig bis Level 100 verteilen */
+  const lvl = (lib.OUTFITS || []).filter(o=>o.lv != null && o.lv > 0 && !o.badge && !o.sw).sort((a,b)=>a.lv - b.lv);
+  lvl.forEach((o,k)=>{ o.lv = Math.min(98, Math.round(2 + k * 96 / Math.max(1, lvl.length - 1))); });
+  const R = window.GLAB_R;
+  if (R && R.ROOM) R.ROOM.forEach(x=>{
+    if (SW_ROOM[x.id]){ x.badge = SW_ROOM[x.id]; x.lv = 9999; x.reqTxt = `Diplom «${dipName(x.badge) || x.badge}» (${SW_BADGE(x.badge)})`; }
+    else if (SW_ROOM_N[x.id]){ x.sw = SW_ROOM_N[x.id]; x.lv = 9999; x.reqTxt = swTxt("", x.sw); }
+  });
+}
 function withFN(lib){
+  rewardsFix(lib);
   if (lib.OUTFITS && !lib.OUTFITS.__cu){ lib.OUTFITS.__cu = 1; CU.outfits.forEach(o=>{ if (!lib.OUTFITS.some(x=>x.id === o.id)) lib.OUTFITS.push({id:o.id, slot:o.slot, n:o.n, say:o.say || "", lv:0, svg:o.svg, badge:o.badge || null, reqTxt:o.reqTxt || ""}); }); }
   const BADGES = lib.BADGES.filter(b=>!b.mod || b.mod === "prompt").map(b=>Object.assign({mod:"prompt"}, b))
     .concat(window.GLAB_FN_BADGES || []).concat(window.GLAB_KI_BADGES || []).concat(window.GLAB_GE_BADGES || [])
@@ -656,6 +682,7 @@ function loginHTML(){
     <p class="pt-msg" id="ptMsg" role="status" style="text-align:center"></p>`;
 }
 function outfitOpenFor(x, T){
+  if (x.sw && swCount(T) < x.sw) return false;
   if (x.lv != null && LIB.levelOf(T.stars) < x.lv) return false;
   if (x.badge && !T.badges.has(x.badge) && !(x.alt && T.badges.has(x.alt))) return false;
   if (x.fed && T.fed < x.fed) return false;
@@ -683,7 +710,7 @@ function dashHTML(){
           <span class="pt-room-g glitch" role="img" aria-label="gLiTCh in seinem Zimmer"><span>${LIB.glitchSVG("happy", {outfit: p.outfit || {}})}</span></span>
           <div class="pt-room-say" id="ptSay"><b class="gname">gLiTCh</b>${esc(greet)}</div>
           <span class="pt-room-hint">Auf gLiTCh tippen und nach unten ziehen: Emote!</span></div>
-        <div class="pt-lvl" style="margin-top:16px"><span class="pt-ring">${li+1}</span><div><span>Level ${li+1} von ${L.length}</span><b>${esc(L[li].n)}</b><span>${nx ? `noch ${nx.s - T.stars} Sterne bis «${esc(nx.n)}»` : "Level 100 geschafft! Du bist die ultimative gLiTCh-Legende."}</span></div>
+        <div class="pt-lvl" style="margin-top:16px"><span class="pt-ring">${li+1}</span><div><span>${li < 100 ? `Level ${li+1} von 100` : `Level ${li+1} · über 100!`}</span><b>${esc(L[li].n)}</b><span>${nx ? `noch ${nx.s - T.stars} Sterne bis «${esc(nx.n)}»` : "Level 100 geschafft! Du bist die ultimative gLiTCh-Legende."}</span></div>
           <span class="pt-stars" aria-label="${T.stars} Sterne">★ ${T.stars}</span></div>
         <div class="pt-bar" aria-hidden="true"><i style="width:${Math.max(3, Math.min(100, pct))}%"></i></div>
       </div>
@@ -693,7 +720,7 @@ function dashHTML(){
         ${railBtn("emotes", "✨", "Emotes", `${emoUnl} / ${RR.EMOTES.length}`, false, "#FFC21A", 2)}
         ${railBtn("diplome", "📜", "Diplome", `${LIB.BADGES.filter(b=>T.badges.has(b.id)).length} / ${LIB.BADGES.length}`, false, "#3CFF7A", 3)}
         ${railBtn("lexikon", "📖", "Lexikon", "als PDF", false, "#8B5CFF", 4)}
-        ${railBtn("levels", "🏆", "Alle Level", `${li+1} / ${L.length}`, false, "#B79CFF", 4)}
+        ${railBtn("levels", "🏆", "Alle Level", (li < 100 ? `${li+1} / 100` : `${li+1} ★`), false, "#B79CFF", 4)}
         ${railBtn("sound", window.GLAB_R.soundOn() ? "🔊" : "🔇", "Ton", window.GLAB_R.soundOn() ? "an" : "aus", false, "#FF7A00", 5)}
       </nav></div>`;
 }
@@ -911,7 +938,7 @@ function pickEmote(id){
 function levelsHTML(){
   const s = student(D.me), T = totalsFor(s.id), li = LIB.levelOf(T.stars), L = LIB.LEVELS, RR = window.GLAB_R;
   return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptLvT">
-    <div class="wd-head"><div><small>${esc(s.n)} · ★ ${T.stars}</small><h2 id="ptLvT">Alle ${L.length} Level</h2><p>Sterne aus allen Fächern im Hub zählen zusammen. Jedes Level bringt eine Belohnung.</p></div>
+    <div class="wd-head"><div><small>${esc(s.n)} · ★ ${T.stars}</small><h2 id="ptLvT">Alle Level</h2><p>Sterne aus allen Modulen und Fächern zählen zusammen. Bis Level 100 bringt fast jedes Level eine Belohnung. Danach geht es offen weiter: alle 30 Sterne ein Level. Gegenstände aus der Schweiz gibt es für die Diplome aus «Entdeckungsreise Schweiz».</p></div>
       <button type="button" class="btn" data-pt="lv-close">Fertig</button></div>
     <ol class="pt-lv-list">${L.map((l,k)=>{
       const gifts = LIB.OUTFITS.filter(o=>o.lv === k).map(o=>`<span class="pt-gift"><i class="glitch">${LIB.glitchSVG("normal", {outfit:{[o.slot]:o.id}})}</i>${esc(o.n)}</span>`).concat(RR.rewardsAt(k).map(r=>`<span class="pt-gift"><i>${r.ic}</i>${esc(r.n)}</span>`));
@@ -946,10 +973,15 @@ function wardrobeHTML(){
 function skinPickHTML(o){
   const L = (window.GLAB_SKINS || []).filter(x=>x.id !== "gold"), cur = o.skin || "violett";
   if (window.GLAB_IS_LP) return `<div class="wd-skin"><b>Skin</b><div class="wd-skins"><span class="wd-sk on gold" style="--sk:#F2B705" aria-label="Gold"><span class="glitch">${LIB.glitchSVG("happy")}</span><small>Gold</small></span></div><p class="wd-skin-note">✨ Lehrpersonen sind immer golden. Diese Farbe gibt es nur für Lehrpersonen.</p></div>`;
-  return `<div class="wd-skin"><b>Skin</b><div class="wd-skins" role="radiogroup" aria-label="Skin von gLiTCh">${L.map(x=>`<button type="button" class="wd-sk${cur === x.id ? " on" : ""}" data-pt-skin="${x.id}" role="radio" aria-checked="${cur === x.id}" style="--sk:${x.base}"><span class="glitch">${LIB.glitchSVG("normal", {outfit:{skin:x.id}})}</span><small>${esc(x.n)}</small></button>`).join("")}</div></div>`;
+  const T = totalsFor(D.me);
+  return `<div class="wd-skin"><b>Skin</b><div class="wd-skins" role="radiogroup" aria-label="Skin von gLiTCh">${L.map(x=>{ const open = skinOpen(x, T); return `<button type="button" class="wd-sk${cur === x.id ? " on" : ""}${open ? "" : " locked"}" data-pt-skin="${x.id}" role="radio" aria-checked="${cur === x.id}" ${open ? "" : 'aria-disabled="true"'} style="--sk:${x.base}"><span class="glitch">${LIB.glitchSVG("normal", {outfit:{skin:x.id}})}</span><small>${esc(x.n)}</small>${open ? "" : `<em>${esc(skinReq(x))}</em>`}</button>`; }).join("")}</div></div>`;
 }
+const skinOpen = (x, T) => (x.lv == null || LIB.levelOf(T.stars) >= x.lv) && (!x.badge || T.badges.has(x.badge));
+const skinReq = x => x.reqTxt || (x.lv != null ? `ab Level ${x.lv + 1}` : "");
 function pickSkin(id){
-  if (window.GLAB_IS_LP || id === "gold" || !(window.GLAB_SKINS || []).some(x=>x.id === id)) return;
+  const sk = (window.GLAB_SKINS || []).find(x=>x.id === id);
+  if (window.GLAB_IS_LP || id === "gold" || !sk) return;
+  if (!skinOpen(sk, totalsFor(D.me))){ const b = document.querySelector(`[data-pt-skin="${id}"]`); if (b) b.animate([{transform:"translateX(-5px)"},{transform:"translateX(5px)"},{transform:"none"}], {duration:280}); return; }
   const s = student(D.me), p = prog(s.id), ov = document.getElementById("ptWd");
   p.outfit = Object.assign({}, p.outfit, {skin: id === "violett" ? null : id}); p.outfitAt = now(); window.GLAB_CUR_SKIN = id === "violett" ? "" : id; saveD();
   if (ov){ const sc = ov.scrollTop; ov.innerHTML = wardrobeHTML(); ov.scrollTop = sc; }
@@ -960,7 +992,7 @@ document.addEventListener("click", e=>{ const b = e.target.closest && e.target.c
   + ".wd-sk{all:unset;box-sizing:border-box;cursor:pointer;display:grid;justify-items:center;gap:2px;padding:8px 4px 6px;border-radius:14px;background:rgba(255,255,255,.06);border:2px solid transparent;text-align:center}"
   + ".wd-sk .glitch{width:40px;height:40px;display:block}.wd-sk .glitch svg{width:100%;height:100%}.wd-sk small{font:700 .72rem/1.1 system-ui,sans-serif;opacity:.85}"
   + ".wd-sk.on{border-color:var(--sk);background:color-mix(in srgb, var(--sk) 22%, transparent)}.wd-sk:focus-visible{outline:3px solid #FFC21A;outline-offset:2px}"
-  + ".wd-skin-note{margin:8px 0 0;font-size:.85rem;opacity:.85}";
+  + ".wd-skin-note{margin:8px 0 0;font-size:.85rem;opacity:.85}.wd-sk.locked .glitch{filter:grayscale(.85) brightness(.6)}.wd-sk em{font:600 .62rem/1.15 system-ui,sans-serif;font-style:normal;opacity:.75}";
   (document.head || document.documentElement).appendChild(st); })();
 function openWardrobe(){
   closeOv("ptWd");

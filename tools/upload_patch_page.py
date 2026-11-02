@@ -74,3 +74,36 @@ if (HUB_PART === 2){ unlocked2 = true; mode = "verbessern"; } else if (HUB_PART 
 _a = 'function renderTabs(){\n  $("#tabs").innerHTML = `'
 assert _a in page
 page = page.replace(_a, 'function renderTabs(){\n  if (HUB_PART){ $("#tabs").innerHTML = HUB_PART === 1 ? `<button type="button" class="tab" aria-pressed="true" disabled><b>Teil 1<span class="tl-x"> · Prompt bauen</span><span class="tl-s"> · Bauen</span></b><span>Prompt-Labor 1</span></button>` : `<button type="button" class="tab" aria-pressed="true" disabled><b>Teil 2<span class="tl-x"> · Testen &amp; verbessern</span><span class="tl-s"> · Testen</span></b><span>Prompt-Labor 2</span></button>`; $("#sub").textContent = M.sub; $("#promptTitle").textContent = M.promptTitle; return; }\n  $("#tabs").innerHTML = `', 1)
+
+# gLiTCh im Zimmer streicheln: hin und her über gLiTCh fahren (Finger oder Maus); ein Wisch nach unten bleibt das Emote
+_a = "/* Belohnungen pro Level (für Level-Übersichten) */"
+assert _a in page
+page = page.replace(_a, '''/* Streicheln im Zimmer */
+(function(){
+  let P = null;
+  const heart = g => { const r = g.getBoundingClientRect(), h = document.createElement("span"); h.textContent = Math.random() < .5 ? "♥" : "💜";
+    h.style.cssText = `position:fixed;left:${r.left + r.width*(.2 + Math.random()*.6)}px;top:${r.top + r.height*.2}px;z-index:9999;pointer-events:none;font-size:20px;color:#FF4F8B;transition:transform 1.2s ease-out, opacity 1.2s`;
+    document.body.appendChild(h); requestAnimationFrame(()=>{ h.style.transform = "translateY(-50px) scale(1.3)"; h.style.opacity = "0"; }); setTimeout(()=>h.remove(), 1300); };
+  const LINES = ["Hihi! Das kitzelt!","Mehr! Mein Code schnurrt!","Oh, so lieb!","Bzzzt … das tut gut!","Pixel-Kuschelzeit!"];
+  const end = () => { if (P && P.on){ P.g.classList.remove("pt-petted"); if (window.GLAB_PET) window.GLAB_PET(P.g, false); } P = null; };
+  document.addEventListener("pointermove", e=>{
+    const g = e.target.closest && e.target.closest(".pt-room-g"); if (!g){ if (P && !P.on) P = null; return; }
+    if (!P || P.g !== g) P = {g, last:null, dir:0, flips:0, dist:0, on:false, t:null};
+    if (P.last){ const dx = e.clientX - P.last[0]; P.dist += Math.hypot(dx, e.clientY - P.last[1]); const d = Math.sign(dx); if (d && P.dir && d !== P.dir && Math.abs(dx) > 1) P.flips++; if (d) P.dir = d; }
+    P.last = [e.clientX, e.clientY];
+    if (P.dist > 160 && P.flips >= 2){
+      if (!P.on){ P.on = true; window.__bdSwipe = lastSwipe = Date.now() + 99999; g.classList.add("pt-petted"); if (window.GLAB_PET) window.GLAB_PET(g, true); floatMsg(g, LINES[Math.floor(Math.random()*LINES.length)]); }
+      if (Math.random() < .25) heart(g);
+    }
+    clearTimeout(P.t); P.t = setTimeout(()=>{ end(); lastSwipe = Date.now(); }, 800);
+  }, true);
+  const css = document.createElement("style"); css.textContent = ".pt-room-g.pt-petted > span{animation:ptPet .35s ease-in-out infinite}@keyframes ptPet{0%,100%{transform:rotate(-4deg) scale(1.03)}50%{transform:rotate(4deg) scale(1.07)}}@media (prefers-reduced-motion: reduce){.pt-room-g.pt-petted > span{animation:none}}"; document.head.appendChild(css);
+})();
+''' + _a, 1)
+
+# Level nach oben offen: ab Level 100 alle 30 Sterne ein weiteres Level («gLiTCh-Legende +1», «+2» …)
+_a = 'const levelOf = st => { let i = 0; LEVELS.forEach((l,k)=>{ if (st >= l.s) i = k; }); return i; };'
+assert _a in page
+page = page.replace(_a, '''const LV_STEP = 30;
+function lvEnsure(n){ while (LEVELS.length < n){ const k = LEVELS.length - 99; LEVELS.push({n: "gLiTCh-Legende +" + k, s: LEVELS[99].s + k * LV_STEP}); } }
+const levelOf = st => { if (st >= LEVELS[99].s) lvEnsure(100 + Math.floor((st - LEVELS[99].s) / LV_STEP) + 2); let i = 0; LEVELS.forEach((l,k)=>{ if (st >= l.s) i = k; }); return i; };''', 1)

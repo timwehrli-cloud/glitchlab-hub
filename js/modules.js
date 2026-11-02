@@ -62,9 +62,16 @@
       m.theme = m.subject + "-weitere";
       if (!H.themes.some(t => t.id === m.theme)) H.themes.push({ id: m.theme, subject: m.subject, title: "Weitere Module", teaser: "", art: "hallo", c: "#8B5CFF", c2: "#3A1D7A" });
     }
+    /* Sterne-Budget: Module geben Sterne nach Dauer (pro Lektion à 45 Minuten gleich viele). Hochgeladene Module bringen ihr Budget aus dem Editor mit. */
+    if (m.budget == null && m.minutes && m.kind !== "lab" && !m.upload && m.activities.length && m.activities.every(x => x.maxStars != null))
+      m.budget = Math.max(5, Math.round(m.minutes / 45 * H.STARS_PER_LESSON));
     H.modules.push(m);
   };
-  H.maxStars = m => m.activities.reduce((a, x) => a + (x.maxStars || 0), 0);   // 0 = offen nach oben
+  H.STARS_PER_LESSON = 60;
+  H.rawMax = m => m.activities.reduce((a, x) => a + (x.maxStars || 0), 0);
+  H.scaleOf = m => { const r = H.rawMax(m); return m.budget && r ? m.budget / r : 1; };
+  H.scaled = (m, x, raw) => x.maxStars == null ? raw : Math.round(Math.min(x.maxStars, raw) * H.scaleOf(m));
+  H.maxStars = m => m.budget && H.rawMax(m) ? m.budget : H.rawMax(m);   // 0 = offen nach oben
   H.openEnded = m => m.activities.some(x => x.maxStars == null);
 
   /* ---------------------------------------------------------------

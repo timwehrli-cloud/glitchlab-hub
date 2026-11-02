@@ -2358,6 +2358,27 @@ document.addEventListener("pointerup", e=>{
 }, true);
 document.addEventListener("click", e=>{ if (Date.now() - lastSwipe < 400 && e.target.closest && e.target.closest(".pt-room-g, #bAv, .fn-av")){ e.stopPropagation(); e.preventDefault(); } }, true);
 
+/* Streicheln im Zimmer */
+(function(){
+  let P = null;
+  const heart = g => { const r = g.getBoundingClientRect(), h = document.createElement("span"); h.textContent = Math.random() < .5 ? "♥" : "💜";
+    h.style.cssText = `position:fixed;left:${r.left + r.width*(.2 + Math.random()*.6)}px;top:${r.top + r.height*.2}px;z-index:9999;pointer-events:none;font-size:20px;color:#FF4F8B;transition:transform 1.2s ease-out, opacity 1.2s`;
+    document.body.appendChild(h); requestAnimationFrame(()=>{ h.style.transform = "translateY(-50px) scale(1.3)"; h.style.opacity = "0"; }); setTimeout(()=>h.remove(), 1300); };
+  const LINES = ["Hihi! Das kitzelt!","Mehr! Mein Code schnurrt!","Oh, so lieb!","Bzzzt … das tut gut!","Pixel-Kuschelzeit!"];
+  const end = () => { if (P && P.on){ P.g.classList.remove("pt-petted"); if (window.GLAB_PET) window.GLAB_PET(P.g, false); } P = null; };
+  document.addEventListener("pointermove", e=>{
+    const g = e.target.closest && e.target.closest(".pt-room-g"); if (!g){ if (P && !P.on) P = null; return; }
+    if (!P || P.g !== g) P = {g, last:null, dir:0, flips:0, dist:0, on:false, t:null};
+    if (P.last){ const dx = e.clientX - P.last[0]; P.dist += Math.hypot(dx, e.clientY - P.last[1]); const d = Math.sign(dx); if (d && P.dir && d !== P.dir && Math.abs(dx) > 1) P.flips++; if (d) P.dir = d; }
+    P.last = [e.clientX, e.clientY];
+    if (P.dist > 160 && P.flips >= 2){
+      if (!P.on){ P.on = true; window.__bdSwipe = lastSwipe = Date.now() + 99999; g.classList.add("pt-petted"); if (window.GLAB_PET) window.GLAB_PET(g, true); floatMsg(g, LINES[Math.floor(Math.random()*LINES.length)]); }
+      if (Math.random() < .25) heart(g);
+    }
+    clearTimeout(P.t); P.t = setTimeout(()=>{ end(); lastSwipe = Date.now(); }, 800);
+  }, true);
+  const css = document.createElement("style"); css.textContent = ".pt-room-g.pt-petted > span{animation:ptPet .35s ease-in-out infinite}@keyframes ptPet{0%,100%{transform:rotate(-4deg) scale(1.03)}50%{transform:rotate(4deg) scale(1.07)}}@media (prefers-reduced-motion: reduce){.pt-room-g.pt-petted > span{animation:none}}"; document.head.appendChild(css);
+})();
 /* Belohnungen pro Level (für Level-Übersichten) */
 function rewardsAt(k){
   return ROOM.filter(it=>it.lv === k).map(it=>({kind:"room", n:it.n, ic:thumb(it)})).concat(EMOTES.filter(x=>x.lv === k).map(x=>({kind:"emote", n:"Emote: " + x.n, ic:x.ic})));
@@ -7668,7 +7689,9 @@ const LEVELS = [
 /* Belohnungen, die früher an den 8 alten Leveln hingen, bleiben bei der gleichen Sternzahl */
 const OLD_LV = [0,8,18,30,45,62,82,105];
 const remapLv = lv => { let i = 0; LEVELS.forEach((l,k)=>{ if (OLD_LV[lv] >= l.s) i = k; }); return i; };
-const levelOf = st => { let i = 0; LEVELS.forEach((l,k)=>{ if (st >= l.s) i = k; }); return i; };
+const LV_STEP = 30;
+function lvEnsure(n){ while (LEVELS.length < n){ const k = LEVELS.length - 99; LEVELS.push({n: "gLiTCh-Legende +" + k, s: LEVELS[99].s + k * LV_STEP}); } }
+const levelOf = st => { if (st >= LEVELS[99].s) lvEnsure(100 + Math.floor((st - LEVELS[99].s) / LV_STEP) + 2); let i = 0; LEVELS.forEach((l,k)=>{ if (st >= l.s) i = k; }); return i; };
 const BADGES = [
   {id:"erfinder", n:"Erfinder", d:"Eigene Idee mit mindestens 60 Zeichen beschrieben", i:ICON.eigene, t:s=>(s.ideeEigen||"").trim().length >= 60},
   {id:"namen", n:"Namensgeber", d:"Dem Programm einen Namen gegeben", i:SYMS.stift.p, t:s=>has(s,"name")},

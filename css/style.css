@@ -588,3 +588,10 @@ footer.foot { text-align: center; padding-block: 8px 28px; }
 .mv-b:disabled{opacity:.25;cursor:default}
 .mv-b:focus-visible{outline:3px solid #FFC21A;outline-offset:2px}
 @media (max-width:560px){.acc-r{grid-template-columns:1fr auto}.acc-r .acc-sel{grid-column:1/-1}}
+/* gLiTCh streicheln */
+.pet-heart{position:fixed;z-index:9999;pointer-events:none;font-size:18px;color:#FF4F8B;animation:petHeart 1.3s ease-out forwards}
+@keyframes petHeart{0%{transform:translate(-50%,0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translate(-50%,-48px) scale(1.2);opacity:0}}
+.petted .glitch, .glitch.petted{animation:petWiggle .35s ease-in-out infinite}
+@keyframes petWiggle{0%,100%{transform:rotate(-4deg) scale(1.03)}50%{transform:rotate(4deg) scale(1.06)}}
+.corner-btn{touch-action:none}
+@media (prefers-reduced-motion: reduce){.pet-heart,.petted .glitch{animation:none}}

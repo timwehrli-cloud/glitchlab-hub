@@ -54,7 +54,7 @@
   const lpStat = m => lpStatOf(S.me?.progress || [], null, m);
   const labBadges = m => m.kind === "lab" ? GD.BADGES.filter(b => (b.mod || "prompt") === m.lab).map(b => b.id) : [];
   const fullAct = (x, st) => x.maxStars == null ? Math.max(st, LAB_FULL) : x.maxStars;
-  const actStars = (m, x) => { const st = progOf(m.id, x.id)?.stars || 0; if (lpStat(m) === "fertig") return fullAct(x, st); return x.maxStars == null ? st : Math.min(x.maxStars, st); };
+  const actStars = (m, x) => { const st = progOf(m.id, x.id)?.stars || 0; return H.scaled(m, x, lpStat(m) === "fertig" ? fullAct(x, st) : st); };
   const modStars = m => m.activities.reduce((a, x) => a + actStars(m, x), 0);
   /* Nur für das Lehrpersonen-Konto (z. B. Jeopardy): für Kinder unsichtbar */
   const visMod = m => !m.lpOnly || isLP();
@@ -64,7 +64,9 @@
   const allStars = () => H.subjects.reduce((a, s) => a + subjStars(s.id), 0)
     + (S.me?.progress || []).filter(p => p.module_id === "test").reduce((a, p) => a + p.stars, 0);   // Test-Modus der Lehrperson
   const GD = window.GL_DATA || { LEVELS: [{ n: "Start", s: 0 }], BADGES: [], OUTFITS: [] };
-  const levelOf = st => { let i = 0; GD.LEVELS.forEach((l, k) => { if (st >= l.s) i = k; }); return i; };
+  /* Level nach oben offen: ab Level 100 alle 30 Sterne ein weiteres Level */
+  const lvEnsure = n => { const L = GD.LEVELS; while (L.length >= 100 && L.length < n) { const k = L.length - 99; L.push({ n: "gLiTCh-Legende +" + k, s: L[99].s + k * 30 }); } };
+  const levelOf = st => { const L = GD.LEVELS; if (L.length >= 100 && st >= L[99].s) lvEnsure(100 + Math.floor((st - L[99].s) / 30) + 2); let i = 0; L.forEach((l, k) => { if (st >= l.s) i = k; }); return i; };
   const lpDoneMods = () => H.modules.filter(m => lpStat(m) === "fertig");
   const myBadges = () => new Set((S.me?.progress || []).flatMap(p => (p.data && Array.isArray(p.data.badges)) ? p.data.badges : []).concat(lpDoneMods().flatMap(labBadges)));
   const upBadges = mid => { const m = H.modules.find(x => x.id === mid), own = (S.me?.progress || []).filter(p => p.module_id === mid).flatMap(p => (p.data && Array.isArray(p.data.badges)) ? p.data.badges : []);
@@ -110,6 +112,50 @@
     ? `<span class="stars" aria-label="${n} von ${max} Sternen">★ <b style="color:var(--ink)">${n}</b><span style="color:var(--muted);letter-spacing:0"> / ${max}</span></span>`
     : `<span class="stars" aria-label="${n} von ${max} Sternen">${"★".repeat(n)}<span>${"★".repeat(Math.max(0, max - n))}</span></span>`;
 
+  /* ---------- Eingebaute Hintergründe fürs Zimmer: freigeschaltet durch abgeschlossene Themen und Module ---------- */
+  const COL = (x, c) => `<rect x="${x}" y="10" width="7" height="2" fill="#F4EAD5"/><rect x="${x + 1}" y="12" width="5" height="42" fill="#EDE3CC"/><path d="M${x + 2} 12v42M${x + 4} 12v42" stroke="#CFC2A3" stroke-width=".5"/><rect x="${x}" y="54" width="7" height="2.5" fill="#F4EAD5"/>`;
+  const BUILTIN_BGS = [
+    { id: "bg_rom", n: "Römische Villa", ic: "🏛️", wand: ["#6E2318", "#B3503A"], boden: ["#E8E0CC", "#D3C7AC", "#B9AC8E"], reqTxt: "Thema «Die Römer» abschliessen",
+      svg: COL(14, 0) + COL(139, 0) + `<path d="M58 54V30a22 22 0 0 1 44 0v24" fill="#3A140E" stroke="#F4EAD5" stroke-width="2"/><path d="M62 54V31a18 18 0 0 1 36 0v23" fill="#5E9BC8"/><circle cx="88" cy="24" r="4" fill="#FFE07A"/><path d="M62 46c8-4 14-2 18-6s10-3 18 2v12H62z" fill="#7BA35A"/><path d="M68 42v-6l2-2 2 2v6M84 40v-7l2-2 2 2v7" fill="#E8DCC0"/>`
+        + `<g fill="none" stroke="#7FA34A" stroke-width="1.6" stroke-linecap="round"><path d="M30 8c6 4 12 5 18 4M130 8c-6 4-12 5-18 4"/></g>` + Array.from({ length: 6 }, (_, k) => `<ellipse cx="${32 + k * 3}" cy="${9 - (k % 2)}" rx="1.6" ry=".9" fill="#9BC062" transform="rotate(-20 ${32 + k * 3} 9)"/><ellipse cx="${128 - k * 3}" cy="${9 - (k % 2)}" rx="1.6" ry=".9" fill="#9BC062" transform="rotate(20 ${128 - k * 3} 9)"/>`).join("")
+        + `<text x="80" y="8" font-size="5" font-weight="700" text-anchor="middle" fill="#F4D58A" font-family="Georgia,serif" letter-spacing="1">SPQR</text>`,
+      done: () => { const L = H.modules.filter(m => m.theme === "nmg-roemer" && !m.soon && !m.lpOnly); return L.length > 0 && L.every(modSolved); } },
+    { id: "bg_en", n: "London-Zimmer", ic: "💂", wand: ["#13204A", "#2C4291"], boden: ["#6B3F22", "#8A5530", "#5A321A"], reqTxt: "«How long does it take?» abschliessen",
+      svg: `<rect x="96" y="12" width="44" height="34" rx="2" fill="#0B1430" stroke="#F4EAD5" stroke-width="2"/><path d="M96 29h44M118 12v34" stroke="#F4EAD5" stroke-width="1.4"/><circle cx="104" cy="18" r="1" fill="#fff"/><circle cx="132" cy="20" r=".8" fill="#fff"/>`
+        + `<rect x="104" y="24" width="7" height="22" fill="#3A3A44"/><path d="M104 24l3.5-6 3.5 6z" fill="#3A3A44"/><circle cx="107.5" cy="28" r="2.4" fill="#FFE07A"/><rect x="122" y="34" width="14" height="12" fill="#2A2A33"/><rect x="124" y="30" width="3" height="16" fill="#2A2A33"/>`
+        + `<g transform="translate(18 18)"><rect width="16" height="34" rx="2" fill="#D8221F"/><rect x="2" y="3" width="12" height="3" fill="#F4EAD5"/><text x="8" y="5.4" font-size="2.4" font-weight="800" text-anchor="middle" fill="#D8221F" font-family="sans-serif">TELEPHONE</text>`
+        + `<g fill="#F9E6A8">${[0, 1, 2, 3, 4].map(r => `<rect x="3" y="${9 + r * 4.4}" width="4" height="3.4"/><rect x="9" y="${9 + r * 4.4}" width="4" height="3.4"/>`).join("")}</g></g>`
+        + `<rect x="46" y="14" width="34" height="18" rx="2" fill="#F4EAD5"/><text x="63" y="22" font-size="6" font-weight="800" text-anchor="middle" fill="#13204A" font-family="sans-serif">Hello!</text><text x="63" y="28.5" font-size="3.4" text-anchor="middle" fill="#B3263A" font-family="sans-serif">How long does it take?</text>`
+        + `<path d="M4 6c10 6 20 6 30 0s20 6 30 0 20 6 30 0 20 6 30 0 20 6 30 0" stroke="#F4EAD5" stroke-width=".6" fill="none"/>` + [10, 30, 50, 70, 90, 110, 130, 150].map((x, k) => `<path d="M${x - 3} ${7.5} l3 5 3-5z" fill="${["#D8221F", "#F4EAD5", "#2C4291"][k % 3]}"/>`).join(""),
+      done: () => { const m = H.modules.find(x => x.id === "en-how-long"); return !!m && modSolved(m); } },
+    { id: "bg_wueste", n: "Wüsten-Oase", ic: "🏜️", wand: ["#E86F2C", "#F7CB74"], boden: ["#E9C47C", "#D6A85A", "#BC8C40"], reqTxt: "Wüsten-Game: alle drei Level spielen",
+      svg: `<circle cx="124" cy="18" r="9" fill="#FFF2B0" opacity=".95"/><circle cx="124" cy="18" r="13" fill="#FFF2B0" opacity=".25"/><path d="M0 50c20-10 40-12 62-4s40 6 58-2 30-6 40 0v20H0z" fill="#E2A957"/><path d="M0 56c24-6 44-4 66 0s46 2 64-4 20-2 30 2v14H0z" fill="#CF9445"/>`
+        + `<g transform="translate(26 26)"><rect x="-1.5" y="0" width="3" height="28" rx="1.5" fill="#2E8B57"/><path d="M-1.5 12h-5v-7a2 2 0 0 1 3 0v4h2M1.5 9h5v-6a2 2 0 0 0-3 0v3h-2" fill="#2E8B57"/></g>`
+        + `<g transform="translate(78 22)"><path d="M0 34c1-12 0-22-3-30" stroke="#7A4A22" stroke-width="2.4" fill="none"/><path d="M-3 4c-8-2-14 1-17 6 6-2 11-2 17-6zM-3 4c-2-7-8-10-14-9 5 3 9 5 14 9zM-3 4c4-7 10-8 16-6-6 1-11 3-16 6zM-3 4c7-1 13 3 15 8-6-3-10-4-15-8z" fill="#3AA35B"/><circle cx="-2" cy="7" r="1.6" fill="#7A4A22"/><circle cx="-5" cy="6" r="1.4" fill="#8B5A2B"/></g>`
+        + `<ellipse cx="100" cy="58" rx="16" ry="3" fill="#4FB3E8"/><ellipse cx="100" cy="57.4" rx="12" ry="1.6" fill="#9EE3FF"/><path d="M60 12l3-1 2 1M70 9l3-1 2 1" stroke="#7A4A22" stroke-width=".8" fill="none"/>`,
+      done: () => { const m = H.modules.find(x => x.id === "de-wueste"); return !!m && m.activities.every(x => actStars(m, x) > 0); } }
+  ];
+  const builtinExtras = () => { const lp = isLP(); return { bgs: BUILTIN_BGS.map(({ done, ...b }) => Object.assign({ badge: "hb:" + b.id }, b)), earned: BUILTIN_BGS.filter(b => lp || b.done()).map(b => "hb:" + b.id) }; };
+
+  /* ---------- gLiTCh streicheln: mit Finger oder Maus hin und her über gLiTCh fahren ---------- */
+  const PET_LINES = ["Hihi! Das kitzelt!", "Mehr! Mein Code schnurrt!", "Oh, so lieb!", "Bzzzt … das tut gut!", "Pixel-Kuschelzeit!"];
+  function pettable(el, say) {
+    if (!el || el.dataset.pet) return; el.dataset.pet = "1";
+    let last = null, dir = 0, flips = 0, dist = 0, t = null, petted = false;
+    const heart = () => { const r = el.getBoundingClientRect(), h = document.createElement("span"); h.className = "pet-heart"; h.textContent = Math.random() < .5 ? "♥" : "💜";
+      h.style.left = (r.left + r.width * (.2 + Math.random() * .6)) + "px"; h.style.top = (r.top + r.height * .2) + "px"; document.body.appendChild(h); setTimeout(() => h.remove(), 1300); };
+    const reset = () => { last = null; dir = 0; flips = 0; dist = 0; petted = false; el.classList.remove("petted"); const g = el.querySelector(".glitch"); if (g && el.dataset.petOld) { g.innerHTML = el.dataset.petOld; delete el.dataset.petOld; } };
+    el.addEventListener("pointermove", e => {
+      if (last) { const dx = e.clientX - last[0]; dist += Math.hypot(dx, e.clientY - last[1]); const d = Math.sign(dx); if (d && dir && d !== dir && Math.abs(dx) > 1) flips++; if (d) dir = d; }
+      last = [e.clientX, e.clientY];
+      if (dist > 160 && flips >= 2) {
+        if (!petted) { petted = true; el.classList.add("petted"); const g = el.querySelector(".glitch"); if (g) { el.dataset.petOld = g.innerHTML; g.innerHTML = G.svg("love", "#8B5CFF", { outfit: outfitOf(), lp: isLP() }); } say(PET_LINES[Math.floor(Math.random() * PET_LINES.length)]); }
+        if (Math.random() < .25) heart();
+      }
+      clearTimeout(t); t = setTimeout(reset, 800);
+    });
+    el.addEventListener("pointerleave", () => { clearTimeout(t); t = setTimeout(reset, 500); });
+  }
   /* ---------- Logo: gLiTCh mit animiertem Glitch-Schriftzug ---------- */
   const brandLogo = (mood, sub) => `<span class="brand-g" aria-hidden="true"><span class="glitch">${G.svg(mood, "#8B5CFF", { outfit: S.me ? outfitOf() : {}, lp: isLP() })}</span><i class="brand-spark s1"></i><i class="brand-spark s2"></i></span>
     <span class="brand-t"><b class="logo-word" data-t="Glitchlab-Hub"><span class="lw-a">Glitch</span><span class="lw-b">lab</span><span class="lw-c">-Hub</span></b><small>${esc(sub)}</small></span>`;
@@ -542,10 +588,11 @@
       const hubDone = H.modules.filter(m => m.kind !== "lab" && modStars(m) > 0).map(m => "hub:" + m.id);
       mods.hub = { stars: Math.max(0, allStars() - labSum), badges: [...myBadges(), ...hubDone], fed: myMax("fed"), deaths: myMax("deaths") };
       /* Extras aus hochgeladenen Modulen: freigeschaltete kommen als «up:…»-Merker dazu */
-      const up = H.uploadExtras(m => modStars(m), m => upBadges(m.id), isLP());
-      mods.hub.badges = [...new Set([...mods.hub.badges, ...up.earned])];
+      const up = H.uploadExtras(m => modStars(m), m => upBadges(m.id), isLP(), () => levelOf(allStars()) + 1);
+      const bi = builtinExtras(); up.custom.bgs = bi.bgs.concat(up.custom.bgs || []);
+      mods.hub.badges = [...new Set([...mods.hub.badges, ...up.earned, ...bi.earned])];
       if (isLP()) {   // Lehrpersonen-Konto: höchstes Level, alle Diplome, alles freigeschaltet
-        mods.hub.stars = GD.LEVELS[GD.LEVELS.length - 1].s + 1;
+        mods.hub.stars = GD.LEVELS[99].s + 1;
         mods.hub.badges = [...new Set([...mods.hub.badges, ...GD.BADGES.map(b => b.id), ...H.modules.map(m => "hub:" + m.id)])];
         mods.hub.fed = 99; mods.hub.deaths = 9;
       }
@@ -582,7 +629,7 @@
         const q = progOf(moduleId, "badges");
         if (q) q.data = Object.assign({}, q.data, { badges: [...new Set([...((q.data || {}).badges || []), name])] });
         else S.me.progress.push({ module_id: moduleId, activity_id: "badges", stars: 0, data: { badges: [name] }, team: [] });
-        const newly = H.uploadExtras(x => modStars(x), x => upBadges(x.id), false);
+        const newly = H.uploadExtras(x => modStars(x), x => upBadges(x.id), false, () => levelOf(allStars()) + 1);
         toast(`Spezial-Aufgabe geschafft!${newly.earned.length ? " Schaut in gLiTChs Zimmer nach Neuem." : ""}`, "star");
       }).catch(err => toast(err.message, "err", 5000));
     },
@@ -649,6 +696,7 @@
       $(".labshell").appendChild(cb);
       let n = 0, tm = null;
       $(".corner-btn", cb).onclick = () => { const p = $(".corner-say", cb); p.textContent = LINES[n++ % LINES.length]; p.hidden = false; clearTimeout(tm); tm = setTimeout(() => { p.hidden = true; }, 4000); };
+      pettable($(".corner-btn", cb), txt => { const p = $(".corner-say", cb); p.textContent = txt; p.hidden = false; clearTimeout(tm); tm = setTimeout(() => { p.hidden = true; }, 3000); });
     }
     S.cleanup = () => { labFlush(); if (stop) stop(); };
   }
@@ -803,7 +851,7 @@
     };
     $$("[data-newpin]").forEach(b => b.onclick = async () => { await S.be.newPin(b.dataset.newpin); toast("Neues Bild-Passwort erstellt."); render(); });
     $$("[data-test]").forEach(b => b.onclick = async () => {
-      await S.be.testUnlock(b.dataset.test, GD.LEVELS[GD.LEVELS.length - 1].s, GD.BADGES.map(x => x.id));
+      await S.be.testUnlock(b.dataset.test, GD.LEVELS[99].s, GD.BADGES.map(x => x.id));
       toast("Test-Modus: höchstes Level und alle Diplome. «Zurücksetzen» macht es rückgängig."); render();
     });
     $$("[data-reset]").forEach(b => b.onclick = async () => {
@@ -925,14 +973,14 @@
   function kidModStars(prog, kidId, m) {
     const done = lpStatOf(prog, kidId, m) === "fertig";
     return m.activities.reduce((a, x) => { const v = (prog.find(p => p.student_id === kidId && p.module_id === m.id && p.activity_id === x.id) || {}).stars || 0;
-      return a + (done ? fullAct(x, v) : x.maxStars == null ? v : Math.min(x.maxStars, v)); }, 0);
+      return a + H.scaled(m, x, done ? fullAct(x, v) : v); }, 0);
   }
   function autoStat(prog, kidId, m) {
     const own = m.activities.reduce((a, x) => a + ((prog.find(p => p.student_id === kidId && p.module_id === m.id && p.activity_id === x.id) || {}).stars || 0), 0);
     if (!own) return "offen";
     if (m.kind === "lab") { const have = new Set(prog.filter(p => p.student_id === kidId && p.module_id === m.id).flatMap(p => (p.data && p.data.badges) || [])), all = labBadges(m);
       return all.length && all.every(b => have.has(b)) ? "fertig" : "arbeit"; }
-    const mx = H.maxStars(m); return mx && own >= mx ? "fertig" : "arbeit";
+    const mx = H.rawMax(m); return mx && own >= mx ? "fertig" : "arbeit";
   }
   function kidModsPanelHTML() {
     const kids = LP.kids.filter(k => !k.is_teacher);
@@ -1054,7 +1102,7 @@
     const subjName = id => (H.subjects.find(s => s.id === id) || {}).short || "–";
     return `<section class="panel"><div class="row" style="justify-content:space-between"><h2>Module hochladen</h2>
         <span class="row">${CFG.EDITOR_URL ? `<a class="btn small primary" href="${esc(CFG.EDITOR_URL)}" target="_blank" rel="noopener">✨ Im gLiTCh-Editor erstellen</a>` : ""}<button type="button" class="btn small" data-uptpl>📄 Vorlage herunterladen</button></span></div>
-      <p class="hint">Zieh fertige HTML-Module hierher, zum Beispiel aus dem gLiTCh-Editor. Outfits, Emotes, Zimmer-Gegenstände und Hintergründe aus dem Steckbrief der Datei werden im Hub verfügbar. Die Kinder schalten sie im Modul frei.</p>
+      <p class="hint">Zieh fertige HTML-Module oder Belohnungs-Pakete (Addons mit Belohnungen für höhere Level) hierher, zum Beispiel aus dem gLiTCh-Editor. Outfits, Emotes, Zimmer-Gegenstände und Hintergründe aus dem Steckbrief der Datei werden im Hub verfügbar. Die Kinder schalten sie im Modul frei.</p>
       <label class="dropzone" id="upDrop" tabindex="0">
         <input type="file" id="upFile" accept=".html,.htm,text/html" multiple hidden>
         <span class="dz-ic" aria-hidden="true">⬇️</span><b>HTML-Datei hierher ziehen</b><span class="hint">oder tippen zum Auswählen · max. 8 MB pro Datei</span>
@@ -1062,8 +1110,8 @@
       ${ups.length ? `<div class="uplist">${ups.map(u => { const d = u.meta || {}, e = d.extras || {}, m = H.modules.find(x => x.uploadId === u.id), t = m && H.themes.find(x => x.id === m.theme);
         return `<div class="upitem${u.published ? "" : " off"}">
           <span class="up-art">${(H.modArt && H.modArt["up-" + u.id] || {}).svg || ""}</span>
-          <div class="up-txt"><b>${esc(d.title)}</b><small>${esc(subjName(d.subject))}${t ? " · " + esc(t.title) : ""} · ${H.maxStars(m || { activities: [] })} Sterne</small>
-            <span class="up-ex">${[["outfits", "👕", "Outfits"], ["emotes", "✨", "Emotes"], ["room", "🛋️", "Zimmer"], ["bgs", "🖼️", "Hintergründe"]].map(([k, ic, n]) => (e[k] || []).length ? `<span title="${n}">${ic} ${(e[k] || []).length} ${n}</span>` : "").join("") || `<span>Keine Extras</span>`}</span></div>
+          <div class="up-txt"><b>${esc(d.title)}</b><small>${d.addon ? "🎁 Belohnungs-Paket" : `${esc(subjName(d.subject))}${t ? " · " + esc(t.title) : ""} · ${H.maxStars(m || { activities: [] })} Sterne`}</small>
+            <span class="up-ex">${[["outfits", "👕", "Outfits"], ["emotes", "✨", "Emotes"], ["room", "🛋️", "Zimmer"], ["bgs", "🖼️", "Hintergründe"], ["skins", "🎨", "Skins"]].map(([k, ic, n]) => (e[k] || []).length ? `<span title="${n}">${ic} ${(e[k] || []).length} ${n}</span>` : "").join("") || `<span>Keine Extras</span>`}</span></div>
           <div class="up-act">
             <button type="button" class="btn small" data-upprev="${u.id}">▶ Testen</button>
             <button type="button" class="btn small" data-uptog="${u.id}">${u.published ? "● Sichtbar" : "○ Versteckt"}</button>
@@ -1121,17 +1169,17 @@
         return ts.map(t => `<option value="${esc(t.title)}"${t.title.toLowerCase() === (meta.theme || "").toLowerCase() ? " selected" : ""}>${esc(t.title)}</option>`).join("") + `<option value="__neu"${known ? "" : " selected"}>+ Neues Thema …</option>`; };
       const exList = (k, ic, n, f) => (e[k] || []).length ? `<div class="up-exg"><b>${ic} ${n}</b>${e[k].map(x => `<span class="chip">${esc(f(x))} · <small>${esc(H.unlockText(x.unlock, meta.title))}</small></span>`).join("")}</div>` : "";
       ov.innerHTML = `<div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="upT">
-        <div class="sheet-h">${gl("happy", "#8B5CFF")}<div><h2 id="upT">${isReplace ? "Modul ersetzen" : "Modul hochladen"}</h2><p>${esc(fileName)}</p></div></div>
+        <div class="sheet-h">${gl("happy", "#8B5CFF")}<div><h2 id="upT">${meta.addon ? "🎁 Belohnungs-Paket" : isReplace ? "Modul ersetzen" : "Modul hochladen"}</h2><p>${esc(fileName)}</p></div></div>
         ${warn.length ? `<div class="up-warn">${warn.map(w => `<p>⚠️ ${esc(w)}</p>`).join("")}</div>` : ""}
         <label class="f">Titel<input class="input" id="upTitle" value="${esc(meta.title)}" maxlength="60"></label>
         <label class="f">Kurzbeschreibung<input class="input" id="upTeaser" value="${esc(meta.teaser)}" maxlength="160"></label>
-        <div class="ed-grid">
+        <div class="ed-grid" ${meta.addon ? "hidden" : ""}>
           <label class="f">Fach<select class="input" id="upSubj"><option value="">Bitte wählen …</option>${subjOpts()}</select></label>
           <label class="f">Thema<select class="input" id="upTheme"></select></label>
           <label class="f" id="upNewWrap">Neues Thema<input class="input" id="upNew" value="${esc(meta.theme)}" maxlength="50" placeholder="z. B. Naturgewalten"></label>
         </div>
-        <p class="hint">Sterne: ${meta.activities.length ? meta.activities.map(a => `${esc(a.title)} (${a.maxStars})`).join(", ") + " + " : ""}1 für «Fertig».</p>
-        ${H.extrasCount(meta) ? `<div class="up-extras">${exList("outfits", "👕", "Outfits", x => (x.emoji ? x.emoji + " " : "") + x.n)}${exList("emotes", "✨", "Emotes", x => x.ic + " " + x.n)}${exList("room", "🛋️", "Zimmer", x => (x.emoji ? x.emoji + " " : "") + x.n)}${exList("bgs", "🖼️", "Hintergründe", x => (x.ic ? x.ic + " " : "") + x.n)}</div>` : `<p class="hint">Keine Extras im Steckbrief.</p>`}
+        <p class="hint" ${meta.addon ? "hidden" : ""}>Sterne: ${meta.activities.length ? meta.activities.map(a => `${esc(a.title)} (${a.maxStars})`).join(", ") + " + " : ""}1 für «Fertig».</p>
+        ${H.extrasCount(meta) ? `<div class="up-extras">${exList("outfits", "👕", "Outfits", x => (x.emoji ? x.emoji + " " : "") + x.n)}${exList("emotes", "✨", "Emotes", x => x.ic + " " + x.n)}${exList("room", "🛋️", "Zimmer", x => (x.emoji ? x.emoji + " " : "") + x.n)}${exList("skins", "🎨", "Skins", x => x.n)}${exList("bgs", "🖼️", "Hintergründe", x => (x.ic ? x.ic + " " : "") + x.n)}</div>` : `<p class="hint">Keine Extras im Steckbrief.</p>`}
         <p class="err" id="upErr" role="alert"></p>
         <div class="row"><button type="button" class="btn primary" data-upok>${isReplace ? "Ersetzen" : "Hochladen & freigeben"}</button><button type="button" class="btn" data-upno>Abbrechen</button></div></div>`;
       document.body.appendChild(ov);
@@ -1141,7 +1189,7 @@
       $("[data-upno]", ov).onclick = () => { ov.remove(); done(null); };
       $("[data-upok]", ov).onclick = () => {
         const sid = $("#upSubj", ov).value, th = $("#upTheme", ov).value === "__neu" ? $("#upNew", ov).value.trim() : $("#upTheme", ov).value;
-        if (!sid) { $("#upErr", ov).textContent = "Bitte ein Fach wählen."; return; }
+        if (!sid && !meta.addon) { $("#upErr", ov).textContent = "Bitte ein Fach wählen."; return; }
         if (!$("#upTitle", ov).value.trim()) { $("#upErr", ov).textContent = "Bitte einen Titel eingeben."; return; }
         ov.remove(); done(Object.assign({}, meta, { title: $("#upTitle", ov).value.trim(), teaser: $("#upTeaser", ov).value.trim(), subject: sid, theme: th }));
       };

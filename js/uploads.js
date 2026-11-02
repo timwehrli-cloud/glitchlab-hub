@@ -63,12 +63,12 @@
     (Array.isArray(g("aufgaben", "activities")) ? g("aufgaben", "activities") : []).slice(0, 20).forEach((a, k) => {
       const id = slug(a.id || a.titel || a.title || "aufgabe-" + (k + 1)) || "aufgabe-" + (k + 1);
       if (id === "fertig" || acts.some(x => x.id === id)) return;
-      acts.push({ id, title: str(a.titel || a.title || id, 60), maxStars: Math.max(1, Math.min(50, +(a.sterne ?? a.stars ?? 3) || 3)) });
+      acts.push({ id, title: str(a.titel || a.title || id, 60), maxStars: Math.max(1, Math.min(600, +(a.sterne ?? a.stars ?? 3) || 3)) });
     });
     const ex = g("extras") || {};
     const unlock = v => {
       const s = String(v || "fertig").trim().toLowerCase();
-      if (/^(sofort|start|fertig)$/.test(s) || /^sterne:\d+$/.test(s) || /^badge:[\w\-äöü]+$/i.test(s)) return s;
+      if (/^(sofort|start|fertig)$/.test(s) || /^(sterne|prozent|level):\d+$/.test(s) || /^badge:[\w\-äöü]+$/i.test(s)) return s;
       warn.push(`Freischalten «${v}» verstehe ich nicht, ich nehme «fertig».`); return "fertig";
     };
     const list = (k1, k2) => (Array.isArray(ex[k1]) ? ex[k1] : Array.isArray(ex[k2]) ? ex[k2] : []).slice(0, 30);
@@ -92,6 +92,8 @@
       wand: (Array.isArray(x.wand) ? x.wand : []).filter(isCol).slice(0, 2), boden: (Array.isArray(x.boden) ? x.boden : []).filter(isCol).slice(0, 3),
       svg: safeSvg(x.svg), unlock: unlock(x.freischalten || x.unlock)
     }));
+    const skins = list("skins", "skin").map((x, k) => ({ id: okId(x, k, "skin"), n: str(x.name || x.n || "Skin", 30), base: isCol(x.farbe || x.base) ? (x.farbe || x.base) : "", unlock: unlock(x.freischalten || x.unlock || "prozent:90") })).filter(x => x.base);
+    const addon = /^(addon|paket|belohnungen)$/i.test(String(g("typ", "type") || ""));
     const dips = (Array.isArray(g("diplome", "badges")) ? g("diplome", "badges") : []).slice(0, 20).map((x, k) => ({
       id: slug(x.id || x.name || "diplom-" + (k + 1)) || "diplom-" + (k + 1), n: str(x.name || x.n || "Diplom", 40), emoji: str(x.emoji, 8) || "🏅", d: str(x.beschreibung || x.d, 160), wand: ["rahmen", "wimpel", "schild", "pokal", "medaille", "rolle", "holz", "stern"].includes(x.wand) ? x.wand : ""
     })).filter((x, k, a) => a.findIndex(y => y.id === x.id) === k);
@@ -99,15 +101,17 @@
       title: str(g("titel", "title") || "Neues Modul", 60), dips, teaser: str(g("beschreibung", "teaser", "description"), 160),
       subject, theme: str(g("thema", "theme"), 50), minutes: Math.max(0, Math.min(240, +g("minuten", "minutes") || 0)),
       c: isCol(g("farbe", "color")) ? g("farbe", "color") : "", emoji: str(g("emoji"), 8), maskottchen: str(g("maskottchen", "mascot"), 20),
-      activities: acts, extras: { outfits, emotes, room, bgs }
+      activities: acts, extras: { outfits, emotes, room, bgs, skins }, addon
     };
   };
-  H.extrasCount = m => { const e = (m && m.extras) || {}; return ["outfits", "emotes", "room", "bgs"].reduce((a, k) => a + ((e[k] || []).length), 0); };
+  H.extrasCount = m => { const e = (m && m.extras) || {}; return ["outfits", "emotes", "room", "bgs", "skins"].reduce((a, k) => a + ((e[k] || []).length), 0); };
   H.unlockText = (u, title) => {
     if (u === "sofort") return "von Anfang an";
     if (u === "start") return `Modul «${title}» starten (1. Stern)`;
     if (u === "fertig") return `Modul «${title}» schaffen (alle Sterne)`;
     if (u.startsWith("sterne:")) return `${u.slice(7)} Sterne in «${title}»`;
+    if (u.startsWith("prozent:")) return +u.slice(8) >= 90 ? `Modul «${title}» abschliessen (${u.slice(8)} % der Sterne)` : `${u.slice(8)} % der Sterne in «${title}»`;
+    if (u.startsWith("level:")) return `ab Level ${u.slice(6)}`;
     if (u.startsWith("badge:")) return `Spezial-Aufgabe in «${title}»`;
     return `Modul «${title}»`;
   };
@@ -125,7 +129,9 @@
     H.themes = H.themes.filter(t => !t.up);
     H.UPLOADS = [];
     (list || []).forEach(u => {
-      const d = u.meta || {}; if (!d.subject || !H.subjects.some(s => s.id === d.subject)) return;
+      const d = u.meta || {};
+      if (d.addon) { H.UPLOADS.push({ id: "ad-" + u.id, upload: true, addon: true, uploadId: u.id, title: d.title, activities: [], meta: d }); return; }   // Belohnungs-Paket: nur Extras, kein Modul
+      if (!d.subject || !H.subjects.some(s => s.id === d.subject)) return;
       const sj = H.subjects.find(s => s.id === d.subject);
       let theme = H.themes.find(t => t.subject === d.subject && d.theme && t.title.toLowerCase() === d.theme.toLowerCase());
       if (!theme) {
@@ -148,14 +154,16 @@
       const own = H.uploadExtras(() => 0, () => new Set(), true).custom.outfits;
       window.GL_DATA.OUTFITS = window.GL_DATA.OUTFITS.filter(o => !String(o.id).startsWith("up_")).concat(own.map(o => ({ id: o.id, slot: o.slot, n: o.n, svg: o.svg })));
     }
+    if (window.GLGlitch && GLGlitch.addSkins) GLGlitch.addSkins(H.uploadExtras(() => 0, () => new Set(), true).custom.skins);
   };
 
   /* ---------- Extras für das Lab: mit Bedingung (badge) ---------- */
-  H.uploadExtras = (stars, badgesOf, all) => {
-    const out = { outfits: [], emotes: [], room: [], bgs: [], dips: [], mods: [] }, earned = [];
+  H.uploadExtras = (stars, badgesOf, all, level) => {
+    const out = { outfits: [], emotes: [], room: [], bgs: [], dips: [], mods: [], skins: [] }, earned = [], lv = typeof level === "function" ? level() : (level || 0);
     (H.UPLOADS || []).forEach(m => {
       const e = m.meta.extras || {}, st = stars(m), max = H.maxStars(m), have = badgesOf(m);
       const ok = u => all || u === "sofort" || (u === "start" && st > 0) || (u === "fertig" && st >= max)
+        || (u.startsWith("prozent:") && max > 0 && st >= Math.ceil(max * +u.slice(8) / 100)) || (u.startsWith("level:") && lv >= +u.slice(6))
         || (u.startsWith("sterne:") && st >= +u.slice(7)) || (u.startsWith("badge:") && have.has(u.slice(6)));
       const base = x => { const id = `up_${m.uploadId.slice(0, 8)}_${x.id}`, badge = `up:${m.uploadId}:${x.id}`; if (ok(x.unlock)) earned.push(badge); return { id, badge, reqTxt: H.unlockText(x.unlock, m.title), mod: m.title }; };
       const c = m.meta.c || (H.modArt && H.modArt[m.id] || {}).c || "#8B5CFF";
@@ -164,6 +172,7 @@
       (e.outfits || []).forEach(x => { const [cx, cy, s] = OUT_POS[x.slot] || OUT_POS.kopf; out.outfits.push(Object.assign(base(x), { slot: x.slot, n: x.n, say: x.say, svg: x.svg || emojiText(x.emoji, cx, cy, s) })); });
       (e.emotes || []).forEach(x => out.emotes.push(Object.assign(base(x), { n: x.n, d: x.d || `Aus dem Modul «${m.title}».`, ic: x.ic, text: x.text, anim: x.anim, farben: x.farben })));
       (e.room || []).forEach(x => { const b = ROOM_BOX[x.slot] || ROOM_BOX.deko, s = Math.min(b[2], b[3]) * .8; out.room.push(Object.assign(base(x), { slot: x.slot, n: x.n, box: b, svg: x.svg || emojiText(x.emoji, b[0] + b[2] / 2, b[1] + b[3] / 2, s) })); });
+      (e.skins || []).forEach(x => { const sh = window.GLGlitch ? GLGlitch.shades(x.base) : {}; out.skins.push(Object.assign(base(x), { n: x.n, base: x.base, light: sh.light, dark: sh.dark, hi: sh.hi })); });
       (e.bgs || []).forEach(x => out.bgs.push(Object.assign(base(x), { n: x.n, ic: x.ic, wand: x.wand, boden: x.boden, svg: x.svg })));
     });
     return { custom: out, earned };
