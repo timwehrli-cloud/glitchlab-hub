@@ -351,6 +351,7 @@
   }
   function render() {
     try { liveEnsure(); } catch (e) { /* egal */ }
+    try { applySiteBg(); } catch (e) { /* egal */ }
     try { const r = renderView(); if (r && r.catch) r.catch(err => { console.error(err); toast("Fehler: " + (err && err.message || err), "err", 9000); }); return r; }
     catch (err) {
       console.error(err);
@@ -752,9 +753,30 @@
     }
   }
   let extT = null;
+  /* ---------- Hintergrund der ganzen Seite (Level- und Prestige-Hintergründe, gewählt im Zimmer unter «Hintergrund») ---------- */
+  function siteBgOf(id) {
+    if (!id) return null;
+    const L = window.GL_LEVEL_BGS || [], lb = L.find(b => b.id === id);
+    if (lb) return (isLP() || levelOf(allStars()) >= lb.lv) ? lb : null;
+    const m = /^bg_p(\d+)$/.exec(id), P = window.GL_PRESTIGE;
+    if (m && P) { const k = +m[1], R = P.RANKS[k - 1]; if (R && (isLP() || prestigeNow() >= k)) return Object.assign({ id }, R.bg); }
+    return null;
+  }
+  function applySiteBg() {
+    const id = (S.me && S.me.extras && S.me.extras.siteBg) || "", b = S.view && S.view.name !== "lp" ? siteBgOf(id) : null;
+    let el = document.getElementById("siteBg");
+    if (!b) { if (el) el.remove(); document.body.classList.remove("has-sitebg"); return; }
+    if (el && el.dataset.id === b.id) return;
+    if (!el) { el = document.createElement("div"); el.id = "siteBg"; el.setAttribute("aria-hidden", "true"); document.body.prepend(el); }
+    const w = b.wand || ["#14062E", "#2A0B5A"], f = b.boden || [w[1]];
+    el.dataset.id = b.id; document.body.classList.add("has-sitebg");
+    el.innerHTML = `<svg viewBox="0 0 160 64" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="sbgG" x1="0" y1="0" x2="0" y2="1"><stop stop-color="${w[0]}"/><stop offset=".75" stop-color="${w[1] || w[0]}"/><stop offset="1" stop-color="${f[0]}"/></linearGradient></defs><rect width="160" height="64" fill="url(#sbgG)"/>${b.svg || ""}</svg><div class="sbg-dim"></div>`;
+  }
+
   function saveExtras(x) {
     const oldO = JSON.stringify((S.me.extras || {}).outfit || {});
     S.me.extras = Object.assign({}, S.me.extras || {}, x);
+    if ("siteBg" in x) applySiteBg();
     if (JSON.stringify(S.me.extras.outfit || {}) !== oldO) $$(`[data-kg="${CSS.escape(S.me.student.id)}"]`).forEach(el => { el.innerHTML = G.svg(el.closest(".chip") ? "normal" : "happy", "#8B5CFF", { outfit: outfitOf(), lp: isLP(), calm: el.classList.contains("still") }); });
     clearTimeout(extT); extT = setTimeout(() => S.be.saveExtras(S.token, S.me.extras).catch(() => {}), 800);
   }
@@ -1170,7 +1192,12 @@
     const mx = H.rawMax(m); return mx && own >= mx ? "fertig" : "arbeit";
   }
   /* ---------- Live-Steuerung: Pause und Nachricht von gLiTCh an die ganze Klasse ---------- */
-  const LIVE_QUICK = ["Bitte speichert eure Arbeit. 💾", "Kommt bitte in den Kreis. ⭕", "Noch 5 Minuten! ⏰", "Aufräumen, bitte! 🧹", "Super gemacht, alle zusammen! 🎉"];
+  const LIVE_QUICK = [
+    ["⏰ Zeit", ["Noch 10 Minuten! ⏰", "Noch 5 Minuten! ⏰", "Noch 2 Minuten, langsam fertig machen. ⏳", "Die Zeit ist um. Bitte aufhören. 🛑"]],
+    ["📋 Organisation", ["Bitte speichert eure Arbeit. 💾", "Speichern und abmelden, bitte. 👋", "Kommt bitte in den Kreis. ⭕", "Geht bitte an euren Platz zurück. 🪑", "Geräte zuklappen und nach vorne schauen. 📱", "Aufräumen, bitte! 🧹", "Geräte bitte versorgen und einstecken. 🔌"]],
+    ["🤝 Arbeiten", ["Leise arbeiten, bitte. 🤫", "Helft euch gegenseitig. 🤝", "Lest die Aufgabe nochmals genau. 🔍", "Hand hoch, wer fertig ist. ✋", "Wer fertig ist: nächstes Modul starten. 🚀", "Fragt zuerst euer Team, dann die Lehrperson. 💬", "Kurze Bewegungspause: aufstehen und strecken! 🤸"]],
+    ["⭐ Lob", ["Super gemacht, alle zusammen! 🎉", "Toll konzentriert! ⭐", "Ihr seid ein starkes Team! 💪", "Die Pause ist vorbei, weiter geht's! ▶️"]]
+  ];
   function livePanelHTML(c) {
     const L = (c.settings || {}).live || {}, t = L.pauseAt ? new Date(L.pauseAt).toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" }) : "";
     return `<section class="panel live-panel"><h2>📢 Live-Steuerung</h2>
@@ -1178,7 +1205,7 @@
       <div class="row live-row"><button type="button" class="btn ${L.pause ? "" : "primary"} live-big" data-live-pause>${L.pause ? "▶ Pause beenden" : "⏸ Ganze Klasse pausieren"}</button>
         <span class="live-state ${L.pause ? "on" : ""}">${L.pause ? `⏸ Pausiert${t ? " seit " + t : ""}` : "▶ Läuft"}</span></div>
       <label class="f" for="liveMsg">Nachricht, die gLiTCh allen zeigt<textarea class="input" id="liveMsg" maxlength="200" rows="2" placeholder="z. B. Bitte speichert eure Arbeit und kommt in den Kreis."></textarea></label>
-      <div class="chips live-quick">${LIVE_QUICK.map(q => `<button type="button" class="btn small" data-live-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
+      <div class="live-quick">${LIVE_QUICK.map(([g, qs]) => `<div class="lq-g"><b>${g}</b><div class="lq-l">${qs.map(q => `<button type="button" class="btn small" data-live-q="${esc(q)}" title="Antippen: in das Feld übernehmen. Doppelt antippen: gleich senden">${esc(q)}</button>`).join("")}</div></div>`).join("")}</div>
       <div class="row"><button type="button" class="btn primary" data-live-send>💬 gLiTCh sagt es allen</button>${L.msg ? `<button type="button" class="btn" data-live-clear>Nachricht ausblenden</button>` : ""}</div>
       ${L.msg ? `<p class="live-cur">Gerade sichtbar: «${esc(L.msg)}»</p>` : ""}</section>`;
   }
@@ -1190,7 +1217,8 @@
     };
     const L = () => (c.settings || {}).live || {};
     $$("[data-live-pause]").forEach(b => b.onclick = () => set(L().pause ? { pause: false, pauseAt: 0 } : { pause: true, pauseAt: Date.now() }, L().pause ? "Pause beendet. Es geht weiter!" : "Die Klasse ist pausiert."));
-    $$("[data-live-q]").forEach(b => b.onclick = () => { const t = $("#liveMsg"); if (t) { t.value = b.dataset.liveQ; t.focus(); } });
+    $$("[data-live-q]").forEach(b => { b.onclick = () => { const t = $("#liveMsg"); if (t) { t.value = b.dataset.liveQ; t.focus(); } };
+      b.ondblclick = () => set({ msg: b.dataset.liveQ, msgAt: Date.now() }, "gLiTCh zeigt die Nachricht allen."); });
     $$("[data-live-send]").forEach(b => b.onclick = () => { const v = ($("#liveMsg") || {}).value || ""; if (!v.trim()) { toast("Schreib zuerst eine Nachricht."); return; } set({ msg: v.trim().slice(0, 200), msgAt: Date.now() }, "gLiTCh zeigt die Nachricht allen."); });
     $$("[data-live-clear]").forEach(b => b.onclick = () => set({ msg: "", msgAt: Date.now() }, "Nachricht ausgeblendet."));
   }

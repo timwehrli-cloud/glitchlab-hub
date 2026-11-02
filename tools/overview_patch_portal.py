@@ -232,3 +232,49 @@ portal = portal.replace(_o, 'window.GLAB_VF = window.GLAB_VF || {wd:"mine", rm:"
 _o = '''const ov = document.getElementById(kind === "wd" ? "ptWd" : "ptRm"); if (ov){ const sc = ov.scrollTop; ov.innerHTML = kind === "wd" ? wardrobeHTML() : roomHTML(); ov.scrollTop = sc; } });'''
 assert _o in portal
 portal = portal.replace(_o, '''const ov = document.getElementById(kind === "wd" ? "ptWd" : kind === "bg" ? "ptBg" : "ptRm"); if (ov){ const sc = ov.scrollTop; ov.innerHTML = kind === "wd" ? wardrobeHTML() : kind === "bg" ? bgsHTML() : roomHTML(); ov.scrollTop = sc; } });''', 1)
+
+# ---------- Umbau: «Hintergrund» = Hintergrund der ganzen Seite (Level und Prestige), Zimmer behält seine eigenen ----------
+_isSite = 'const isSiteBg = id => /^bg_(l|p)\\d/.test(String(id));\n'
+_o = "function bgList(T){\n  return [{id:\"pixel\""
+assert _o in portal
+portal = portal.replace(_o, _isSite + "function bgList(T, site){\n  if (site) return [{id:\"std\", n:\"Standard\", ic:\"🌌\", open:true, req:\"\", grp:-1}].concat(CU.bgs.filter(x=>isSiteBg(x.id)).map(x=>({id:x.id, n:x.n, ic:x.ic || \"🖼️\", open:bgOpen(x, T), req:x.reqTxt || \"\", lv:x.lv, wand:x.wand, svg:x.svg, grp: String(x.id).startsWith(\"bg_p\") ? 2 : 0}))).map((x,i)=>Object.assign({i}, x)).sort((a,b)=>(a.grp - b.grp) || ((a.lv || 0) - (b.lv || 0)) || (a.i - b.i));\n  return [{id:\"pixel\"", 1)
+_o = '    .concat(CU.bgs.map(x=>({id:x.id, n:x.n, ic:x.ic || "🖼️", open:bgOpen(x, T), req:x.reqTxt || "", lv:x.lv, wand:x.wand, svg:x.svg, grp:'
+assert _o in portal
+portal = portal.replace(_o, '    .concat(CU.bgs.filter(x=>!isSiteBg(x.id)).map(x=>({id:x.id, n:x.n, ic:x.ic || "🖼️", open:bgOpen(x, T), req:x.reqTxt || "", lv:x.lv, wand:x.wand, svg:x.svg, grp:', 1)
+# Zimmer: Hintergrund-Abschnitt wieder da (nur Zimmer-Hintergründe)
+_o = "    ${RR.ROOM_SLOTS.map(sl=>{\n      const its = RR.ROOM.filter(x=>x.slot === sl.id), cur = its.find(x=>items[sl.id] === x.id), isOpen = x=>roomOpen(x, li);"
+assert _o in portal
+portal = portal.replace(_o, "    ${bgHTML(T)}\n" + _o, 1)
+portal = portal.replace(' Den Hintergrund wählst du rechts unter «Hintergrund».</p>', ' Unter «Hintergrund» rechts wählst du den Hintergrund der ganzen Seite.</p>', 1)
+# Dialog «Hintergrund»: Seiten-Hintergründe
+_o = 'const s = student(D.me), T = totalsFor(s.id), li = LIB.levelOf(T.stars), L = bgList(T), cur = window.GLAB_ROOMBG || "pixel", NW = NEWSET.bg || new Set();'
+assert _o in portal
+portal = portal.replace(_o, 'const s = student(D.me), T = totalsFor(s.id), li = LIB.levelOf(T.stars), L = bgList(T, true), cur = window.GLAB_SITEBG || "std", NW = NEWSET.bg || new Set();', 1)
+_o = '<p>Wähle den Hintergrund für gLiTChs Zimmer. Neue gibt es mit den Leveln, für Module und für Prestige.</p>'
+assert _o in portal
+portal = portal.replace(_o, '<p>Wähle den Hintergrund für die ganze Seite. Neue gibt es mit den Leveln und mit Prestige. Den Hintergrund von gLiTChs Zimmer wählst du unter «Zimmer».</p>', 1)
+_o = '<button type="button" class="bg-card${cur === x.id ? " on" : ""}${x.open ? "" : " locked"}" data-pt="bg-${x.id}"'
+assert _o in portal
+portal = portal.replace(_o, '<button type="button" class="bg-card${cur === x.id ? " on" : ""}${x.open ? "" : " locked"}" data-pt="sbg-${x.id}"', 1)
+_o = 'const w = x.id === "pixel" ? ["#241052","#4B2696"]'
+assert _o in portal
+portal = portal.replace(_o, 'const w = x.id === "pixel" || x.id === "std" ? ["#241052","#4B2696"]', 1)
+_o = "function openBgs(){\n  closeOv(\"ptBg\"); const T = totalsFor(D.me), p = prog(D.me), ids = bgList(T).filter"
+assert _o in portal
+portal = portal.replace(_o, r'''function pickSiteBg(id){
+  const T = totalsFor(D.me), x = bgList(T, true).find(b=>b.id === id); if (!x) return;
+  if (!x.open){ const el = document.querySelector(`[data-pt="sbg-${id}"]`); if (el) el.animate([{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"none"}], {duration:300}); return; }
+  window.GLAB_SITEBG = id === "std" ? "" : id; saveD();
+  const ob = document.getElementById("ptBg"); if (ob){ const sc = ob.scrollTop; ob.innerHTML = bgsHTML(); ob.scrollTop = sc; }
+}
+''' + "function openBgs(){\n  closeOv(\"ptBg\"); const T = totalsFor(D.me), p = prog(D.me), ids = bgList(T, true).filter", 1)
+_o = '${railBtn("bgs", "🖼️", "Hintergrund", `${bgList(T).filter(x=>x.open).length} / ${bgList(T).length}`, bgList(T).filter(x=>x.open).length > ((prog(D.me).seenB || []).length || 99),'
+assert _o in portal
+portal = portal.replace(_o, '${railBtn("bgs", "🖼️", "Hintergrund", `${bgList(T, true).filter(x=>x.open).length} / ${bgList(T, true).length}`, bgList(T, true).filter(x=>x.open).length > ((prog(D.me).seenB || []).length || 99),', 1)
+_o = '  if (a === "bgs") return openBgs();'
+portal = portal.replace(_o, _o + '\n  if (a && a.startsWith("sbg-")) return pickSiteBg(a.slice(4));', 1)
+_o = 'seenB: p.seenB || null,'
+portal = portal.replace(_o, 'seenB: p.seenB || null, siteBg: window.GLAB_SITEBG || "",', 1)
+_o = 'window.GLAB_ROOMBG = (ctx && ctx.extras && (ctx.extras.bg === "chalet" || CU.bgs.some(b=>b.id === ctx.extras.bg))) ? ctx.extras.bg : "pixel";'
+assert _o in portal
+portal = portal.replace(_o, 'window.GLAB_ROOMBG = (ctx && ctx.extras && (ctx.extras.bg === "chalet" || CU.bgs.some(b=>b.id === ctx.extras.bg && !/^bg_(l|p)\\d/.test(b.id)))) ? ctx.extras.bg : "pixel";\nwindow.GLAB_SITEBG = (ctx && ctx.extras && ctx.extras.siteBg) || "";', 1)

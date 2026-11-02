@@ -28,7 +28,9 @@
 .live-big { font-size: 1.05rem; padding: 12px 18px; }
 .live-state { font-family: var(--f-pixel); font-size: 14px; padding: 6px 12px; border-radius: 999px; background: rgba(60,255,122,.14); color: #7BFFB0; }
 .live-state.on { background: rgba(255,194,26,.18); color: #FFE08A; }
-.live-quick { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+.live-quick { display: grid; gap: 8px; margin: 6px 0 12px; }
+.lq-g > b { display: block; font-size: 13px; margin-bottom: 4px; opacity: .85; }
+.lq-l { display: flex; flex-wrap: wrap; gap: 6px; }
 .live-cur { margin: 10px 0 0; padding: 8px 12px; border-radius: 12px; background: rgba(139,92,255,.16); }
 .live-pause { position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center; padding: 20px; background: radial-gradient(circle at 50% 40%, rgba(60,20,120,.96), rgba(10,4,24,.98)); animation: lpzIn .35s ease-out; }
 .live-pause.out { animation: lpzOut .4s ease-in forwards; }
@@ -53,6 +55,47 @@
 @keyframes lbGlow { 50% { border-color: #FF2BD6; box-shadow: -5px 5px 0 #FFC21A, 5px -5px 0 #00E5FF, 0 0 40px rgba(255,43,214,.6); } }
 @media (prefers-reduced-motion: reduce) { .live-pause, .live-bubble, .lpz-g, .lb-g, .lpz-box h2 { animation: none !important; } }
 .ver-banner { position: fixed; z-index: 8000; left: 50%; bottom: 16px; transform: translateX(-50%); max-width: calc(100vw - 32px); padding: 12px 18px; border-radius: 999px; border: 2px solid #FFC21A; background: #14062E; color: #FFE08A; font: 800 15px/1.2 var(--f-display); cursor: pointer; box-shadow: 0 12px 30px rgba(0,0,0,.45); }
+
+/* ---------- Hintergrund der ganzen Seite ---------- */
+#siteBg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+#siteBg svg { width: 100%; height: 100%; display: block; }
+.sbg-dim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8,3,20,.35), rgba(8,3,20,.55)); }
+body.has-sitebg { background: #0A0418; }
+body.has-sitebg::after { opacity: .25; }
+/* Bewegungen der Level- und Prestige-Hintergründe (auch im Zimmer) */
+.pb-tw{animation:pbTw 3.4s ease-in-out infinite}
+.pb-pulse{animation:pbPulse 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.pb-float{animation:pbFloat 5s ease-in-out infinite}
+.pb-drift{animation:pbDrift 14s ease-in-out infinite}
+.pb-spin{animation:pbSpin 40s linear infinite}
+.pb-shoot{animation:pbShoot 9s linear infinite;opacity:0}
+.pb-rise{animation:pbRise 5s linear infinite;opacity:0}
+.pb-fall{animation:pbFall 7s linear infinite;opacity:0}
+.pb-flick{animation:pbFlick 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+.pb-swing{animation:pbSwing 5s ease-in-out infinite}
+.pb-sway{animation:pbSway 6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+.pb-blink{animation:pbBlink 4s steps(1) infinite}
+.pb-hue{animation:pbHue 16s ease-in-out infinite}
+.pb-shine{animation:pbShine 5s ease-in-out infinite}
+.pb-glitch{animation:pbGlitch 5s steps(1) infinite}
+.pb-scan{animation:pbScan 8s linear infinite}
+@keyframes pbTw{50%{opacity:.35}}
+@keyframes pbPulse{0%,100%{transform:scale(.95);opacity:.8}50%{transform:scale(1.05);opacity:1}}
+@keyframes pbFloat{0%,100%{translate:0 0}50%{translate:1px -2px}}
+@keyframes pbDrift{0%,100%{translate:-5px 0}50%{translate:6px 1px}}
+@keyframes pbSpin{to{transform:rotate(360deg)}}
+@keyframes pbShoot{0%,86%{opacity:0;translate:0 0}89%{opacity:.7}97%{opacity:0;translate:34px 14px}100%{opacity:0}}
+@keyframes pbRise{0%{translate:0 0;opacity:0}20%{opacity:.7}100%{translate:0 -28px;opacity:0}}
+@keyframes pbFall{0%{translate:0 0;opacity:0}10%{opacity:.8}100%{translate:-6px 66px;opacity:0}}
+@keyframes pbFlick{0%,100%{transform:scale(1,1)}50%{transform:scale(.97,1.05)}}
+@keyframes pbSwing{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@keyframes pbSway{0%,100%{transform:skewX(-2deg)}50%{transform:skewX(2deg)}}
+@keyframes pbBlink{0%,88%,100%{opacity:1}90%,94%{opacity:0}}
+@keyframes pbHue{0%,100%{filter:hue-rotate(-25deg)}50%{filter:hue-rotate(25deg)}}
+@keyframes pbShine{0%,100%{filter:brightness(.9)}50%{filter:brightness(1.2)}}
+@keyframes pbGlitch{0%,88%,100%{translate:0 0;opacity:1}90%{translate:2px 0;opacity:.5}92%{translate:-2px 0;opacity:1}94%{translate:0 0}}
+@keyframes pbScan{from{translate:0 0}to{translate:0 60px}}
+@media (prefers-reduced-motion: reduce){#siteBg [class^="pb-"],#siteBg [class*=" pb-"]{animation:none!important;opacity:1}}
 
 /* Prestige-Hintergründe */
 .pb-tw{animation:pbTw 3.4s ease-in-out infinite}
@@ -6970,7 +7013,7 @@ window.GLAB_KI = {
 };
 })();
 </script>
-<script src="hub-portal.js?v=202611022103"></script>
+<script src="hub-portal.js?v=202611022107"></script>
 
 <script>
 (function(){

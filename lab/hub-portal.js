@@ -152,7 +152,8 @@ if (ctx){
 }
 /* Hintergrund des Zimmers: Pixel-Zimmer oder Chalet (Chalet ab dem ersten fertigen NMG-Modul) */
 const CHALET_BADGE = "eidgenossen_4";
-window.GLAB_ROOMBG = (ctx && ctx.extras && (ctx.extras.bg === "chalet" || CU.bgs.some(b=>b.id === ctx.extras.bg))) ? ctx.extras.bg : "pixel";
+window.GLAB_ROOMBG = (ctx && ctx.extras && (ctx.extras.bg === "chalet" || CU.bgs.some(b=>b.id === ctx.extras.bg && !/^bg_(l|p)\d/.test(b.id)))) ? ctx.extras.bg : "pixel";
+window.GLAB_SITEBG = (ctx && ctx.extras && ctx.extras.siteBg) || "";
 /* Jedes Emote gehört zu einem Modul. Wer das Modul schafft, bekommt das Emote. «Hopp Schwiiz!» gibt es von Anfang an. */
 const EMOTE_REQ = {
   sixseven: ["hub:mi-start", "Hallo gLiTCh!"], augustfeuer: ["buehne", "Prompt-Labor (alle 4 Etappen)"],
@@ -171,7 +172,7 @@ const roomOpen = (x, li) => x.sw ? swCount(totalsFor(D.me)) >= x.sw : x.badge ? 
 const bgOpen = (b, T) => (b.lv == null || LIB.levelOf(T.stars) >= b.lv) && (!b.badge || T.badges.has(b.badge));
 const emoteOpen = (x, T) => !x.req || T.badges.has(x.req.badge);
 const emoteReq = x => x.req ? (x.req.txt || `Modul «${x.req.mod}» schaffen`) : "von Anfang an";
-const pickExtras = p => ({outfit: p.outfit || {}, outfitAt: p.outfitAt || 0, seen: p.seen || 0, room: p.room || null, roomSeen: p.roomSeen || 0, emote: p.emote || null, prefsAt: p.prefsAt || 0, wall: p.wall || null, seenW: p.seenW || null, seenR: p.seenR || null, seenB: p.seenB || null, bg: window.GLAB_ROOMBG});
+const pickExtras = p => ({outfit: p.outfit || {}, outfitAt: p.outfitAt || 0, seen: p.seen || 0, room: p.room || null, roomSeen: p.roomSeen || 0, emote: p.emote || null, prefsAt: p.prefsAt || 0, wall: p.wall || null, seenW: p.seenW || null, seenR: p.seenR || null, seenB: p.seenB || null, siteBg: window.GLAB_SITEBG || "", bg: window.GLAB_ROOMBG});
 function saveD(){ if (HB && D.me && D.prog[D.me]) HB.saveExtras(pickExtras(D.prog[D.me])); }
 function cloudPush(){}
 let S = {};
@@ -723,7 +724,7 @@ function dashHTML(){
         ${railBtn("room", "🛋️", "Zimmer", `${roomUnl} / ${RR.ROOM.length}`, roomUnl > (p.roomSeen || 0), "#00E5FF", 1)}
         ${railBtn("emotes", "✨", "Emotes", `${emoUnl} / ${RR.EMOTES.length}`, false, "#FFC21A", 2)}
         ${railBtn("diplome", "📜", "Diplome", `${LIB.BADGES.filter(b=>T.badges.has(b.id)).length} / ${LIB.BADGES.length}`, false, "#3CFF7A", 3)}
-        ${railBtn("bgs", "🖼️", "Hintergrund", `${bgList(T).filter(x=>x.open).length} / ${bgList(T).length}`, bgList(T).filter(x=>x.open).length > ((prog(D.me).seenB || []).length || 99), "#00E5FF", 4)}
+        ${railBtn("bgs", "🖼️", "Hintergrund", `${bgList(T, true).filter(x=>x.open).length} / ${bgList(T, true).length}`, bgList(T, true).filter(x=>x.open).length > ((prog(D.me).seenB || []).length || 99), "#00E5FF", 4)}
         ${railBtn("lexikon", "📖", "Lexikon", "als PDF", false, "#8B5CFF", 4)}
         ${railBtn("levels", "🏆", "Alle Level", (li < 100 ? `${li+1} / 100` : `${li+1} ★`), false, "#B79CFF", 4)}
         ${railBtn("sound", window.GLAB_R.soundOn() ? "🔊" : "🔇", "Ton", window.GLAB_R.soundOn() ? "an" : "aus", false, "#FF7A00", 5)}
@@ -918,9 +919,11 @@ document.addEventListener("click", e=>{ const b = e.target.closest && e.target.c
   + ".acc-emo{font-size:26px;line-height:1;display:grid;place-items:center;width:100%;height:100%}";
   (document.head || document.documentElement).appendChild(st); })();
 /* ---- Zimmer einrichten ---- */
-function bgList(T){
+const isSiteBg = id => /^bg_(l|p)\d/.test(String(id));
+function bgList(T, site){
+  if (site) return [{id:"std", n:"Standard", ic:"🌌", open:true, req:"", grp:-1}].concat(CU.bgs.filter(x=>isSiteBg(x.id)).map(x=>({id:x.id, n:x.n, ic:x.ic || "🖼️", open:bgOpen(x, T), req:x.reqTxt || "", lv:x.lv, wand:x.wand, svg:x.svg, grp: String(x.id).startsWith("bg_p") ? 2 : 0}))).map((x,i)=>Object.assign({i}, x)).sort((a,b)=>(a.grp - b.grp) || ((a.lv || 0) - (b.lv || 0)) || (a.i - b.i));
   return [{id:"pixel", n:"Pixel-Zimmer", ic:"🟪", open:true, req:""}, {id:"chalet", n:"Schweizer Chalet", ic:"🏔️", open:T.badges.has(CHALET_BADGE), req:"nach dem ersten NMG-Modul (Alte Eidgenossenschaft)"}]
-    .concat(CU.bgs.map(x=>({id:x.id, n:x.n, ic:x.ic || "🖼️", open:bgOpen(x, T), req:x.reqTxt || "", lv:x.lv, wand:x.wand, svg:x.svg, grp: x.lv != null ? 0 : String(x.id).startsWith("bg_p") ? 2 : 1})))
+    .concat(CU.bgs.filter(x=>!isSiteBg(x.id)).map(x=>({id:x.id, n:x.n, ic:x.ic || "🖼️", open:bgOpen(x, T), req:x.reqTxt || "", lv:x.lv, wand:x.wand, svg:x.svg, grp: x.lv != null ? 0 : String(x.id).startsWith("bg_p") ? 2 : 1})))
     .map((x,i)=>Object.assign({i}, x)).sort((a,b)=>((a.grp == null ? -1 : a.grp) - (b.grp == null ? -1 : b.grp)) || ((a.lv || 0) - (b.lv || 0)) || (a.i - b.i));
 }
 function bgHTML(T){
@@ -930,23 +933,29 @@ function bgHTML(T){
     + (show.length ? `<div class="wd-grid">${show.map(x=>`<button type="button" class="wd-item${cur === x.id ? " on" : ""}${x.open ? "" : " locked"}" data-pt="bg-${x.id}" ${x.open ? "" : 'aria-disabled="true"'} aria-pressed="${cur === x.id}">${vfNew(NW.has("bg:" + x.id))}<span class="pt-emo-ic" aria-hidden="true">${x.ic}</span><b>${esc(x.n)}</b><small>${x.open ? (cur === x.id ? "aktiv" : "antippen") : esc(x.req)}</small>${x.open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`).join("")}</div>` : vfEmpty("rm")) + `</details>`;
 }
 function bgThumb(x){
-  const w = x.id === "pixel" ? ["#241052","#4B2696"] : x.id === "chalet" ? ["#6B3F1F","#9C6534"] : (x.wand || ["#241052","#4B2696"]), u = "bgt_" + String(x.id).replace(/[^\w-]/g, "");
+  const w = x.id === "pixel" || x.id === "std" ? ["#241052","#4B2696"] : x.id === "chalet" ? ["#6B3F1F","#9C6534"] : (x.wand || ["#241052","#4B2696"]), u = "bgt_" + String(x.id).replace(/[^\w-]/g, "");
   return `<svg viewBox="0 0 160 64" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="${u}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="${w[0]}"/><stop offset="1" stop-color="${w[1] || w[0]}"/></linearGradient></defs><rect width="160" height="64" fill="url(#${u})"/>${x.svg || (x.id === "chalet" ? '<path d="M0 40h160M0 52h160M40 28v36M120 28v36" stroke="#4A2A12" stroke-width="2"/>' : "")}</svg>`;
 }
 function bgsHTML(){
-  const s = student(D.me), T = totalsFor(s.id), li = LIB.levelOf(T.stars), L = bgList(T), cur = window.GLAB_ROOMBG || "pixel", NW = NEWSET.bg || new Set();
+  const s = student(D.me), T = totalsFor(s.id), li = LIB.levelOf(T.stars), L = bgList(T, true), cur = window.GLAB_SITEBG || "std", NW = NEWSET.bg || new Set();
   const show = vfSort(L.filter(x=>vfShow("bg", x.open, cur === x.id)), x=>x.open), nOpen = L.filter(x=>x.open).length;
   const nx = L.filter(x=>!x.open && x.lv != null && x.lv > li).sort((a,b)=>a.lv - b.lv)[0];
   const need = nx && LIB.LEVELS[nx.lv] ? Math.max(0, LIB.LEVELS[nx.lv].s - T.stars) : 0;
   return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptBgT">
-    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptBgT">Hintergrund</h2><p>Wähle den Hintergrund für gLiTChs Zimmer. Neue gibt es mit den Leveln, für Module und für Prestige.</p></div>
+    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptBgT">Hintergrund</h2><p>Wähle den Hintergrund für die ganze Seite. Neue gibt es mit den Leveln und mit Prestige. Den Hintergrund von gLiTChs Zimmer wählst du unter «Zimmer».</p></div>
       <button type="button" class="btn" data-pt="bgs-close">Fertig</button></div>
     ${vfBar("bg", nOpen, L.length)}${nx ? `<div class="vf-next"><span aria-hidden="true">🎁</span><span><b>Nächster Hintergrund:</b> ${nx.ic} ${esc(nx.n)}<small>ab Level ${nx.lv + 1}${need ? ` · noch ${need} ★` : ""}</small></span></div>` : ""}
-    ${show.length ? `<div class="bg-grid">${show.map(x=>`<button type="button" class="bg-card${cur === x.id ? " on" : ""}${x.open ? "" : " locked"}" data-pt="bg-${x.id}" ${x.open ? "" : 'aria-disabled="true"'} aria-pressed="${cur === x.id}">${vfNew(NW.has("bg:" + x.id))}<span class="bg-th">${bgThumb(x)}</span><b>${x.ic} ${esc(x.n)}</b><small>${x.open ? (cur === x.id ? "aktiv" : "antippen") : esc(x.req)}</small>${x.open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`).join("")}</div>` : vfEmpty("bg")}
+    ${show.length ? `<div class="bg-grid">${show.map(x=>`<button type="button" class="bg-card${cur === x.id ? " on" : ""}${x.open ? "" : " locked"}" data-pt="sbg-${x.id}" ${x.open ? "" : 'aria-disabled="true"'} aria-pressed="${cur === x.id}">${vfNew(NW.has("bg:" + x.id))}<span class="bg-th">${bgThumb(x)}</span><b>${x.ic} ${esc(x.n)}</b><small>${x.open ? (cur === x.id ? "aktiv" : "antippen") : esc(x.req)}</small>${x.open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`).join("")}</div>` : vfEmpty("bg")}
   </div>`;
 }
+function pickSiteBg(id){
+  const T = totalsFor(D.me), x = bgList(T, true).find(b=>b.id === id); if (!x) return;
+  if (!x.open){ const el = document.querySelector(`[data-pt="sbg-${id}"]`); if (el) el.animate([{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"none"}], {duration:300}); return; }
+  window.GLAB_SITEBG = id === "std" ? "" : id; saveD();
+  const ob = document.getElementById("ptBg"); if (ob){ const sc = ob.scrollTop; ob.innerHTML = bgsHTML(); ob.scrollTop = sc; }
+}
 function openBgs(){
-  closeOv("ptBg"); const T = totalsFor(D.me), p = prog(D.me), ids = bgList(T).filter(x=>x.open).map(x=>"bg:" + x.id);
+  closeOv("ptBg"); const T = totalsFor(D.me), p = prog(D.me), ids = bgList(T, true).filter(x=>x.open).map(x=>"bg:" + x.id);
   const had = Array.isArray(p.seenB) ? new Set(p.seenB) : null; NEWSET.bg = had ? new Set(ids.filter(i=>!had.has(i))) : new Set(); p.seenB = ids; saveD();
   const ov = document.createElement("div"); ov.className = "wd-ov"; ov.id = "ptBg"; ov.innerHTML = bgsHTML();
   document.body.appendChild(ov); document.body.style.overflow = "hidden"; ov.querySelector('[data-pt="bgs-close"]').focus({preventScroll:true});
@@ -972,10 +981,11 @@ function roomHTML(){
   const s = student(D.me), p = prog(s.id), T = totalsFor(s.id), li = LIB.levelOf(T.stars), RR = window.GLAB_R, items = roomOf(p), NW = NEWSET.rm;
   const nOpen = RR.ROOM.filter(x=>roomOpen(x, li)).length, nAll = RR.ROOM.length;
   return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptRmT">
-    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptRmT">Zimmer einrichten</h2><p>Pro Platz einen Gegenstand antippen, nochmals tippen räumt ihn weg. Neues gibt es mit höheren Leveln und für Diplome aus den Modulen. Den Hintergrund wählst du rechts unter «Hintergrund».</p></div>
+    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptRmT">Zimmer einrichten</h2><p>Pro Platz einen Gegenstand antippen, nochmals tippen räumt ihn weg. Neues gibt es mit höheren Leveln und für Diplome aus den Modulen. Unter «Hintergrund» rechts wählst du den Hintergrund der ganzen Seite.</p></div>
       <button type="button" class="btn" data-pt="rm-close">Fertig</button></div>
     <div class="pt-room" style="margin-top:14px">${RR.roomSVG(items)}<span class="pt-room-g glitch"><span>${LIB.glitchSVG("cool", {outfit: p.outfit || {}})}</span></span></div>
     ${vfBar("rm", nOpen, nAll)}${nextGift("rm", T)}
+    ${bgHTML(T)}
     ${RR.ROOM_SLOTS.map(sl=>{
       const its = RR.ROOM.filter(x=>x.slot === sl.id), cur = its.find(x=>items[sl.id] === x.id), isOpen = x=>roomOpen(x, li);
       const show = vfSort(its.filter(x=>vfShow("rm", isOpen(x), items[sl.id] === x.id)), isOpen);
@@ -1440,6 +1450,7 @@ document.addEventListener("click", e=>{
   if (a === "levels") return openLevels();
   if (a === "diplome") return openDiplomas();
   if (a === "bgs") return openBgs();
+  if (a && a.startsWith("sbg-")) return pickSiteBg(a.slice(4));
   if (a === "bgs-close"){ closeOv("ptBg"); render(); return; }
   if (a === "lexikon"){ if (window.GLAB_LEX) window.GLAB_LEX.open({who: (student(D.me) || {}).n || "", haveOf: m=>{ const out = new Set(); [groupOf(D.me, m), "p:" + D.me].filter(Boolean).forEach(nr=>{ const v = lsGet(workKey(nr, m)); ((v && v.buddy && v.buddy.lex) || []).forEach(w=>out.add(w)); }); return [...out]; }}); return; }
   if (a === "dp-close"){ closeOv("ptDp"); render(); return; }
