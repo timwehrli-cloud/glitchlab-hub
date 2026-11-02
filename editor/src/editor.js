@@ -12,9 +12,42 @@
   const SUBJ = [["mi", "Medien & Informatik"], ["nmg", "Natur, Mensch, Gesellschaft"], ["de", "Deutsch"], ["ma", "Mathematik"], ["en", "Englisch"], ["fr", "Französisch"], ["sp", "Sport"], ["mg", "Minigames"]];
   const THEMES = { mi: ["Start mit gLiTCh", "KI & Prompts", "Medien durchschauen"], nmg: ["Entdeckungsreise Schweiz", "Die Römer"], de: ["Gespräche führen"] };
   /* Aufgabenarten = alle Spiele aus den NMG- und M&I-Modulen, die sich mit Inhalten füllen lassen */
-  const TYPES = [["mc", "Quiz (Auswahl)"], ["tf", "Richtig/Falsch"], ["text", "Antwort eintippen"], ["mehrfach", "Mehrere richtig"], ["luecke", "Lückentext"], ["ordnen", "Reihenfolge / Zeitstrahl"], ["zuordnen", "Verbinden"], ["memory", "Memory"],
-    ["sortieren", "Sortier-Spiel"], ["zeitmaschine", "Zeitmaschine"], ["raetsel", "Hinweis-Rätsel"], ["schaetzen", "Schätzen"], ["gestalten", "Gestalten (Plakat, Steckbrief)"], ["schreiben", "Schreibauftrag"]];
-  const WERT = { mc: 1, tf: 1, text: 1, luecke: 2, ordnen: 2, zuordnen: 2, schreiben: 2, mehrfach: 2, schaetzen: 2, gestalten: 2, sortieren: 3, zeitmaschine: 3, raetsel: 3, memory: 3 };
+  /* Aufgabenarten in Gruppen, je mit kleinem Bild */
+  const TG = [
+    ["Wissen prüfen", [["mc", "Quiz", "Eine Antwort ist richtig"], ["tf", "Richtig/Falsch", "Stimmt die Aussage?"], ["mehrfach", "Mehrere richtig", "Alle passenden ankreuzen"], ["text", "Antwort eintippen", "Kurze Antwort schreiben"], ["blitz", "Blitzrunde", "Aussagen gegen die Zeit"]]],
+    ["Wörter & Sprache", [["luecke", "Lückentext", "Fehlende Wörter einsetzen"], ["wortsalat", "Buchstabensalat", "Buchstaben ordnen"], ["wortraten", "Wort-Raten", "Buchstabe um Buchstabe"], ["wortsuche", "Wörtersuche", "Wörter im Raster finden"], ["markieren", "Wörter markieren", "Im Text antippen"]]],
+    ["Ordnen & Verbinden", [["ordnen", "Reihenfolge", "Schritte oder Zeitstrahl"], ["zuordnen", "Verbinden", "Paare zusammenführen"], ["sortieren", "Sortier-Spiel", "Karten in Gruppen"], ["zeitmaschine", "Zeitmaschine", "Das richtige Jahr einstellen"]]],
+    ["Spiele & Rätsel", [["memory", "Memory", "Paare aufdecken"], ["raetsel", "Hinweis-Rätsel", "Mit Hinweisen erraten"], ["schaetzen", "Schätzen", "Mit dem Regler schätzen"], ["karteikarten", "Lernkarten", "Umdrehen und üben"]]],
+    ["Reden & Gestalten", [["chat", "Chat-Gespräch", "Mit einer Figur chatten"], ["meinung", "Meinung bilden", "Position und Begründung"], ["schreiben", "Schreibauftrag", "Eigenen Text schreiben"], ["gestalten", "Gestalten", "Plakat oder Steckbrief"]]]
+  ];
+  const TYPES = TG.flatMap(g => g[1].map(([v, n]) => [v, n]));
+  const IR = (x, y, w, h, f, r = 2) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${f}"/>`, IT = (x, y, t, f = "#14062E", z = 9) => `<text x="${x}" y="${y}" font-size="${z}" font-weight="800" text-anchor="middle" font-family="system-ui,sans-serif" fill="${f}">${t}</text>`;
+  const ICON = {
+    mc: IR(6, 5, 36, 7, "#fff") + IR(6, 15, 36, 7, "#3CFF7A") + IR(6, 25, 36, 7, "#fff") + '<path d="M10 18.5l2 2 4-4" stroke="#14062E" stroke-width="1.6" fill="none"/>',
+    tf: IT(15, 25, "👍", "#000", 16) + IT(35, 25, "👎", "#000", 16),
+    mehrfach: [5, 15, 25].map((y, i) => IR(6, y, 7, 7, i === 1 ? "#fff" : "#3CFF7A", 1.5) + IR(16, y + 1, 26, 5, "#fff")).join("") + '<path d="M7.5 8.5l1.6 1.6 2.6-3M7.5 28.5l1.6 1.6 2.6-3" stroke="#14062E" stroke-width="1.4" fill="none"/>',
+    text: IR(4, 12, 40, 13, "#fff") + IT(17, 22, "Bern", "#14062E", 9) + '<rect x="30" y="15" width="1.6" height="8" fill="#A07CFF"/>',
+    blitz: '<circle cx="22" cy="19" r="13" fill="#fff"/><path d="M22 19V9" stroke="#14062E" stroke-width="2"/><path d="M22 19l6 4" stroke="#FF2BD6" stroke-width="2"/><path d="M40 3l-5 9h4l-3 8 8-11h-4l3-6z" fill="#FFC21A"/>',
+    luecke: IR(4, 9, 12, 6, "#fff") + IR(18, 9, 12, 6, "#FFC21A") + IR(32, 9, 12, 6, "#fff") + IR(4, 21, 18, 6, "#fff") + IR(24, 21, 20, 6, "#2EE6D6"),
+    wortsalat: ["L", "A", "V", "A"].map((c, i) => IR(4 + i * 11, 6 + (i % 2) * 10, 9, 11, "#fff") + IT(8.5 + i * 11, 14.5 + (i % 2) * 10, c, "#14062E", 8)).join(""),
+    wortraten: ["K", "", "A", ""].map((c, i) => `<path d="M${5 + i * 10} 22h7" stroke="#fff" stroke-width="2"/>` + (c ? IT(8.5 + i * 10, 19, c, "#fff", 9) : "")).join("") + [0, 1, 2, 3, 4].map(i => IR(10 + i * 6, 27, 4, 5, i < 3 ? "#3CFF7A" : "#5A4A80", 1)).join(""),
+    wortsuche: Array.from({ length: 16 }, (_, k) => IT(9 + (k % 4) * 10, 9 + Math.floor(k / 4) * 8, "MAGLXVOSAKPITEUN"[k], "#fff", 7)).join("") + '<rect x="3" y="2" width="42" height="9" rx="4.5" fill="none" stroke="#FFC21A" stroke-width="1.6"/>',
+    markieren: IR(4, 8, 10, 6, "#fff") + IR(16, 8, 14, 6, "#FFE680") + IR(32, 8, 12, 6, "#fff") + IR(4, 20, 16, 6, "#fff") + IR(22, 20, 10, 6, "#FFE680") + IR(34, 20, 10, 6, "#fff"),
+    ordnen: [0, 1, 2].map(i => IR(14, 4 + i * 10, 28, 7, "#fff") + IT(8, 10 + i * 10, i + 1, "#FFC21A", 8)).join(""),
+    zuordnen: IR(4, 6, 12, 7, "#fff") + IR(4, 22, 12, 7, "#fff") + IR(32, 6, 12, 7, "#2EE6D6") + IR(32, 22, 12, 7, "#FF2BD6") + '<path d="M16 9.5L32 25.5M16 25.5L32 9.5" stroke="#fff" stroke-width="1.5"/>',
+    sortieren: IR(10, 2, 14, 9, "#fff") + '<path d="M17 12v5" stroke="#fff" stroke-width="1.5"/>' + IR(4, 20, 18, 14, "#A07CFF") + IR(26, 20, 18, 14, "#2EE6D6"),
+    zeitmaschine: '<path d="M4 24h40" stroke="#fff" stroke-width="2"/>' + [8, 18, 28, 38].map(x => `<path d="M${x} 21v6" stroke="#fff" stroke-width="1.5"/>`).join("") + '<circle cx="24" cy="24" r="4" fill="#FFC21A"/>' + IT(24, 13, "1291", "#fff", 9),
+    memory: [0, 1, 2, 3].map(i => IR(5 + (i % 2) * 20, 3 + Math.floor(i / 2) * 16, 17, 13, i === 1 || i === 2 ? "#fff" : "#A07CFF")).join("") + IT(33.5, 13, "🌋", "#000", 8) + IT(13.5, 29, "🌋", "#000", 8),
+    raetsel: IT(15, 28, "?", "#FFC21A", 26) + '<circle cx="32" cy="15" r="7" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M37 20l5 5" stroke="#fff" stroke-width="3"/>',
+    schaetzen: '<path d="M6 25h36" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="30" cy="25" r="5" fill="#FFC21A"/>' + IT(30, 14, "≈3000", "#fff", 8),
+    karteikarten: IR(14, 3, 28, 20, "#2EE6D6", 3) + IR(6, 11, 28, 20, "#fff", 3) + IT(20, 25, "?", "#14062E", 11),
+    chat: IR(4, 4, 26, 11, "#fff", 5) + IR(18, 20, 26, 11, "#A07CFF", 5) + IR(8, 8.5, 16, 2, "#B9B2D0", 1) + IR(22, 24.5, 16, 2, "#fff", 1),
+    meinung: '<path d="M6 22h36" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="16" cy="22" r="5" fill="#FF2BD6"/>' + IT(7, 12, "👍", "#000", 9) + IT(41, 12, "👎", "#000", 9),
+    schreiben: IR(8, 3, 26, 30, "#fff", 2) + [9, 15, 21].map(y => `<path d="M12 ${y}h18" stroke="#B9B2D0" stroke-width="1.5"/>`).join("") + '<path d="M43 6L29 26l-2 5 4-3L45 8z" fill="#FFC21A"/>',
+    gestalten: IR(8, 3, 32, 30, "#FF6A00", 3) + IR(12, 7, 24, 6, "#fff", 1) + IR(12, 16, 24, 2, "#fff", 1) + IR(12, 20, 18, 2, "#fff", 1) + IT(32, 30, "⭐", "#000", 8)
+  };
+  const typeSvg = v => `<svg viewBox="0 0 48 36" aria-hidden="true">${ICON[v] || ""}</svg>`;
+  const WERT = { mc: 1, tf: 1, text: 1, luecke: 2, ordnen: 2, zuordnen: 2, schreiben: 2, mehrfach: 2, schaetzen: 2, gestalten: 2, sortieren: 3, zeitmaschine: 3, raetsel: 3, memory: 3, wortsalat: 2, wortraten: 2, blitz: 2, markieren: 2, wortsuche: 3, karteikarten: 2, chat: 2, meinung: 2 };
   const wert = a => WERT[a.typ] || 1;
   const etSterne = e => e.aufgaben.reduce((n, a) => n + (a.typ === "info" ? 0 : wert(a)), 0);
   const OUT_SLOTS = [["kopf", "Kopf"], ["augen", "Augen"], ["mund", "Mund"], ["hals", "Hals & Rücken"], ["fuesse", "Füsse & Beine"], ["hand", "In der Hand"], ["haustier", "Haustier"]];
@@ -24,7 +57,7 @@
 
   /* ---------- Entwurf (bleibt in diesem Browser) ---------- */
   const KEY = "gle.draft.v1";
-  const fresh = () => ({ typenV2: true, titel: "", fach: "nmg", hubThema: "", hubNeu: "", klasse: "6", minuten: "45", etappen: "4", rahmen: "auto", ideen: "", typen: TYPES.map(t => t[0]), material: [], links: "", belIdeen: "",
+  const fresh = () => ({ typenV2: true, typenV3: true, titel: "", fach: "nmg", hubThema: "", hubNeu: "", klasse: "6", minuten: "45", etappen: "4", rahmen: "auto", ideen: "", typen: TYPES.map(t => t[0]), material: [], links: "", belIdeen: "",
     diplome: [], outfits: [], emotes: [], zimmer: [], hintergruende: [], plan: null, inhalt: [], step: 1, opt: freshOpt() });
   const freshOpt = () => ({ tipps: true, vorlesen: true, lexikon: true, pdf: true, gates: [], code: "", mascot: { typ: "glitch" } });
   let D = fresh();
@@ -32,6 +65,7 @@
   D.opt = Object.assign(freshOpt(), D.opt || {});
   if (!D.opt.mascot || !D.opt.mascot.typ) D.opt.mascot = { typ: "glitch" };
   if (!Array.isArray(D.opt.gates)) D.opt.gates = D.opt.freigabe === "selbst" ? ["selbst"] : D.opt.freigabe === "lp" ? ["lp"] : [];
+  if (!D.typenV3) { D.typen = [...new Set([...D.typen, "wortsalat", "wortraten", "blitz", "markieren", "wortsuche", "karteikarten", "chat", "meinung"])]; D.typenV3 = true; }
   if (!D.typenV2) { D.typen = [...new Set([...D.typen, "mehrfach", "memory", "sortieren", "zeitmaschine", "raetsel", "schaetzen", "gestalten"])]; D.typenV2 = true; }
   let saveT = null;
   const save = () => { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) { try { localStorage.setItem(KEY, JSON.stringify(Object.assign({}, D, { material: D.material.map(m => Object.assign({}, m, { text: m.text.slice(0, 20000) })) }))); } catch (e2) { /* zu gross */ } } }, 400); };
@@ -81,9 +115,21 @@
     $("#fach").onchange = e => { D.fach = e.target.value; D.hubThema = ""; paintThemes(); save(); };
     $("#hubThema").onchange = e => { D.hubThema = e.target.value; $("#neuWrap").hidden = D.hubThema !== "__neu"; save(); };
     paintThemes();
-    $("#typen").innerHTML = TYPES.map(([v, n]) => `<label class="chip"><input type="checkbox" value="${v}"${D.typen.includes(v) ? " checked" : ""}> ${esc(n)}</label>`).join("");
+    paintTypes();
     paintOpts(); paintMascot();
-    $$("#typen input").forEach(c => c.onchange = () => { D.typen = $$("#typen input:checked").map(x => x.value); if (!D.typen.length) { c.checked = true; D.typen = [c.value]; toast("Mindestens eine Aufgabenart muss gewählt sein."); } save(); });
+  }
+
+  /* ---------- Aufgabenarten: Gruppen mit Bild ---------- */
+  function paintTypes() {
+    const on = new Set(D.typen);
+    $("#typen").innerHTML = `<div class="ty-top"><span>${on.size} von ${TYPES.length} gewählt</span><button type="button" class="btn small ghost" data-tyall="1">Alle</button><button type="button" class="btn small ghost" data-tyall="mix">Gemischt (Empfehlung)</button></div>`
+      + TG.map(([g, list], gi) => { const n = list.filter(x => on.has(x[0])).length;
+        return `<div class="ty-g"><div class="ty-gh"><b>${esc(g)}</b><small>${n} / ${list.length}</small><button type="button" class="link" data-tyg="${gi}">${n === list.length ? "keine" : "alle"}</button></div>
+          <div class="ty-list">${list.map(([v, nm, d]) => `<label class="ty${on.has(v) ? " on" : ""}"><input type="checkbox" value="${v}"${on.has(v) ? " checked" : ""}><span class="ty-pic">${typeSvg(v)}</span><span class="ty-t"><b>${esc(nm)}</b><small>${esc(d)}</small></span><i class="ty-ck" aria-hidden="true">${on.has(v) ? "✓" : ""}</i></label>`).join("")}</div></div>`; }).join("");
+    const set = list => { if (!list.length) { toast("Mindestens eine Aufgabenart muss gewählt sein."); paintTypes(); return; } D.typen = list; save(); paintTypes(); };
+    $$("#typen input").forEach(c => c.onchange = () => set(TYPES.map(t => t[0]).filter(v => v === c.value ? c.checked : on.has(v))));
+    $$("[data-tyg]").forEach(b => b.onclick = () => { const L = TG[+b.dataset.tyg][1].map(x => x[0]), all = L.every(v => on.has(v)); set(TYPES.map(t => t[0]).filter(v => L.includes(v) ? !all : on.has(v))); });
+    $$("[data-tyall]").forEach(b => b.onclick = () => set(b.dataset.tyall === "1" ? TYPES.map(t => t[0]) : ["mc", "tf", "mehrfach", "luecke", "wortsalat", "wortsuche", "ordnen", "zuordnen", "sortieren", "memory", "raetsel", "chat", "meinung", "gestalten"]));
   }
 
   /* ---------- Funktionen und Freigabe ---------- */
@@ -334,6 +380,14 @@ Jede Aufgabe (nicht info) hat zusätzlich "titel" (Name des Bausteins, 1–3 Wö
 - {"typ":"zeitmaschine","frage":"…","von":1200,"bis":2000,"einheit":"","ereignisse":[{"text":"Ereignis","jahr":1291}],"erklaerung":"…"}   (3–5 Ereignisse mit sicheren Jahreszahlen zwischen von und bis; nur bei Themen mit Jahreszahlen)
 - {"typ":"raetsel","frage":"Wer oder was ist gemeint?","hinweise":["schwerer Hinweis","mittlerer Hinweis","leichter Hinweis"],"antworten":["Lösung","Variante"],"erklaerung":"…"}   (3–4 Hinweise vom schweren zum leichten)
 - {"typ":"schaetzen","frage":"…","min":0,"max":5000,"antwort":4634,"toleranz":300,"einheit":"m","erklaerung":"…"}   (eine gesicherte Zahl; toleranz grosszügig)
+- {"typ":"wortsalat","frage":"Umschreibung des Wortes, ohne es zu nennen","wort":"VULKAN","erklaerung":"…","tipp":"…"}   (ein Fachwort, 4–12 Buchstaben, ohne Leerzeichen)
+- {"typ":"wortraten","frage":"Umschreibung des gesuchten Wortes","wort":"KRATER","erklaerung":"…","tipp":"…"}   (ein Wort oder zwei kurze, 4–14 Buchstaben)
+- {"typ":"blitz","frage":"Blitzrunde: …","aussagen":[{"text":"…","richtig":true},{"text":"…","richtig":false}],"sekunden":8,"erklaerung":"…"}   (5–8 kurze Aussagen, gemischt wahr und falsch)
+- {"typ":"markieren","anleitung":"Markiert alle … / Findet die 3 Fehler","text":"Ein Text mit 2–4 Sätzen, in dem die gesuchten Wörter mit *Sternchen* markiert sind.","erklaerung":"…","tipp":"…"}   (2–6 markierte einzelne Wörter)
+- {"typ":"wortsuche","frage":"Findet die 5 versteckten Begriffe zu …","woerter":["MAGMA","LAVA","KRATER"],"erklaerung":"…"}   (4–7 Fachwörter, je 3–10 Buchstaben, keine Leerzeichen)
+- {"typ":"karteikarten","frage":"Lernkarten: …","karten":[["Vorderseite (Frage/Begriff)","Rückseite (Antwort/Erklärung)"]],"erklaerung":"…"}   (4–8 Karten, kurz)
+- {"typ":"chat","frage":"Chattet mit …","person":"Name einer passenden Figur (z. B. Zeitzeugin, Forscher)","emoji":"🧑‍🔬","schritte":[{"sagt":"Nachricht der Figur","optionen":["Antwort A","Antwort B","Antwort C"],"richtig":1,"antwort":"Reaktion auf die richtige Antwort","falsch":"Reaktion auf eine falsche Antwort mit kleinem Hinweis"}],"erklaerung":"…"}   (3–5 Schritte, die Figur vermittelt Wissen im Gespräch)
+- {"typ":"meinung","frage":"Eine Frage, zu der man verschiedener Meinung sein darf","links":"Ja, unbedingt","rechts":"Nein, gar nicht","argumente":["Argument dafür","Argument dagegen","…"],"mindestwoerter":12,"erklaerung":"…"}   (3–5 Argumente für beide Seiten)
 - {"typ":"gestalten","auftrag":"Gestaltet ein Plakat / einen Steckbrief / eine Zeitungsseite zu …","titelname":"Überschrift","textname":"Text","mindestwoerter":20,"sticker":["🌋","🔥","⭐"],"erklaerung":"…"}`;
   const typesAllowed = () => D.typen.length ? D.typen : TYPES.map(t => t[0]);
   const perEt = () => Math.max(3, Math.min(8, Math.round(+D.minuten / 6 / (+D.etappen || 4))));
@@ -357,6 +411,15 @@ Jede Aufgabe (nicht info) hat zusätzlich "titel" (Name des Bausteins, 1–3 Wö
     if (t === "zeitmaschine") { const von = Math.round(+a.von), bis = Math.round(+a.bis), ev = (a.ereignisse || []).filter(x => x && s(x.text) && isFinite(+x.jahr) && +x.jahr >= von && +x.jahr <= bis).map(x => ({ text: s(x.text), jahr: Math.round(+x.jahr) })); return isFinite(von) && isFinite(bis) && bis > von && ev.length >= 2 ? { typ: t, frage: s(a.frage), von, bis, einheit: s(a.einheit), ereignisse: ev.slice(0, 6), erklaerung: s(a.erklaerung) } : null; }
     if (t === "raetsel") { const h = (a.hinweise || []).map(s).filter(Boolean), an = (Array.isArray(a.antworten) ? a.antworten : [a.antworten]).map(s).filter(Boolean); return h.length >= 2 && an.length ? { typ: t, frage: s(a.frage), hinweise: h.slice(0, 5), antworten: an, erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null; }
     if (t === "schaetzen") { const mn = +a.min, mx = +a.max, an = +a.antwort; return s(a.frage) && isFinite(mn) && isFinite(mx) && mx > mn && an >= mn && an <= mx ? { typ: t, frage: s(a.frage), min: mn, max: mx, antwort: an, toleranz: Math.max(0, +a.toleranz || Math.round((mx - mn) * .05)), einheit: s(a.einheit), erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null; }
+    const WU = v => s(v).toUpperCase().replace(/ß/g, "SS");
+    if (t === "wortsalat") { const w = WU(a.wort).replace(/[^A-ZÄÖÜ]/g, ""); return w.length >= 3 && w.length <= 14 ? { typ: t, frage: s(a.frage), wort: w, erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null; }
+    if (t === "wortraten") { const w = WU(a.wort).replace(/[^A-ZÄÖÜ \-]/g, "").trim(); return w.replace(/[^A-ZÄÖÜ]/g, "").length >= 3 && w.length <= 20 ? { typ: t, frage: s(a.frage), wort: w, erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null; }
+    if (t === "blitz") { const L = (a.aussagen || []).filter(x => x && s(x.text)).map(x => ({ text: s(x.text), richtig: x.richtig === true || x.richtig === "true" })).slice(0, 10); return L.length >= 3 ? { typ: t, frage: s(a.frage), aussagen: L, sekunden: Math.max(4, Math.min(20, +a.sekunden || 8)), erklaerung: s(a.erklaerung) } : null; }
+    if (t === "markieren") return /\*[^*\s][^*]*\*/.test(s(a.text)) ? { typ: t, anleitung: s(a.anleitung), text: s(a.text), erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null;
+    if (t === "wortsuche") { const w = [...new Set((a.woerter || []).map(WU).map(x => x.replace(/[^A-ZÄÖÜ]/g, "")).filter(x => x.length >= 2 && x.length <= 11))].slice(0, 8); return w.length >= 3 ? { typ: t, frage: s(a.frage), woerter: w, erklaerung: s(a.erklaerung) } : null; }
+    if (t === "karteikarten") { const kk = (a.karten || []).filter(x => Array.isArray(x) && s(x[0]) && s(x[1])).map(x => [s(x[0]), s(x[1])]).slice(0, 10); return kk.length >= 3 ? { typ: t, frage: s(a.frage), karten: kk, erklaerung: s(a.erklaerung) } : null; }
+    if (t === "chat") { const sc = (a.schritte || []).filter(x => x && s(x.sagt) && Array.isArray(x.optionen) && x.optionen.length >= 2 && +x.richtig >= 0 && +x.richtig < x.optionen.length).map(x => ({ sagt: s(x.sagt), optionen: x.optionen.map(s), richtig: +x.richtig, antwort: s(x.antwort), falsch: s(x.falsch) })).slice(0, 6); return sc.length >= 2 ? { typ: t, frage: s(a.frage), person: s(a.person) || "Chat", emoji: s(a.emoji).slice(0, 8) || "🙂", schritte: sc, erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null; }
+    if (t === "meinung") return s(a.frage) ? { typ: t, frage: s(a.frage), links: s(a.links) || "Ja", rechts: s(a.rechts) || "Nein", argumente: (a.argumente || []).map(s).filter(Boolean).slice(0, 6), mindestwoerter: Math.max(5, Math.min(80, +a.mindestwoerter || 12)), erklaerung: s(a.erklaerung) } : null;
     if (t === "gestalten") return s(a.auftrag) ? { typ: t, auftrag: s(a.auftrag), titelname: s(a.titelname), textname: s(a.textname), mindestwoerter: Math.max(5, Math.min(120, +a.mindestwoerter || 20)), sticker: (a.sticker || []).map(s).filter(Boolean).slice(0, 8), erklaerung: s(a.erklaerung) } : null;
     return null;
   }

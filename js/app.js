@@ -7,7 +7,7 @@
   const H = window.GLHub;
   const G = window.GLGlitch;
   const CFG = window.GL_CONFIG || {};
-  const LP_NAME = CFG.TEACHER_NAME || "deine Lehrperson";
+  const LP_NAME = "Die Lehrperson";
   const app = document.getElementById("app");
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -116,7 +116,7 @@
     try { const r = renderView(); if (r && r.catch) r.catch(err => { console.error(err); toast("Fehler: " + (err && err.message || err), "err", 9000); }); return r; }
     catch (err) {
       console.error(err);
-      toast("Ups, gLiTCh hat sich verhaspelt: " + (err && err.message ? err.message : err) + ". Schick Herrn Wehrli ein Foto davon.", "err", 9000);
+      toast("Ups, gLiTCh hat sich verhaspelt: " + (err && err.message ? err.message : err) + ". Zeig es der Lehrperson.", "err", 9000);
     }
   }
   /* Fehler, die sonst still verschwinden, sichtbar machen (z. B. auf dem iPad) */
@@ -451,7 +451,7 @@
       }
     };
     try { S.cleanup = m.mount($("#modBody"), api) || null; }
-    catch (e) { console.error(e); $("#modBody").innerHTML = `<p class="err">Dieses Modul hat einen Fehler. Sag es ${esc(LP_NAME)}.</p>`; }
+    catch (e) { console.error(e); $("#modBody").innerHTML = `<p class="err">Dieses Modul hat einen Fehler. Sag es der Lehrperson.</p>`; }
   }
 
   /* =================================================================
@@ -544,7 +544,7 @@
       }
       return {
         lp: isLP(), me: k(S.me.student), team: S.team.map(t => k(t.student)), className: S.me.class_name || "",
-        code: mainCode(), codes: classCodes().slice(1), teacher: CFG.TEACHER_NAME_DATIV || "Herrn Wehrli", quiz: [],
+        code: mainCode(), codes: classCodes().slice(1), teacher: CFG.TEACHER_NAME_DATIV || "der Lehrperson", quiz: [],
         group: initials(), mods, extras: S.me.extras || {}, workKey, custom: up.custom
       };
     },

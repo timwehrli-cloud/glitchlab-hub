@@ -5238,7 +5238,7 @@ function finishHTML(){
   const e = earned(S);
   return `<article class="step" style="--g:var(--g-detail)"><div class="step-band"></div><div class="step-in">
     <div><div class="step-top"><span class="eb">Ziel</span><span>Alle Bausteine fertig</span></div><h2 class="step-title">Geschafft: ${esc(M.short)}!</h2>
-    <p class="step-q">Speichert eure Arbeit «${esc(M.prod.file)}» als Bild und schickt sie per AirDrop an ${esc(X.teacher)}.</p></div>
+    <p class="step-q">Speichert eure Arbeit «${esc(M.prod.file)}» als Bild und schickt sie per AirDrop an die Lehrperson.</p></div>
     <div class="fn-intro"><span class="glitch">${X.glitch("cool")}</span><div><small>gLiTCh sagt</small>Ihr habt ${e.size} von ${BADGES.length} Diplomen und ${banked()} ★ in diesem Modul gesammelt.</div></div>
     ${productHTML()}
     <div class="pt-row" style="justify-content:flex-start"><button type="button" class="btn primary" data-ge-png>${esc(M.prod.file)} als Bild speichern</button><button type="button" class="btn" data-ge-pdf="#geMain #gePosterEl">📄 ${esc(M.prod.file)} als PDF</button></div><p class="pt-msg" id="geMsg" role="status"></p>
@@ -5291,7 +5291,7 @@ function present(gi){
   const ev = evalGroup(S, gi);
   const ov = document.createElement("div"); ov.className = "pt-ov"; ov.id = "gePres";
   ov.innerHTML = `<div class="pt-dlg wide" role="dialog" aria-modal="true" aria-labelledby="gePT"><span class="glitch" style="display:block; width:70px; height:70px">${X.glitch(ev.meister ? "love" : "happy")}</span>
-    <h2 id="gePT">${M.hub && gi < hubN() ? `Länderakte «${esc(M.hub.lands[gi].n)}»` : `Etappe «${esc(GROUPS[gi])}»`} präsentieren</h2><p>Erzählt ${esc(X.teacher)}, was ihr herausgefunden habt. ${ev.meister ? "Alles erfüllt: Meisterwerk! +5 ★" : `${ev.n} von ${ev.total} Punkten erfüllt.`}</p>
+    <h2 id="gePT">${M.hub && gi < hubN() ? `Länderakte «${esc(M.hub.lands[gi].n)}»` : `Etappe «${esc(GROUPS[gi])}»`} präsentieren</h2><p>Erzählt der Lehrperson, was ihr herausgefunden habt. ${ev.meister ? "Alles erfüllt: Meisterwerk! +5 ★" : `${ev.n} von ${ev.total} Punkten erfüllt.`}</p>
     <ul class="fn-dlg-list">${ev.r.map(r=>`<li class="${r.met ? "ok" : "no"}"><span>${r.met ? "✓" : "·"}</span>${esc(r.t)}</li>`).join("")}</ul>
     <p>Lehrperson: Code eingeben, um die Etappe freizugeben.</p>${window.GLAB_KEYPAD("geCode", "#gePres [data-ge-approve]")}<p class="pt-err" id="geErr" role="alert"></p>
     <div class="pt-row"><button type="button" class="pt-btn" data-ge="pres-close">Noch verbessern</button><button type="button" class="pt-btn primary" data-ge-approve="${gi}" hidden>Freigeben</button></div></div>`;
@@ -6211,7 +6211,7 @@ function finishHTML(){
   const e = allBadges();
   return `<article class="step" style="--g:var(--g-detail)"><div class="step-band"></div><div class="step-in">
     <div><div class="step-top"><span class="eb">Ziel</span><span>Fall gelöst · ${NEWS.filter(n=>isSolved(DATA.cases[n.id])).length} von ${NEWS.length} Fällen</span></div><h2 class="step-title">Fall gelöst, Detektive!</h2>
-    <p class="step-q">Eure Faktencheck-Karte ist fertig. Speichert sie als Bild und schickt sie per AirDrop an ${esc(X.teacher)}. In der nächsten Lektion stellt ihr sie der Klasse vor.</p></div>
+    <p class="step-q">Eure Faktencheck-Karte ist fertig. Speichert sie als Bild und schickt sie per AirDrop an die Lehrperson. In der nächsten Lektion stellt ihr sie der Klasse vor.</p></div>
     <div class="fn-intro"><span class="glitch">${X.glitch("cool")}</span><div><small>gLiTCh sagt</small>Ihr habt ${e.size} von ${window.GLAB_FN_BADGES.length} Detektiv-Diplomen. ${isBonus() ? `Fall-Bonus: +${CASE_BONUS} ★` : `Dieser Fall: ${banked()} ★`} · ganzes Modul: ${totalStars()} ★</div></div>
     <div class="fn-panel-card">${cardHTML()}</div>
     <div class="pt-row" style="justify-content:flex-start"><button type="button" class="btn primary" data-fn-png>Karte als Bild speichern</button></div><p class="pt-msg" id="fnMsg" role="status"></p>
@@ -6283,7 +6283,7 @@ function present(gid){
   const g = GROUPS.find(x=>x.id===gid), ev = evalGroup(S, gid);
   const ov = document.createElement("div"); ov.className = "pt-ov"; ov.id = "fnPres";
   ov.innerHTML = `<div class="pt-dlg wide" role="dialog" aria-modal="true" aria-labelledby="fnPT"><span class="glitch" style="display:block; width:70px; height:70px">${X.glitch(ev.meister ? "love" : "happy", {det:true})}</span>
-    <h2 id="fnPT">Etappe «${esc(g.name)}» präsentieren</h2><p>Zeigt ${esc(X.teacher)} eure Spuren. ${ev.meister ? "Alles erfüllt: Meisterwerk!" + st2(" +4 ★") : `${ev.n} von ${ev.total} Punkten erfüllt.`}</p>
+    <h2 id="fnPT">Etappe «${esc(g.name)}» präsentieren</h2><p>Zeigt der Lehrperson eure Spuren. ${ev.meister ? "Alles erfüllt: Meisterwerk!" + st2(" +4 ★") : `${ev.n} von ${ev.total} Punkten erfüllt.`}</p>
     <ul class="fn-dlg-list">${ev.r.map(r=>`<li class="${r.met ? "ok" : "no"}"><span>${r.met ? "✓" : "·"}</span>${esc(r.t)}</li>`).join("")}</ul>
     <p>Lehrperson: Code eingeben, um die Etappe freizugeben.</p>${window.GLAB_KEYPAD("fnCode", "#fnPres [data-fn-approve]")}<p class="pt-err" id="fnErr" role="alert"></p>
     <div class="pt-row"><button type="button" class="pt-btn" data-fn="pres-close">Noch verbessern</button><button type="button" class="pt-btn primary" data-fn-approve="${gid}" hidden>Freigeben</button></div></div>`;
@@ -6572,7 +6572,7 @@ function sceneField(id){
     <div class="ki-found ${f ? "ok" : "no"}">${f ? `✓ <span><b>Gefunden${f === 1 ? " beim ersten Versuch! +6 ★" : "! +3 ★"}</b> ${esc(sc.found)}</span>` : "🔍 Tippt auf die Stelle im Bild, die nicht stimmen kann."}</div>`;
 }
 function quizField(){
-  if (!QUIZ.length) return `<div class="ki-empty"><b>Noch keine Quiz-Bilder.</b><p style="margin:6px 0 10px">${esc(X.teacher.replace(/^Herrn/,"Herr"))} lädt die Bilder im Lehrpersonen-Bereich hoch und verteilt sie mit der Klassen-Datei. Bis dahin könnt ihr das Quiz überspringen.</p><button type="button" class="btn" data-ki-skip ${S.quizSkip ? "disabled" : ""}>${S.quizSkip ? "✓ Übersprungen" : "Quiz überspringen"}</button></div>`;
+  if (!QUIZ.length) return `<div class="ki-empty"><b>Noch keine Quiz-Bilder.</b><p style="margin:6px 0 10px">Die Lehrperson lädt die Bilder im Lehrpersonen-Bereich hoch und verteilt sie mit der Klassen-Datei. Bis dahin könnt ihr das Quiz überspringen.</p><button type="button" class="btn" data-ki-skip ${S.quizSkip ? "disabled" : ""}>${S.quizSkip ? "✓ Übersprungen" : "Quiz überspringen"}</button></div>`;
   const qa = S.quiz || {}; if (qIdx >= QUIZ.length) qIdx = QUIZ.length - 1; if (qIdx < 0) qIdx = 0;
   const q = QUIZ[qIdx], v = qa[q.id], right = v === q.ans;
   return `<div class="ki-q"><div class="ki-q-img"><img src="${q.img}" alt="Quiz-Bild ${qIdx+1}"><span class="ki-q-n">Bild ${qIdx+1} von ${QUIZ.length}</span>${q.src ? `<span class="ki-q-src">${esc(q.src)}</span>` : ""}${v ? `<span class="ki-q-res" style="--rc:${right ? "#1F9D68" : "#DD4646"}">${q.ans === "ki" ? "🤖 KI-Bild" : "📷 Foto"}</span>` : ""}</div>
@@ -6602,7 +6602,7 @@ function finishHTML(){
   const e = earnedKI(S);
   return `<article class="step" style="--g:var(--g-detail)"><div class="step-band"></div><div class="step-in">
     <div><div class="step-top"><span class="eb">Ziel</span><span>Alle Bausteine fertig</span></div><h2 class="step-title">Ihr seid KI-Bild-Profis!</h2>
-    <p class="step-q">Speichert euer Plakat als Bild und schickt es per AirDrop an ${esc(X.teacher)}. Dann kann es ausgedruckt im Schulhaus hängen.</p></div>
+    <p class="step-q">Speichert euer Plakat als Bild und schickt es per AirDrop an die Lehrperson. Dann kann es ausgedruckt im Schulhaus hängen.</p></div>
     <div class="fn-intro"><span class="glitch">${X.glitch("cool")}</span><div><small>gLiTCh sagt</small>Ihr habt ${e.size} von ${window.GLAB_KI_BADGES.length} Diplomen und ${banked()} ★ in diesem Modul gesammelt.${QUIZ.length ? ` Quiz: ${qRight(S)} von ${QUIZ.length} richtig.` : ""}</div></div>
     ${posterHTML()}
     <div class="pt-row" style="justify-content:flex-start"><button type="button" class="btn primary" data-ki-png>Plakat als Bild speichern</button></div><p class="pt-msg" id="kiMsg" role="status"></p>
@@ -6651,7 +6651,7 @@ function present(gid){
   const g = GROUPS.find(x=>x.id===gid), ev = evalGroup(S, gid);
   const ov = document.createElement("div"); ov.className = "pt-ov"; ov.id = "kiPres";
   ov.innerHTML = `<div class="pt-dlg wide" role="dialog" aria-modal="true" aria-labelledby="kiPT"><span class="glitch" style="display:block; width:70px; height:70px">${X.glitch(ev.meister ? "love" : "happy")}</span>
-    <h2 id="kiPT">Etappe «${esc(g.name)}» präsentieren</h2><p>Zeigt ${esc(X.teacher)}, was ihr gelernt habt. ${ev.meister ? "Alles erfüllt: Meisterwerk! +5 ★" : `${ev.n} von ${ev.total} Punkten erfüllt.`}</p>
+    <h2 id="kiPT">Etappe «${esc(g.name)}» präsentieren</h2><p>Zeigt der Lehrperson, was ihr gelernt habt. ${ev.meister ? "Alles erfüllt: Meisterwerk! +5 ★" : `${ev.n} von ${ev.total} Punkten erfüllt.`}</p>
     <ul class="fn-dlg-list">${ev.r.map(r=>`<li class="${r.met ? "ok" : "no"}"><span>${r.met ? "✓" : "·"}</span>${esc(r.t)}</li>`).join("")}</ul>
     <p>Lehrperson: Code eingeben, um die Etappe freizugeben.</p>${window.GLAB_KEYPAD("kiCode", "#kiPres [data-ki-approve]")}<p class="pt-err" id="kiErr" role="alert"></p>
     <div class="pt-row"><button type="button" class="pt-btn" data-ki="pres-close">Noch verbessern</button><button type="button" class="pt-btn primary" data-ki-approve="${gid}" hidden>Freigeben</button></div></div>`;
@@ -6779,7 +6779,7 @@ window.GLAB_KI = {
 (function(){
 const KEY = (window.GLAB && GLAB.key) || "promptBaukasten.v3";
 const PASSWORT = "4313";
-const LEHRER = "Herrn Wehrli";
+const LEHRER = "Der Lehrperson";
 const esc = t => String(t ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $ = (s, r=document) => r.querySelector(s);
 const RM = matchMedia("(prefers-reduced-motion: reduce)");
@@ -8374,17 +8374,17 @@ function sendSteps(here){
   const items = mode==="bauen" ? [
     {i:"copy", t:"Prompt kopieren", d:"mit dem Knopf unten"},
     {i:"notiz", t:"In Pages oder Notizen einfügen", d:"neue Notiz öffnen, lange tippen, «Einsetzen». Als Titel den Namen eures Programms schreiben."},
-    {i:"airdrop", t:`Prompt per AirDrop an ${LEHRER} senden`, d:"Teilen-Symbol (Quadrat mit Pfeil) → AirDrop → Herr Wehrli"},
+    {i:"airdrop", t:`Prompt per AirDrop an ${LEHRER} senden`, d:"Teilen-Symbol (Quadrat mit Pfeil) → AirDrop → die Lehrperson"},
     {i:"pdf", t:"Zusammenfassung 1 als PDF speichern", d:"mit dem Knopf «Zusammenfassung anzeigen» unten"},
-    {i:"airdrop", t:`Zusammenfassung per AirDrop an ${LEHRER} senden`, d:"im Teilen-Menü oder in der Dateien-App → Teilen → AirDrop → Herr Wehrli"},
-    {i:"stundenplan", t:"In einer Woche testen", d:"Herr Wehrli baut euer Programm. Am Freitag darauf prüft ihr es in Teil 2."}
+    {i:"airdrop", t:`Zusammenfassung per AirDrop an ${LEHRER} senden`, d:"im Teilen-Menü oder in der Dateien-App → Teilen → AirDrop → die Lehrperson"},
+    {i:"stundenplan", t:"In einer Woche testen", d:"Die Lehrperson baut euer Programm. Am Freitag darauf prüft ihr es in Teil 2."}
   ] : [
     {i:"copy", t:"Verbesserungs-Prompt kopieren", d:"mit dem Knopf unten"},
     {i:"notiz", t:"In Pages oder Notizen einfügen", d:"als Titel: Name des Programms + «Version 2»"},
-    {i:"airdrop", t:`Verbesserungs-Prompt per AirDrop an ${LEHRER} senden`, d:"Teilen-Symbol (Quadrat mit Pfeil) → AirDrop → Herr Wehrli"},
+    {i:"airdrop", t:`Verbesserungs-Prompt per AirDrop an ${LEHRER} senden`, d:"Teilen-Symbol (Quadrat mit Pfeil) → AirDrop → die Lehrperson"},
     {i:"pdf", t:"Zusammenfassung 2 als PDF speichern", d:"mit dem Knopf «Zusammenfassung anzeigen» unten"},
-    {i:"airdrop", t:`Zusammenfassung per AirDrop an ${LEHRER} senden`, d:"im Teilen-Menü oder in der Dateien-App → Teilen → AirDrop → Herr Wehrli"},
-    {i:"aemtli", t:"Version 2 ausprobieren", d:"Herr Wehrli lässt die KI euer Programm verbessern. Dann testet ihr die neue Version."}
+    {i:"airdrop", t:`Zusammenfassung per AirDrop an ${LEHRER} senden`, d:"im Teilen-Menü oder in der Dateien-App → Teilen → AirDrop → die Lehrperson"},
+    {i:"aemtli", t:"Version 2 ausprobieren", d:"Die Lehrperson lässt die KI euer Programm verbessern. Dann testet ihr die neue Version."}
   ];
   return `<ol class="send">${items.map((x,k)=>`<li${k===here?' class="here"':""}><span class="num">${k+1}</span><span class="si"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[x.i]}</svg></span><div><b>${esc(x.t)}</b><span class="t">${esc(x.d)}</span></div></li>`).join("")}</ol>`;
 }
@@ -8392,7 +8392,7 @@ function finishHTML(){
   const n = doneCount(), all = n===COUNTED.length;
   const miss = COUNTED.filter(s=>!s.done(state));
   const th = mode==="bauen"
-    ? {term:"AirDrop", text:"Mit AirDrop schickt man Texte und Dateien drahtlos an ein Gerät in der Nähe. Der Empfänger muss zustimmen, bevor etwas ankommt. Schaut genau hin, an wen ihr sendet: nur an die richtige Person.", weak:"An das erstbeste Gerät senden", strong:"Nur an Herrn Wehrli senden"}
+    ? {term:"AirDrop", text:"Mit AirDrop schickt man Texte und Dateien drahtlos an ein Gerät in der Nähe. Der Empfänger muss zustimmen, bevor etwas ankommt. Schaut genau hin, an wen ihr sendet: nur an die richtige Person.", weak:"An das erstbeste Gerät senden", strong:"Nur an die Lehrperson senden"}
     : {term:"Versionen", text:"Jede verbesserte Fassung eines Programms ist eine neue Version: zuerst 1.0, dann 1.1 oder 2.0. So sieht man, wie das Programm Schritt für Schritt besser wird. Auch grosse Apps auf euren Geräten bekommen ständig neue Versionen.", weak:"Programm (neu) (neu2)", strong:"Wörter-Rakete, Version 2"};
   return `<article class="step" style="--g:var(--star)"><div class="step-band"></div><div class="step-in">
     <div>
@@ -8814,7 +8814,7 @@ function showSheet(part=curPart(), opts={}){
   closeSheet(); sheetPart = part;
   const ov = document.createElement("div"); ov.className = "a4-ov"; ov.id = "a4ov"; ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true"); ov.setAttribute("aria-label","Zusammenfassung");
   ov.innerHTML = `<div class="a4-bar-top"><b>${opts.title ? esc(opts.title) : "Zusammenfassung " + part + " (A4)"}</b><div class="btns">${opts.html ? "" : `<button type="button" class="btn primary" data-sheet-pdf>Als PDF speichern</button>`}<button type="button" class="btn" data-sheet-close>Schliessen</button></div></div>
-    <p class="a4-note" id="a4note">${part===1 ? "Alle Präsentationen aus Teil 1 auf einem Blatt." : "Eure Testergebnisse und Verbesserungen auf einem Blatt."} Speichert es als PDF und schickt es dann per AirDrop an Herrn Wehrli.</p>
+    <p class="a4-note" id="a4note">${part===1 ? "Alle Präsentationen aus Teil 1 auf einem Blatt." : "Eure Testergebnisse und Verbesserungen auf einem Blatt."} Speichert es als PDF und schickt es dann per AirDrop an die Lehrperson.</p>
     <div class="a4-scale" id="a4scale">${opts.html || sheetHTML(part)}</div>`;
   document.body.appendChild(ov); document.body.style.overflow = "hidden";
   fitSheet(); ov.querySelector("[data-sheet-close]").focus({preventScroll:true});
@@ -8854,7 +8854,7 @@ async function savePdf(btn){
     pdf.setProperties({title:`Zusammenfassung ${sheetPart}`, author: groupReady() ? `Gruppe ${state.gruppeNr}` : "Gruppe", subject: PDF_TAG + packData(sheetPart), creator:"gLiTCh-Lab"});
     const name = (has(state,"name") ? state.name.trim() : "Projekt").replace(/[^\wäöüÄÖÜ\- ]+/g, "").trim() || "Projekt";
     await dl.save({filename: `Zusammenfassung ${sheetPart} ${name}.pdf`, data: pdf.output("blob")});
-    note.textContent = "Gespeichert! Jetzt per AirDrop an Herrn Wehrli senden: Teilen-Symbol → AirDrop → Herr Wehrli. Auf dem iPad findet ihr das PDF auch in der Dateien-App.";
+    note.textContent = "Gespeichert! Jetzt per AirDrop an die Lehrperson senden: Teilen-Symbol → AirDrop → die Lehrperson. Auf dem iPad findet ihr das PDF auch in der Dateien-App.";
     const r = btn.getBoundingClientRect(); sparkle(r.left + r.width/2, r.top + r.height/2, "var(--g-detail)", 16);
   } catch(e){
     const code = e && e.code;
@@ -8869,7 +8869,7 @@ function sheetBox(){
   return `<section class="pdf-box${ready?"":" locked"}">
     <div class="th-eb">Schritt 4 und 5 · Zusammenfassung ${part}</div>
     <h3>${part===1 ? "Alle Präsentationen auf einem A4-Blatt" : "Testergebnisse und Verbesserungen auf einem A4-Blatt"}</h3>
-    <p>${ready ? "Öffnet die Zusammenfassung, speichert sie als PDF und schickt sie per AirDrop an Herrn Wehrli, genau wie den Prompt." : (part===1 ? "Wird freigeschaltet, sobald alle vier Etappen präsentiert und von der Lehrperson freigegeben sind." : "Wird freigeschaltet, sobald Testen, Fehler melden und Anpassen ausgefüllt sind.")}</p>
+    <p>${ready ? "Öffnet die Zusammenfassung, speichert sie als PDF und schickt sie per AirDrop an die Lehrperson, genau wie den Prompt." : (part===1 ? "Wird freigeschaltet, sobald alle vier Etappen präsentiert und von der Lehrperson freigegeben sind." : "Wird freigeschaltet, sobald Testen, Fehler melden und Anpassen ausgefüllt sind.")}</p>
     <button type="button" class="btn primary" data-sheet ${ready?"":"disabled"}>Zusammenfassung anzeigen</button>
   </section>`;
 }
@@ -9118,7 +9118,7 @@ function groupHTML(){
   return `<article class="step" style="--g:var(--g-was)"><div class="step-band"></div><div class="step-in">
     <div><div class="step-top"><span class="eb">Start</span><span>${editingGroup ? "Gruppe ändern" : "Bevor es losgeht"}</span></div>
       <h2 class="step-title">Willkommen! Meldet eure Gruppe an</h2>
-      <p class="step-q">Welche Gruppe seid ihr und wer gehört dazu? So weiss Herr Wehrli später, welcher Prompt von wem ist.</p></div>
+      <p class="step-q">Welche Gruppe seid ihr und wer gehört dazu? So weiss die Lehrperson später, welcher Prompt von wem ist.</p></div>
     <div><span class="field-label">1. Gruppennummer</span>
       <div class="nums" role="group" aria-label="Gruppennummer">${Array.from({length:12},(_,k)=>k+1).map(n=>`<button type="button" class="num-b" id="gnr-${n}" data-gnr="${n}" aria-pressed="${String(nr)===String(n)}">${n}</button>`).join("")}</div></div>
     <div class="own"><span class="field-label">2. Wer gehört zur Gruppe? <span class="field-hint">· nur Vornamen, keine Nachnamen (Datenschutz!)</span></span>
@@ -9634,7 +9634,7 @@ document.addEventListener("click", e=>{
     state.members = members(); const first = !editingGroup; editingGroup = false; save(); renderTop(false); renderStep(1);
     if (first) confetti(); toast(`Hallo Gruppe ${state.gruppeNr}! Los geht's.`); setTimeout(()=>glitchSay(greetGroup(!first), "love", 6500, true), 500); return;
   }
-  if (t.hasAttribute("data-group-edit") && window.GLAB && !GLAB.lobby){ toast("Die Gruppen teilt Herr Wehrli ein."); return; }
+  if (t.hasAttribute("data-group-edit") && window.GLAB && !GLAB.lobby){ toast("Die Gruppen teilt die Lehrperson ein."); return; }
   if (t.hasAttribute("data-group-edit")){ editingGroup = true; renderStep(-1); scrollTo({top:0, behavior: motionOK()?"smooth":"auto"}); return; }
   if (t.hasAttribute("data-lp-close")){ closeTeacher(); return; }
   if (t.hasAttribute("data-lp-here")){
@@ -10015,7 +10015,7 @@ const DET_RULES = [
   {id:"sw-bunt", t:s=>s.palette==="sw" && ["verspielt","sticker","comic","pastell"].includes(s.stil), a:s=>"Stil: «" + nmOf(STILE, s.stil) + "»", b:()=>"Farben: «Schwarz-Weiss»", q:"Ein verspielter Stil ganz ohne Farben? Das wirkt vielleicht seltsam.", go:"farben"},
   {id:"spielfeld-punkte", t:s=>s.aufbau==="spielfeld" && arr(s,"fx").length && !arr(s,"fx").includes("punkte"), a:()=>"Aufbau: «Spielfeld mit Punkteanzeige»", b:()=>"Funktion «Punkte & Sterne» fehlt", q:"Ihr wollt eine Punkteanzeige, habt aber keine Punkte-Funktion gewählt. Fehlt da etwas?", go:"funktionen"},
   {id:"comic-elegant", t:s=>["comic","sticker","verspielt"].includes(s.stil) && ["elegant","playfair"].includes(s.schrift), a:s=>"Stil: «" + nmOf(STILE, s.stil) + "»", b:s=>"Schrift: «" + nmOf(SCHRIFTEN, s.schrift) + "»", q:"Ein lustiger Stil mit einer feinen, eleganten Schrift? Das beisst sich vielleicht.", go:"schrift"},
-  {id:"lp-lustig", t:s=>s.fuer==="lp" && s.ton==="lustig", a:()=>"Zielgruppe: «Unsere Lehrperson»", b:()=>"Ton: «Lustig mit Witzen»", q:"Herr Wehrli will schnell organisieren. Nerven ihn Witze dabei, oder freut er sich darüber?", go:"sprache"}
+  {id:"lp-lustig", t:s=>s.fuer==="lp" && s.ton==="lustig", a:()=>"Zielgruppe: «Unsere Lehrperson»", b:()=>"Ton: «Lustig mit Witzen»", q:"Die Lehrperson will schnell organisieren. Nerven ihn Witze dabei, oder freut er sich darüber?", go:"sprache"}
 ];
 let detLast = 0; const detShown = new Set(); let detCur = null;
 function detFind(){

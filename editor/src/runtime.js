@@ -36,7 +36,7 @@
   const save = () => { try { if (HUB) HUB.speichern(S); else localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* voll */ } };
   const k = (e, t) => e + "-" + t;
   /* Sterne pro Aufgabe: Spiele geben mehr Sterne als eine einzelne Quizfrage */
-  const WERT = { mc: 1, tf: 1, text: 1, luecke: 2, ordnen: 2, zuordnen: 2, schreiben: 2, mehrfach: 2, schaetzen: 2, gestalten: 2, sortieren: 3, zeitmaschine: 3, raetsel: 3, memory: 3 };
+  const WERT = { mc: 1, tf: 1, text: 1, luecke: 2, ordnen: 2, zuordnen: 2, schreiben: 2, mehrfach: 2, schaetzen: 2, gestalten: 2, sortieren: 3, zeitmaschine: 3, raetsel: 3, memory: 3, wortsalat: 2, wortraten: 2, blitz: 2, markieren: 2, wortsuche: 3, karteikarten: 2, chat: 2, meinung: 2 };
   const wert = a => WERT[a.typ] || 1;
   const solved = (e, t) => !!(S.ans[k(e, t)] && S.ans[k(e, t)].ok);
   const etStars = e => ET[e].aufgaben.reduce((n, a, t) => { const x = S.ans[k(e, t)]; return n + (scorable(a) && x && x.ok ? Math.min(wert(a), x.pts != null ? x.pts : wert(a)) : 0); }, 0);
@@ -109,14 +109,18 @@
   });
   const bDone = i => { const x = B[i]; return x.info ? !!S.ans[k(x.e, "seen")] : solved(x.e, x.t); };
   const KIND = { info: "Info", mc: "Quiz", tf: "Richtig oder falsch?", text: "Antwort eintippen", luecke: "Lückentext", ordnen: "Reihenfolge", zuordnen: "Verbinden", schreiben: "Schreibauftrag",
-    sortieren: "Sortier-Spiel", zeitmaschine: "Zeitmaschine", raetsel: "Rätsel", memory: "Memory", mehrfach: "Mehrere richtig", schaetzen: "Schätzen", gestalten: "Gestalten" };
+    sortieren: "Sortier-Spiel", zeitmaschine: "Zeitmaschine", raetsel: "Rätsel", memory: "Memory", mehrfach: "Mehrere richtig", schaetzen: "Schätzen", gestalten: "Gestalten",
+    wortsalat: "Buchstabensalat", wortraten: "Wort-Raten", blitz: "Blitzrunde", markieren: "Wörter markieren", wortsuche: "Wörtersuche", karteikarten: "Lernkarten", chat: "Chat-Gespräch", meinung: "Meinung bilden" };
   const TIPS = { mc: "Lies jede Antwort genau. Welche passt wirklich zur Frage?", tf: "Ein einziges falsches Wort macht die ganze Aussage falsch!", text: "Schau nochmals in «gLiTCh erklärt». Dort steht das Wort.",
     luecke: "Lies den ganzen Satz laut. Welches Wort klingt richtig?", ordnen: "Was passiert zuerst? Beginne mit dem, was du sicher weisst.", zuordnen: "Fang mit dem Paar an, bei dem du ganz sicher bist.",
     sortieren: "Überlege bei jeder Karte: Was ist das Besondere daran?", zeitmaschine: "Überlegt zuerst: Eher früher oder später als die anderen Ereignisse?", raetsel: "Holt euch ruhig den nächsten Hinweis!",
     memory: "Merkt euch, wo die Karten liegen. Sagt die Begriffe laut!", mehrfach: "Prüft jede Antwort einzeln: stimmt sie oder nicht?", schaetzen: "Vergleicht mit etwas, das ihr kennt.",
-    gestalten: "Eine kurze, starke Überschrift und zwei, drei klare Sätze reichen.", schreiben: "Schreibt zuerst Stichworte, dann ganze Sätze." };
+    gestalten: "Eine kurze, starke Überschrift und zwei, drei klare Sätze reichen.", schreiben: "Schreibt zuerst Stichworte, dann ganze Sätze.",
+    wortsalat: "Mit welchem Buchstaben fängt das Wort wohl an?", wortraten: "Probiert zuerst die häufigen Buchstaben: E, N, R, A, S.", blitz: "Nicht zu lange überlegen: Das Erste, was ihr denkt, stimmt oft!",
+    markieren: "Lest Satz für Satz und fragt bei jedem Wort: Passt es zur Anleitung?", wortsuche: "Sucht zuerst nach dem ersten Buchstaben eines Wortes.", karteikarten: "Sagt die Antwort laut, bevor ihr umdreht!",
+    chat: "Was würde eine höfliche und kluge Person antworten?", meinung: "Eine gute Begründung braucht ein «weil» und ein Beispiel." };
   const PRAISE = ["Pixel-perfekt!", "Jawoll, richtig!", "Mega, das stimmt!", "Super gemacht!", "Volltreffer!"];
-  const short = a => a.titel || (a.frage || a.aussage || a.auftrag || a.anleitung || "").split(/[?.!:]/)[0].split(" ").slice(0, 3).join(" ") || KIND[a.typ];
+  const short = a => a.titel || (a.frage || a.aussage || a.auftrag || a.anleitung || a.person || "").split(/[?.!:]/)[0].split(" ").slice(0, 3).join(" ") || KIND[a.typ];
 
   const app = document.getElementById("app");
   let view = { b: 0 }, sayT = null;
@@ -370,6 +374,51 @@
         </div><div class="poster" id="gePv"></div></div><p class="hintline" id="geInfo"></p><button type="button" class="btn primary" data-check>Fertig gestaltet</button>`;
     }
     if (a.typ === "schreiben") body = `<h3>${rich(a.auftrag).replace(/^<p>|<\/p>$/g, "")}</h3><textarea class="in" id="wr" placeholder="Schreibe hier …">${esc(st.v || "")}</textarea><p style="color:var(--muted);margin:6px 0" id="wc"></p><button type="button" class="btn primary" data-check>Abgeben</button>`;
+    /* ---------- neue Aufgabenarten ---------- */
+    const up = s => String(s || "").toUpperCase().replace(/ß/g, "SS");
+    if (a.typ === "wortsalat") {
+      const w = up(a.wort).replace(/[^A-ZÄÖÜ]/g, "");
+      view.ws = view.ws && view.ws.key === key ? view.ws : { key, w, pool: shuffle(w.split("").map((c, i) => ({ c, i }))), pick: [] };
+      body = `<h3>${rich(a.frage || "Welches Wort versteckt sich hier?").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Tippt die Buchstaben in der richtigen Reihenfolge an. Antippen im Wort nimmt einen Buchstaben zurück.</p>
+        <div class="ws-slots" id="wsS"></div><div class="ws-pool" id="wsP"></div><button type="button" class="btn primary" data-check>Prüfen</button>`;
+    }
+    if (a.typ === "wortraten") {
+      const w = up(a.wort);
+      view.wr = view.wr && view.wr.key === key ? view.wr : { key, w, got: new Set(), miss: 0 };
+      body = `<h3>${rich(a.frage || "Welches Wort ist gesucht?").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Tippt Buchstaben an. Bei 7 falschen Buchstaben ist der Akku leer.</p>
+        <div class="wr-word" id="wrW"></div><div class="wr-bat" id="wrB" aria-live="polite"></div><div class="wr-keys" id="wrK"></div>`;
+    }
+    if (a.typ === "blitz") {
+      view.bz = { i: -1, right: 0, t: null, left: 0 };
+      body = `<h3>${rich(a.frage || "Blitzrunde: Stimmt das?").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">${(a.aussagen || []).length} Aussagen, je ${+a.sekunden || 8} Sekunden. Schnell entscheiden!</p>
+        <div class="bz" id="bz"><button type="button" class="btn primary" id="bzGo">⚡ Blitzrunde starten</button></div>`;
+    }
+    if (a.typ === "markieren") {
+      const toks = []; String(a.text || "").split(/(\s+)/).forEach(p => { if (/^\s+$/.test(p) || !p) { toks.push({ sp: p }); return; } const m = p.match(/^([«"(]*)\*(.+?)\*([.,;:!?»")]*)$/); if (m) toks.push({ pre: m[1], w: m[2], post: m[3], hit: true }); else { const m2 = p.match(/^([«"(]*)(.*?)([.,;:!?»")]*)$/); toks.push({ pre: m2[1], w: m2[2].replace(/\*/g, ""), post: m2[3], hit: false }); } });
+      view.mk = view.mk && view.mk.key === key ? view.mk : { key, toks, on: new Set() };
+      body = `<h3>${esc(a.anleitung || "Markiert die richtigen Wörter.")}</h3><p class="hintline">Antippen markiert ein Wort, nochmals antippen nimmt die Markierung weg.</p><p class="mk-text" id="mkT"></p><button type="button" class="btn primary" data-check>Prüfen</button>`;
+    }
+    if (a.typ === "wortsuche") {
+      view.su = view.su && view.su.key === key ? view.su : Object.assign({ key, found: [], sel: null }, buildGrid((a.woerter || []).map(up)));
+      body = `<h3>${rich(a.frage || "Findet die versteckten Wörter!").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Tippt den ersten und dann den letzten Buchstaben eines Wortes an. Die Wörter stehen waagrecht, senkrecht oder schräg.</p>
+        <div class="su-wrap"><div class="su-grid" id="suG"></div><ul class="su-list" id="suL"></ul></div>`;
+    }
+    if (a.typ === "karteikarten") {
+      view.kk = view.kk && view.kk.key === key ? view.kk : { key, stack: shuffle((a.karten || []).map((_, i) => i)), flip: false, known: 0, again: 0 };
+      body = `<h3>${rich(a.frage || "Lernkarten").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Lest die Vorderseite, überlegt die Antwort und dreht die Karte um. Seid ehrlich: Was ihr noch nicht wusstet, kommt nochmals.</p><div class="kk" id="kk"></div>`;
+    }
+    if (a.typ === "chat") {
+      view.ch = view.ch && view.ch.key === key ? view.ch : { key, i: 0, log: [], miss: 0 };
+      body = `<h3>${rich(a.frage || "Chattet mit " + (a.person || "jemandem")).replace(/^<p>|<\/p>$/g, "")}</h3><div class="chat"><div class="chat-head"><span>${esc(a.emoji || "🙂")}</span><b>${esc(a.person || "Chat")}</b><small>online</small></div><div class="chat-log" id="chL" aria-live="polite"></div><div class="chat-opts" id="chO"></div></div>`;
+    }
+    if (a.typ === "meinung") {
+      const v = st.v || {}; view.mn = Object.assign({ pos: 50, args: [], text: "" }, v);
+      body = `<h3>${rich(a.frage || "Was meint ihr?").replace(/^<p>|<\/p>$/g, "")}</h3><div class="mn">
+        <div class="mn-scale"><span>${esc(a.links || "Ja")}</span><input type="range" min="0" max="100" value="${view.mn.pos}" id="mnR" aria-label="Eure Meinung"><span>${esc(a.rechts || "Nein")}</span></div>
+        ${(a.argumente || []).length ? `<p class="hintline">Welche Argumente überzeugen euch? (mindestens eins)</p><div class="mn-args">${a.argumente.map((x, i) => `<button type="button" class="opt chk" data-mn="${i}" aria-pressed="${view.mn.args.includes(i)}"><i aria-hidden="true"></i>${esc(x)}</button>`).join("")}</div>` : ""}
+        <label class="f"><span>Begründet eure Meinung (mit «weil …»)</span><textarea class="in" id="mnX" placeholder="Wir finden, dass …, weil …">${esc(view.mn.text)}</textarea></label><p class="hintline" id="mnI"></p>
+        <button type="button" class="btn primary" data-check>Meinung abgeben</button></div>`;
+    }
     $("#task").innerHTML = `<div class="task"><div class="task-h"><span class="kind">${KIND[a.typ] || "Aufgabe"}${stars}</span>${O.tipps ? `<button type="button" class="tipbtn" data-tip>💡 Tipp von ${esc(NAME)}</button>` : ""}</div>${body}</div>
       <div class="nav"><button type="button" class="btn" data-prev ${view.b ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${last ? "Zum Ziel 🏁" : "Weiter →"}</button></div>`;
     if ($("[data-tip]")) $("[data-tip]").onclick = () => say(a.tipp || TIPS[a.typ] || "Lies nochmals in «gLiTCh erklärt» nach!", "wink", 10000);
@@ -445,6 +494,89 @@
       paint(); chk.onclick = () => { const n = (V.text.match(/\S+/g) || []).length, ok = V.titel.trim().length >= 3 && n >= min && !!V.farbe; done(e, t, ok, true, { v: Object.assign({}, V) }, ok ? 2 : 0); fb(ok, ok ? (a.erklaerung || "Sieht super aus!") : "Es fehlt noch etwas: Überschrift, genug Text und eine Farbe."); }; }
     if (a.typ === "schreiben") { const min = +a.mindestwoerter || 20, wc = () => { const n = ($("#wr").value.match(/\S+/g) || []).length; $("#wc").textContent = `${n} von mindestens ${min} Wörtern`; return n; };
       wc(); $("#wr").oninput = wc; chk.onclick = () => { const ok = wc() >= min; done(e, t, ok, true, { v: $("#wr").value }); fb(ok, ok ? (a.erklaerung || "Super geschrieben!") : `Schreibe noch etwas mehr (mindestens ${min} Wörter).`); }; }
+    /* ---------- neue Aufgabenarten: Bedienung ---------- */
+    if (a.typ === "wortsalat") { const W = view.ws, paint = () => {
+        $("#wsS").innerHTML = W.w.split("").map((_, p) => { const it = W.pick[p]; return `<button type="button" class="ws-b slot${it ? " full" : ""}" data-wsx="${p}" ${it ? "" : "disabled"}>${it ? esc(it.c) : ""}</button>`; }).join("");
+        $("#wsP").innerHTML = W.pool.map((it, p) => `<button type="button" class="ws-b" data-wsp="${p}" ${W.pick.includes(it) ? "disabled" : ""}>${esc(it.c)}</button>`).join("");
+        $$("[data-wsp]").forEach(b => b.onclick = () => { if (st.ok || (S.ans[key] || {}).ok) return; const it = W.pool[+b.dataset.wsp]; if (W.pick.length < W.w.length) { W.pick.push(it); paint(); } });
+        $$("[data-wsx]").forEach(b => b.onclick = () => { if ((S.ans[key] || {}).ok) return; W.pick.splice(+b.dataset.wsx, 1); paint(); }); };
+      if (st.ok) W.pick = W.w.split("").map((c, i) => ({ c, i })); paint();
+      chk.onclick = () => { const v = W.pick.map(x => x.c).join(""), ok = v === W.w; $$(".ws-b.slot").forEach(b => b.classList.toggle(ok ? "ok" : "bad", true)); done(e, t, ok, true, { v }); fb(ok, ok ? a.erklaerung : (W.pick.length < W.w.length ? "Es fehlen noch Buchstaben." : "Noch nicht das richtige Wort. Antippen nimmt Buchstaben zurück.")); if (!ok) setTimeout(() => $$(".ws-b.slot").forEach(b => b.classList.remove("bad")), 900); };
+    }
+    if (a.typ === "wortraten") { const R = view.wr, ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ".split(""), letters = new Set(R.w.replace(/[^A-ZÄÖÜ]/g, "").split(""));
+      const won = () => [...letters].every(c => R.got.has(c)), lost = () => R.miss >= 7;
+      const paint = () => {
+        const show = (st.ok || won() || lost());
+        $("#wrW").innerHTML = R.w.split("").map(c => /[A-ZÄÖÜ]/.test(c) ? `<span class="${R.got.has(c) || show ? "on" : ""}${lost() && !R.got.has(c) ? " miss" : ""}">${R.got.has(c) || show ? esc(c) : ""}</span>` : `<span class="sp">${esc(c)}</span>`).join("");
+        $("#wrB").innerHTML = `<span class="bat">${Array.from({ length: 7 }, (_, i) => `<i class="${i < 7 - R.miss ? "on" : ""}"></i>`).join("")}</span><small>${7 - R.miss} Versuche übrig</small>`;
+        $("#wrK").innerHTML = ABC.map(c => `<button type="button" class="wr-k${R.got.has(c) ? (letters.has(c) ? " ok" : " bad") : ""}" data-wr="${c}" ${R.got.has(c) || won() || lost() || st.ok ? "disabled" : ""}>${c}</button>`).join("") + (lost() && !won() ? `<button type="button" class="btn small" id="wrAgain" style="grid-column:span 4">↺ Nochmal</button>` : "");
+        $$("[data-wr]").forEach(b => b.onclick = () => { const c = b.dataset.wr; R.got.add(c); if (!letters.has(c)) R.miss++; paint();
+          if (won()) { done(e, t, true, R.miss === 0, {}, R.miss <= 2 ? 2 : 1); fb(true, a.erklaerung); }
+          else if (lost()) { done(e, t, false, true); fb(false, `Das Wort war «${R.w}». Versucht es nochmals!`); } });
+        const ag = $("#wrAgain"); if (ag) ag.onclick = () => { view.wr = { key, w: R.w, got: new Set(), miss: 0 }; renderTask(); }; };
+      paint(); }
+    if (a.typ === "blitz") { const Z = view.bz, L = a.aussagen || [], sec = Math.max(4, Math.min(20, +a.sekunden || 8));
+      const end = () => { clearInterval(Z.t); const ok = Z.right >= Math.ceil(L.length * .7);
+        $("#bz").innerHTML = `<div class="bz-end"><b>${Z.right} von ${L.length} richtig</b><small>${ok ? "Blitzschnell!" : "Für den Stern braucht ihr " + Math.ceil(L.length * .7) + " richtige."}</small><button type="button" class="btn" id="bzGo">↺ Nochmals</button></div>`;
+        $("#bzGo").onclick = () => { Z.i = -1; Z.right = 0; next(); };
+        done(e, t, ok, true, { v: Z.right }, ok ? (Z.right === L.length ? 2 : 1) : 0); fb(ok, ok ? a.erklaerung : "Lest nochmals in den Erklärungen nach und startet die Blitzrunde neu."); };
+      const answer = v => { clearInterval(Z.t); const s0 = L[Z.i], ok = v === !!s0.richtig; if (ok) Z.right++;
+        $("#bz").querySelector(".bz-card").classList.add(ok ? "ok" : "bad"); setTimeout(next, 650); };
+      const next = () => { Z.i++; if (Z.i >= L.length) return end(); Z.left = sec;
+        $("#bz").innerHTML = `<div class="bz-top"><small>${Z.i + 1} / ${L.length}</small><span class="bz-time"><i id="bzT" style="width:100%"></i></span></div><div class="bz-card"><b>${esc(L[Z.i].text)}</b></div><div class="tf"><button type="button" class="opt" data-bz="1">👍 Stimmt</button><button type="button" class="opt" data-bz="0">👎 Stimmt nicht</button></div>`;
+        $$("[data-bz]").forEach(b => b.onclick = () => answer(b.dataset.bz === "1"));
+        const t0 = Date.now(); clearInterval(Z.t); Z.t = setInterval(() => { const f = 1 - (Date.now() - t0) / (sec * 1000); const bar = $("#bzT"); if (!bar) return clearInterval(Z.t); bar.style.width = Math.max(0, f * 100) + "%"; if (f <= 0) answer(null); }, 100); };
+      $("#bzGo").onclick = next; }
+    if (a.typ === "markieren") { const K = view.mk, paint = () => {
+        $("#mkT").innerHTML = K.toks.map((x, i) => x.sp != null ? esc(x.sp) : `${esc(x.pre)}<button type="button" class="mk-w${K.on.has(i) ? " on" : ""}" data-mk="${i}" aria-pressed="${K.on.has(i)}">${esc(x.w)}</button>${esc(x.post)}`).join("");
+        $$("[data-mk]").forEach(b => b.onclick = () => { if ((S.ans[key] || {}).ok) return; const i = +b.dataset.mk; K.on.has(i) ? K.on.delete(i) : K.on.add(i); paint(); }); };
+      if (st.ok) K.toks.forEach((x, i) => { if (x.hit) K.on.add(i); }); paint();
+      chk.onclick = () => { const hits = K.toks.map((x, i) => x.hit ? i : -1).filter(i => i >= 0), miss = hits.filter(i => !K.on.has(i)).length, extra = [...K.on].filter(i => !K.toks[i].hit).length, ok = !miss && !extra;
+        $$("[data-mk]").forEach(b => { const i = +b.dataset.mk; b.classList.toggle("ok", K.on.has(i) && K.toks[i].hit); b.classList.toggle("bad", K.on.has(i) && !K.toks[i].hit); });
+        done(e, t, ok, true); fb(ok, ok ? a.erklaerung : `${miss ? `Es fehlen noch ${miss}. ` : ""}${extra ? `${extra} markiert, die nicht passen (rot).` : ""}`); };
+    }
+    if (a.typ === "wortsuche") { const U = view.su, N = U.n, paint = () => {
+        const inFound = (x, y) => U.found.some(f => f.cells.some(([cx, cy]) => cx === x && cy === y));
+        $("#suG").style.gridTemplateColumns = `repeat(${N}, 1fr)`;
+        $("#suG").innerHTML = U.grid.map((row, y) => row.map((c, x) => `<button type="button" class="su-c${inFound(x, y) ? " on" : ""}${U.sel && U.sel[0] === x && U.sel[1] === y ? " sel" : ""}" data-su="${x},${y}">${c}</button>`).join("")).join("");
+        $("#suL").innerHTML = U.words.map(w => `<li class="${U.found.some(f => f.w === w) ? "on" : ""}">${esc(w)}</li>`).join("");
+        $$("[data-su]").forEach(b => b.onclick = () => { if ((S.ans[key] || {}).ok) return; const [x, y] = b.dataset.su.split(",").map(Number);
+          if (!U.sel) { U.sel = [x, y]; return paint(); }
+          const [x0, y0] = U.sel; U.sel = null; const dx = Math.sign(x - x0), dy = Math.sign(y - y0), len = Math.max(Math.abs(x - x0), Math.abs(y - y0)) + 1;
+          if ((x !== x0 && y !== y0 && Math.abs(x - x0) !== Math.abs(y - y0)) || len < 2) return paint();
+          const cells = Array.from({ length: len }, (_, i) => [x0 + dx * i, y0 + dy * i]), str = cells.map(([cx, cy]) => U.grid[cy][cx]).join(""), rev = str.split("").reverse().join("");
+          const w = U.words.find(w => (w === str || w === rev) && !U.found.some(f => f.w === w));
+          if (w) { U.found.push({ w, cells }); paint(); say(`«${w}» gefunden!`, "happy", 3000); if (U.found.length === U.words.length) { done(e, t, true, true, {}, 3); fb(true, a.erklaerung); } }
+          else { paint(); b.animate([{ transform: "translateX(-3px)" }, { transform: "translateX(3px)" }, { transform: "none" }], { duration: 250 }); } }); };
+      if (st.ok) U.found = U.places.map(p => ({ w: p.w, cells: p.cells })); paint(); }
+    if (a.typ === "karteikarten") { const C = view.kk, cards = a.karten || [], paint = () => {
+        if (!C.stack.length || st.ok && C.known === 0 && !C.flip && (S.ans[key] || {}).ok) {
+          $("#kk").innerHTML = `<div class="kk-end"><b>Alle ${cards.length} Karten gewusst! 🎉</b><button type="button" class="btn" id="kkAgain">↺ Nochmals üben</button></div>`;
+          $("#kkAgain").onclick = () => { view.kk = { key, stack: shuffle(cards.map((_, i) => i)), flip: false, known: 0, again: 0 }; renderTask(); }; return; }
+        const c = cards[C.stack[0]];
+        $("#kk").innerHTML = `<p class="hintline">Noch ${C.stack.length} Karte${C.stack.length === 1 ? "" : "n"}</p><button type="button" class="kk-card${C.flip ? " flip" : ""}" id="kkC" aria-label="Karte umdrehen"><span class="kk-f">${esc(c[0])}</span><span class="kk-b">${esc(c[1])}</span></button>
+          ${C.flip ? `<div class="tf"><button type="button" class="opt" data-kk="1">✓ Gewusst</button><button type="button" class="opt" data-kk="0">↺ Nochmal</button></div>` : `<p class="hintline">Antippen zum Umdrehen</p>`}`;
+        $("#kkC").onclick = () => { C.flip = !C.flip; paint(); };
+        $$("[data-kk]").forEach(b => b.onclick = () => { const i = C.stack.shift(); if (b.dataset.kk === "1") C.known++; else { C.again++; C.stack.push(i); } C.flip = false;
+          if (!C.stack.length) { done(e, t, true, C.again === 0, {}, C.again <= 1 ? 2 : 1); fb(true, a.erklaerung || "Super geübt!"); } paint(); }); };
+      paint(); }
+    if (a.typ === "chat") { const H = view.ch, steps = a.schritte || [], paint = () => {
+        const msgs = []; for (let i = 0; i <= Math.min(H.i, steps.length - 1); i++) { msgs.push(`<div class="cm cm-in"><span>${esc(steps[i].sagt)}</span></div>`); const L = H.log.filter(x => x.i === i); L.forEach(x => { msgs.push(`<div class="cm cm-out${x.ok ? "" : " no"}"><span>${esc(x.txt)}</span></div>`); if (!x.ok) msgs.push(`<div class="cm cm-in"><span>${esc(steps[i].falsch || "Hmm, bist du sicher? Überleg nochmals.")}</span></div>`); else if (steps[i].antwort) msgs.push(`<div class="cm cm-in"><span>${esc(steps[i].antwort)}</span></div>`); }); }
+        $("#chL").innerHTML = msgs.join(""); $("#chL").scrollTop = 1e6;
+        if (H.i >= steps.length || (S.ans[key] || {}).ok) { $("#chO").innerHTML = `<p class="hintline">✓ Gespräch beendet</p>`; return; }
+        const s0 = steps[H.i], tried = H.log.filter(x => x.i === H.i && !x.ok).map(x => x.o);
+        $("#chO").innerHTML = (s0.optionen || []).map((o, j) => `<button type="button" class="opt" data-ch="${j}" ${tried.includes(j) ? 'aria-disabled="true" disabled' : ""}>${esc(o)}</button>`).join("");
+        $$("[data-ch]").forEach(b => b.onclick = () => { const j = +b.dataset.ch, ok = j === +s0.richtig; H.log.push({ i: H.i, o: j, txt: s0.optionen[j], ok }); if (!ok) H.miss++;
+          if (ok) { H.i++; if (H.i >= steps.length) { done(e, t, true, H.miss === 0, {}, H.miss <= 1 ? 2 : 1); fb(true, a.erklaerung); } }
+          paint(); }); };
+      if (st.ok && !H.log.length) { steps.forEach((s0, i) => H.log.push({ i, o: +s0.richtig, txt: (s0.optionen || [])[+s0.richtig] || "", ok: true })); H.i = steps.length; }
+      paint(); }
+    if (a.typ === "meinung") { const V = view.mn, min = Math.max(5, +a.mindestwoerter || 10), info = () => { const n = (V.text.match(/\S+/g) || []).length; $("#mnI").textContent = `${n} von mindestens ${min} Wörtern${(a.argumente || []).length && !V.args.length ? " · ein Argument wählen" : ""}`; return n; };
+      $("#mnR").oninput = ev => { V.pos = +ev.target.value; };
+      $$("[data-mn]").forEach(b => b.onclick = () => { const i = +b.dataset.mn; V.args = V.args.includes(i) ? V.args.filter(x => x !== i) : V.args.concat(i); b.setAttribute("aria-pressed", String(V.args.includes(i))); info(); });
+      $("#mnX").oninput = ev => { V.text = ev.target.value; info(); }; info();
+      chk.onclick = () => { const ok = info() >= min && (!(a.argumente || []).length || V.args.length > 0); done(e, t, ok, true, { v: { pos: V.pos, args: V.args.slice(), text: V.text, titel: "Unsere Meinung" } }); fb(ok, ok ? (a.erklaerung || "Gut begründet! Andere dürfen anderer Meinung sein.") : "Wählt ein Argument und schreibt eure Begründung etwas länger."); };
+    }
     $("[data-prev]").onclick = () => goB(view.b - 1);
     $("[data-next]").onclick = () => goB(view.b + 1);
   }
@@ -495,6 +627,29 @@
     checkDips();
   }
 
+  /* Wörtersuche: Wörter in ein Buchstabenraster setzen (waagrecht, senkrecht, schräg; auch rückwärts) */
+  function buildGrid(words) {
+    words = [...new Set(words.map(w => w.replace(/[^A-ZÄÖÜ]/g, "")).filter(w => w.length >= 2 && w.length <= 12))].slice(0, 8);
+    const n = Math.max(8, Math.min(13, Math.max(...words.map(w => w.length), 0) + 2)), D8 = [[1, 0], [0, 1], [1, 1], [1, -1], [-1, 0], [0, -1]];
+    for (let tries = 0; tries < 40; tries++) {
+      const g = Array.from({ length: n }, () => Array(n).fill("")), places = []; let ok = true;
+      for (const w of words.slice().sort((a, b) => b.length - a.length)) {
+        let put = false;
+        for (let k = 0; k < 200 && !put; k++) {
+          const [dx, dy] = D8[Math.floor(Math.random() * (tries > 20 ? 2 : D8.length))], x0 = Math.floor(Math.random() * n), y0 = Math.floor(Math.random() * n), xe = x0 + dx * (w.length - 1), ye = y0 + dy * (w.length - 1);
+          if (xe < 0 || ye < 0 || xe >= n || ye >= n) continue;
+          const cells = w.split("").map((_, i) => [x0 + dx * i, y0 + dy * i]);
+          if (cells.every(([x, y], i) => !g[y][x] || g[y][x] === w[i])) { cells.forEach(([x, y], i) => { g[y][x] = w[i]; }); places.push({ w, cells }); put = true; }
+        }
+        if (!put) { ok = false; break; }
+      }
+      if (!ok) continue;
+      const ABC = "ABCDEFGHIJKLMNOPRSTUVWZ";
+      g.forEach(row => row.forEach((c, x) => { if (!c) row[x] = ABC[Math.floor(Math.random() * ABC.length)]; }));
+      return { grid: g, words, places, n };
+    }
+    return { grid: [words.join("").slice(0, 8).split("")], words: [], places: [], n: 8 };
+  }
   function shuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } if (b.length > 1 && b.every((x, i) => x === a[i])) [b[0], b[1]] = [b[1], b[0]]; return b; }
 
   /* ---------- Fenster ---------- */

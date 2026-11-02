@@ -58,7 +58,7 @@ Die Gruppe ist mit den Namen des Teams schon ausgefüllt. **Dschungel-Game** und
 
 ## So funktioniert es für dich (Lehrperson)
 
-**Festes Lehrpersonen-Konto:** Jede Klasse hat automatisch ein Konto «Herr Wehrli» (Name in `js/config.js`), das
+**Festes Lehrpersonen-Konto:** Jede Klasse hat automatisch ein Konto «Lehrperson» (Name in `js/config.js`), das
 zuoberst in der Namensliste steht. Dort ist immer alles freigeschaltet: alle Module, alle Level, Diplome, Outfits,
 Emotes und das Chalet. Das Bild-Passwort dafür steht im Lehrpersonen-Bereich bei der Klasse. Im Demo-Modus: ⭐⭐⭐.
 

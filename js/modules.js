@@ -182,10 +182,6 @@
       { id: "level3", title: "Level 3 · Die Fata Morgana", maxStars: 10 }
     ]
   });
-  H.registerModule({ id: "de-dschungel", subject: "de", theme: "de-gespraech", soon: true, title: "Dschungel-Game",
-    teaser: "Das nächste Abenteuer: Im Dschungel müsst ihr euch einigen, welcher Weg zum Ziel führt.", activities: [] });
-  H.registerModule({ id: "de-tundra", subject: "de", theme: "de-gespraech", soon: true, title: "Tundra-Game",
-    teaser: "Eiskalt diskutiert: Ein Abenteuer in der Tundra, bald hier im Hub.", activities: [] });
   /* ---------------------------------------------------------------
      NMG · Entdeckungsreise Schweiz: die 8 Module aus dem gLiTCh-Lab «NMG Schweiz»
      (Daten in js/glitch-data.js, Bilder dort unter LABART)

@@ -36,3 +36,18 @@ document.addEventListener("click", e=>{ const b = e.target.closest && e.target.c
   + ".wd-skin-note{margin:8px 0 0;font-size:.85rem;opacity:.85}";
   (document.head || document.documentElement).appendChild(st); })();
 function openWardrobe(){''', 1)
+
+# ---------- Überall «Lehrperson» statt «Herr Wehrli» ----------
+def _lpfix(t):
+    import re as _re
+    R = [('Erzählt ${esc(X.teacher)}', 'Erzählt der Lehrperson'), ('an ${esc(X.teacher)}', 'an die Lehrperson'), ('Zeigt ${esc(X.teacher)}', 'Zeigt der Lehrperson'),
+         ('${esc(X.teacher.replace(/^Herrn/,"Herr"))} lädt', 'Die Lehrperson lädt'), ('"Gespeichert! Jetzt per AirDrop an " + LP_NAME + " senden', '"Gespeichert! Jetzt per AirDrop an die Lehrperson senden'),
+         ('Die Nummer sagt euch ${LP_NAME.replace(/^Herrn/,"Herr")}.', 'Die Nummer sagt euch die Lehrperson.'), ('Foto: Tim Wehrli', 'Foto: Anna Muster'),
+         ('an Herrn Wehrli', 'an die Lehrperson'), ('und Herrn Wehrli', 'und der Lehrperson')]
+    for a, b in R: t = t.replace(a, b)
+    t = _re.sub(r'(^|["`>]|[.!?:]\s)Herrn Wehrli', lambda m: m.group(1) + 'Der Lehrperson', t)
+    t = t.replace('Herrn Wehrli', 'der Lehrperson')
+    t = _re.sub(r'(^|["`>(]|[.!?:]\s)Herr Wehrli', lambda m: m.group(1) + 'Die Lehrperson', t)
+    t = t.replace('Herr Wehrli', 'die Lehrperson').replace('Wehrli', 'Lehrperson')
+    return t
+portal = _lpfix(portal)

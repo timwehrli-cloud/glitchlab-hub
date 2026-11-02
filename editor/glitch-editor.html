@@ -157,6 +157,19 @@ option,optgroup{background:var(--surface);color:var(--ink)}
 .mas .pic .glitch{width:54px;height:54px;display:block}.mas b{display:block}.mas small{color:var(--muted);font-size:.78rem;line-height:1.3}
 .mas.on{border-color:var(--teal);background:linear-gradient(135deg,rgba(46,230,214,.18),rgba(160,124,255,.14))}
 .mas:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.link{all:unset;cursor:pointer;color:var(--teal);text-decoration:underline;font-weight:700}
+#typen{display:grid;gap:12px}
+.ty-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ty-top span{color:var(--muted);font-weight:700;margin-right:auto}
+.ty-g{border:1px solid var(--line);border-radius:16px;padding:10px;background:rgba(255,255,255,.02)}
+.ty-gh{display:flex;align-items:center;gap:8px;margin:0 2px 8px}.ty-gh small{color:var(--muted)}.ty-gh .link{margin-left:auto;font-size:.82rem}
+.ty-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:8px}
+.ty{position:relative;display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:center;padding:8px 10px 8px 8px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface2);cursor:pointer;opacity:.6;transition:opacity .15s}
+.ty input{position:absolute;opacity:0;pointer-events:none}
+.ty-pic{width:52px;height:40px;border-radius:9px;background:linear-gradient(135deg,#3A1D7A,#14062E);display:grid;place-items:center}.ty-pic svg{width:46px;height:34px}
+.ty-t b{display:block;font-size:.88rem;line-height:1.2}.ty-t small{display:block;color:var(--muted);font-size:.74rem;line-height:1.25}
+.ty-ck{position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:5px;border:1.5px solid var(--muted);display:grid;place-items:center;font-style:normal;font-size:.7rem}
+.ty.on{opacity:1;border-color:var(--teal);background:linear-gradient(135deg,rgba(46,230,214,.14),rgba(160,124,255,.12))}.ty.on .ty-ck{background:var(--teal);border-color:var(--teal);color:#0B0618}
+.ty:focus-within{outline:3px solid var(--teal);outline-offset:2px}
 </style>
 
 <div class="wrap">
@@ -514,6 +527,50 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
 .dip:not(.got) .e.wall svg{filter:grayscale(1) brightness(.5);opacity:.5}
 .dip-new{display:grid;place-items:center;margin:4px auto 10px;width:120px;height:120px;border-radius:22px;background:linear-gradient(#4B2696,#2A1466)}
 .dip-new svg{width:96px;height:96px;overflow:visible;filter:drop-shadow(0 3px 2px rgba(42,22,8,.5))}
+/* ---------- neue Aufgabenarten ---------- */
+.ws-slots,.ws-pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0}
+.ws-b{all:unset;box-sizing:border-box;cursor:pointer;width:46px;height:52px;display:grid;place-items:center;border-radius:12px;border:2.5px solid var(--dark);background:#fff;font:900 1.4rem/1 "Inter",system-ui,sans-serif;box-shadow:3px 3px 0 var(--dark)}
+.ws-b:disabled{opacity:.25;cursor:default;box-shadow:none}
+.ws-b.slot{background:var(--surface2);border-style:dashed;box-shadow:none}.ws-b.slot.full{border-style:solid;background:#FFF3C4}
+.ws-b.slot:disabled{opacity:1}.ws-b.ok{background:#D7F5E7!important;border-color:var(--ok)}.ws-b.bad{background:#FDE2E2!important;border-color:var(--bad)}
+.wr-word{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.wr-word span{width:38px;height:46px;display:grid;place-items:center;border-bottom:4px solid var(--dark);font:900 1.5rem/1 "Inter",system-ui,sans-serif}
+.wr-word span.sp{border:0;width:16px}.wr-word span.miss{color:var(--bad)}
+.wr-bat{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:10px}
+.bat{display:inline-flex;gap:3px;padding:3px;border:2px solid var(--dark);border-radius:6px}.bat i{width:12px;height:16px;border-radius:2px;background:#E5E0F2}.bat i.on{background:var(--ok)}
+.wr-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:6px}
+.wr-k{all:unset;box-sizing:border-box;cursor:pointer;height:42px;display:grid;place-items:center;border-radius:10px;border:2px solid var(--dark);background:#fff;font-weight:900}
+.wr-k:disabled{cursor:default}.wr-k.ok{background:var(--ok);color:#fff}.wr-k.bad{background:#EEE;color:#AAA;border-color:#CCC}
+.bz{display:grid;gap:10px;justify-items:center;margin-top:8px}
+.bz-top{display:flex;align-items:center;gap:10px;width:100%}.bz-time{flex:1;height:10px;border-radius:99px;background:#E5E0F2;overflow:hidden}.bz-time i{display:block;height:100%;background:linear-gradient(90deg,var(--bad),var(--gold))}
+.bz-card{width:100%;padding:22px 18px;border-radius:18px;border:2.5px solid var(--dark);background:#FFF8E1;text-align:center;font-size:1.2rem;box-shadow:4px 4px 0 var(--dark)}
+.bz-card.ok{background:#D7F5E7}.bz-card.bad{background:#FDE2E2}
+.bz-end{display:grid;gap:6px;justify-items:center;text-align:center}.bz-end b{font-size:1.4rem}
+.mk-text{line-height:2.3;font-size:1.08rem}
+.mk-w{all:unset;cursor:pointer;padding:1px 4px;border-radius:6px;border-bottom:2px dotted var(--line)}
+.mk-w.on{background:#FFE680;border-bottom-color:var(--gold)}.mk-w.ok{background:#BDEFD6}.mk-w.bad{background:#FBC9C9}
+.su-wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start}
+@media (max-width:600px){.su-wrap{grid-template-columns:1fr}}
+.su-grid{display:grid;gap:3px;max-width:520px}
+.su-c{all:unset;box-sizing:border-box;cursor:pointer;aspect-ratio:1;display:grid;place-items:center;border-radius:6px;background:#fff;border:1.5px solid var(--line);font:800 clamp(.75rem,2.4vw,1.05rem)/1 ui-monospace,monospace}
+.su-c.on{background:#BDEFD6;border-color:var(--ok)}.su-c.sel{background:#FFE680;border-color:var(--gold)}
+.su-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}.su-list li{padding:6px 10px;border-radius:10px;background:var(--surface2);font-weight:800;letter-spacing:.05em}.su-list li.on{text-decoration:line-through;background:#D7F5E7;color:var(--ok)}
+.kk{display:grid;gap:10px;justify-items:center}
+.kk-card{all:unset;box-sizing:border-box;cursor:pointer;width:min(420px,100%);min-height:170px;position:relative;perspective:900px}
+.kk-card span{position:absolute;inset:0;display:grid;place-items:center;padding:18px;text-align:center;border-radius:20px;border:2.5px solid var(--dark);box-shadow:4px 4px 0 var(--dark);font-size:1.25rem;font-weight:800;backface-visibility:hidden;transition:transform .45s}
+.kk-f{background:#fff}.kk-b{background:#E8F7FF;transform:rotateY(180deg)}
+.kk-card.flip .kk-f{transform:rotateY(180deg)}.kk-card.flip .kk-b{transform:rotateY(360deg)}
+.kk-end{display:grid;gap:8px;justify-items:center;text-align:center}
+.chat{border:2.5px solid var(--dark);border-radius:20px;overflow:hidden;background:#F3F7FB;box-shadow:4px 4px 0 var(--dark)}
+.chat-head{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-bottom:2px solid var(--line)}.chat-head span{font-size:1.6rem}.chat-head small{color:var(--ok);font-weight:700}
+.chat-log{display:grid;gap:8px;padding:14px;max-height:340px;overflow:auto}
+.cm{display:flex}.cm span{max-width:78%;padding:9px 13px;border-radius:16px;line-height:1.4}
+.cm.cm-in span{background:#fff;border:1.5px solid var(--line);border-bottom-left-radius:4px}
+.cm.cm-out{justify-content:flex-end}.cm.cm-out span{background:var(--accent);color:#fff;border-bottom-right-radius:4px}.cm.cm-out.no span{background:#D9D3E8;color:#5A5270;text-decoration:line-through}
+.chat-opts{display:grid;gap:8px;padding:12px 14px;background:#fff;border-top:2px solid var(--line)}
+.mn{display:grid;gap:12px}
+.mn-scale{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-weight:800}.mn-scale input{width:100%;accent-color:var(--accent)}
+.mn-args{display:grid;gap:8px}
 </script>
 <script type="text/plain" id="rt-gcss">.glitch { display: inline-block; position: relative; line-height: 0; flex: none; }
 .glitch svg { width: 100%; height: 100%; overflow: visible; display: block; animation: gBob 2.6s ease-in-out infinite; animation-delay: var(--d, 0s); }
@@ -756,7 +813,7 @@ window.GLMascot = window.GLMascot || (function () {
   const save = () => { try { if (HUB) HUB.speichern(S); else localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* voll */ } };
   const k = (e, t) => e + "-" + t;
   /* Sterne pro Aufgabe: Spiele geben mehr Sterne als eine einzelne Quizfrage */
-  const WERT = { mc: 1, tf: 1, text: 1, luecke: 2, ordnen: 2, zuordnen: 2, schreiben: 2, mehrfach: 2, schaetzen: 2, gestalten: 2, sortieren: 3, zeitmaschine: 3, raetsel: 3, memory: 3 };
+  const WERT = { mc: 1, tf: 1, text: 1, luecke: 2, ordnen: 2, zuordnen: 2, schreiben: 2, mehrfach: 2, schaetzen: 2, gestalten: 2, sortieren: 3, zeitmaschine: 3, raetsel: 3, memory: 3, wortsalat: 2, wortraten: 2, blitz: 2, markieren: 2, wortsuche: 3, karteikarten: 2, chat: 2, meinung: 2 };
   const wert = a => WERT[a.typ] || 1;
   const solved = (e, t) => !!(S.ans[k(e, t)] && S.ans[k(e, t)].ok);
   const etStars = e => ET[e].aufgaben.reduce((n, a, t) => { const x = S.ans[k(e, t)]; return n + (scorable(a) && x && x.ok ? Math.min(wert(a), x.pts != null ? x.pts : wert(a)) : 0); }, 0);
@@ -829,14 +886,18 @@ window.GLMascot = window.GLMascot || (function () {
   });
   const bDone = i => { const x = B[i]; return x.info ? !!S.ans[k(x.e, "seen")] : solved(x.e, x.t); };
   const KIND = { info: "Info", mc: "Quiz", tf: "Richtig oder falsch?", text: "Antwort eintippen", luecke: "Lückentext", ordnen: "Reihenfolge", zuordnen: "Verbinden", schreiben: "Schreibauftrag",
-    sortieren: "Sortier-Spiel", zeitmaschine: "Zeitmaschine", raetsel: "Rätsel", memory: "Memory", mehrfach: "Mehrere richtig", schaetzen: "Schätzen", gestalten: "Gestalten" };
+    sortieren: "Sortier-Spiel", zeitmaschine: "Zeitmaschine", raetsel: "Rätsel", memory: "Memory", mehrfach: "Mehrere richtig", schaetzen: "Schätzen", gestalten: "Gestalten",
+    wortsalat: "Buchstabensalat", wortraten: "Wort-Raten", blitz: "Blitzrunde", markieren: "Wörter markieren", wortsuche: "Wörtersuche", karteikarten: "Lernkarten", chat: "Chat-Gespräch", meinung: "Meinung bilden" };
   const TIPS = { mc: "Lies jede Antwort genau. Welche passt wirklich zur Frage?", tf: "Ein einziges falsches Wort macht die ganze Aussage falsch!", text: "Schau nochmals in «gLiTCh erklärt». Dort steht das Wort.",
     luecke: "Lies den ganzen Satz laut. Welches Wort klingt richtig?", ordnen: "Was passiert zuerst? Beginne mit dem, was du sicher weisst.", zuordnen: "Fang mit dem Paar an, bei dem du ganz sicher bist.",
     sortieren: "Überlege bei jeder Karte: Was ist das Besondere daran?", zeitmaschine: "Überlegt zuerst: Eher früher oder später als die anderen Ereignisse?", raetsel: "Holt euch ruhig den nächsten Hinweis!",
     memory: "Merkt euch, wo die Karten liegen. Sagt die Begriffe laut!", mehrfach: "Prüft jede Antwort einzeln: stimmt sie oder nicht?", schaetzen: "Vergleicht mit etwas, das ihr kennt.",
-    gestalten: "Eine kurze, starke Überschrift und zwei, drei klare Sätze reichen.", schreiben: "Schreibt zuerst Stichworte, dann ganze Sätze." };
+    gestalten: "Eine kurze, starke Überschrift und zwei, drei klare Sätze reichen.", schreiben: "Schreibt zuerst Stichworte, dann ganze Sätze.",
+    wortsalat: "Mit welchem Buchstaben fängt das Wort wohl an?", wortraten: "Probiert zuerst die häufigen Buchstaben: E, N, R, A, S.", blitz: "Nicht zu lange überlegen: Das Erste, was ihr denkt, stimmt oft!",
+    markieren: "Lest Satz für Satz und fragt bei jedem Wort: Passt es zur Anleitung?", wortsuche: "Sucht zuerst nach dem ersten Buchstaben eines Wortes.", karteikarten: "Sagt die Antwort laut, bevor ihr umdreht!",
+    chat: "Was würde eine höfliche und kluge Person antworten?", meinung: "Eine gute Begründung braucht ein «weil» und ein Beispiel." };
   const PRAISE = ["Pixel-perfekt!", "Jawoll, richtig!", "Mega, das stimmt!", "Super gemacht!", "Volltreffer!"];
-  const short = a => a.titel || (a.frage || a.aussage || a.auftrag || a.anleitung || "").split(/[?.!:]/)[0].split(" ").slice(0, 3).join(" ") || KIND[a.typ];
+  const short = a => a.titel || (a.frage || a.aussage || a.auftrag || a.anleitung || a.person || "").split(/[?.!:]/)[0].split(" ").slice(0, 3).join(" ") || KIND[a.typ];
 
   const app = document.getElementById("app");
   let view = { b: 0 }, sayT = null;
@@ -1090,6 +1151,51 @@ window.GLMascot = window.GLMascot || (function () {
         </div><div class="poster" id="gePv"></div></div><p class="hintline" id="geInfo"></p><button type="button" class="btn primary" data-check>Fertig gestaltet</button>`;
     }
     if (a.typ === "schreiben") body = `<h3>${rich(a.auftrag).replace(/^<p>|<\/p>$/g, "")}</h3><textarea class="in" id="wr" placeholder="Schreibe hier …">${esc(st.v || "")}</textarea><p style="color:var(--muted);margin:6px 0" id="wc"></p><button type="button" class="btn primary" data-check>Abgeben</button>`;
+    /* ---------- neue Aufgabenarten ---------- */
+    const up = s => String(s || "").toUpperCase().replace(/ß/g, "SS");
+    if (a.typ === "wortsalat") {
+      const w = up(a.wort).replace(/[^A-ZÄÖÜ]/g, "");
+      view.ws = view.ws && view.ws.key === key ? view.ws : { key, w, pool: shuffle(w.split("").map((c, i) => ({ c, i }))), pick: [] };
+      body = `<h3>${rich(a.frage || "Welches Wort versteckt sich hier?").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Tippt die Buchstaben in der richtigen Reihenfolge an. Antippen im Wort nimmt einen Buchstaben zurück.</p>
+        <div class="ws-slots" id="wsS"></div><div class="ws-pool" id="wsP"></div><button type="button" class="btn primary" data-check>Prüfen</button>`;
+    }
+    if (a.typ === "wortraten") {
+      const w = up(a.wort);
+      view.wr = view.wr && view.wr.key === key ? view.wr : { key, w, got: new Set(), miss: 0 };
+      body = `<h3>${rich(a.frage || "Welches Wort ist gesucht?").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Tippt Buchstaben an. Bei 7 falschen Buchstaben ist der Akku leer.</p>
+        <div class="wr-word" id="wrW"></div><div class="wr-bat" id="wrB" aria-live="polite"></div><div class="wr-keys" id="wrK"></div>`;
+    }
+    if (a.typ === "blitz") {
+      view.bz = { i: -1, right: 0, t: null, left: 0 };
+      body = `<h3>${rich(a.frage || "Blitzrunde: Stimmt das?").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">${(a.aussagen || []).length} Aussagen, je ${+a.sekunden || 8} Sekunden. Schnell entscheiden!</p>
+        <div class="bz" id="bz"><button type="button" class="btn primary" id="bzGo">⚡ Blitzrunde starten</button></div>`;
+    }
+    if (a.typ === "markieren") {
+      const toks = []; String(a.text || "").split(/(\s+)/).forEach(p => { if (/^\s+$/.test(p) || !p) { toks.push({ sp: p }); return; } const m = p.match(/^([«"(]*)\*(.+?)\*([.,;:!?»")]*)$/); if (m) toks.push({ pre: m[1], w: m[2], post: m[3], hit: true }); else { const m2 = p.match(/^([«"(]*)(.*?)([.,;:!?»")]*)$/); toks.push({ pre: m2[1], w: m2[2].replace(/\*/g, ""), post: m2[3], hit: false }); } });
+      view.mk = view.mk && view.mk.key === key ? view.mk : { key, toks, on: new Set() };
+      body = `<h3>${esc(a.anleitung || "Markiert die richtigen Wörter.")}</h3><p class="hintline">Antippen markiert ein Wort, nochmals antippen nimmt die Markierung weg.</p><p class="mk-text" id="mkT"></p><button type="button" class="btn primary" data-check>Prüfen</button>`;
+    }
+    if (a.typ === "wortsuche") {
+      view.su = view.su && view.su.key === key ? view.su : Object.assign({ key, found: [], sel: null }, buildGrid((a.woerter || []).map(up)));
+      body = `<h3>${rich(a.frage || "Findet die versteckten Wörter!").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Tippt den ersten und dann den letzten Buchstaben eines Wortes an. Die Wörter stehen waagrecht, senkrecht oder schräg.</p>
+        <div class="su-wrap"><div class="su-grid" id="suG"></div><ul class="su-list" id="suL"></ul></div>`;
+    }
+    if (a.typ === "karteikarten") {
+      view.kk = view.kk && view.kk.key === key ? view.kk : { key, stack: shuffle((a.karten || []).map((_, i) => i)), flip: false, known: 0, again: 0 };
+      body = `<h3>${rich(a.frage || "Lernkarten").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Lest die Vorderseite, überlegt die Antwort und dreht die Karte um. Seid ehrlich: Was ihr noch nicht wusstet, kommt nochmals.</p><div class="kk" id="kk"></div>`;
+    }
+    if (a.typ === "chat") {
+      view.ch = view.ch && view.ch.key === key ? view.ch : { key, i: 0, log: [], miss: 0 };
+      body = `<h3>${rich(a.frage || "Chattet mit " + (a.person || "jemandem")).replace(/^<p>|<\/p>$/g, "")}</h3><div class="chat"><div class="chat-head"><span>${esc(a.emoji || "🙂")}</span><b>${esc(a.person || "Chat")}</b><small>online</small></div><div class="chat-log" id="chL" aria-live="polite"></div><div class="chat-opts" id="chO"></div></div>`;
+    }
+    if (a.typ === "meinung") {
+      const v = st.v || {}; view.mn = Object.assign({ pos: 50, args: [], text: "" }, v);
+      body = `<h3>${rich(a.frage || "Was meint ihr?").replace(/^<p>|<\/p>$/g, "")}</h3><div class="mn">
+        <div class="mn-scale"><span>${esc(a.links || "Ja")}</span><input type="range" min="0" max="100" value="${view.mn.pos}" id="mnR" aria-label="Eure Meinung"><span>${esc(a.rechts || "Nein")}</span></div>
+        ${(a.argumente || []).length ? `<p class="hintline">Welche Argumente überzeugen euch? (mindestens eins)</p><div class="mn-args">${a.argumente.map((x, i) => `<button type="button" class="opt chk" data-mn="${i}" aria-pressed="${view.mn.args.includes(i)}"><i aria-hidden="true"></i>${esc(x)}</button>`).join("")}</div>` : ""}
+        <label class="f"><span>Begründet eure Meinung (mit «weil …»)</span><textarea class="in" id="mnX" placeholder="Wir finden, dass …, weil …">${esc(view.mn.text)}</textarea></label><p class="hintline" id="mnI"></p>
+        <button type="button" class="btn primary" data-check>Meinung abgeben</button></div>`;
+    }
     $("#task").innerHTML = `<div class="task"><div class="task-h"><span class="kind">${KIND[a.typ] || "Aufgabe"}${stars}</span>${O.tipps ? `<button type="button" class="tipbtn" data-tip>💡 Tipp von ${esc(NAME)}</button>` : ""}</div>${body}</div>
       <div class="nav"><button type="button" class="btn" data-prev ${view.b ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${last ? "Zum Ziel 🏁" : "Weiter →"}</button></div>`;
     if ($("[data-tip]")) $("[data-tip]").onclick = () => say(a.tipp || TIPS[a.typ] || "Lies nochmals in «gLiTCh erklärt» nach!", "wink", 10000);
@@ -1165,6 +1271,89 @@ window.GLMascot = window.GLMascot || (function () {
       paint(); chk.onclick = () => { const n = (V.text.match(/\S+/g) || []).length, ok = V.titel.trim().length >= 3 && n >= min && !!V.farbe; done(e, t, ok, true, { v: Object.assign({}, V) }, ok ? 2 : 0); fb(ok, ok ? (a.erklaerung || "Sieht super aus!") : "Es fehlt noch etwas: Überschrift, genug Text und eine Farbe."); }; }
     if (a.typ === "schreiben") { const min = +a.mindestwoerter || 20, wc = () => { const n = ($("#wr").value.match(/\S+/g) || []).length; $("#wc").textContent = `${n} von mindestens ${min} Wörtern`; return n; };
       wc(); $("#wr").oninput = wc; chk.onclick = () => { const ok = wc() >= min; done(e, t, ok, true, { v: $("#wr").value }); fb(ok, ok ? (a.erklaerung || "Super geschrieben!") : `Schreibe noch etwas mehr (mindestens ${min} Wörter).`); }; }
+    /* ---------- neue Aufgabenarten: Bedienung ---------- */
+    if (a.typ === "wortsalat") { const W = view.ws, paint = () => {
+        $("#wsS").innerHTML = W.w.split("").map((_, p) => { const it = W.pick[p]; return `<button type="button" class="ws-b slot${it ? " full" : ""}" data-wsx="${p}" ${it ? "" : "disabled"}>${it ? esc(it.c) : ""}</button>`; }).join("");
+        $("#wsP").innerHTML = W.pool.map((it, p) => `<button type="button" class="ws-b" data-wsp="${p}" ${W.pick.includes(it) ? "disabled" : ""}>${esc(it.c)}</button>`).join("");
+        $$("[data-wsp]").forEach(b => b.onclick = () => { if (st.ok || (S.ans[key] || {}).ok) return; const it = W.pool[+b.dataset.wsp]; if (W.pick.length < W.w.length) { W.pick.push(it); paint(); } });
+        $$("[data-wsx]").forEach(b => b.onclick = () => { if ((S.ans[key] || {}).ok) return; W.pick.splice(+b.dataset.wsx, 1); paint(); }); };
+      if (st.ok) W.pick = W.w.split("").map((c, i) => ({ c, i })); paint();
+      chk.onclick = () => { const v = W.pick.map(x => x.c).join(""), ok = v === W.w; $$(".ws-b.slot").forEach(b => b.classList.toggle(ok ? "ok" : "bad", true)); done(e, t, ok, true, { v }); fb(ok, ok ? a.erklaerung : (W.pick.length < W.w.length ? "Es fehlen noch Buchstaben." : "Noch nicht das richtige Wort. Antippen nimmt Buchstaben zurück.")); if (!ok) setTimeout(() => $$(".ws-b.slot").forEach(b => b.classList.remove("bad")), 900); };
+    }
+    if (a.typ === "wortraten") { const R = view.wr, ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ".split(""), letters = new Set(R.w.replace(/[^A-ZÄÖÜ]/g, "").split(""));
+      const won = () => [...letters].every(c => R.got.has(c)), lost = () => R.miss >= 7;
+      const paint = () => {
+        const show = (st.ok || won() || lost());
+        $("#wrW").innerHTML = R.w.split("").map(c => /[A-ZÄÖÜ]/.test(c) ? `<span class="${R.got.has(c) || show ? "on" : ""}${lost() && !R.got.has(c) ? " miss" : ""}">${R.got.has(c) || show ? esc(c) : ""}</span>` : `<span class="sp">${esc(c)}</span>`).join("");
+        $("#wrB").innerHTML = `<span class="bat">${Array.from({ length: 7 }, (_, i) => `<i class="${i < 7 - R.miss ? "on" : ""}"></i>`).join("")}</span><small>${7 - R.miss} Versuche übrig</small>`;
+        $("#wrK").innerHTML = ABC.map(c => `<button type="button" class="wr-k${R.got.has(c) ? (letters.has(c) ? " ok" : " bad") : ""}" data-wr="${c}" ${R.got.has(c) || won() || lost() || st.ok ? "disabled" : ""}>${c}</button>`).join("") + (lost() && !won() ? `<button type="button" class="btn small" id="wrAgain" style="grid-column:span 4">↺ Nochmal</button>` : "");
+        $$("[data-wr]").forEach(b => b.onclick = () => { const c = b.dataset.wr; R.got.add(c); if (!letters.has(c)) R.miss++; paint();
+          if (won()) { done(e, t, true, R.miss === 0, {}, R.miss <= 2 ? 2 : 1); fb(true, a.erklaerung); }
+          else if (lost()) { done(e, t, false, true); fb(false, `Das Wort war «${R.w}». Versucht es nochmals!`); } });
+        const ag = $("#wrAgain"); if (ag) ag.onclick = () => { view.wr = { key, w: R.w, got: new Set(), miss: 0 }; renderTask(); }; };
+      paint(); }
+    if (a.typ === "blitz") { const Z = view.bz, L = a.aussagen || [], sec = Math.max(4, Math.min(20, +a.sekunden || 8));
+      const end = () => { clearInterval(Z.t); const ok = Z.right >= Math.ceil(L.length * .7);
+        $("#bz").innerHTML = `<div class="bz-end"><b>${Z.right} von ${L.length} richtig</b><small>${ok ? "Blitzschnell!" : "Für den Stern braucht ihr " + Math.ceil(L.length * .7) + " richtige."}</small><button type="button" class="btn" id="bzGo">↺ Nochmals</button></div>`;
+        $("#bzGo").onclick = () => { Z.i = -1; Z.right = 0; next(); };
+        done(e, t, ok, true, { v: Z.right }, ok ? (Z.right === L.length ? 2 : 1) : 0); fb(ok, ok ? a.erklaerung : "Lest nochmals in den Erklärungen nach und startet die Blitzrunde neu."); };
+      const answer = v => { clearInterval(Z.t); const s0 = L[Z.i], ok = v === !!s0.richtig; if (ok) Z.right++;
+        $("#bz").querySelector(".bz-card").classList.add(ok ? "ok" : "bad"); setTimeout(next, 650); };
+      const next = () => { Z.i++; if (Z.i >= L.length) return end(); Z.left = sec;
+        $("#bz").innerHTML = `<div class="bz-top"><small>${Z.i + 1} / ${L.length}</small><span class="bz-time"><i id="bzT" style="width:100%"></i></span></div><div class="bz-card"><b>${esc(L[Z.i].text)}</b></div><div class="tf"><button type="button" class="opt" data-bz="1">👍 Stimmt</button><button type="button" class="opt" data-bz="0">👎 Stimmt nicht</button></div>`;
+        $$("[data-bz]").forEach(b => b.onclick = () => answer(b.dataset.bz === "1"));
+        const t0 = Date.now(); clearInterval(Z.t); Z.t = setInterval(() => { const f = 1 - (Date.now() - t0) / (sec * 1000); const bar = $("#bzT"); if (!bar) return clearInterval(Z.t); bar.style.width = Math.max(0, f * 100) + "%"; if (f <= 0) answer(null); }, 100); };
+      $("#bzGo").onclick = next; }
+    if (a.typ === "markieren") { const K = view.mk, paint = () => {
+        $("#mkT").innerHTML = K.toks.map((x, i) => x.sp != null ? esc(x.sp) : `${esc(x.pre)}<button type="button" class="mk-w${K.on.has(i) ? " on" : ""}" data-mk="${i}" aria-pressed="${K.on.has(i)}">${esc(x.w)}</button>${esc(x.post)}`).join("");
+        $$("[data-mk]").forEach(b => b.onclick = () => { if ((S.ans[key] || {}).ok) return; const i = +b.dataset.mk; K.on.has(i) ? K.on.delete(i) : K.on.add(i); paint(); }); };
+      if (st.ok) K.toks.forEach((x, i) => { if (x.hit) K.on.add(i); }); paint();
+      chk.onclick = () => { const hits = K.toks.map((x, i) => x.hit ? i : -1).filter(i => i >= 0), miss = hits.filter(i => !K.on.has(i)).length, extra = [...K.on].filter(i => !K.toks[i].hit).length, ok = !miss && !extra;
+        $$("[data-mk]").forEach(b => { const i = +b.dataset.mk; b.classList.toggle("ok", K.on.has(i) && K.toks[i].hit); b.classList.toggle("bad", K.on.has(i) && !K.toks[i].hit); });
+        done(e, t, ok, true); fb(ok, ok ? a.erklaerung : `${miss ? `Es fehlen noch ${miss}. ` : ""}${extra ? `${extra} markiert, die nicht passen (rot).` : ""}`); };
+    }
+    if (a.typ === "wortsuche") { const U = view.su, N = U.n, paint = () => {
+        const inFound = (x, y) => U.found.some(f => f.cells.some(([cx, cy]) => cx === x && cy === y));
+        $("#suG").style.gridTemplateColumns = `repeat(${N}, 1fr)`;
+        $("#suG").innerHTML = U.grid.map((row, y) => row.map((c, x) => `<button type="button" class="su-c${inFound(x, y) ? " on" : ""}${U.sel && U.sel[0] === x && U.sel[1] === y ? " sel" : ""}" data-su="${x},${y}">${c}</button>`).join("")).join("");
+        $("#suL").innerHTML = U.words.map(w => `<li class="${U.found.some(f => f.w === w) ? "on" : ""}">${esc(w)}</li>`).join("");
+        $$("[data-su]").forEach(b => b.onclick = () => { if ((S.ans[key] || {}).ok) return; const [x, y] = b.dataset.su.split(",").map(Number);
+          if (!U.sel) { U.sel = [x, y]; return paint(); }
+          const [x0, y0] = U.sel; U.sel = null; const dx = Math.sign(x - x0), dy = Math.sign(y - y0), len = Math.max(Math.abs(x - x0), Math.abs(y - y0)) + 1;
+          if ((x !== x0 && y !== y0 && Math.abs(x - x0) !== Math.abs(y - y0)) || len < 2) return paint();
+          const cells = Array.from({ length: len }, (_, i) => [x0 + dx * i, y0 + dy * i]), str = cells.map(([cx, cy]) => U.grid[cy][cx]).join(""), rev = str.split("").reverse().join("");
+          const w = U.words.find(w => (w === str || w === rev) && !U.found.some(f => f.w === w));
+          if (w) { U.found.push({ w, cells }); paint(); say(`«${w}» gefunden!`, "happy", 3000); if (U.found.length === U.words.length) { done(e, t, true, true, {}, 3); fb(true, a.erklaerung); } }
+          else { paint(); b.animate([{ transform: "translateX(-3px)" }, { transform: "translateX(3px)" }, { transform: "none" }], { duration: 250 }); } }); };
+      if (st.ok) U.found = U.places.map(p => ({ w: p.w, cells: p.cells })); paint(); }
+    if (a.typ === "karteikarten") { const C = view.kk, cards = a.karten || [], paint = () => {
+        if (!C.stack.length || st.ok && C.known === 0 && !C.flip && (S.ans[key] || {}).ok) {
+          $("#kk").innerHTML = `<div class="kk-end"><b>Alle ${cards.length} Karten gewusst! 🎉</b><button type="button" class="btn" id="kkAgain">↺ Nochmals üben</button></div>`;
+          $("#kkAgain").onclick = () => { view.kk = { key, stack: shuffle(cards.map((_, i) => i)), flip: false, known: 0, again: 0 }; renderTask(); }; return; }
+        const c = cards[C.stack[0]];
+        $("#kk").innerHTML = `<p class="hintline">Noch ${C.stack.length} Karte${C.stack.length === 1 ? "" : "n"}</p><button type="button" class="kk-card${C.flip ? " flip" : ""}" id="kkC" aria-label="Karte umdrehen"><span class="kk-f">${esc(c[0])}</span><span class="kk-b">${esc(c[1])}</span></button>
+          ${C.flip ? `<div class="tf"><button type="button" class="opt" data-kk="1">✓ Gewusst</button><button type="button" class="opt" data-kk="0">↺ Nochmal</button></div>` : `<p class="hintline">Antippen zum Umdrehen</p>`}`;
+        $("#kkC").onclick = () => { C.flip = !C.flip; paint(); };
+        $$("[data-kk]").forEach(b => b.onclick = () => { const i = C.stack.shift(); if (b.dataset.kk === "1") C.known++; else { C.again++; C.stack.push(i); } C.flip = false;
+          if (!C.stack.length) { done(e, t, true, C.again === 0, {}, C.again <= 1 ? 2 : 1); fb(true, a.erklaerung || "Super geübt!"); } paint(); }); };
+      paint(); }
+    if (a.typ === "chat") { const H = view.ch, steps = a.schritte || [], paint = () => {
+        const msgs = []; for (let i = 0; i <= Math.min(H.i, steps.length - 1); i++) { msgs.push(`<div class="cm cm-in"><span>${esc(steps[i].sagt)}</span></div>`); const L = H.log.filter(x => x.i === i); L.forEach(x => { msgs.push(`<div class="cm cm-out${x.ok ? "" : " no"}"><span>${esc(x.txt)}</span></div>`); if (!x.ok) msgs.push(`<div class="cm cm-in"><span>${esc(steps[i].falsch || "Hmm, bist du sicher? Überleg nochmals.")}</span></div>`); else if (steps[i].antwort) msgs.push(`<div class="cm cm-in"><span>${esc(steps[i].antwort)}</span></div>`); }); }
+        $("#chL").innerHTML = msgs.join(""); $("#chL").scrollTop = 1e6;
+        if (H.i >= steps.length || (S.ans[key] || {}).ok) { $("#chO").innerHTML = `<p class="hintline">✓ Gespräch beendet</p>`; return; }
+        const s0 = steps[H.i], tried = H.log.filter(x => x.i === H.i && !x.ok).map(x => x.o);
+        $("#chO").innerHTML = (s0.optionen || []).map((o, j) => `<button type="button" class="opt" data-ch="${j}" ${tried.includes(j) ? 'aria-disabled="true" disabled' : ""}>${esc(o)}</button>`).join("");
+        $$("[data-ch]").forEach(b => b.onclick = () => { const j = +b.dataset.ch, ok = j === +s0.richtig; H.log.push({ i: H.i, o: j, txt: s0.optionen[j], ok }); if (!ok) H.miss++;
+          if (ok) { H.i++; if (H.i >= steps.length) { done(e, t, true, H.miss === 0, {}, H.miss <= 1 ? 2 : 1); fb(true, a.erklaerung); } }
+          paint(); }); };
+      if (st.ok && !H.log.length) { steps.forEach((s0, i) => H.log.push({ i, o: +s0.richtig, txt: (s0.optionen || [])[+s0.richtig] || "", ok: true })); H.i = steps.length; }
+      paint(); }
+    if (a.typ === "meinung") { const V = view.mn, min = Math.max(5, +a.mindestwoerter || 10), info = () => { const n = (V.text.match(/\S+/g) || []).length; $("#mnI").textContent = `${n} von mindestens ${min} Wörtern${(a.argumente || []).length && !V.args.length ? " · ein Argument wählen" : ""}`; return n; };
+      $("#mnR").oninput = ev => { V.pos = +ev.target.value; };
+      $$("[data-mn]").forEach(b => b.onclick = () => { const i = +b.dataset.mn; V.args = V.args.includes(i) ? V.args.filter(x => x !== i) : V.args.concat(i); b.setAttribute("aria-pressed", String(V.args.includes(i))); info(); });
+      $("#mnX").oninput = ev => { V.text = ev.target.value; info(); }; info();
+      chk.onclick = () => { const ok = info() >= min && (!(a.argumente || []).length || V.args.length > 0); done(e, t, ok, true, { v: { pos: V.pos, args: V.args.slice(), text: V.text, titel: "Unsere Meinung" } }); fb(ok, ok ? (a.erklaerung || "Gut begründet! Andere dürfen anderer Meinung sein.") : "Wählt ein Argument und schreibt eure Begründung etwas länger."); };
+    }
     $("[data-prev]").onclick = () => goB(view.b - 1);
     $("[data-next]").onclick = () => goB(view.b + 1);
   }
@@ -1215,6 +1404,29 @@ window.GLMascot = window.GLMascot || (function () {
     checkDips();
   }
 
+  /* Wörtersuche: Wörter in ein Buchstabenraster setzen (waagrecht, senkrecht, schräg; auch rückwärts) */
+  function buildGrid(words) {
+    words = [...new Set(words.map(w => w.replace(/[^A-ZÄÖÜ]/g, "")).filter(w => w.length >= 2 && w.length <= 12))].slice(0, 8);
+    const n = Math.max(8, Math.min(13, Math.max(...words.map(w => w.length), 0) + 2)), D8 = [[1, 0], [0, 1], [1, 1], [1, -1], [-1, 0], [0, -1]];
+    for (let tries = 0; tries < 40; tries++) {
+      const g = Array.from({ length: n }, () => Array(n).fill("")), places = []; let ok = true;
+      for (const w of words.slice().sort((a, b) => b.length - a.length)) {
+        let put = false;
+        for (let k = 0; k < 200 && !put; k++) {
+          const [dx, dy] = D8[Math.floor(Math.random() * (tries > 20 ? 2 : D8.length))], x0 = Math.floor(Math.random() * n), y0 = Math.floor(Math.random() * n), xe = x0 + dx * (w.length - 1), ye = y0 + dy * (w.length - 1);
+          if (xe < 0 || ye < 0 || xe >= n || ye >= n) continue;
+          const cells = w.split("").map((_, i) => [x0 + dx * i, y0 + dy * i]);
+          if (cells.every(([x, y], i) => !g[y][x] || g[y][x] === w[i])) { cells.forEach(([x, y], i) => { g[y][x] = w[i]; }); places.push({ w, cells }); put = true; }
+        }
+        if (!put) { ok = false; break; }
+      }
+      if (!ok) continue;
+      const ABC = "ABCDEFGHIJKLMNOPRSTUVWZ";
+      g.forEach(row => row.forEach((c, x) => { if (!c) row[x] = ABC[Math.floor(Math.random() * ABC.length)]; }));
+      return { grid: g, words, places, n };
+    }
+    return { grid: [words.join("").slice(0, 8).split("")], words: [], places: [], n: 8 };
+  }
   function shuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } if (b.length > 1 && b.every((x, i) => x === a[i])) [b[0], b[1]] = [b[1], b[0]]; return b; }
 
   /* ---------- Fenster ---------- */
@@ -1450,9 +1662,42 @@ window.GLMascot = window.GLMascot || (function () {
   const SUBJ = [["mi", "Medien & Informatik"], ["nmg", "Natur, Mensch, Gesellschaft"], ["de", "Deutsch"], ["ma", "Mathematik"], ["en", "Englisch"], ["fr", "Französisch"], ["sp", "Sport"], ["mg", "Minigames"]];
   const THEMES = { mi: ["Start mit gLiTCh", "KI & Prompts", "Medien durchschauen"], nmg: ["Entdeckungsreise Schweiz", "Die Römer"], de: ["Gespräche führen"] };
   /* Aufgabenarten = alle Spiele aus den NMG- und M&I-Modulen, die sich mit Inhalten füllen lassen */
-  const TYPES = [["mc", "Quiz (Auswahl)"], ["tf", "Richtig/Falsch"], ["text", "Antwort eintippen"], ["mehrfach", "Mehrere richtig"], ["luecke", "Lückentext"], ["ordnen", "Reihenfolge / Zeitstrahl"], ["zuordnen", "Verbinden"], ["memory", "Memory"],
-    ["sortieren", "Sortier-Spiel"], ["zeitmaschine", "Zeitmaschine"], ["raetsel", "Hinweis-Rätsel"], ["schaetzen", "Schätzen"], ["gestalten", "Gestalten (Plakat, Steckbrief)"], ["schreiben", "Schreibauftrag"]];
-  const WERT = { mc: 1, tf: 1, text: 1, luecke: 2, ordnen: 2, zuordnen: 2, schreiben: 2, mehrfach: 2, schaetzen: 2, gestalten: 2, sortieren: 3, zeitmaschine: 3, raetsel: 3, memory: 3 };
+  /* Aufgabenarten in Gruppen, je mit kleinem Bild */
+  const TG = [
+    ["Wissen prüfen", [["mc", "Quiz", "Eine Antwort ist richtig"], ["tf", "Richtig/Falsch", "Stimmt die Aussage?"], ["mehrfach", "Mehrere richtig", "Alle passenden ankreuzen"], ["text", "Antwort eintippen", "Kurze Antwort schreiben"], ["blitz", "Blitzrunde", "Aussagen gegen die Zeit"]]],
+    ["Wörter & Sprache", [["luecke", "Lückentext", "Fehlende Wörter einsetzen"], ["wortsalat", "Buchstabensalat", "Buchstaben ordnen"], ["wortraten", "Wort-Raten", "Buchstabe um Buchstabe"], ["wortsuche", "Wörtersuche", "Wörter im Raster finden"], ["markieren", "Wörter markieren", "Im Text antippen"]]],
+    ["Ordnen & Verbinden", [["ordnen", "Reihenfolge", "Schritte oder Zeitstrahl"], ["zuordnen", "Verbinden", "Paare zusammenführen"], ["sortieren", "Sortier-Spiel", "Karten in Gruppen"], ["zeitmaschine", "Zeitmaschine", "Das richtige Jahr einstellen"]]],
+    ["Spiele & Rätsel", [["memory", "Memory", "Paare aufdecken"], ["raetsel", "Hinweis-Rätsel", "Mit Hinweisen erraten"], ["schaetzen", "Schätzen", "Mit dem Regler schätzen"], ["karteikarten", "Lernkarten", "Umdrehen und üben"]]],
+    ["Reden & Gestalten", [["chat", "Chat-Gespräch", "Mit einer Figur chatten"], ["meinung", "Meinung bilden", "Position und Begründung"], ["schreiben", "Schreibauftrag", "Eigenen Text schreiben"], ["gestalten", "Gestalten", "Plakat oder Steckbrief"]]]
+  ];
+  const TYPES = TG.flatMap(g => g[1].map(([v, n]) => [v, n]));
+  const IR = (x, y, w, h, f, r = 2) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${f}"/>`, IT = (x, y, t, f = "#14062E", z = 9) => `<text x="${x}" y="${y}" font-size="${z}" font-weight="800" text-anchor="middle" font-family="system-ui,sans-serif" fill="${f}">${t}</text>`;
+  const ICON = {
+    mc: IR(6, 5, 36, 7, "#fff") + IR(6, 15, 36, 7, "#3CFF7A") + IR(6, 25, 36, 7, "#fff") + '<path d="M10 18.5l2 2 4-4" stroke="#14062E" stroke-width="1.6" fill="none"/>',
+    tf: IT(15, 25, "👍", "#000", 16) + IT(35, 25, "👎", "#000", 16),
+    mehrfach: [5, 15, 25].map((y, i) => IR(6, y, 7, 7, i === 1 ? "#fff" : "#3CFF7A", 1.5) + IR(16, y + 1, 26, 5, "#fff")).join("") + '<path d="M7.5 8.5l1.6 1.6 2.6-3M7.5 28.5l1.6 1.6 2.6-3" stroke="#14062E" stroke-width="1.4" fill="none"/>',
+    text: IR(4, 12, 40, 13, "#fff") + IT(17, 22, "Bern", "#14062E", 9) + '<rect x="30" y="15" width="1.6" height="8" fill="#A07CFF"/>',
+    blitz: '<circle cx="22" cy="19" r="13" fill="#fff"/><path d="M22 19V9" stroke="#14062E" stroke-width="2"/><path d="M22 19l6 4" stroke="#FF2BD6" stroke-width="2"/><path d="M40 3l-5 9h4l-3 8 8-11h-4l3-6z" fill="#FFC21A"/>',
+    luecke: IR(4, 9, 12, 6, "#fff") + IR(18, 9, 12, 6, "#FFC21A") + IR(32, 9, 12, 6, "#fff") + IR(4, 21, 18, 6, "#fff") + IR(24, 21, 20, 6, "#2EE6D6"),
+    wortsalat: ["L", "A", "V", "A"].map((c, i) => IR(4 + i * 11, 6 + (i % 2) * 10, 9, 11, "#fff") + IT(8.5 + i * 11, 14.5 + (i % 2) * 10, c, "#14062E", 8)).join(""),
+    wortraten: ["K", "", "A", ""].map((c, i) => `<path d="M${5 + i * 10} 22h7" stroke="#fff" stroke-width="2"/>` + (c ? IT(8.5 + i * 10, 19, c, "#fff", 9) : "")).join("") + [0, 1, 2, 3, 4].map(i => IR(10 + i * 6, 27, 4, 5, i < 3 ? "#3CFF7A" : "#5A4A80", 1)).join(""),
+    wortsuche: Array.from({ length: 16 }, (_, k) => IT(9 + (k % 4) * 10, 9 + Math.floor(k / 4) * 8, "MAGLXVOSAKPITEUN"[k], "#fff", 7)).join("") + '<rect x="3" y="2" width="42" height="9" rx="4.5" fill="none" stroke="#FFC21A" stroke-width="1.6"/>',
+    markieren: IR(4, 8, 10, 6, "#fff") + IR(16, 8, 14, 6, "#FFE680") + IR(32, 8, 12, 6, "#fff") + IR(4, 20, 16, 6, "#fff") + IR(22, 20, 10, 6, "#FFE680") + IR(34, 20, 10, 6, "#fff"),
+    ordnen: [0, 1, 2].map(i => IR(14, 4 + i * 10, 28, 7, "#fff") + IT(8, 10 + i * 10, i + 1, "#FFC21A", 8)).join(""),
+    zuordnen: IR(4, 6, 12, 7, "#fff") + IR(4, 22, 12, 7, "#fff") + IR(32, 6, 12, 7, "#2EE6D6") + IR(32, 22, 12, 7, "#FF2BD6") + '<path d="M16 9.5L32 25.5M16 25.5L32 9.5" stroke="#fff" stroke-width="1.5"/>',
+    sortieren: IR(10, 2, 14, 9, "#fff") + '<path d="M17 12v5" stroke="#fff" stroke-width="1.5"/>' + IR(4, 20, 18, 14, "#A07CFF") + IR(26, 20, 18, 14, "#2EE6D6"),
+    zeitmaschine: '<path d="M4 24h40" stroke="#fff" stroke-width="2"/>' + [8, 18, 28, 38].map(x => `<path d="M${x} 21v6" stroke="#fff" stroke-width="1.5"/>`).join("") + '<circle cx="24" cy="24" r="4" fill="#FFC21A"/>' + IT(24, 13, "1291", "#fff", 9),
+    memory: [0, 1, 2, 3].map(i => IR(5 + (i % 2) * 20, 3 + Math.floor(i / 2) * 16, 17, 13, i === 1 || i === 2 ? "#fff" : "#A07CFF")).join("") + IT(33.5, 13, "🌋", "#000", 8) + IT(13.5, 29, "🌋", "#000", 8),
+    raetsel: IT(15, 28, "?", "#FFC21A", 26) + '<circle cx="32" cy="15" r="7" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M37 20l5 5" stroke="#fff" stroke-width="3"/>',
+    schaetzen: '<path d="M6 25h36" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="30" cy="25" r="5" fill="#FFC21A"/>' + IT(30, 14, "≈3000", "#fff", 8),
+    karteikarten: IR(14, 3, 28, 20, "#2EE6D6", 3) + IR(6, 11, 28, 20, "#fff", 3) + IT(20, 25, "?", "#14062E", 11),
+    chat: IR(4, 4, 26, 11, "#fff", 5) + IR(18, 20, 26, 11, "#A07CFF", 5) + IR(8, 8.5, 16, 2, "#B9B2D0", 1) + IR(22, 24.5, 16, 2, "#fff", 1),
+    meinung: '<path d="M6 22h36" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="16" cy="22" r="5" fill="#FF2BD6"/>' + IT(7, 12, "👍", "#000", 9) + IT(41, 12, "👎", "#000", 9),
+    schreiben: IR(8, 3, 26, 30, "#fff", 2) + [9, 15, 21].map(y => `<path d="M12 ${y}h18" stroke="#B9B2D0" stroke-width="1.5"/>`).join("") + '<path d="M43 6L29 26l-2 5 4-3L45 8z" fill="#FFC21A"/>',
+    gestalten: IR(8, 3, 32, 30, "#FF6A00", 3) + IR(12, 7, 24, 6, "#fff", 1) + IR(12, 16, 24, 2, "#fff", 1) + IR(12, 20, 18, 2, "#fff", 1) + IT(32, 30, "⭐", "#000", 8)
+  };
+  const typeSvg = v => `<svg viewBox="0 0 48 36" aria-hidden="true">${ICON[v] || ""}</svg>`;
+  const WERT = { mc: 1, tf: 1, text: 1, luecke: 2, ordnen: 2, zuordnen: 2, schreiben: 2, mehrfach: 2, schaetzen: 2, gestalten: 2, sortieren: 3, zeitmaschine: 3, raetsel: 3, memory: 3, wortsalat: 2, wortraten: 2, blitz: 2, markieren: 2, wortsuche: 3, karteikarten: 2, chat: 2, meinung: 2 };
   const wert = a => WERT[a.typ] || 1;
   const etSterne = e => e.aufgaben.reduce((n, a) => n + (a.typ === "info" ? 0 : wert(a)), 0);
   const OUT_SLOTS = [["kopf", "Kopf"], ["augen", "Augen"], ["mund", "Mund"], ["hals", "Hals & Rücken"], ["fuesse", "Füsse & Beine"], ["hand", "In der Hand"], ["haustier", "Haustier"]];
@@ -1462,7 +1707,7 @@ window.GLMascot = window.GLMascot || (function () {
 
   /* ---------- Entwurf (bleibt in diesem Browser) ---------- */
   const KEY = "gle.draft.v1";
-  const fresh = () => ({ typenV2: true, titel: "", fach: "nmg", hubThema: "", hubNeu: "", klasse: "6", minuten: "45", etappen: "4", rahmen: "auto", ideen: "", typen: TYPES.map(t => t[0]), material: [], links: "", belIdeen: "",
+  const fresh = () => ({ typenV2: true, typenV3: true, titel: "", fach: "nmg", hubThema: "", hubNeu: "", klasse: "6", minuten: "45", etappen: "4", rahmen: "auto", ideen: "", typen: TYPES.map(t => t[0]), material: [], links: "", belIdeen: "",
     diplome: [], outfits: [], emotes: [], zimmer: [], hintergruende: [], plan: null, inhalt: [], step: 1, opt: freshOpt() });
   const freshOpt = () => ({ tipps: true, vorlesen: true, lexikon: true, pdf: true, gates: [], code: "", mascot: { typ: "glitch" } });
   let D = fresh();
@@ -1470,6 +1715,7 @@ window.GLMascot = window.GLMascot || (function () {
   D.opt = Object.assign(freshOpt(), D.opt || {});
   if (!D.opt.mascot || !D.opt.mascot.typ) D.opt.mascot = { typ: "glitch" };
   if (!Array.isArray(D.opt.gates)) D.opt.gates = D.opt.freigabe === "selbst" ? ["selbst"] : D.opt.freigabe === "lp" ? ["lp"] : [];
+  if (!D.typenV3) { D.typen = [...new Set([...D.typen, "wortsalat", "wortraten", "blitz", "markieren", "wortsuche", "karteikarten", "chat", "meinung"])]; D.typenV3 = true; }
   if (!D.typenV2) { D.typen = [...new Set([...D.typen, "mehrfach", "memory", "sortieren", "zeitmaschine", "raetsel", "schaetzen", "gestalten"])]; D.typenV2 = true; }
   let saveT = null;
   const save = () => { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) { try { localStorage.setItem(KEY, JSON.stringify(Object.assign({}, D, { material: D.material.map(m => Object.assign({}, m, { text: m.text.slice(0, 20000) })) }))); } catch (e2) { /* zu gross */ } } }, 400); };
@@ -1519,9 +1765,21 @@ window.GLMascot = window.GLMascot || (function () {
     $("#fach").onchange = e => { D.fach = e.target.value; D.hubThema = ""; paintThemes(); save(); };
     $("#hubThema").onchange = e => { D.hubThema = e.target.value; $("#neuWrap").hidden = D.hubThema !== "__neu"; save(); };
     paintThemes();
-    $("#typen").innerHTML = TYPES.map(([v, n]) => `<label class="chip"><input type="checkbox" value="${v}"${D.typen.includes(v) ? " checked" : ""}> ${esc(n)}</label>`).join("");
+    paintTypes();
     paintOpts(); paintMascot();
-    $$("#typen input").forEach(c => c.onchange = () => { D.typen = $$("#typen input:checked").map(x => x.value); if (!D.typen.length) { c.checked = true; D.typen = [c.value]; toast("Mindestens eine Aufgabenart muss gewählt sein."); } save(); });
+  }
+
+  /* ---------- Aufgabenarten: Gruppen mit Bild ---------- */
+  function paintTypes() {
+    const on = new Set(D.typen);
+    $("#typen").innerHTML = `<div class="ty-top"><span>${on.size} von ${TYPES.length} gewählt</span><button type="button" class="btn small ghost" data-tyall="1">Alle</button><button type="button" class="btn small ghost" data-tyall="mix">Gemischt (Empfehlung)</button></div>`
+      + TG.map(([g, list], gi) => { const n = list.filter(x => on.has(x[0])).length;
+        return `<div class="ty-g"><div class="ty-gh"><b>${esc(g)}</b><small>${n} / ${list.length}</small><button type="button" class="link" data-tyg="${gi}">${n === list.length ? "keine" : "alle"}</button></div>
+          <div class="ty-list">${list.map(([v, nm, d]) => `<label class="ty${on.has(v) ? " on" : ""}"><input type="checkbox" value="${v}"${on.has(v) ? " checked" : ""}><span class="ty-pic">${typeSvg(v)}</span><span class="ty-t"><b>${esc(nm)}</b><small>${esc(d)}</small></span><i class="ty-ck" aria-hidden="true">${on.has(v) ? "✓" : ""}</i></label>`).join("")}</div></div>`; }).join("");
+    const set = list => { if (!list.length) { toast("Mindestens eine Aufgabenart muss gewählt sein."); paintTypes(); return; } D.typen = list; save(); paintTypes(); };
+    $$("#typen input").forEach(c => c.onchange = () => set(TYPES.map(t => t[0]).filter(v => v === c.value ? c.checked : on.has(v))));
+    $$("[data-tyg]").forEach(b => b.onclick = () => { const L = TG[+b.dataset.tyg][1].map(x => x[0]), all = L.every(v => on.has(v)); set(TYPES.map(t => t[0]).filter(v => L.includes(v) ? !all : on.has(v))); });
+    $$("[data-tyall]").forEach(b => b.onclick = () => set(b.dataset.tyall === "1" ? TYPES.map(t => t[0]) : ["mc", "tf", "mehrfach", "luecke", "wortsalat", "wortsuche", "ordnen", "zuordnen", "sortieren", "memory", "raetsel", "chat", "meinung", "gestalten"]));
   }
 
   /* ---------- Funktionen und Freigabe ---------- */
@@ -1772,6 +2030,14 @@ Jede Aufgabe (nicht info) hat zusätzlich "titel" (Name des Bausteins, 1–3 Wö
 - {"typ":"zeitmaschine","frage":"…","von":1200,"bis":2000,"einheit":"","ereignisse":[{"text":"Ereignis","jahr":1291}],"erklaerung":"…"}   (3–5 Ereignisse mit sicheren Jahreszahlen zwischen von und bis; nur bei Themen mit Jahreszahlen)
 - {"typ":"raetsel","frage":"Wer oder was ist gemeint?","hinweise":["schwerer Hinweis","mittlerer Hinweis","leichter Hinweis"],"antworten":["Lösung","Variante"],"erklaerung":"…"}   (3–4 Hinweise vom schweren zum leichten)
 - {"typ":"schaetzen","frage":"…","min":0,"max":5000,"antwort":4634,"toleranz":300,"einheit":"m","erklaerung":"…"}   (eine gesicherte Zahl; toleranz grosszügig)
+- {"typ":"wortsalat","frage":"Umschreibung des Wortes, ohne es zu nennen","wort":"VULKAN","erklaerung":"…","tipp":"…"}   (ein Fachwort, 4–12 Buchstaben, ohne Leerzeichen)
+- {"typ":"wortraten","frage":"Umschreibung des gesuchten Wortes","wort":"KRATER","erklaerung":"…","tipp":"…"}   (ein Wort oder zwei kurze, 4–14 Buchstaben)
+- {"typ":"blitz","frage":"Blitzrunde: …","aussagen":[{"text":"…","richtig":true},{"text":"…","richtig":false}],"sekunden":8,"erklaerung":"…"}   (5–8 kurze Aussagen, gemischt wahr und falsch)
+- {"typ":"markieren","anleitung":"Markiert alle … / Findet die 3 Fehler","text":"Ein Text mit 2–4 Sätzen, in dem die gesuchten Wörter mit *Sternchen* markiert sind.","erklaerung":"…","tipp":"…"}   (2–6 markierte einzelne Wörter)
+- {"typ":"wortsuche","frage":"Findet die 5 versteckten Begriffe zu …","woerter":["MAGMA","LAVA","KRATER"],"erklaerung":"…"}   (4–7 Fachwörter, je 3–10 Buchstaben, keine Leerzeichen)
+- {"typ":"karteikarten","frage":"Lernkarten: …","karten":[["Vorderseite (Frage/Begriff)","Rückseite (Antwort/Erklärung)"]],"erklaerung":"…"}   (4–8 Karten, kurz)
+- {"typ":"chat","frage":"Chattet mit …","person":"Name einer passenden Figur (z. B. Zeitzeugin, Forscher)","emoji":"🧑‍🔬","schritte":[{"sagt":"Nachricht der Figur","optionen":["Antwort A","Antwort B","Antwort C"],"richtig":1,"antwort":"Reaktion auf die richtige Antwort","falsch":"Reaktion auf eine falsche Antwort mit kleinem Hinweis"}],"erklaerung":"…"}   (3–5 Schritte, die Figur vermittelt Wissen im Gespräch)
+- {"typ":"meinung","frage":"Eine Frage, zu der man verschiedener Meinung sein darf","links":"Ja, unbedingt","rechts":"Nein, gar nicht","argumente":["Argument dafür","Argument dagegen","…"],"mindestwoerter":12,"erklaerung":"…"}   (3–5 Argumente für beide Seiten)
 - {"typ":"gestalten","auftrag":"Gestaltet ein Plakat / einen Steckbrief / eine Zeitungsseite zu …","titelname":"Überschrift","textname":"Text","mindestwoerter":20,"sticker":["🌋","🔥","⭐"],"erklaerung":"…"}`;
   const typesAllowed = () => D.typen.length ? D.typen : TYPES.map(t => t[0]);
   const perEt = () => Math.max(3, Math.min(8, Math.round(+D.minuten / 6 / (+D.etappen || 4))));
@@ -1795,6 +2061,15 @@ Jede Aufgabe (nicht info) hat zusätzlich "titel" (Name des Bausteins, 1–3 Wö
     if (t === "zeitmaschine") { const von = Math.round(+a.von), bis = Math.round(+a.bis), ev = (a.ereignisse || []).filter(x => x && s(x.text) && isFinite(+x.jahr) && +x.jahr >= von && +x.jahr <= bis).map(x => ({ text: s(x.text), jahr: Math.round(+x.jahr) })); return isFinite(von) && isFinite(bis) && bis > von && ev.length >= 2 ? { typ: t, frage: s(a.frage), von, bis, einheit: s(a.einheit), ereignisse: ev.slice(0, 6), erklaerung: s(a.erklaerung) } : null; }
     if (t === "raetsel") { const h = (a.hinweise || []).map(s).filter(Boolean), an = (Array.isArray(a.antworten) ? a.antworten : [a.antworten]).map(s).filter(Boolean); return h.length >= 2 && an.length ? { typ: t, frage: s(a.frage), hinweise: h.slice(0, 5), antworten: an, erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null; }
     if (t === "schaetzen") { const mn = +a.min, mx = +a.max, an = +a.antwort; return s(a.frage) && isFinite(mn) && isFinite(mx) && mx > mn && an >= mn && an <= mx ? { typ: t, frage: s(a.frage), min: mn, max: mx, antwort: an, toleranz: Math.max(0, +a.toleranz || Math.round((mx - mn) * .05)), einheit: s(a.einheit), erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null; }
+    const WU = v => s(v).toUpperCase().replace(/ß/g, "SS");
+    if (t === "wortsalat") { const w = WU(a.wort).replace(/[^A-ZÄÖÜ]/g, ""); return w.length >= 3 && w.length <= 14 ? { typ: t, frage: s(a.frage), wort: w, erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null; }
+    if (t === "wortraten") { const w = WU(a.wort).replace(/[^A-ZÄÖÜ \-]/g, "").trim(); return w.replace(/[^A-ZÄÖÜ]/g, "").length >= 3 && w.length <= 20 ? { typ: t, frage: s(a.frage), wort: w, erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null; }
+    if (t === "blitz") { const L = (a.aussagen || []).filter(x => x && s(x.text)).map(x => ({ text: s(x.text), richtig: x.richtig === true || x.richtig === "true" })).slice(0, 10); return L.length >= 3 ? { typ: t, frage: s(a.frage), aussagen: L, sekunden: Math.max(4, Math.min(20, +a.sekunden || 8)), erklaerung: s(a.erklaerung) } : null; }
+    if (t === "markieren") return /\*[^*\s][^*]*\*/.test(s(a.text)) ? { typ: t, anleitung: s(a.anleitung), text: s(a.text), erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null;
+    if (t === "wortsuche") { const w = [...new Set((a.woerter || []).map(WU).map(x => x.replace(/[^A-ZÄÖÜ]/g, "")).filter(x => x.length >= 2 && x.length <= 11))].slice(0, 8); return w.length >= 3 ? { typ: t, frage: s(a.frage), woerter: w, erklaerung: s(a.erklaerung) } : null; }
+    if (t === "karteikarten") { const kk = (a.karten || []).filter(x => Array.isArray(x) && s(x[0]) && s(x[1])).map(x => [s(x[0]), s(x[1])]).slice(0, 10); return kk.length >= 3 ? { typ: t, frage: s(a.frage), karten: kk, erklaerung: s(a.erklaerung) } : null; }
+    if (t === "chat") { const sc = (a.schritte || []).filter(x => x && s(x.sagt) && Array.isArray(x.optionen) && x.optionen.length >= 2 && +x.richtig >= 0 && +x.richtig < x.optionen.length).map(x => ({ sagt: s(x.sagt), optionen: x.optionen.map(s), richtig: +x.richtig, antwort: s(x.antwort), falsch: s(x.falsch) })).slice(0, 6); return sc.length >= 2 ? { typ: t, frage: s(a.frage), person: s(a.person) || "Chat", emoji: s(a.emoji).slice(0, 8) || "🙂", schritte: sc, erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null; }
+    if (t === "meinung") return s(a.frage) ? { typ: t, frage: s(a.frage), links: s(a.links) || "Ja", rechts: s(a.rechts) || "Nein", argumente: (a.argumente || []).map(s).filter(Boolean).slice(0, 6), mindestwoerter: Math.max(5, Math.min(80, +a.mindestwoerter || 12)), erklaerung: s(a.erklaerung) } : null;
     if (t === "gestalten") return s(a.auftrag) ? { typ: t, auftrag: s(a.auftrag), titelname: s(a.titelname), textname: s(a.textname), mindestwoerter: Math.max(5, Math.min(120, +a.mindestwoerter || 20)), sticker: (a.sticker || []).map(s).filter(Boolean).slice(0, 8), erklaerung: s(a.erklaerung) } : null;
     return null;
   }

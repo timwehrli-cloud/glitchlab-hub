@@ -340,7 +340,7 @@ async function saveFile(kind, btn){
     await dl.save({filename, data: new Blob([JSON.stringify(snapshot(kind))], {type:"application/json"})});
     say(msg, kind === "klasse"
       ? "Gespeichert! Jetzt per AirDrop an die iPads der Klasse senden. Dort: «Klassen-Datei laden»."
-      : "Gespeichert! Jetzt per AirDrop an " + LP_NAME + " senden: Teilen-Symbol → AirDrop.");
+      : "Gespeichert! Jetzt per AirDrop an die Lehrperson senden: Teilen-Symbol → AirDrop.");
   } catch(e){
     const code = e && e.code;
     say(msg, code === "declined" ? "Speichern abgebrochen." : code === "rate_limited" ? "Bitte einen Moment warten und nochmals versuchen." : "Speichern hat nicht geklappt.", true);
@@ -982,7 +982,7 @@ function grpStartHTML(){
     <div class="pt-gs-h"><span class="glitch">${LIB.glitchSVG("happy")}</span><div><small>Modul starten</small><h2 id="ptGsT">${esc(m.n)}</h2></div></div>
     <b class="pt-gs-l">1. Welche Gruppe seid ihr?</b>
     <div class="pt-gs-nrs">${Array.from({length:GROUP_MAX},(_,k)=>k+1).map(n=>`<button type="button" data-pt-gsnr="${n}" aria-pressed="${String(GS.nr)===String(n)}">${n}</button>`).join("")}</div>
-    <small class="pt-gs-hint">Die Nummer sagt euch ${LP_NAME.replace(/^Herrn/,"Herr")}. Alle in der Gruppe wählen dieselbe.</small>
+    <small class="pt-gs-hint">Die Nummer sagt euch die Lehrperson. Alle in der Gruppe wählen dieselbe.</small>
     <b class="pt-gs-l">2. Wer arbeitet mit?</b>
     <div class="pt-gs-names">${GS.names.map((n,i)=>`<span class="pt-gs-name${normN(n)===normN(meN) ? " me" : ""}">${esc(n)}${normN(n)===normN(meN) ? " (du)" : `<button type="button" data-pt-gsdel="${i}" aria-label="${esc(n)} entfernen">✕</button>`}</span>`).join("")}</div>
     ${managed() ? `<small class="pt-gs-hint">Tippt die Namen an, die mit euch arbeiten:</small><div class="pt-gs-pick">${D.cls.students.filter(x=>x.id !== D.me).slice().sort((a,b)=>a.n.localeCompare(b.n, "de")).map(x=>{ const on = GS.names.some(n=>normN(n) === normN(x.n)); return `<button type="button" data-pt-gstog="${x.id}" aria-pressed="${on}">${on ? "✓ " : "+ "}${esc(x.n)}</button>`; }).join("")}</div>` : `<div class="pt-form" data-pt-form="gsadd"><input class="pt-in" id="ptGsAdd" placeholder="Vorname eintippen" maxlength="30" autocomplete="off" aria-label="Vorname hinzufügen"><button type="button" data-pt-submit class="pt-btn">+ Dazu</button></div>`}
@@ -1148,7 +1148,7 @@ function lpQuiz(){
     <p class="pt-msg" id="ptMsg" role="status"></p>
     <div class="pt-qlist">${Q.map((q,i)=>`<div class="pt-qi${q.ans ? "" : " todo"}"><span class="pt-qn">${i+1}</span><img src="${q.img}" alt="Quiz-Bild ${i+1}">
       <div class="pt-qf"><div class="pt-qa" role="group" aria-label="Antwort für Bild ${i+1}"><button type="button" data-pt-qans="${q.id}" data-val="foto" aria-pressed="${q.ans==="foto"}">📷 Foto</button><button type="button" data-pt-qans="${q.id}" data-val="ki" aria-pressed="${q.ans==="ki"}">🤖 KI-Bild</button></div>
-        <textarea class="pt-in" data-pt-qhint="${q.id}" placeholder="Hinweis nach der Antwort, z. B. «Schau die Finger an: Es sind sechs!»" aria-label="Hinweis für Bild ${i+1}">${esc(q.hint || "")}</textarea><input class="pt-in" data-pt-qsrc="${q.id}" value="${esc(q.src || "")}" placeholder="Quelle, z. B. «Foto: Tim Wehrli» oder «Bild: WDR, CC BY 4.0»" aria-label="Quelle für Bild ${i+1}" maxlength="120"></div>
+        <textarea class="pt-in" data-pt-qhint="${q.id}" placeholder="Hinweis nach der Antwort, z. B. «Schau die Finger an: Es sind sechs!»" aria-label="Hinweis für Bild ${i+1}">${esc(q.hint || "")}</textarea><input class="pt-in" data-pt-qsrc="${q.id}" value="${esc(q.src || "")}" placeholder="Quelle, z. B. «Foto: Anna Muster» oder «Bild: WDR, CC BY 4.0»" aria-label="Quelle für Bild ${i+1}" maxlength="120"></div>
       <div class="pt-qb"><button type="button" class="pt-btn small" data-pt-qmove="${q.id}" data-d="-1" ${i ? "" : "disabled"} aria-label="Nach oben">↑</button><button type="button" class="pt-btn small" data-pt-qmove="${q.id}" data-d="1" ${i < Q.length-1 ? "" : "disabled"} aria-label="Nach unten">↓</button><button type="button" class="pt-btn small danger" data-pt-qdel="${q.id}" aria-label="Bild entfernen">✕</button></div></div>`).join("") || `<p class="pt-empty">Noch keine Bilder. Gut sind etwa 8 bis 12 Bilder, gemischt Fotos und KI-Bilder.</p>`}</div>
     <p style="color:var(--muted); font-size:.9rem; margin-top:12px">Danach unter «Dateien & Sync» eine neue Klassen-Datei verteilen, damit die Bilder auf die iPads kommen.</p></div>`;
 }
