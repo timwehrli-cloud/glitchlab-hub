@@ -350,6 +350,7 @@
     S.view = view; render(); window.scrollTo(0, 0);
   }
   function render() {
+    try { liveEnsure(); } catch (e) { /* egal */ }
     try { const r = renderView(); if (r && r.catch) r.catch(err => { console.error(err); toast("Fehler: " + (err && err.message || err), "err", 9000); }); return r; }
     catch (err) {
       console.error(err);
@@ -991,6 +992,7 @@
           <button type="button" class="btn small" data-backup title="Speichert die ganze Klasse als Datei: Kinder, Bild-Passwörter, Sterne, Diplome, Garderobe, Arbeiten und Einstellungen">💾 Klasse sichern</button>
           <label class="hint" style="display:inline-flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="backupMods" checked> mit hochgeladenen Modulen</label>
           <button type="button" class="btn small danger" data-delcls>${LP.confirm === "cls" ? "Wirklich ganze Klasse löschen?" : "Klasse löschen"}</button></div></section>
+      ${livePanelHTML(c)}
       <section class="panel"><h2>Kinder (${LP.kids.filter(k => !k.is_teacher).length}) + Lehrpersonen-Konto</h2>
         <p class="hint">Das Konto «${esc(CFG.TEACHER_NAME || "Lehrperson")}» steht in jeder Klasse zuoberst. Dort ist immer alles freigeschaltet: alle Module, Level, Diplome, Outfits, Emotes und das Chalet. Ideal zum Vorzeigen.</p>
         ${LP.kids.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Kind</th><th>Bild-Passwort</th>${actSubjects.map(s => `<th class="num">${esc(s.short)}</th>`).join("")}<th class="num">Total ★</th><th>Level</th><th></th></tr></thead><tbody>
@@ -1047,7 +1049,7 @@
       const id = b.dataset.delkid; if (LP.confirm !== "d" + id) { LP.confirm = "d" + id; return render(); }
       await S.be.deleteStudent(id); LP.confirm = null; toast("Kind entfernt."); render();
     });
-    bindAccessPanel(c); bindKidModsPanel(); bindTeachersPanel(c);
+    bindAccessPanel(c); bindKidModsPanel(); bindTeachersPanel(c); bindLivePanel(c);
     $("#addKids").onsubmit = async e => {
       e.preventDefault();
       const names = $("#kidNames").value.split(/\n|,/).map(s => s.trim()).filter(Boolean);
@@ -1167,6 +1169,60 @@
       return all.length && all.every(b => have.has(b)) ? "fertig" : "arbeit"; }
     const mx = H.rawMax(m); return mx && own >= mx ? "fertig" : "arbeit";
   }
+  /* ---------- Live-Steuerung: Pause und Nachricht von gLiTCh an die ganze Klasse ---------- */
+  const LIVE_QUICK = ["Bitte speichert eure Arbeit. 💾", "Kommt bitte in den Kreis. ⭕", "Noch 5 Minuten! ⏰", "Aufräumen, bitte! 🧹", "Super gemacht, alle zusammen! 🎉"];
+  function livePanelHTML(c) {
+    const L = (c.settings || {}).live || {}, t = L.pauseAt ? new Date(L.pauseAt).toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" }) : "";
+    return `<section class="panel live-panel"><h2>📢 Live-Steuerung</h2>
+      <p class="hint">Gilt für alle Kinder dieser Klasse, die gerade angemeldet sind. Nach höchstens 5 Sekunden sehen sie es.</p>
+      <div class="row live-row"><button type="button" class="btn ${L.pause ? "" : "primary"} live-big" data-live-pause>${L.pause ? "▶ Pause beenden" : "⏸ Ganze Klasse pausieren"}</button>
+        <span class="live-state ${L.pause ? "on" : ""}">${L.pause ? `⏸ Pausiert${t ? " seit " + t : ""}` : "▶ Läuft"}</span></div>
+      <label class="f" for="liveMsg">Nachricht, die gLiTCh allen zeigt<textarea class="input" id="liveMsg" maxlength="200" rows="2" placeholder="z. B. Bitte speichert eure Arbeit und kommt in den Kreis."></textarea></label>
+      <div class="chips live-quick">${LIVE_QUICK.map(q => `<button type="button" class="btn small" data-live-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
+      <div class="row"><button type="button" class="btn primary" data-live-send>💬 gLiTCh sagt es allen</button>${L.msg ? `<button type="button" class="btn" data-live-clear>Nachricht ausblenden</button>` : ""}</div>
+      ${L.msg ? `<p class="live-cur">Gerade sichtbar: «${esc(L.msg)}»</p>` : ""}</section>`;
+  }
+  function bindLivePanel(c) {
+    const set = async (patch, msg) => {
+      const live = Object.assign({}, (c.settings || {}).live || {}, patch), settings = Object.assign({}, c.settings || {}, { live });
+      try { await S.be.saveClassSettings(c.id, settings); c.settings = settings; if (LP.cur && LP.cur.id === c.id) LP.cur.settings = settings; toast(msg, "star"); const y = window.scrollY; await render(); window.scrollTo(0, y); }
+      catch (err) { toast(err.message, "err", 5000); }
+    };
+    const L = () => (c.settings || {}).live || {};
+    $$("[data-live-pause]").forEach(b => b.onclick = () => set(L().pause ? { pause: false, pauseAt: 0 } : { pause: true, pauseAt: Date.now() }, L().pause ? "Pause beendet. Es geht weiter!" : "Die Klasse ist pausiert."));
+    $$("[data-live-q]").forEach(b => b.onclick = () => { const t = $("#liveMsg"); if (t) { t.value = b.dataset.liveQ; t.focus(); } });
+    $$("[data-live-send]").forEach(b => b.onclick = () => { const v = ($("#liveMsg") || {}).value || ""; if (!v.trim()) { toast("Schreib zuerst eine Nachricht."); return; } set({ msg: v.trim().slice(0, 200), msgAt: Date.now() }, "gLiTCh zeigt die Nachricht allen."); });
+    $$("[data-live-clear]").forEach(b => b.onclick = () => set({ msg: "", msgAt: Date.now() }, "Nachricht ausgeblendet."));
+  }
+  /* Kinder-Seite: alle 5 Sekunden nachfragen, Pause-Bildschirm und Sprechblase zeigen */
+  const LIVE = { t: null, tok: null, shown: "", closed: "" };
+  function liveEnsure() {
+    const want = S.me && S.token && !isLP() && S.be && S.be.live && S.view && S.view.name !== "lp";   // der Lehrpersonen-Bereich wird nie pausiert
+    if (!want) { if (LIVE.t) { clearInterval(LIVE.t); LIVE.t = null; LIVE.tok = null; liveApply({}); } return; }
+    if (LIVE.t && LIVE.tok === S.token) return;
+    clearInterval(LIVE.t); LIVE.tok = S.token;
+    const tick = async () => { if (!S.me || S.token !== LIVE.tok) return; try { liveApply(await S.be.live(S.token) || {}); } catch (e) { /* nächstes Mal */ } };
+    tick(); LIVE.t = setInterval(tick, 5000);
+  }
+  function liveApply(L) {
+    let ov = document.getElementById("livePause");
+    if (L.pause && !ov) {
+      ov = document.createElement("div"); ov.id = "livePause"; ov.className = "live-pause"; ov.setAttribute("role", "alertdialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", "Pause");
+      ov.innerHTML = `<div class="lpz-box"><div class="lpz-g glitch">${G.svg("cool", "#8B5CFF", { outfit: outfitOf() })}</div><h2>⏸ Pause!</h2><p>Hände weg vom Gerät und schau nach vorne zur Lehrperson. 👀</p><p class="lpz-sub">Es geht gleich weiter.</p></div>`;
+      document.body.appendChild(ov); try { document.activeElement && document.activeElement.blur(); } catch (e) { /* egal */ }
+    } else if (!L.pause && ov && !ov.classList.contains("out")) { ov.classList.add("out"); setTimeout(() => ov.remove(), 400); }
+    const msg = String(L.msg || "").trim(), key = msg ? String(L.msgAt || "") + "|" + msg : "";
+    let mb = document.getElementById("liveBubble");
+    if (!key || key === LIVE.closed) { if (mb) mb.remove(); LIVE.shown = ""; return; }
+    if (key === LIVE.shown && mb) return;
+    if (mb) mb.remove();
+    mb = document.createElement("div"); mb.id = "liveBubble"; mb.className = "live-bubble"; mb.setAttribute("role", "alert");
+    mb.innerHTML = `<div class="lb-g glitch">${G.svg("happy", "#8B5CFF", { outfit: outfitOf() })}</div><div class="lb-say"><small>📢 gLiTCh sagt im Auftrag ${esc(CFG.TEACHER_NAME_DATIV || "der Lehrperson")}:</small><p>${esc(msg)}</p><button type="button" class="btn small primary" data-lb-ok>OK, verstanden 👍</button></div>`;
+    document.body.appendChild(mb); LIVE.shown = key;
+    mb.querySelector("[data-lb-ok]").onclick = () => { LIVE.closed = key; mb.classList.add("out"); setTimeout(() => mb.remove(), 300); };
+    try { if (window.AudioContext || window.webkitAudioContext) { const ac = new (window.AudioContext || window.webkitAudioContext)(); [659, 880].forEach((f, i) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = "square"; o.frequency.value = f; g.gain.value = .04; o.connect(g); g.connect(ac.destination); o.start(ac.currentTime + i * .12); o.stop(ac.currentTime + i * .12 + .1); }); } } catch (e) { /* ohne Ton */ }
+  }
+
   function kidModsPanelHTML() {
     const kids = LP.kids.filter(k => !k.is_teacher);
     if (!kids.length) return "";

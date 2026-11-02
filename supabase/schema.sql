@@ -256,6 +256,15 @@ begin
                             from public.progress p where p.student_id = s.id), '[]'::json));
 end $$;
 
+-- Live-Steuerung der Lehrperson: Pause und Nachricht für die ganze Klasse (Kinder fragen alle paar Sekunden nach).
+create or replace function public.kid_live(p_token uuid)
+returns json language plpgsql security definer set search_path = public as $$
+declare s public.students;
+begin
+  s := public._kid_from_token(p_token);
+  return coalesce((select settings->'live' from public.classes where id = s.class_id), '{}'::jsonb)::json;
+end $$;
+
 -- Sterne vergeben – an alle Kinder des Teams auf diesem Gerät.
 -- Es zählt immer das beste Resultat (Sterne gehen nie verloren).
 create or replace function public.kid_award(p_tokens uuid[], p_module text, p_activity text,
@@ -374,6 +383,7 @@ grant execute on function public.kid_me(uuid)                            to anon
 grant execute on function public.kid_award(uuid[], text, text, int, jsonb) to anon, authenticated;
 grant execute on function public.kid_logout(uuid)                        to anon, authenticated;
 grant execute on function public.kid_extras_set(uuid, jsonb)            to anon, authenticated;
+grant execute on function public.kid_live(uuid)                       to anon, authenticated;
 grant execute on function public.kid_work_get(uuid[], text)             to anon, authenticated;
 grant execute on function public.kid_work_put(uuid[], text, jsonb)      to anon, authenticated;
 grant execute on function public.kid_modules(uuid)                       to anon, authenticated;

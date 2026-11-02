@@ -58,6 +58,11 @@
     }
     login(code, studentId, pin) { return this.rpc("kid_login", { p_code: code, p_student: studentId, p_pin: pin }); }
     me(token) { return this.rpc("kid_me", { p_token: token }); }
+    /* Live-Steuerung der Lehrperson (Pause, Nachricht). Ohne «kid_live» in der Datenbank: über kid_me */
+    async live(token) {
+      if (!this.noLive) { try { return (await this.rpc("kid_live", { p_token: token })) || {}; } catch (e) { if (!/kid_live|PGRST202|function|Funktion|schema cache/i.test(String(e.message || e.code || ""))) throw e; this.noLive = true; } }
+      const m = await this.me(token); return ((m && m.class_settings) || {}).live || {};
+    }
     award(tokens, moduleId, activityId, stars, data) {
       return this.rpc("kid_award", { p_tokens: tokens, p_module: moduleId, p_activity: activityId, p_stars: stars, p_data: data || {} });
     }
@@ -239,6 +244,10 @@
       s.fails = 0; s.locked_until = 0;
       const token = this.uid(); this.db.sessions[token] = s.id; this.save();
       return this.wait({ token, student: this.pub(s) });
+    }
+    async live(token) {
+      const s = this.kid(token); let d = null; try { d = JSON.parse(localStorage.getItem(this.key)); } catch (e) { /* egal */ }
+      const c = ((d || this.db).classes || []).find(x => x.id === s.class_id); return (c && c.settings && c.settings.live) || {};
     }
     async me(token) {
       const s = this.kid(token);
