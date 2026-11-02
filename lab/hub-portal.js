@@ -713,7 +713,7 @@ function dashHTML(){
       <div class="pt-home-main">
         <div class="pt-room" id="ptRoom">${RR.roomSVG(items)}${dips}
           <span class="pt-room-g glitch" role="img" aria-label="gLiTCh in seinem Zimmer"><span>${LIB.glitchSVG("happy", {outfit: p.outfit || {}})}</span></span>
-          <div class="pt-room-say" id="ptSay"><b class="gname">gLiTCh</b>${esc(greet)}</div>
+          <div class="pt-room-say" id="ptSay"><b class="gname">gLiTCh</b>${window.GLAB_IDLE_SAY && Date.now() < window.GLAB_IDLE_SAY.until ? window.GLAB_IDLE_SAY.txt : esc(greet)}</div>
           <span class="pt-room-hint">Auf gLiTCh tippen und nach unten ziehen: Emote!</span></div>
         <div class="pt-lvl" style="margin-top:16px"><span class="pt-ring"${prestigeRing(T)}>${li+1}</span><div><span>${li < 100 ? `Level ${li+1} von 100` : prestigeSub(T, li)}</span><b>${esc(L[li].n)}</b><span>${nx ? `noch ${nx.s - T.stars} Sterne bis «${esc(nx.n)}»` : "Level 100 geschafft! Du bist die ultimative gLiTCh-Legende."}</span></div>
           <span class="pt-stars" title="Deine Sterne" aria-label="${T.stars} Sterne"><i aria-hidden="true">★</i>${T.stars}</span></div>
@@ -1472,4 +1472,45 @@ document.addEventListener("keydown", e=>{
 window.GLAB.openWardrobe = ()=>openWardrobe();
 window.GLAB.openLevels = ()=>openLevels();
 window.GLAB.openDiplomas = ()=>openDiplomas();
+})();
+
+/* ---- Zimmer lebendiger ---- */
+(function(){
+  if (document.getElementById("fxCss")) return; const st = document.createElement("style"); st.id = "fxCss";
+  st.textContent = ".pt-home-main > .pt-room{position:relative;animation:ptNeon 8s linear infinite}"
+  + "@keyframes ptNeon{0%,100%{box-shadow:0 0 0 2px #8B5CFF,0 0 22px rgba(139,92,255,.45)}33%{box-shadow:0 0 0 2px #00E5FF,0 0 22px rgba(0,229,255,.35)}66%{box-shadow:0 0 0 2px #FF2BD6,0 0 22px rgba(255,43,214,.35)}}"
+  + ".pt-fx{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:inherit;z-index:2}"
+  + ".pt-fx i{position:absolute;bottom:-6px;width:4px;height:4px;background:var(--c);box-shadow:0 0 6px var(--c);opacity:0;animation:ptPix var(--t) linear infinite;animation-delay:var(--d)}"
+  + "@keyframes ptPix{0%{transform:translateY(0);opacity:0}10%{opacity:.8}100%{transform:translateY(-260px) translateX(var(--x));opacity:0}}"
+  + ".pt-bar i{background-image:linear-gradient(90deg,#FFC21A,#FF2BD6,#00E5FF,#FFC21A)!important;background-size:300% 100%!important;animation:ptBarFlow 5s linear infinite;box-shadow:0 0 12px rgba(255,43,214,.55)}"
+  + "@keyframes ptBarFlow{to{background-position:300% 0}}"
+  + ".pt-rb::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.16) 50%,transparent 60%);background-size:250% 100%;background-position:150% 0;animation:ptSweep 7s ease-in-out infinite;animation-delay:var(--rd);pointer-events:none}"
+  + "@keyframes ptSweep{0%,80%{background-position:150% 0}100%{background-position:-100% 0}}"
+  + ".pt-rb:hover .pt-rb-ic,.pt-rb:focus-visible .pt-rb-ic{animation:ptWig .5s ease-in-out}"
+  + "@keyframes ptWig{25%{transform:rotate(-12deg) scale(1.15)}75%{transform:rotate(10deg) scale(1.1)}}"
+  + ".pt-ring{animation:ptRing 3s ease-in-out infinite}@keyframes ptRing{50%{transform:scale(1.06)}}"
+  + "@media (prefers-reduced-motion: reduce){.pt-home-main > .pt-room,.pt-fx i,.pt-bar i,.pt-rb::after,.pt-ring{animation:none!important}.pt-fx{display:none}}";
+  (document.head || document.documentElement).appendChild(st);
+  const COLS = ["#8B5CFF","#00E5FF","#FF2BD6","#FFC21A","#3CFF7A"];
+  const LINES = ["Psst … streichle mich mal! Einfach hin und her fahren. 💜", "Teamarbeit lohnt sich: Alle im Team bekommen die Sterne! 👥",
+    "Hast du schon alle Emotes ausprobiert? Auf mich tippen und nach unten ziehen! ✨", "Unter «Hintergrund» kannst du die ganze Seite verändern. 🖼️",
+    "Ich zähle deine Sterne … eins, zwei, ganz viele! ⭐", "Diplome kannst du an die Wand hängen. Schau unter «Diplome»! 📜",
+    "Bzzzt! Mein Code tanzt heute. 💃", "Witz: Warum ist der Computer müde? Er hatte zu viele Tabs offen! 😴",
+    "Nach Level 100 kommt Prestige. Dort gibt es richtig spezielle Sachen! 🏆", "Witz: Was macht ein Pixel im Urlaub? Es macht sich klein! 🏖️",
+    "In der Garderobe wartet vielleicht etwas Neues auf dich. 👕", "Ich mag es, wenn du lernst. Dann wachse ich mit! 🌱"];
+  const fx = ()=>{ const room = document.querySelector(".pt-home-main > .pt-room"); if (!room || room.querySelector(".pt-fx")) return;
+    const f = document.createElement("div"); f.className = "pt-fx"; f.setAttribute("aria-hidden", "true");
+    f.innerHTML = Array.from({length: 12}, (_, k)=>`<i style="left:${4 + k * 8}%;--c:${COLS[k % 5]};--t:${7 + (k % 5) * 1.6}s;--d:${(k * 1.3) % 9}s;--x:${(k % 2 ? 1 : -1) * (6 + k % 4 * 4)}px"></i>`).join("");
+    room.appendChild(f); };
+  let last = -1;
+  const idle = ()=>{
+    if ([...document.querySelectorAll("body > .wd-ov, body > .pt-ov")].some(o=>!o.hidden && getComputedStyle(o).display !== "none") || document.hidden) return;
+    const el = document.getElementById("ptSay"), g = document.querySelector(".pt-home-main .pt-room-g"); if (!el || !g) return;
+    let i; do { i = Math.floor(Math.random() * LINES.length); } while (i === last && LINES.length > 1); last = i;
+    window.GLAB_IDLE_SAY = {txt: LINES[i], until: Date.now() + 8000};
+    el.innerHTML = `<b class="gname">gLiTCh</b>${LINES[i]}`; if (typeof sayHide === "function") sayHide();
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) (g.querySelector(":scope > span") || g).animate([{transform:"none"},{transform:"translateY(-12%) rotate(-6deg)"},{transform:"translateY(0) rotate(4deg)"},{transform:"none"}], {duration:700, easing:"ease-out"});
+  };
+  setInterval(fx, 1500);
+  setInterval(idle, 16000);
 })();
