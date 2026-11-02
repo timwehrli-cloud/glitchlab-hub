@@ -2522,7 +2522,7 @@ document.addEventListener("click", e=>{ if (Date.now() - lastSwipe < 400 && e.ta
 })();
 /* Belohnungen pro Level (für Level-Übersichten) */
 function rewardsAt(k){
-  return ROOM.filter(it=>it.lv === k).map(it=>({kind:"room", n:it.n, ic:thumb(it)})).concat(EMOTES.filter(x=>x.lv === k).map(x=>({kind:"emote", n:"Emote: " + x.n, ic:x.ic})));
+  return ROOM.filter(it=>it.lv === k && !it.badge && !it.sw).map(it=>({kind:"room", n:it.n, ic:thumb(it)})).concat(EMOTES.filter(x=>x.lv === k).map(x=>({kind:"emote", n:"Emote: " + x.n, ic:x.ic})));
 }
 /* Aufklappbare Abschnitte (Garderobe, Zimmer) – merkt sich, was offen ist */
 const ACC_OPEN = {};
@@ -6936,7 +6936,7 @@ window.GLAB_KI = {
 };
 })();
 </script>
-<script src="hub-portal.js?v=202611021955"></script>
+<script src="hub-portal.js?v=202611021958"></script>
 
 <script>
 (function(){

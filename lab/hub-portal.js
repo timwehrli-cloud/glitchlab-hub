@@ -249,6 +249,10 @@ function rewardsFix(lib){
   /* restliche Level-Belohnungen gleichmässig bis Level 100 verteilen */
   const lvl = (lib.OUTFITS || []).filter(o=>o.lv != null && o.lv > 0 && !o.badge && !o.sw).sort((a,b)=>a.lv - b.lv);
   lvl.forEach((o,k)=>{ o.lv = Math.min(98, Math.round(2 + k * 96 / Math.max(1, lvl.length - 1))); });
+  /* Start-Outfits: nur das erste bleibt auf Level 1, die anderen kommen auf freie Level bis Level 50 */
+  const start = (lib.OUTFITS || []).filter(o=>o.lv === 0 && !o.badge && !o.sw), used = new Set(lvl.map(o=>o.lv));
+  const free = []; for (let k = 1; k < 50; k++) if (!used.has(k)) free.push(k);
+  start.slice(1).forEach((o,i,arr)=>{ o.lv = free[Math.round((i + 1) * (free.length - 1) / (arr.length + 1))]; });
   const R = window.GLAB_R;
   if (R && R.ROOM) R.ROOM.forEach(x=>{
     if (SW_ROOM[x.id]){ x.badge = SW_ROOM[x.id]; x.lv = 9999; x.reqTxt = `Diplom «${dipName(x.badge) || x.badge}» (${SW_BADGE(x.badge)})`; }

@@ -143,3 +143,8 @@ function playSummon(el, e){
 }
 function playEmoteCustom(el, e){
   if (e && e.sum) return playSummon(el, e);''', 1)
+
+# «Alle Level»: Zimmer-Gegenstände aus Modulen (mit Diplom oder Bedingung) gehören nicht zu einem Level
+_a = "ROOM.filter(it=>it.lv === k).map(it=>({kind:\"room\""
+assert _a in page, "rewardsAt nicht gefunden"
+page = page.replace(_a, "ROOM.filter(it=>it.lv === k && !it.badge && !it.sw).map(it=>({kind:\"room\"", 1)
