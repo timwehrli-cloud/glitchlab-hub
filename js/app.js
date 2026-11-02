@@ -427,7 +427,7 @@
           <div class="stage-g"><span class="glitch">${G.svg("happy", "#8B5CFF", { outfit: outfitOf(), lp: isLP() })}</span><span class="floor"></span></div>
           <div class="bubble"><p class="eyebrow">${esc(S.me.class_name || "")}</p><h1>${hello}</h1><p>gLiTCh räumt kurz sein Zimmer auf …</p></div>
         </div>
-        <iframe class="roomframe" id="roomFrame" title="gLiTChs Zimmer mit Garderobe" src="lab/index.html#home"></iframe>
+        <iframe class="roomframe" id="roomFrame" title="gLiTChs Zimmer mit Garderobe" src="lab/index.html${window.GL_V ? "?v=" + window.GL_V : ""}#home"></iframe>
       </section>
       <section aria-labelledby="fh">
         <div class="sec-h"><h2 id="fh">Fächer</h2><p>Du hast ${allStars()} Sterne gesammelt.</p></div>
@@ -749,7 +749,7 @@
     const fr = document.createElement("iframe");
     fr.className = "labframe"; fr.title = m ? m.title : "gLiTChs Zimmer";
     if (upHtml != null) fr.srcdoc = H.uploadDoc(upHtml, m, workKey(lab), S.me.student.first_name, S.team.map(t => t.student.first_name));
-    else fr.src = m && m.src ? m.src : "lab/index.html#" + ((m && m.hash) || lab);
+    else { const qv = window.GL_V ? "?v=" + window.GL_V : ""; fr.src = m && m.src ? m.src + qv : "lab/index.html" + qv + "#" + ((m && m.hash) || lab); }
     if (m && m.frameBg) fr.style.background = m.frameBg;
     fr.onload = () => { const l = $("#labLoad"); if (l) l.remove(); };
     $(".labshell").appendChild(fr);

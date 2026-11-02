@@ -207,6 +207,7 @@ Mit Claude Code geht das am schnellsten: «Baue das Modul X für den Glitchlab-H
 | `tools/build_lab.py` | Baut `lab/` neu aus dem gLiTCh-Lab «NMG Schweiz» (+ M&I-Module aus dem älteren Lab) |
 | `games/wueste/`, `games/dschungel/`, `games/tundra/`, `games/lava/` | Die Abenteuer-Games (Deutsch · Gespräche führen) mit Brücke zum Hub |
 | `tools/build_games.py` | Baut ein Game neu: `python3 tools/build_games.py <datei.html> dschungel` (oder wueste, tundra, lava) |
+| `tools/bump_version.py` | Vor jedem Hochladen ausführen: neue Versionsnummer, damit Browser sofort die neuen Dateien laden |
 | `js/uploads.js` | Hochgeladene HTML-Module: Steckbrief lesen, Extras, Schnittstelle `GLHub`, Vorlage |
 | `js/custom-modules.js` | Eigene Module aus dem Modul-Editor (Spieler für die Kinder) |
 | `supabase/schema.sql` | Datenbank-Tabellen und Sicherheitsregeln |
