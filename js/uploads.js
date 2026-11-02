@@ -291,4 +291,8 @@ api.stars=api.sterne;api.score=api.sterne;api.save=api.speichern;api.load=api.la
 </body>
 </html>
 `;
+
+  /* Banner für eingebaute Spiele mit Emoji (z. B. Römer, Englisch, Quiz-Shows) */
+  H.modArt = H.modArt || {};
+  (H.modules || []).filter(m => m.emoji && !H.modArt[m.id]).forEach(m => { H.modArt[m.id] = { c: m.c || "#8B5CFF", c2: "#1A0B3A", svg: banner(m.emoji, m.c || "#8B5CFF", "#1A0B3A") }; });
 })();

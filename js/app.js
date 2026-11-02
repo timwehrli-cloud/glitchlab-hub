@@ -49,7 +49,9 @@
   const progOf = (modId, actId) => (S.me?.progress || []).find(p => p.module_id === modId && p.activity_id === actId) || null;
   const actStars = (m, x) => { const st = progOf(m.id, x.id)?.stars || 0; return x.maxStars == null ? st : Math.min(x.maxStars, st); };
   const modStars = m => m.activities.reduce((a, x) => a + actStars(m, x), 0);
-  const subjMods = id => H.modules.filter(m => m.subject === id);
+  /* Nur für das Lehrpersonen-Konto (z. B. Jeopardy): für Kinder unsichtbar */
+  const visMod = m => !m.lpOnly || isLP();
+  const subjMods = id => H.modules.filter(m => m.subject === id && visMod(m));
   const subjStars = id => subjMods(id).reduce((a, m) => a + modStars(m), 0);
   const subjMax = id => subjMods(id).reduce((a, m) => a + H.maxStars(m), 0);
   const allStars = () => H.subjects.reduce((a, s) => a + subjStars(s.id), 0)
@@ -72,7 +74,7 @@
   const modPrev = m => { const list = H.modules.filter(x => x.theme === m.theme && !x.soon); const i = list.findIndex(x => x.id === m.id); return i > 0 ? list[i - 1] : null; };
   const modSolved = m => { const st = modStars(m), mx = H.maxStars(m); return H.openEnded(m) || !mx ? st > 0 : st >= Math.ceil(mx / 2); };
   const modOpen = m => {
-    if (m.soon) return false; if (isLP()) return true;
+    if (m.soon) return false; if (isLP()) return true; if (m.lpOnly) return false;
     const set = modSet(m);
     if (set === "offen") return true; if (set === "zu") return false;
     if (set === "kette") { const p = modPrev(m); return !p || modSolved(p); }
@@ -312,8 +314,8 @@
      4) Fachseite
      ================================================================= */
   const art = (key, c, c2, cls = "") => `<span class="art-banner ${cls}" style="--mc:${c};--mc2:${c2}">${(H.themeArt && H.themeArt[key]) || ""}</span>`;
-  const themesOf = id => H.themes.filter(t => t.subject === id);
-  const themeMods = id => H.modules.filter(m => m.theme === id);
+  const themesOf = id => H.themes.filter(t => t.subject === id && (!t.lpOnly || isLP()));
+  const themeMods = id => H.modules.filter(m => m.theme === id && visMod(m));
 
   /* Grosser animierter Kopf-Banner: Szene über die ganze Breite, Pixel-Funken und ein gLiTCh, der durchläuft */
   function heroBanner(o) {
@@ -579,7 +581,7 @@
       <div class="labbar"><button type="button" class="btn small" data-labback>← ${m ? esc((H.themes.find(t => t.id === m.theme) || {}).title || "Zurück") : "Hub"}</button>
         <b class="labtitle">${esc(m ? m.title : "gLiTChs Zimmer")}</b>
         <span class="labwho">${names.map(k => `<span class="chip">${kidG("normal", k, "still")}${esc(k.first_name)}</span>`).join("")}</span>
-        ${m && m.upload ? `<button type="button" class="btn small primary" data-updone title="Gibt 1 Stern">✓ Fertig</button>` : ""}
+        ${m && (m.upload || m.doneBtn) ? `<button type="button" class="btn small primary" data-updone title="Gibt 1 Stern">✓ Fertig</button>` : ""}
         <span class="starcount" title="Deine Sterne"><i>★</i>${allStars()}</span></div>
       <div class="labload" id="labLoad">${gl("happy", "#8B5CFF")}<p>gLiTCh holt eure Sachen …</p></div>
     </div>`;

@@ -74,6 +74,16 @@ Unten auf «Für Lehrpersonen» tippen und mit E-Mail und Passwort anmelden. Dor
 
 ---
 
+## Spiele aus eigenen Artefakten
+
+Im Ordner `games/` liegen fertige Spiele, die im Hub im Rahmen laufen. Mit «✓ Fertig» oben bekommen die Kinder 1 Stern:
+
+| Fach · Thema | Spiel | Ordner |
+| --- | --- | --- |
+| NMG · Die Römer | Tombola Romana, Römische Statuen – Pose-Blitz, Römisches Essen – Tier-List | `tombola-romana`, `statuen-pose-blitz`, `essen-tierlist` |
+| Englisch · How long does it take? | How long does it take? | `how-long` |
+| Minigames · Quiz-Shows | Schweiz-Jeopardy, Herbst-Jeopardy (**nur im Lehrpersonen-Konto sichtbar**) | `jeopardy-schweiz`, `jeopardy-herbst` |
+
 ## Module hochladen (HTML-Dateien)
 
 Im Lehrpersonen-Bereich gibt es das Feld **«Module hochladen»**. Zieh eine fertige HTML-Datei hinein, zum Beispiel aus dem gLiTCh-Editor. Der Hub liest den **Steckbrief**, einen kleinen JSON-Block (eine Datenliste in Textform) in der Datei: `<script type="application/json" id="glitchlab-modul">`. Daraus übernimmt er Titel, Fach, Thema, Aufgaben mit Sternen und die Extras.

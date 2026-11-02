@@ -1,0 +1,1065 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Schweiz-Jeopardy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Nunito:wght@600;800;900&display=swap">
+<style>
+/* Layout: Schweizer Plakat – rote Fläche mit grossem weissem Kreuz im Hintergrund, weisse Felder mit roten Zahlen, vier Teams als Leiste unten. Bewusst ein einziges Erscheinungsbild für die Tafel. */
+:root {
+  --board: #d52b1e;
+  --board-deep: #6e0b10;
+  --line: #e8676e;
+  --tile: #ffffff;
+  --tile-hi: #ffecea;
+  --tile-ink: #c8102e;
+  --chalk: #ffffff;
+  --muted: #ffd3cf;
+  --done: #9c141b;
+  --warn: #ffe08a;
+  --good: #c9f7d8;
+  --shade: #e0a9a9;
+  --t0: #3d9bff;
+  --t1: #f0b400;
+  --t2: #2fbf6b;
+  --t3: #b07cff;
+  --display: "Archivo Black", "Arial Black", "Helvetica Neue", sans-serif;
+  --body: "Nunito", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body {
+  background: radial-gradient(ellipse at 50% 30%, var(--board) 0%, #b5161d 70%, #8f1016 100%) fixed, var(--board);
+  color: var(--chalk);
+  font-family: var(--body);
+  font-weight: 600;
+  overflow: hidden;
+}
+button { font-family: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--tile-hi); outline-offset: 2px; }
+
+body::before { content: ""; position: fixed; left: 50%; top: 50%; width: 70vmin; height: 70vmin; transform: translate(-50%, -50%); pointer-events: none; opacity: .07;
+  background: linear-gradient(var(--chalk), var(--chalk)) center / 30% 100% no-repeat, linear-gradient(var(--chalk), var(--chalk)) center / 100% 30% no-repeat; }
+.app { position: relative; height: 100%; display: flex; flex-direction: column; gap: 1.2vh; padding-block: 1.4vh; padding-inline: max(16px, 1.6vw); box-sizing: border-box; }
+
+/* Kopfzeile */
+.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.logo { font-family: var(--display); font-size: clamp(22px, 3.2vw, 46px); letter-spacing: .01em; color: var(--chalk); line-height: 1; margin: 0; text-shadow: 0 3px 0 var(--board-deep); }
+.logo span { color: var(--muted); }
+.logo { display: flex; align-items: center; gap: .35em; }
+.logo .cross { width: 1.05em; height: 1.05em; flex: none; filter: drop-shadow(0 3px 0 var(--board-deep)); }
+.turn { display: flex; align-items: center; gap: 10px; font-size: clamp(14px, 1.5vw, 22px); font-weight: 800; padding: 6px 16px 6px 8px; border-radius: 999px; background: var(--board-deep); border: 2px solid var(--line); }
+.turn .dot { width: 1.6em; height: 1.6em; border-radius: 50%; display: grid; place-items: center; font-size: .9em; }
+.tools { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.tool { background: transparent; color: var(--muted); border: 2px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: clamp(12px, 1.05vw, 16px); font-weight: 800; }
+.tool:hover { color: var(--chalk); border-color: var(--muted); }
+.tool[aria-pressed="false"] { opacity: .6; }
+
+/* Brett */
+.boardwrap { flex: 1; min-height: 0; overflow: auto; }
+.board { display: grid; gap: clamp(6px, .9vw, 14px); height: 100%; min-width: 560px; grid-template-rows: auto repeat(5, 1fr); }
+.cat { font-family: var(--display); font-size: clamp(12px, 1.5vw, 25px); text-transform: uppercase; letter-spacing: .02em; text-align: center; display: grid; place-items: center; padding: .5em .3em; line-height: 1.05; text-wrap: balance; color: var(--chalk); border-bottom: 4px solid var(--tile); }
+.tile {
+  font-family: var(--display); font-size: clamp(26px, 4.6vw, 72px);
+  background: var(--tile); color: var(--tile-ink); border: 0; border-radius: 16px;
+  box-shadow: 0 6px 0 var(--shade), inset 0 -6px 0 rgba(0,0,0,.08);
+  transition: transform .12s, box-shadow .12s, background .12s;
+  min-height: 56px;
+}
+.tile:hover { background: var(--tile-hi); }
+.tile:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--shade); }
+.tile.used { background: var(--done); color: transparent; box-shadow: none; cursor: default; position: relative; }
+.tile.used::after { content: attr(data-who); position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--body); font-weight: 900; font-size: clamp(11px, 1.2vw, 18px); color: var(--muted); }
+.tile.used[data-team] { background: color-mix(in srgb, var(--tc) 28%, var(--done)); }
+.tile.used[data-team]::after { color: var(--tc); }
+
+/* Teams */
+.teams { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(6px, .9vw, 14px); }
+.team { background: var(--board-deep); border: 3px solid var(--line); border-radius: 16px; padding: 8px 12px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 4px 10px; transition: border-color .2s, transform .2s; }
+.team.active { border-color: var(--tc); transform: translateY(-4px); box-shadow: 0 0 0 4px color-mix(in srgb, var(--tc) 25%, transparent); }
+.badge { width: clamp(34px, 3.6vw, 56px); height: clamp(34px, 3.6vw, 56px); border-radius: 50%; background: var(--tc); display: grid; place-items: center; grid-row: span 2; }
+.badge svg { width: 68%; height: 68%; }
+.tname { background: transparent; border: 0; color: var(--tc); font-family: var(--display); font-size: clamp(14px, 1.6vw, 26px); width: 100%; min-width: 0; padding: 0; }
+.score { font-family: var(--display); font-size: clamp(24px, 3.2vw, 50px); line-height: 1; font-variant-numeric: tabular-nums; }
+.adj { grid-row: span 2; display: flex; flex-direction: column; gap: 4px; }
+.adj button { background: var(--done); color: var(--chalk); border: 0; border-radius: 8px; font-weight: 900; font-size: clamp(11px, 1vw, 15px); padding: 4px 8px; }
+
+/* Overlays */
+.overlay { position: fixed; inset: 0; background: rgba(5, 20, 18, .92); display: grid; place-items: center; z-index: 10; padding: 16px; }
+.card { background: var(--board); border: 4px solid var(--tile); border-radius: 28px; width: min(1100px, 100%); max-height: 100%; overflow: auto; padding: clamp(18px, 3vw, 44px); box-sizing: border-box; display: flex; flex-direction: column; gap: clamp(12px, 2vh, 26px); }
+.qhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.qcat { font-family: var(--display); font-size: clamp(18px, 2.2vw, 34px); color: var(--tile); }
+.qval { font-family: var(--display); font-size: clamp(18px, 2.2vw, 34px); background: var(--tile); color: var(--tile-ink); border-radius: 12px; padding: 2px 14px; }
+.qval.double { background: var(--board-deep); color: var(--chalk); }
+.qtext { font-size: clamp(24px, 3.6vw, 56px); font-weight: 900; line-height: 1.15; text-align: center; text-wrap: balance; margin: 1vh 0; }
+.timer { align-self: center; width: clamp(70px, 8vw, 120px); height: clamp(70px, 8vw, 120px); position: relative; }
+.timer svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.timer .num { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--display); font-size: clamp(24px, 3vw, 46px); }
+.timer.out .num { color: var(--warn); font-size: clamp(14px, 1.5vw, 22px); }
+.answer { font-size: clamp(24px, 3.4vw, 54px); font-weight: 900; text-align: center; color: var(--tile-hi); background: var(--board-deep); border-radius: 18px; padding: .5em .8em; text-wrap: balance; }
+.label { font-size: clamp(13px, 1.2vw, 18px); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); text-align: center; font-weight: 800; }
+.row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.big { font-family: var(--display); font-size: clamp(18px, 2vw, 30px); border: 0; border-radius: 16px; padding: .55em 1.1em; background: var(--tile); color: var(--tile-ink); box-shadow: 0 5px 0 var(--shade); }
+.big:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--shade); }
+.big.team-btn { background: var(--tc); color: #fff; box-shadow: 0 5px 0 color-mix(in srgb, var(--tc) 60%, #000); text-shadow: 0 2px 0 rgba(0,0,0,.25); }
+.big.ghost { background: var(--done); color: var(--chalk); box-shadow: 0 5px 0 var(--board-deep); }
+.splash { font-family: var(--display); font-size: clamp(44px, 9vw, 150px); color: var(--chalk); text-align: center; line-height: 1; animation: pop .6s cubic-bezier(.2,1.6,.4,1); text-shadow: 0 6px 0 var(--board-deep); }
+.splash small { display: block; font-size: .35em; color: var(--chalk); text-shadow: none; margin-top: .4em; font-family: var(--body); font-weight: 900; }
+@keyframes pop { from { transform: scale(.3) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
+
+textarea { width: 100%; box-sizing: border-box; min-height: 46vh; background: var(--board-deep); color: var(--chalk); border: 2px solid var(--line); border-radius: 14px; padding: 14px; font: 600 16px/1.5 ui-monospace, "Cascadia Mono", Menlo, monospace; resize: vertical; }
+.hint { color: var(--muted); font-size: 16px; line-height: 1.5; margin: 0; }
+.hint code { color: var(--tile); }
+.err { color: var(--warn); font-weight: 900; min-height: 1.2em; margin: 0; }
+
+/* Einstellungen */
+.card.settings { width: min(1200px, 100%); height: 100%; gap: 14px; }
+.sethead { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tabs { display: flex; gap: 6px; background: var(--board-deep); padding: 5px; border-radius: 14px; }
+.tab { border: 0; background: transparent; color: var(--muted); font-family: var(--display); font-size: clamp(16px, 1.6vw, 22px); padding: 8px 18px; border-radius: 10px; }
+.tab[aria-selected="true"] { background: var(--tile); color: var(--tile-ink); }
+.setbody { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 14px; padding-right: 4px; }
+.setfoot { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: flex-end; border-top: 2px solid var(--line); padding-top: 14px; }
+.setfoot .err { margin-right: auto; }
+.big.reset-all { color: var(--warn); font-size: clamp(15px, 1.4vw, 20px); }
+.fld { background: var(--board-deep); color: var(--chalk); border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px; font: 700 16px/1.35 var(--body); width: 100%; box-sizing: border-box; min-width: 0; }
+.fld:focus { border-color: var(--tile); outline: none; }
+textarea.fld { min-height: 0; resize: vertical; font-family: var(--body); }
+.catcard { border: 2px solid var(--line); border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.catrow { display: flex; gap: 10px; align-items: center; }
+.catrow .fld { font-family: var(--display); font-size: 20px; font-weight: 400; color: var(--tile); }
+.qrow { display: grid; grid-template-columns: 64px 76px minmax(0, 3fr) minmax(0, 2fr); gap: 8px; align-items: start; }
+.qrow.first { margin-top: 6px; }
+.qrow .rl { font-size: 13px; font-weight: 800; color: var(--muted); padding-top: 11px; white-space: nowrap; }
+.qrow .pv { font-family: var(--display); background: var(--tile); color: var(--tile-ink); border-radius: 10px; text-align: center; padding: 8px 0; font-size: 18px; }
+.colhead { display: grid; grid-template-columns: 64px 76px minmax(0, 3fr) minmax(0, 2fr); gap: 8px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.mini { background: var(--done); color: var(--chalk); border: 0; border-radius: 10px; padding: 8px 12px; font-weight: 900; font-size: 15px; white-space: nowrap; }
+.mini:hover { background: var(--line); }
+.mini.warn { color: var(--warn); }
+.mini:disabled { opacity: .4; cursor: default; }
+.mini.gen { background: var(--tile); color: var(--tile-ink); }
+.mini.gen:hover { background: var(--tile-hi); }
+.mini.gen:disabled { opacity: .85; animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .55; } }
+.catcard.busy { border-color: var(--tile); }
+.catcard.busy textarea { opacity: .5; }
+.genmsg { margin: 0; font-weight: 800; color: var(--good); font-size: 15px; }
+.genmsg.working { color: var(--tile); }
+.roundchip { font-family: var(--display); font-size: clamp(14px, 1.5vw, 22px); color: var(--tile-ink); background: var(--tile); border-radius: 999px; padding: 6px 14px; }
+.pod .badge { width: 64px; height: 64px; }
+.members { grid-column: 1 / -1; background: transparent; border: 0; padding: 0; text-align: left; color: var(--muted); font-weight: 800; font-size: clamp(10px, .85vw, 14px); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.members:hover { color: var(--chalk); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 2px solid var(--line); background: var(--board-deep); color: var(--chalk); border-radius: 999px; padding: 6px 14px; font-weight: 800; font-size: clamp(14px, 1.2vw, 18px); }
+.chip.off { opacity: .4; text-decoration: line-through; }
+.groups { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.group { border: 3px solid var(--tc); border-radius: 18px; padding: 12px; background: color-mix(in srgb, var(--tc) 10%, var(--board-deep)); min-height: 200px; }
+.ghead { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-size: clamp(15px, 1.45vw, 24px); color: var(--tc); }
+.ghead .badge { width: 46px; height: 46px; flex: none; }
+.ghead span { min-width: 0; overflow-wrap: break-word; hyphens: auto; line-height: 1.05; }
+.ghead em { margin-left: auto; font-style: normal; font-size: .8em; color: var(--muted); }
+.group ol { margin: 10px 0 0; padding-left: 1.6em; display: grid; gap: 4px; font-size: clamp(18px, 1.9vw, 30px); font-weight: 900; }
+.group li.new { animation: pop .35s cubic-bezier(.2,1.6,.4,1); color: var(--tile-hi); }
+.err.ok { color: var(--good); }
+.judge { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.jt { border: 3px solid var(--tc); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: color-mix(in srgb, var(--tc) 12%, var(--board-deep)); }
+.jn { font-family: var(--display); font-size: clamp(16px, 1.7vw, 26px); color: var(--tc); text-align: center; }
+.jb { display: flex; gap: 6px; }
+.jbtn { flex: 1; border: 0; border-radius: 12px; padding: .55em .3em; font-family: var(--display); font-size: clamp(15px, 1.5vw, 22px); color: #fff; }
+.jbtn.ok { background: #2e9e5b; box-shadow: 0 4px 0 #1c6b3c; }
+.jbtn.no { background: #2b1416; box-shadow: 0 4px 0 #000; }
+.jbtn:active { transform: translateY(3px); box-shadow: none; }
+.jt.wrong { opacity: .55; }
+.jt .minus { flex: 1; text-align: center; font-family: var(--display); font-size: clamp(20px, 2vw, 30px); color: var(--warn); }
+.judgezone { display: flex; flex-direction: column; gap: 14px; }
+.answering { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.whopick { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.who { border: 3px solid var(--tc); background: var(--board-deep); color: var(--chalk); border-radius: 999px; padding: 6px 16px; font-family: var(--display); font-size: clamp(15px, 1.5vw, 22px); }
+.who[aria-pressed="true"] { background: var(--tc); color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.25); }
+.judgezone .jbtn { flex: 0 1 280px; font-size: clamp(22px, 2.6vw, 40px); padding: .45em .8em; }
+.jbtn small { font-size: .6em; opacity: .9; }
+.verdict { font-family: var(--display); font-size: clamp(26px, 3.4vw, 52px); text-align: center; color: var(--tc, var(--chalk)); }
+@media (max-width: 700px) { .judge { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .groups { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.teamset { border: 2px solid var(--line); border-radius: 18px; padding: 14px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 16px; align-items: start; }
+.teamset .badge { width: 84px; height: 84px; grid-row: span 3; border: 4px solid var(--tc); }
+.teamset .fld { font-family: var(--display); font-size: 22px; font-weight: 400; color: var(--tc); }
+.picks { display: flex; flex-wrap: wrap; gap: 6px; }
+.pick { width: 48px; height: 48px; border-radius: 12px; border: 2px solid var(--line); background: var(--board-deep); display: grid; place-items: center; padding: 0; font-size: 26px; line-height: 1; }
+.pick svg { width: 76%; height: 76%; }
+.pick[aria-pressed="true"] { border-color: var(--tc); background: color-mix(in srgb, var(--tc) 35%, var(--board-deep)); }
+.upload { display: inline-flex; align-items: center; gap: 8px; }
+.upload input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.upload label { cursor: pointer; }
+.upload input:focus-visible + label { outline: 3px solid var(--tile-hi); outline-offset: 2px; }
+.badge.emoji { font-size: clamp(20px, 2.4vw, 36px); line-height: 1; }
+.teamset .badge.emoji { font-size: 50px; }
+.photo { background-size: cover; background-position: center; }
+.turn .dot svg { width: 70%; height: 70%; }
+.turn .dot.emoji { font-size: 1.05em; }
+@media (max-width: 700px) {
+  .qrow, .colhead { grid-template-columns: 1fr; }
+  .colhead { display: none; }
+  .teamset { grid-template-columns: 1fr; }
+}
+
+.podium { display: flex; justify-content: center; align-items: flex-end; gap: clamp(8px, 2vw, 30px); flex-wrap: wrap; }
+.pod { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.pod .bar { width: clamp(80px, 12vw, 180px); border-radius: 16px 16px 0 0; background: var(--tc); display: grid; place-items: start center; padding-top: 10px; font-family: var(--display); font-size: clamp(28px, 4vw, 60px); color: #fff; text-shadow: 0 3px 0 rgba(0,0,0,.25); }
+.pod .n { font-family: var(--display); font-size: clamp(16px, 1.8vw, 28px); color: var(--tc); }
+.pod .s { font-weight: 900; font-size: clamp(16px, 1.6vw, 24px); }
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 11; }
+
+@media (max-width: 700px) {
+  body { overflow: auto; }
+  .app { height: auto; min-height: 100%; }
+  .boardwrap { flex: none; height: 62vh; }
+  .teams { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="app" lang="de">
+  <header class="top">
+    <h1 class="logo"><svg class="cross" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="4" fill="var(--tile-ink)"/><path d="M13 6h6v7h7v6h-7v7h-6v-7H6v-6h7z" fill="#fff"/></svg>Schweiz<span>-</span>Jeopardy</h1>
+    <div class="turn" id="turn"></div>
+    <div class="roundchip" id="roundChip">Runde 1</div>
+    <div class="tools">
+      <button class="tool" id="btnTimer" aria-pressed="true">⏱ Timer 30 s</button>
+      <button class="tool" id="btnGroups">🎲 Gruppen</button>
+      <button class="tool" id="btnEdit">⚙ Einstellungen</button>
+      <button class="tool" id="btnReset">Neue Runde</button>
+      <button class="tool" id="btnFull">Vollbild</button>
+      <button class="tool" id="btnEnd">Siegerehrung</button>
+    </div>
+  </header>
+  <div class="boardwrap"><div class="board" id="board"></div></div>
+  <section class="teams" id="teams" aria-label="Punktestand"></section>
+</div>
+
+<div class="overlay" id="ov" lang="de" hidden><div class="card" id="ovCard"></div></div>
+
+<script>
+const VALUES = [100, 200, 300, 400, 500];
+const ROUNDS = 4;
+const Q = (q, a) => ({ q, a });
+const DEFAULT_CATS = [
+  { name: "Kantone & Städte", qs: [
+    [Q("Wie heisst die Bundesstadt der Schweiz?", "Bern"),
+     Q("Wie viele Kantone hat die Schweiz?", "26"),
+     Q("In welchem Kanton liegt die Stadt Zürich?", "Im Kanton Zürich"),
+     Q("Welche Stadt im Westen der Schweiz ist berühmt für ihren riesigen Springbrunnen, den «Jet d'eau»?", "Genf")],
+    [Q("In welchem Kanton liegt Lugano?", "Tessin"),
+     Q("Welcher Kanton hat einen Bären im Wappen?", "Bern"),
+     Q("In welchem Kanton spricht man vor allem Französisch: Waadt oder Aargau?", "Waadt"),
+     Q("Wie heisst der Hauptort des Kantons Luzern?", "Luzern")],
+    [Q("Wie heisst der Hauptort des Kantons Graubünden?", "Chur"),
+     Q("Wie heisst der Hauptort des Kantons Wallis?", "Sitten (französisch: Sion)"),
+     Q("Wie heisst der Hauptort des Kantons Tessin? (Achtung: nicht Lugano!)", "Bellinzona"),
+     Q("Welcher Kanton ist von der Fläche her der grösste?", "Graubünden")],
+    [Q("Welcher Kanton ist von der Fläche her der kleinste?", "Basel-Stadt"),
+     Q("Appenzell ist in zwei Kantone geteilt. Wie heissen sie?", "Appenzell Ausserrhoden und Appenzell Innerrhoden"),
+     Q("Wie heisst der Hauptort des Kantons Thurgau?", "Frauenfeld"),
+     Q("Welcher Kanton hat einen schwarzen Stierkopf im Wappen?", "Uri")],
+    [Q("Welcher Kanton ist der jüngste der Schweiz? Er entstand 1979.", "Jura"),
+     Q("Wie heisst der Hauptort des Kantons Nidwalden?", "Stans"),
+     Q("Wie heisst der Hauptort des Kantons Appenzell Ausserrhoden?", "Herisau"),
+     Q("Welcher Kanton hat drei Amtssprachen?", "Graubünden (Deutsch, Rätoromanisch, Italienisch)")]
+  ] },
+  { name: "Berge, Seen & Flüsse", qs: [
+    [Q("Welcher grosse Fluss fliesst durch Basel?", "Der Rhein"),
+     Q("Wie heisst das grosse Gebirge, das mehr als die Hälfte der Schweiz bedeckt?", "Die Alpen"),
+     Q("Wie heisst der berühmte, spitze Berg bei Zermatt?", "Das Matterhorn"),
+     Q("Wie nennt man eine riesige Eismasse, die ganz langsam einen Berg hinunterfliesst?", "Gletscher")],
+    [Q("In welche drei grossen Landschaften teilt man die Schweiz ein?", "Jura, Mittelland, Alpen"),
+     Q("Welcher Fluss fliesst durch die Stadt Bern?", "Die Aare"),
+     Q("Welcher Fluss entspringt im Rhonegletscher und fliesst durch den Genfersee?", "Die Rhone"),
+     Q("Welcher See liegt bei der Stadt Luzern?", "Der Vierwaldstättersee")],
+    [Q("Wie hoch ist das Matterhorn ungefähr? (100 m daneben gilt auch)", "4478 m"),
+     Q("Wie heisst der grösste Gletscher der Alpen?", "Der Grosse Aletschgletscher"),
+     Q("Welches ist der längste Fluss, der nur durch die Schweiz fliesst?", "Die Aare"),
+     Q("Welcher grosse See liegt zum Teil im Tessin und zum Teil in Italien?", "Der Lago Maggiore")],
+    [Q("In welches Meer fliesst die Rhone?", "Ins Mittelmeer"),
+     Q("In welches Meer fliesst der Rhein?", "In die Nordsee"),
+     Q("Welches ist der grösste See, der ganz in der Schweiz liegt?", "Der Neuenburgersee"),
+     Q("Welcher Fluss fliesst mitten durch die Stadt Zürich?", "Die Limmat")],
+    [Q("Der Inn fliesst aus dem Engadin weg. In welches Meer gelangt sein Wasser am Schluss?", "Ins Schwarze Meer (über die Donau)"),
+     Q("Wie heisst der grosse Fluss im Kanton Tessin?", "Der Ticino (Tessin)"),
+     Q("Welcher Berg mit einer berühmten Nordwand steht neben Mönch und Jungfrau?", "Der Eiger"),
+     Q("Welcher Fluss verbindet bei Interlaken den Brienzersee mit dem Thunersee?", "Die Aare")]
+  ] },
+  { name: "Geschichte", qs: [
+    [Q("An welchem Tag feiert die Schweiz ihren Nationalfeiertag?", "Am 1. August"),
+     Q("Welche Farben hat die Schweizer Fahne?", "Rot und Weiss"),
+     Q("Was zündet man am Abend des 1. August an?", "Höhenfeuer, Feuerwerk oder Lampions"),
+     Q("Wie viele Orte gehörten zum allerersten Bund der Eidgenossen: 3, 13 oder 26?", "3")],
+    [Q("Auf welcher Wiese am Vierwaldstättersee sollen die Eidgenossen ihren Schwur geleistet haben?", "Auf dem Rütli"),
+     Q("In welchem Jahr wurde laut Überlieferung der Bundesbrief geschlossen: 1191, 1291 oder 1491?", "1291"),
+     Q("Welches Volk lebte zur Römerzeit in der heutigen Schweiz: die Helvetier, die Wikinger oder die Ägypter?", "Die Helvetier"),
+     Q("Wie heisst die Nationalhymne der Schweiz: Schweizerpsalm, Alpenlied oder Bergsong?", "Der Schweizerpsalm")],
+    [Q("Welche drei Orte schlossen den ersten Bund der Eidgenossen?", "Uri, Schwyz und Unterwalden"),
+     Q("Wie hiess der böse Vogt, der Tell zwang, auf den Apfel zu schiessen?", "Gessler"),
+     Q("Nach welchem Kanton ist die Schweiz benannt: Schwyz, Bern oder Zürich?", "Nach Schwyz"),
+     Q("Was schworen sich die Eidgenossen auf dem Rütli?", "Dass sie einander helfen und zusammenhalten")],
+    [Q("In welchem Jahr wurde der heutige Schweizer Bundesstaat gegründet: 1648, 1848 oder 1948?", "1848"),
+     Q("Seit wann dürfen Frauen in der Schweiz national abstimmen: 1921, 1971 oder 2001?", "1971"),
+     Q("Gegen wen kämpften die ersten Eidgenossen: gegen die Habsburger, die Römer oder die Dinosaurier?", "Gegen die Habsburger"),
+     Q("Wofür steht CH: Confoederatio Helvetica, Club Helvetia oder Chocolat Helvétique?", "Confoederatio Helvetica (lateinisch für Schweizerische Eidgenossenschaft)")],
+    [Q("1315 besiegten die Eidgenossen die Habsburger in einer Schlacht. Wo: am Morgarten, in Paris oder in Rom?", "Am Morgarten"),
+     Q("Welcher Held soll sich bei der Schlacht von Sempach in die Speere der Feinde geworfen haben? (Tipp: Arnold …)", "Arnold Winkelried"),
+     Q("Seit wann ist die Schweiz Mitglied der UNO: 1952, 2002 oder 2022?", "2002"),
+     Q("Welcher berühmte französische Herrscher eroberte im Jahr 1798 die Schweiz?", "Napoleon")]
+  ] },
+  { name: "Wer bin ich?", qs: [
+    [Q("Ich bin ein Tennisspieler aus Basel und habe 20 Grand-Slam-Turniere gewonnen. Wer bin ich?", "Roger Federer"),
+     Q("Ich bin ein Mädchen, das beim Grossvater auf der Alp lebt. Mein Freund ist der Geissenpeter. Wer bin ich?", "Heidi"),
+     Q("Ich bin ein grosser Hund aus den Alpen und rette Menschen aus dem Schnee. Was für ein Hund bin ich?", "Ein Bernhardiner"),
+     Q("Ich bin rot mit einem weissen Kreuz, habe viele kleine Werkzeuge und passe in jede Hosentasche. Was bin ich?", "Das Sackmesser (Schweizer Taschenmesser)")],
+    [Q("Ich habe mit meiner Armbrust einen Apfel vom Kopf meines Sohnes geschossen. Wer bin ich?", "Wilhelm Tell"),
+     Q("Ich bin ein Skirennfahrer aus Nidwalden, man nennt mich «Odi». Wer bin ich?", "Marco Odermatt"),
+     Q("Ich lebe in den Bergen, pfeife laut, wenn Gefahr kommt, und schlafe im Winter monatelang. Wer bin ich?", "Das Murmeltier"),
+     Q("Ich bin ein Schweizer Käse mit vielen grossen Löchern. Wer bin ich?", "Emmentaler")],
+    [Q("Ich bin eine Skirennfahrerin aus dem Tessin. Mein Nachname hat zwei Teile: Gut-… Wer bin ich?", "Lara Gut-Behrami"),
+     Q("Ich bin Heidis Freund und hüte die Ziegen. Wer bin ich?", "Der Geissenpeter"),
+     Q("Ich habe grosse, gebogene Hörner, klettere in den Felsen und bin im Wappen von Graubünden. Wer bin ich?", "Der Steinbock"),
+     Q("Ich bin ein Essen aus geschmolzenem Käse. Man tunkt Brotstücke in mich hinein. Wer bin ich?", "Das Fondue")],
+    [Q("Ich bin Heidis Grossvater und wohne allein auf der Alp. Wie nennt man mich?", "Der Alpöhi"),
+     Q("Ich war lange Captain der Fussball-Nati der Männer. Mein Vorname ist Granit. Wer bin ich?", "Granit Xhaka"),
+     Q("Ich bin ein spitzer Berg bei Zermatt und auf jeder Toblerone-Packung zu sehen. Wer bin ich?", "Das Matterhorn"),
+     Q("Ich bin das Wappentier der Stadt Bern und wohne dort im Park an der Aare. Wer bin ich?", "Der Bär")],
+    [Q("Ich habe das Rote Kreuz gegründet. Mein Vorname ist Henri. Wer bin ich?", "Henri Dunant"),
+     Q("Ich bin der berühmteste Physiker der Welt (E = mc²) und habe in Bern gearbeitet. Wer bin ich?", "Albert Einstein"),
+     Q("Ich habe eine Lebensmittelfirma gegründet. Mein Name bedeutet «kleines Nest». Wer bin ich?", "Henri Nestlé"),
+     Q("Ich bin ein Tennisspieler aus der Westschweiz und Freund von Roger Federer. Man nennt mich «Stan». Wer bin ich?", "Stan Wawrinka")]
+  ] },
+  { name: "Rekorde & Zahlen", qs: [
+    [Q("Wie viele Landessprachen hat die Schweiz?", "4"),
+     Q("Wie viele Nachbarländer hat die Schweiz?", "5 (Deutschland, Frankreich, Italien, Österreich, Liechtenstein)"),
+     Q("Welches ist die grösste Stadt der Schweiz?", "Zürich"),
+     Q("Wie viele gleich lange Arme hat das Schweizerkreuz?", "4")],
+    [Q("Wie viele Menschen leben ungefähr in der Schweiz: 5, 9 oder 15 Millionen?", "Rund 9 Millionen"),
+     Q("Welche Landessprache sprechen in der Schweiz die meisten Menschen?", "Deutsch"),
+     Q("Welche Landessprache sprechen am wenigsten Menschen?", "Rätoromanisch"),
+     Q("Wie viele Mitglieder hat der Bundesrat?", "7")],
+    [Q("Wie heisst der längste Eisenbahntunnel der Schweiz und der Welt?", "Der Gotthard-Basistunnel"),
+     Q("Wie heisst der höchste Berg der Schweiz?", "Die Dufourspitze"),
+     Q("Welches ist die zweitgrösste Stadt der Schweiz?", "Genf"),
+     Q("Wie viele Menschen wohnen ungefähr in der Stadt Zürich: 40'000, 440'000 oder 4 Millionen?", "Rund 440'000")],
+    [Q("Wie lang ist der Gotthard-Basistunnel ungefähr: 17, 57 oder 97 km?", "57 km"),
+     Q("Wie hoch ist die Dufourspitze? (50 m daneben gilt auch)", "4634 m"),
+     Q("Wie viele Viertausender (Berge über 4000 m) hat die Schweiz ungefähr: 8, 48 oder 148?", "Rund 48"),
+     Q("Wie heisst der höchste Bahnhof Europas?", "Jungfraujoch (3454 m)")],
+    [Q("Wo liegt der tiefste Punkt der Schweiz?", "Am Lago Maggiore (193 m ü. M.)"),
+     Q("Wie heisst die steilste Zahnradbahn der Welt?", "Die Pilatusbahn"),
+     Q("Wie viele Gemeinden hat die Schweiz ungefähr: 200, 2100 oder 21'000?", "Rund 2100"),
+     Q("Wie lang ist der Rhein ungefähr: 230, 1230 oder 4230 km?", "Rund 1230 km")]
+  ] },
+  { name: "Unsere Region", qs: [
+    [Q("In welchem Kanton liegt Allschwil?", "Basel-Landschaft"),
+     Q("Welche zwei Länder grenzen bei Basel an die Schweiz?", "Deutschland und Frankreich"),
+     Q("Wie nennt man den Zoo in Basel?", "Zolli"),
+     Q("Welches grosse Fest mit Trommeln, Piccolos und Laternen findet jedes Jahr in Basel statt?", "Die Basler Fasnacht")],
+    [Q("Wie heisst der Hauptort des Kantons Basel-Landschaft?", "Liestal"),
+     Q("Wie nennt man den Ort bei Basel, wo sich die Schweiz, Deutschland und Frankreich treffen?", "Dreiländereck"),
+     Q("Welche Farbe hat der Baselstab im Wappen von Basel-Stadt?", "Schwarz"),
+     Q("Wie heisst der wasserdichte Sack, mit dem man in Basel im Rhein schwimmt?", "Wickelfisch")],
+    [Q("Um wie viel Uhr beginnt der Morgestraich an der Basler Fasnacht?", "Um 4 Uhr morgens"),
+     Q("Wie heissen die kleinen Boote ohne Motor, die in Basel an einem Seil über den Rhein fahren?", "Fähren (baseldeutsch: «Fähri»)"),
+     Q("Wie sieht das Wappen von Basel-Landschaft aus?", "Ein roter Baselstab auf weissem Grund"),
+     Q("Wie heisst die Römerstadt bei Augst (BL)?", "Augusta Raurica")],
+    [Q("In welchem Jahr wurde Basel in zwei Kantone geteilt? (5 Jahre daneben gilt auch)", "1833"),
+     Q("Wie heisst der Flughafen bei Basel, der eigentlich in Frankreich liegt?", "EuroAirport (Basel-Mulhouse-Freiburg)"),
+     Q("Welche Farbe hat das Basler Rathaus am Marktplatz?", "Rot"),
+     Q("Welcher Künstler baute den Brunnen mit beweglichen Maschinen beim Theater Basel?", "Jean Tinguely")],
+    [Q("Wie heisst der höchste Berg im Kanton Basel-Landschaft?", "Hinteri Egg (1169 m)"),
+     Q("Wie viele Menschen wohnen ungefähr in Allschwil: 2000, 21'000 oder 210'000?", "Rund 21'000"),
+     Q("Wie heisst die älteste Rheinbrücke in Basel?", "Die Mittlere Brücke"),
+     Q("Wie heisst die Figur in Grossbasel, die den Kleinbaslern die Zunge herausstreckt?", "Lällekeenig (Lällekönig)")]
+  ] }
+];
+/* frühere, schwierigere Fassung von «Geschichte» und «Wer bin ich?» */
+const OLD_Q = new Set(["Welcher Held schoss laut Sage einen Apfel vom Kopf seines Sohnes?", "An welchem Tag feiert die Schweiz ihren Nationalfeiertag?", "Welche Farben hat die Schweizer Fahne?", "Mit welcher Waffe schoss Wilhelm Tell?", "Auf welcher Wiese am Vierwaldstättersee sollen die Eidgenossen ihren Schwur geleistet haben?", "In welchem Jahr wurde laut Überlieferung der Bundesbrief geschlossen?", "Nach welchem Kanton ist die Schweiz benannt?", "Welches keltische Volk lebte zur Römerzeit im Gebiet der heutigen Schweiz?", "Welche drei Orte schlossen den ersten Bund der Eidgenossen?", "Wie hiess der böse Vogt, der Tell zwang, auf den Apfel zu schiessen?", "Wofür steht die Abkürzung CH der Schweiz?", "Gegen welche mächtige Herrscherfamilie kämpften die ersten Eidgenossen?", "In welchem Jahr wurde der heutige Schweizer Bundesstaat gegründet?", "Seit welchem Jahr dürfen Frauen in der Schweiz national abstimmen? (5 Jahre daneben gilt auch)", "Welcher Held soll sich bei der Schlacht von Sempach 1386 in die Speere der Feinde geworfen haben?", "Welches Land eroberte die Schweiz im Jahr 1798?", "Wie heisst die Schlacht von 1315, in der die Eidgenossen am Ägerisee die Habsburger besiegten?", "Welcher Kanton führte als letzter das Frauenstimmrecht ein (1990)?", "Seit welchem Jahr ist die Schweiz Mitglied der UNO?", "Aus wie vielen Orten (Kantonen) bestand die Alte Eidgenossenschaft vor 1798?", "Ich bin ein Tennisspieler aus Basel und habe 20 Grand-Slam-Turniere gewonnen. Wer bin ich?", "Ich bin ein Mädchen, das beim Grossvater auf der Alp lebt. Mein Freund ist der Geissenpeter. Wer bin ich?", "Ich bin ein grosser Hund aus den Alpen und rette Menschen aus dem Schnee. Was für ein Hund bin ich?", "Ich bin die Fussball-Nationalmannschaft der Schweiz. Wie nennt man mich kurz?", "Ich bin eine Skirennfahrerin aus dem Tessin und habe zweimal den Gesamtweltcup gewonnen. Wer bin ich?", "Ich bin ein Skirennfahrer aus Nidwalden, man nennt mich «Odi». Wer bin ich?", "Ich habe die Geschichte von Heidi geschrieben. Wer bin ich?", "Ich bin ein Bub aus dem Engadin und hole mir für den Chalandamarz die grösste Glocke. Wer bin ich?", "Ich bin eine Tennisspielerin und habe an den Olympischen Spielen in Tokio Gold gewonnen. Wer bin ich?", "Ich habe eine weltberühmte Lebensmittelfirma gegründet. Mein Name bedeutet «kleines Nest». Wer bin ich?", "Ich habe das Rote Kreuz gegründet und den allerersten Friedensnobelpreis erhalten. Wer bin ich?", "Ich war lange Captain der Schweizer Fussball-Nati der Männer und spiele im Mittelfeld. Wer bin ich?", "Ich habe als junger Mann in Bern gearbeitet und dort die Relativitätstheorie entwickelt. Wer bin ich?", "Ich bin ein Skispringer aus dem Toggenburg und habe vier olympische Goldmedaillen gewonnen. Wer bin ich?", "Ich wurde 2022 in Pratteln (BL) Schwingerkönig. Wer bin ich?", "Ich bin ein Radrennfahrer, man nennt mich «Spartacus». Ich wurde zweimal Olympiasieger im Zeitfahren. Wer bin ich?", "Ich habe den Klettverschluss erfunden, nachdem Kletten im Fell meines Hundes hängen blieben. Wer bin ich?", "Ich war 1992 der erste Schweizer im Weltall. Wer bin ich?", "Ich war Captain der Schweizer Frauen-Nati an der Heim-EM 2025. Wer bin ich?", "Ich habe vor über 200 Jahren Schulen für arme Kinder gegründet. Mein Motto: Lernen mit Kopf, Herz und Hand. Wer bin ich?", "An welchem Tag feiert die Schweiz ihren Nationalfeiertag?", "Welche Farben hat die Schweizer Fahne?", "Was zündet man am Abend des 1. August an?", "Wie viele Orte gehörten zum allerersten Bund der Eidgenossen: 3, 13 oder 26?", "Auf welcher Wiese am Vierwaldstättersee sollen die Eidgenossen ihren Schwur geleistet haben?", "In welchem Jahr wurde laut Überlieferung der Bundesbrief geschlossen: 1191, 1291 oder 1491?", "Welches keltische Volk lebte zur Römerzeit im Gebiet der heutigen Schweiz?", "Wie heisst die Nationalhymne der Schweiz?", "Welche drei Orte schlossen den ersten Bund der Eidgenossen?", "Wie hiess der böse Vogt, der Tell zwang, auf den Apfel zu schiessen?", "Nach welchem Kanton ist die Schweiz benannt?", "Gegen welche mächtige Herrscherfamilie kämpften die ersten Eidgenossen?", "In welchem Jahr wurde der heutige Schweizer Bundesstaat gegründet: 1648, 1848 oder 1948?", "Seit wann dürfen Frauen in der Schweiz national abstimmen: 1921, 1971 oder 2001?", "Welcher Held soll sich bei der Schlacht von Sempach in die Speere der Feinde geworfen haben? (Tipp: Arnold …)", "Wofür steht die Abkürzung CH der Schweiz?", "Wie heisst die erste grosse Schlacht der Eidgenossen gegen die Habsburger im Jahr 1315?", "Welcher Kanton führte als letzter das Frauenstimmrecht ein (1990)?", "Seit wann ist die Schweiz Mitglied der UNO: 1952, 2002 oder 2022?", "Welcher berühmte französische Herrscher eroberte im Jahr 1798 die Schweiz?", "Ich bin ein Tennisspieler aus Basel und habe 20 Grand-Slam-Turniere gewonnen. Wer bin ich?", "Ich bin ein Mädchen, das beim Grossvater auf der Alp lebt. Mein Freund ist der Geissenpeter. Wer bin ich?", "Ich bin ein grosser Hund aus den Alpen und rette Menschen aus dem Schnee. Was für ein Hund bin ich?", "Ich bin die Fussball-Nationalmannschaft der Schweiz. Wie nennt man mich kurz?", "Ich habe mit meiner Armbrust einen Apfel vom Kopf meines Sohnes geschossen. Wer bin ich?", "Ich bin ein Skirennfahrer aus Nidwalden, man nennt mich «Odi». Wer bin ich?", "Ich bin eine Skirennfahrerin aus dem Tessin. Mein Nachname hat zwei Teile: Gut-… Wer bin ich?", "Ich bin Heidis Grossvater und wohne allein auf der Alp. Wie nennt man mich?", "Ich bin Heidis Freund und hüte die Ziegen. Wer bin ich?", "Ich bin ein Bub aus dem Engadin und hole für den Chalandamarz die grösste Glocke. Wer bin ich?", "Ich habe das Rote Kreuz gegründet. Wer bin ich?", "Ich war lange Captain der Fussball-Nati der Männer. Mein Vorname ist Granit. Wer bin ich?", "Ich bin der berühmteste Physiker der Welt (E = mc²) und habe in Bern gearbeitet. Wer bin ich?", "Ich bin eine Schweizer Tennisspielerin und habe an den Olympischen Spielen in Tokio Gold gewonnen. Wer bin ich?", "Ich bin ein Tennisspieler aus der Westschweiz und habe drei Grand-Slam-Turniere gewonnen. Man nennt mich «Stan». Wer bin ich?", "Ich habe eine berühmte Lebensmittelfirma gegründet. Mein Name bedeutet «kleines Nest». Wer bin ich?", "Ich habe die Geschichte von Heidi geschrieben. Wer bin ich?", "Ich bin ein Skispringer aus dem Toggenburg und habe vier olympische Goldmedaillen gewonnen. Wer bin ich?", "Ich habe den Klettverschluss erfunden, weil Kletten im Fell meines Hundes hängen blieben. Wer bin ich?", "Ich war ein Lehrer und habe vor über 200 Jahren Schulen für arme Kinder gegründet. Lernen mit «Kopf, Herz und Hand». Wer bin ich?"]);
+const QV = 5;
+const TEAM_DEFAULTS = ["Steinböcke", "Bären", "Adler", "Bernhardiner"];
+const TEAM_ICONS = ["emoji:🐐", "emoji:🐻", "emoji:🦅", "emoji:🐕"];
+const STUDENTS = ["Yasin", "Nahuel", "Lennox", "Sally", "Sarya", "Sara", "Lara", "Oholiab", "Fijona", "Enea", "Mila", "Leia", "Fatimah", "Lennert", "Allirah", "Mehmet Can", "Valerio", "Rodrigo", "Ramon", "Milo", "Melissa", "Tereza", "Élodie"];
+const ICONS = [
+  '<svg viewBox="0 0 40 40"><path d="M6 6l9 9h10l9-9-2 16-12 12L8 22z" fill="#fff"/><path d="M14 22l6 6 6-6-6 2z" fill="#3d2606"/><circle cx="15" cy="19" r="2" fill="#3d2606"/><circle cx="25" cy="19" r="2" fill="#3d2606"/></svg>',
+  '<svg viewBox="0 0 40 40"><path d="M8 8l6 4h12l6-4-1 18c0 6-5 10-11 10S9 32 9 26z" fill="#fff"/><circle cx="15" cy="18" r="5" fill="#3d2606"/><circle cx="25" cy="18" r="5" fill="#3d2606"/><circle cx="15" cy="18" r="2" fill="#fff"/><circle cx="25" cy="18" r="2" fill="#fff"/><path d="M18 23l2 4 2-4z" fill="#f4b942"/></svg>',
+  '<svg viewBox="0 0 40 40"><path d="M5 28c0-11 8-18 17-18 6 0 11 3 13 8l-5 3 4 3-6 1 3 4H5z" fill="#fff"/><path d="M8 18l-3-4 6 1M14 12l-1-5 4 4M21 10l2-5 1 6M28 12l4-4-1 6" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="24" r="1.8" fill="#3d2606"/></svg>',
+  '<svg viewBox="0 0 40 40"><path d="M27 34c8-4 9-16 2-22-5-4-12-1-12 5 0 4 4 6 7 4" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="13" cy="21" r="7" fill="#fff"/><path d="M8 15l1-6 4 5z" fill="#fff"/><circle cx="11" cy="20" r="1.6" fill="#3d2606"/><path d="M9 28h10v6H9z" fill="#fff"/></svg>'
+];
+const ICON_NAMES = ["Fuchs", "Eule", "Igel", "Eichhörnchen"];
+const EMOJIS = ["🐐", "🦅", "🐄", "🐕", "🏔️", "🧀", "🍫", "⛷️", "🦊", "🦉", "🦔", "🐿️", "🐻", "🐺", "🦁", "🐯", "🐸", "🐼", "🐧", "🐙", "🦄", "🐉", "🚀", "⚽", "🍕", "🍁", "🎃", "⭐"];
+const KEY = "schweizJeopardy.v1", OLD_KEY = "schweizJeopardy.alt";
+
+const $ = id => document.getElementById(id);
+const tc = i => `var(--t${i})`;
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const emptyQ = () => ({ q: "", a: "" });
+const blankCat = () => ({ name: "Neue Kategorie", qs: VALUES.map(() => Array.from({ length: ROUNDS }, emptyQ)) });
+
+/* Ältere Speicherstände: eine Frage pro Stufe → in Liste mit ROUNDS Einträgen umwandeln */
+function normCats(cats) {
+  return cats.map(c => ({
+    name: String(c.name || "").replace(/­/g, ""),
+    qs: VALUES.map((_, r) => {
+      let lv = c.qs && c.qs[r];
+      lv = Array.isArray(lv) ? lv : (lv ? [lv] : []);
+      const out = lv.slice(0, ROUNDS).map(x => ({ q: String(x.q || ""), a: String(x.a || "") }));
+      while (out.length < ROUNDS) out.push(emptyQ());
+      return out;
+    })
+  }));
+}
+
+function iconOf(t, i) { return (t && t.icon) || ("svg:" + i); }
+function iconParts(ic) {
+  if (ic.startsWith("img:")) return { cls: "photo", style: `background-image:url('${ic.slice(4)}');`, inner: "" };
+  if (ic.startsWith("emoji:")) return { cls: "emoji", style: "", inner: esc(ic.slice(6)) };
+  return { cls: "", style: "", inner: ICONS[+ic.slice(4)] || ICONS[0] };
+}
+function badgeHTML(t, i, tag = "div", base = "badge") {
+  const p = iconParts(iconOf(t, i));
+  return `<${tag} class="${base} ${p.cls}" style="background-color:${tc(i)};${p.style}">${p.inner}</${tag}>`;
+}
+
+function pickDD(cats) {
+  const keys = [];
+  cats.forEach((_, ci) => VALUES.forEach((v, r) => { if (r > 0) keys.push(ci + "-" + r); }));
+  return keys[Math.floor(Math.random() * keys.length)];
+}
+function fresh(prev) {
+  const cats = prev ? prev.cats : normCats(DEFAULT_CATS);
+  return {
+    cats: clone(cats),
+    teams: prev ? prev.teams.map(t => ({ name: t.name, icon: t.icon, score: 0 })) : TEAM_DEFAULTS.map((n, i) => ({ name: n, icon: TEAM_ICONS[i], score: 0 })),
+    used: {}, turn: 0, dd: pickDD(cats),
+    timerOn: prev ? prev.timerOn : true,
+    round: prev ? prev.round : 0,
+    students: prev && prev.students ? prev.students.slice() : STUDENTS.slice(),
+    groups: prev && prev.groups ? clone(prev.groups) : null,
+    qv: QV
+  };
+}
+function migrateQ(s) {
+  if ((s.qv || 0) >= QV) return s;
+  s.cats = s.cats.map(c => {
+    const d = DEFAULT_CATS.find(x => x.name === c.name);
+    if (!d) return c;
+    const dn = normCats([d])[0];
+    if (c.qs.flat().every(x => !x.q.trim() || OLD_Q.has(x.q))) return dn;
+    // fehlende Runden (3 und 4) mit den neuen Fragen füllen, eigene Fragen bleiben
+    c.qs.forEach((lv, r) => lv.forEach((x, k) => { if (!x.q.trim() && !x.a.trim()) lv[k] = clone(dn.qs[r][k]); }));
+    return c;
+  });
+  s.qv = QV;
+  return s;
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && s.cats && s.teams) { s.cats = normCats(s.cats); s.round = s.round || 0; s.students = s.students || STUDENTS.slice(); s.groups = s.groups || null;
+      migrateQ(s);
+      return s; }
+    const old = JSON.parse(localStorage.getItem(OLD_KEY));
+    if (old && old.teams) {
+      const st = fresh();
+      st.teams = old.teams.map((t, i) => ({ name: t.name || TEAM_DEFAULTS[i], icon: t.icon, score: 0 }));
+      st.timerOn = old.timerOn !== false;
+      return st;
+    }
+  } catch (e) {}
+  return null;
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+let state = null;
+state = load() || fresh();
+let timerId = null;
+
+/* Frage der aktuellen Runde; falls leer, die andere Runde nehmen */
+function curQ(ci, r) {
+  const lv = state.cats[ci].qs[r];
+  const k = state.round % ROUNDS;
+  return (lv[k] && lv[k].q.trim()) ? lv[k] : (lv.find(x => x.q.trim()) || lv[0]);
+}
+
+function render() {
+  const b = $("board");
+  b.style.gridTemplateColumns = `repeat(${state.cats.length}, minmax(0, 1fr))`;
+  let h = state.cats.map(c => `<div class="cat">${esc(c.name)}</div>`).join("");
+  VALUES.forEach((v, r) => state.cats.forEach((c, ci) => {
+    const k = ci + "-" + r, u = state.used[k];
+    if (u === undefined) h += `<button class="tile" data-k="${k}" aria-label="${esc(c.name)} für ${v}">${v}</button>`;
+    else if (u >= 0) h += `<button class="tile used" data-team="${u}" style="--tc:${tc(u)}" data-who="${esc(state.teams[u].name)}" disabled>${v}</button>`;
+    else h += `<button class="tile used" data-who="–" disabled>${v}</button>`;
+  }));
+  b.innerHTML = h;
+  b.querySelectorAll(".tile:not(.used)").forEach(t => t.onclick = () => openQ(t.dataset.k));
+
+  $("teams").innerHTML = state.teams.map((t, i) => `
+    <div class="team ${i === state.turn ? "active" : ""}" style="--tc:${tc(i)}">
+      ${badgeHTML(t, i)}
+      <input class="tname" id="tname${i}" value="${esc(t.name)}" aria-label="Teamname ${i + 1}">
+      <div class="adj"><button data-i="${i}" data-d="100" aria-label="100 Punkte dazu">+100</button><button data-i="${i}" data-d="-100" aria-label="100 Punkte abziehen">−100</button></div>
+      <div class="score">${t.score}</div>
+      ${state.groups && state.groups[i] && state.groups[i].length ? `<button class="members" data-members="1" title="Gruppen anzeigen">${state.groups[i].map(esc).join(" · ")}</button>` : ""}
+    </div>`).join("");
+  document.querySelectorAll("[data-members]").forEach(b => b.onclick = groupsView);
+  state.teams.forEach((t, i) => {
+    const inp = $("tname" + i);
+    inp.onchange = () => { t.name = inp.value.trim() || TEAM_DEFAULTS[i]; save(); render(); };
+  });
+  document.querySelectorAll(".adj button").forEach(btn => btn.onclick = () => {
+    state.teams[+btn.dataset.i].score += +btn.dataset.d; save(); render();
+  });
+
+  const t = state.turn;
+  $("turn").innerHTML = `${badgeHTML(state.teams[t], t, "span", "dot")}Am Zug: <span style="color:${tc(t)}">${esc(state.teams[t].name)}</span>`;
+  $("roundChip").textContent = `Runde ${state.round % ROUNDS + 1}`;
+  $("btnTimer").setAttribute("aria-pressed", state.timerOn);
+  $("btnTimer").textContent = state.timerOn ? "⏱ Timer 30 s" : "⏱ Timer aus";
+}
+
+function show(html, cls) { $("ovCard").className = "card " + (cls || ""); $("ovCard").innerHTML = html; $("ov").hidden = false; }
+function hide() { stopTimer(); $("ov").hidden = true; }
+
+function openQ(k) {
+  const [ci, r] = k.split("-").map(Number);
+  if (k === state.dd) {
+    show(`<div class="splash">Doppelte Punkte!<small>Diese Frage zählt ${VALUES[r] * 2} Punkte</small></div>
+      <div class="row"><button class="big" id="go">Frage zeigen</button></div>`);
+    $("go").onclick = () => question(ci, r, true);
+    beep(660, .15); setTimeout(() => beep(880, .25), 160);
+  } else question(ci, r, false);
+}
+
+function question(ci, r, dd) {
+  const c = state.cats[ci], item = curQ(ci, r), pts = VALUES[r] * (dd ? 2 : 1), half = Math.round(pts / 2);
+  const key = ci + "-" + r;
+  let who = state.turn, shown = false;
+  show(`
+    <div class="qhead"><div class="qcat">${esc(c.name)}</div><div class="qval ${dd ? "double" : ""}">${pts} Punkte</div></div>
+    <div class="qtext">${esc(item.q)}</div>
+    ${state.timerOn ? `<div class="timer" id="tm"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--line)" stroke-width="10"/><circle id="arc" cx="50" cy="50" r="44" fill="none" stroke="var(--chalk)" stroke-width="10" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg><div class="num" id="tnum">30</div></div>` : ""}
+    <div id="ansSlot" class="row"><button class="big" id="reveal">Antwort zeigen</button></div>
+    <div id="judgeZone" class="judgezone">
+      <div class="answering">
+        <span class="label">Es antwortet:</span>
+        <div class="whopick">${state.teams.map((t, i) => `<button class="who" style="--tc:${tc(i)}" data-who="${i}" aria-pressed="${i === who}">${esc(t.name)}</button>`).join("")}</div>
+      </div>
+      <div class="row">
+        <button class="jbtn ok" id="right">✓ Richtig <small>+${pts}</small></button>
+        <button class="jbtn no" id="wrongBtn">✗ Falsch <small>−${half}</small></button>
+      </div>
+      <div class="row"><button class="big ghost" id="back">Zurück zum Brett</button></div>
+    </div>`);
+
+  const showAnswer = () => {
+    if (shown) return;
+    shown = true; stopTimer();
+    $("ansSlot").outerHTML = `<div class="answer" id="ansSlot">${esc(item.a)}</div>`;
+  };
+  const finish = () => {
+    hide(); render();
+    if (Object.keys(state.used).length === state.cats.length * 5) setTimeout(podium, 600);
+  };
+  const close = (winner, verdictHTML) => {
+    state.used[key] = winner;
+    state.turn = (state.turn + 1) % state.teams.length;
+    save(); render();
+    showAnswer();
+    $("judgeZone").innerHTML = `${verdictHTML}<div class="row"><button class="big" id="next">Weiter zum Brett</button></div>`;
+    $("next").onclick = finish;
+  };
+
+  $("reveal").onclick = showAnswer;
+  $("back").onclick = hide;
+  $("judgeZone").querySelector(".whopick").addEventListener("click", e => {
+    const b = e.target.closest("[data-who]");
+    if (!b) return;
+    who = +b.dataset.who;
+    document.querySelectorAll(".who").forEach(x => x.setAttribute("aria-pressed", +x.dataset.who === who));
+  });
+  $("right").onclick = () => {
+    state.teams[who].score += pts; cheer();
+    close(who, `<div class="verdict" style="--tc:${tc(who)}">Richtig! +${pts} Punkte für ${esc(state.teams[who].name)}</div>`);
+  };
+  $("wrongBtn").onclick = () => {
+    state.teams[who].score -= half; beep(220, .35);
+    close(-1, `<div class="verdict" style="--tc:var(--warn)">Leider falsch: −${half} Punkte für ${esc(state.teams[who].name)}</div>`);
+  };
+  if (state.timerOn) startTimer(30);
+}
+
+function startTimer(sec) {
+  stopTimer();
+  const end = Date.now() + sec * 1000;
+  const tick = () => {
+    const left = Math.max(0, (end - Date.now()) / 1000);
+    const num = $("tnum"), arc = $("arc");
+    if (!num) return stopTimer();
+    num.textContent = Math.ceil(left);
+    arc.setAttribute("stroke-dashoffset", (276.5 * (1 - left / sec)).toFixed(1));
+    if (left <= 5) arc.setAttribute("stroke", "var(--warn)");
+    if (left <= 0) { stopTimer(); $("tm").classList.add("out"); num.textContent = "Zeit um!"; beep(330, .5); }
+  };
+  tick(); timerId = setInterval(tick, 100);
+}
+function stopTimer() { if (timerId) clearInterval(timerId); timerId = null; }
+
+let actx = null;
+function beep(f, d) {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = "triangle"; o.frequency.value = f; g.gain.value = .15;
+    o.connect(g); g.connect(actx.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + d); o.stop(actx.currentTime + d);
+  } catch (e) {}
+}
+function cheer() { beep(523, .12); setTimeout(() => beep(659, .12), 110); setTimeout(() => beep(784, .25), 220); }
+
+function confirmBox(text, yesLabel, onYes) {
+  show(`<div class="qtext" style="font-size:clamp(22px,3vw,40px)">${text}</div>
+    <div class="row"><button class="big" id="yes">${yesLabel}</button><button class="big ghost" id="no">Abbrechen</button></div>`);
+  $("yes").onclick = () => { hide(); onYes(); };
+  $("no").onclick = hide;
+}
+
+/* ---------- Fragen automatisch erstellen (Claude) ---------- */
+let sampleApi = null;
+let draft = null, setTab = "fragen";
+const busy = new WeakSet(), genMsg = new WeakMap();
+(async () => {
+  try { sampleApi = (window.claude && window.claude.use) ? await window.claude.use("sample") : null; } catch (e) { sampleApi = null; }
+  if (draft && !$("ov").hidden && setTab === "fragen" && $("setBody")) drawCats();
+})();
+
+function genPrompt(name, avoid) {
+  return `Du erstellst Quizfragen für ein Jeopardy-Spiel an der Wandtafel in einer 6. Primarschulklasse in der Schweiz (Kinder 11–12 Jahre, 23 Kinder, Kanton Basel-Landschaft).
+Kategorie: «${name}»
+
+Erstelle für jede der 5 Punktestufen genau ${ROUNDS} verschiedene Fragen (eine pro Spielrunde), also ${ROUNDS * 5} Fragen.
+Schwierigkeit:
+- 100: so einfach, dass wirklich jedes Kind der Klasse sie beantworten kann.
+- 200: einfach.
+- 300: mittel.
+- 400: anspruchsvoll: nur etwa ein Drittel der Klasse weiss es.
+- 500: schwer: nur einzelne Kinder (etwa 2 bis 4 von 23) wissen es. Wissen, das über den Schulstoff hinausgeht, ist erwünscht, aber es muss für besonders interessierte 12-Jährige erreichbar sein.
+Die Fragen einer Stufe sollen ähnlich schwer sein.
+
+Regeln:
+- Schweizer Hochdeutsch (ss statt ß), kindgerecht.
+- Fragen kurz und klar, gut lesbar auf der Tafel (höchstens etwa 20 Wörter).
+- Antworten kurz und eindeutig. Nur sicher korrekte Fakten; wenn du bei etwas unsicher bist, nimm eine andere Frage.
+- Keine Fragen, die diesen bereits vorhandenen Fragen ähneln: ${avoid.length ? avoid.map(x => "«" + x + "»").join("; ") : "(keine)"}
+
+Antworte ausschliesslich mit JSON in genau dieser Form, die Stufen in der Reihenfolge 100, 200, 300, 400, 500:
+{"stufen":[[{"frage":"…","antwort":"…"}, … genau ${ROUNDS} Objekte …],[…],[…],[…],[…]]}`;
+}
+function parseGen(res) {
+  const st = res && (res.stufen || res.levels);
+  if (!Array.isArray(st) || st.length < 5) throw { code: "shape" };
+  return st.slice(0, 5).map(lv => {
+    if (!Array.isArray(lv) || lv.length < ROUNDS) throw { code: "shape" };
+    return lv.slice(0, ROUNDS).map(x => {
+      const q = String((x && (x.frage || x.q)) || "").trim(), a = String((x && (x.antwort || x.a)) || "").trim();
+      if (!q || !a) throw { code: "shape" };
+      return { q, a };
+    });
+  });
+}
+const catEmpty = c => c.qs.every(lv => lv.every(x => !x.q.trim() && !x.a.trim()));
+
+async function genCat(c) {
+  if (!sampleApi || busy.has(c)) return;
+  const name = c.name.trim();
+  if (!name) { genMsg.set(c, "Gib der Kategorie zuerst einen Namen."); drawCats(); return; }
+  busy.add(c); genMsg.delete(c);
+  if (setTab === "fragen") drawCats();
+  const avoid = draft.cats.filter(x => x !== c).flatMap(x => x.qs.flat().map(y => y.q).filter(Boolean)).slice(0, 80);
+  try {
+    const res = await sampleApi.json(genPrompt(name, avoid), { modelTier: "default" });
+    c.qs = parseGen(res);
+    genMsg.set(c, `✓ ${ROUNDS * 5} neue Fragen erstellt.`+" Bitte kurz durchlesen und dann speichern.");
+  } catch (e) {
+    const code = e && e.code;
+    genMsg.set(c, code === "not_granted" ? "Das automatische Erstellen wurde nicht erlaubt. Du kannst die Fragen von Hand eintragen."
+      : code === "rate_limited" ? "Gerade zu viele Anfragen. Bitte in einer Minute nochmals versuchen."
+      : "Die Fragen konnten nicht erstellt werden. Bitte nochmals versuchen.");
+  } finally {
+    busy.delete(c);
+    if (draft && !$("ov").hidden && setTab === "fragen" && $("setBody")) drawCats();
+  }
+}
+
+/* ---------- Einstellungen ---------- */
+
+function settings(tab) {
+  draft = {
+    cats: normCats(clone(state.cats)),
+    teams: state.teams.map((t, i) => ({ name: t.name, icon: iconOf(t, i) })),
+    students: state.students.join("\n")
+  };
+  setTab = tab || "fragen";
+  show(`
+    <div class="sethead">
+      <div class="qcat">Einstellungen</div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tabQ">Kategorien &amp; Fragen</button>
+        <button class="tab" role="tab" id="tabT">Teams</button>
+      </div>
+    </div>
+    <div class="setbody" id="setBody"></div>
+    <div class="setfoot">
+      <button class="big ghost reset-all" id="setResetAll">Alles zurücksetzen</button>
+      <p class="err" id="setErr"></p>
+      <button class="big ghost" id="setCancel">Abbrechen</button>
+      <button class="big" id="setSave">Speichern</button>
+    </div>`, "settings");
+  $("tabQ").onclick = () => { setTab = "fragen"; drawSet(); };
+  $("tabT").onclick = () => { setTab = "teams"; drawSet(); };
+  $("setCancel").onclick = hide;
+  $("setResetAll").onclick = resetAll;
+  $("setSave").onclick = saveSettings;
+  const body = $("setBody");
+  body.addEventListener("input", onSetInput);
+  body.addEventListener("click", onSetClick);
+  body.addEventListener("change", onSetChange);
+  drawSet();
+}
+
+function drawSet() {
+  $("tabQ").setAttribute("aria-selected", setTab === "fragen");
+  $("tabT").setAttribute("aria-selected", setTab === "teams");
+  $("setErr").textContent = "";
+  if (setTab === "fragen") drawCats(); else drawTeams();
+}
+
+function drawCats() {
+  const body = $("setBody"), top = body.scrollTop, n = draft.cats.length;
+  const genHint = sampleApi
+    ? `Neue Kategorie: Namen eintippen, dann erstellt Claude automatisch ${ROUNDS * 5} passende Fragen. Mit «✨ Fragen erstellen» kannst du die Fragen einer Kategorie jederzeit neu machen lassen.`
+    : "Automatisches Erstellen ist in dieser Ansicht nicht verfügbar; Fragen kannst du hier von Hand eintragen.";
+  body.innerHTML = `
+    <p class="hint">Jede Kategorie hat pro Punktestufe ${ROUNDS} Fragen, eine für jede Runde. So kannst du ${ROUNDS} Runden ohne Wiederholung spielen. Bleibt ein Feld leer, nimmt das Spiel dort die Frage einer anderen Runde. 100 = alle wissen es, 500 = eher schwer. ${genHint}</p>
+    ${draft.cats.map((c, ci) => {
+      const isBusy = busy.has(c), msg = genMsg.get(c);
+      return `
+      <div class="catcard ${isBusy ? "busy" : ""}">
+        <div class="catrow">
+          <input class="fld" id="cn${ci}" data-f="name" data-c="${ci}" value="${esc(c.name)}" aria-label="Name von Kategorie ${ci + 1}">
+          ${sampleApi ? `<button class="mini gen" data-gen="${ci}" ${isBusy ? "disabled" : ""}>${isBusy ? "Erstelle Fragen…" : "✨ Fragen erstellen"}</button>` : ""}
+          <button class="mini" data-mv="${ci}" data-d="-1" ${ci === 0 ? "disabled" : ""} aria-label="Kategorie nach links">◀</button>
+          <button class="mini" data-mv="${ci}" data-d="1" ${ci === n - 1 ? "disabled" : ""} aria-label="Kategorie nach rechts">▶</button>
+          <button class="mini warn" data-rm="${ci}" ${n <= 2 ? "disabled" : ""}>Entfernen</button>
+        </div>
+        ${isBusy ? `<p class="genmsg working">Claude schreibt gerade ${ROUNDS * 5} Fragen für «${esc(c.name)}». Das dauert etwa eine halbe Minute.</p>` : msg ? `<p class="genmsg">${esc(msg)}</p>` : ""}
+        <div class="colhead"><span>Punkte</span><span>Runde</span><span>Frage</span><span>Antwort</span></div>
+        ${c.qs.map((lv, r) => lv.map((x, k) => `
+          <div class="qrow ${k === 0 ? "first" : ""}">
+            <div class="pv">${k === 0 ? VALUES[r] : ""}</div>
+            <div class="rl">Runde ${k + 1}</div>
+            <textarea class="fld" rows="2" id="q${ci}_${r}_${k}" data-f="q" data-c="${ci}" data-r="${r}" data-k="${k}" placeholder="Frage für ${VALUES[r]} Punkte" aria-label="${esc(c.name)}, ${VALUES[r]} Punkte, Runde ${k + 1}, Frage" ${isBusy ? "disabled" : ""}>${esc(x.q)}</textarea>
+            <textarea class="fld" rows="2" id="a${ci}_${r}_${k}" data-f="a" data-c="${ci}" data-r="${r}" data-k="${k}" placeholder="Antwort" aria-label="${esc(c.name)}, ${VALUES[r]} Punkte, Runde ${k + 1}, Antwort" ${isBusy ? "disabled" : ""}>${esc(x.a)}</textarea>
+          </div>`).join("")).join("")}
+      </div>`;
+    }).join("")}
+    <div class="row" style="justify-content:flex-start">
+      <button class="mini" id="addCat" ${n >= 6 ? "disabled" : ""}>+ Kategorie hinzufügen</button>
+      <button class="mini" id="loadEx" data-arm="Beispielfragen laden">Beispielfragen laden</button>
+      <button class="mini warn" id="clearAll" data-arm="Alle Fragen leeren">Alle Fragen leeren</button>
+    </div>`;
+  body.scrollTop = top;
+}
+
+function drawTeams() {
+  const choices = [...ICONS.map((_, n) => "svg:" + n), ...EMOJIS.map(e => "emoji:" + e)];
+  $("setBody").innerHTML = `
+    <p class="hint">Wähle für jedes Team einen Namen und ein Bild. Du kannst auch ein eigenes Bild hochladen, zum Beispiel eine Zeichnung der Gruppe.</p>
+    ${draft.teams.map((t, i) => `
+      <div class="teamset" style="--tc:${tc(i)}">
+        ${badgeHTML(t, i)}
+        <input class="fld" id="tn${i}" data-tn="${i}" value="${esc(t.name)}" aria-label="Name von Team ${i + 1}">
+        <div class="picks">${choices.map((ic, k) => `<button class="pick" data-ti="${i}" data-ic="${esc(ic)}" aria-pressed="${t.icon === ic}" aria-label="${k < ICONS.length ? ICON_NAMES[k] : "Bild " + (k + 1)}">${iconParts(ic).inner}</button>`).join("")}</div>
+        <div class="upload">
+          <input type="file" accept="image/*" id="up${i}" data-up="${i}">
+          <label for="up${i}" class="mini">Eigenes Bild hochladen</label>
+          ${t.icon.startsWith("img:") ? '<span class="hint">Eigenes Bild ist ausgewählt</span>' : ""}
+        </div>
+      </div>`).join("")}
+    <div class="catcard">
+      <div class="qcat" style="font-size:22px">Klassenliste</div>
+      <p class="hint">Ein Name pro Zeile. Diese Kinder werden mit «🎲 Gruppen» zufällig auf die vier Teams verteilt.</p>
+      <textarea class="fld" id="studentList" data-students="1" rows="10" aria-label="Klassenliste">${esc(draft.students)}</textarea>
+    </div>`;
+}
+
+function onSetInput(e) {
+  const el = e.target, d = el.dataset;
+  if (d.f === "name") draft.cats[+d.c].name = el.value;
+  else if (d.f === "q" || d.f === "a") draft.cats[+d.c].qs[+d.r][+d.k][d.f] = el.value;
+  else if (d.tn !== undefined) draft.teams[+d.tn].name = el.value;
+  else if (d.students) draft.students = el.value;
+}
+
+function armed(btn, label) {
+  if (btn.dataset.armed) return true;
+  btn.dataset.armed = "1";
+  btn.textContent = label || "Sicher? Nochmals tippen";
+  setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = btn.dataset.arm || "Entfernen"; } }, 3000);
+  return false;
+}
+
+function onSetClick(e) {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const d = btn.dataset;
+  if (d.mv !== undefined) {
+    const a = +d.mv, b = a + +d.d;
+    [draft.cats[a], draft.cats[b]] = [draft.cats[b], draft.cats[a]];
+    drawCats();
+  } else if (d.rm !== undefined) {
+    if (armed(btn)) { draft.cats.splice(+d.rm, 1); drawCats(); }
+  } else if (d.gen !== undefined) {
+    const c = draft.cats[+d.gen];
+    d.arm = "✨ Fragen erstellen";
+    if (catEmpty(c) || armed(btn, "Fragen ersetzen? Nochmals tippen")) genCat(c);
+  } else if (btn.id === "addCat") {
+    draft.cats.push(blankCat()); drawCats();
+    const inp = $("cn" + (draft.cats.length - 1));
+    inp.scrollIntoView?.({ block: "center" }); inp.select();
+  } else if (btn.id === "loadEx") {
+    if (armed(btn)) { draft.cats = normCats(clone(DEFAULT_CATS)); drawCats(); }
+  } else if (btn.id === "clearAll") {
+    if (armed(btn)) { draft.cats.forEach(c => c.qs.forEach(lv => lv.forEach(x => { x.q = ""; x.a = ""; }))); drawCats(); }
+  } else if (d.ti !== undefined) {
+    draft.teams[+d.ti].icon = d.ic; drawTeams();
+  }
+}
+
+function onSetChange(e) {
+  const el = e.target;
+  // Neue (leere) Kategorie bekommt einen Namen → sofort Fragen erstellen lassen
+  if (el.dataset.f === "name") {
+    const c = draft.cats[+el.dataset.c];
+    if (c && c.name.trim() && c.name.trim() !== "Neue Kategorie" && catEmpty(c)) genCat(c);
+    return;
+  }
+  if (el.dataset.up === undefined || !el.files || !el.files[0]) return;
+  const i = +el.dataset.up, file = el.files[0];
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const S = 200, cv = document.createElement("canvas");
+      cv.width = cv.height = S;
+      const m = Math.min(img.width, img.height);
+      cv.getContext("2d").drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, S, S);
+      draft.teams[i].icon = "img:" + cv.toDataURL("image/jpeg", 0.85);
+      drawTeams();
+    };
+    img.onerror = () => { $("setErr").textContent = "Dieses Bild konnte nicht geöffnet werden. Versuche ein JPG oder PNG."; };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetAll() {
+  confirmBox("Alles zurücksetzen?<br><span style=\"font-size:.6em;color:var(--muted)\">Fragen, Kategorien, Teamnamen, Teambilder und Punkte gehen auf den Anfangszustand zurück. Das lässt sich nicht rückgängig machen.</span>",
+    "Ja, alles zurücksetzen", () => {
+      try { localStorage.removeItem(KEY); localStorage.removeItem(OLD_KEY); } catch (e) {}
+      state = null;
+      state = fresh();
+      save(); render();
+    });
+}
+
+function saveSettings() {
+  if (draft.cats.some(c => busy.has(c))) { $("setErr").textContent = "Claude erstellt noch Fragen. Bitte kurz warten."; return; }
+  const problems = [];
+  draft.cats.forEach((c, ci) => {
+    c.name = c.name.trim();
+    if (!c.name) problems.push(`Kategorie ${ci + 1} hat keinen Namen`);
+    const missing = [];
+    c.qs.forEach((lv, r) => {
+      lv.forEach((x, k) => { if (!!x.q.trim() !== !!x.a.trim()) missing.push(`${VALUES[r]} (Runde ${k + 1})`); });
+      if (!lv.some(x => x.q.trim() && x.a.trim())) missing.push(`${VALUES[r]} (alle Runden leer)`);
+    });
+    if (missing.length) problems.push(`«${c.name || "Kategorie " + (ci + 1)}»: Frage oder Antwort fehlt bei ${missing.slice(0, 3).join(", ")}${missing.length > 3 ? " …" : ""}`);
+  });
+  if (problems.length) {
+    setTab = "fragen"; drawSet();
+    $("setErr").textContent = problems[0] + (problems.length > 1 ? ` (und ${problems.length - 1} weitere)` : "");
+    return;
+  }
+  const changedLayout = draft.cats.length !== state.cats.length ||
+    draft.cats.some((c, i) => c.name !== state.cats[i].name);
+  state.cats = clone(draft.cats);
+  state.teams = state.teams.map((t, i) => ({ ...t, name: draft.teams[i].name.trim() || TEAM_DEFAULTS[i], icon: draft.teams[i].icon }));
+  const list = [...new Set(draft.students.split(/[\n,;]+/).map(x => x.trim()).filter(Boolean))];
+  if (list.join("|") !== state.students.join("|")) {
+    state.students = list;
+    if (state.groups) state.groups = state.groups.map(g => g.filter(n => list.includes(n)));
+  }
+  if (changedLayout) { state.used = {}; state.dd = pickDD(state.cats); }
+  save(); hide(); render();
+}
+
+
+/* ---------- Gruppen auslosen ---------- */
+let absent = new Set(), dealing = false;
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    let j;
+    try { const u = new Uint32Array(1); crypto.getRandomValues(u); j = u[0] % (i + 1); } catch (e) { j = Math.floor(Math.random() * (i + 1)); }
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function groupsView() {
+  absent = new Set([...absent].filter(n => state.students.includes(n)));
+  show(`
+    <div class="sethead">
+      <div class="qcat">Gruppen auslosen</div>
+      <p class="hint" style="margin:0">Fehlt heute jemand? Einfach auf den Namen tippen, dann wird das Kind nicht eingeteilt.</p>
+    </div>
+    <div class="setbody" id="grBody"></div>
+    <div class="setfoot">
+      <p class="err ok" id="grMsg"></p>
+      <button class="big ghost" id="grClose">Schliessen</button>
+      <button class="big" id="grDraw">🎲 Auslosen</button>
+    </div>`, "settings groupview");
+  $("grClose").onclick = () => { if (!dealing) hide(); };
+  $("grDraw").onclick = dealGroups;
+  $("grBody").addEventListener("click", e => {
+    const chip = e.target.closest("[data-st]");
+    if (!chip || dealing) return;
+    const n = chip.dataset.st;
+    absent.has(n) ? absent.delete(n) : absent.add(n);
+    drawGroups(state.groups);
+  });
+  drawGroups(state.groups);
+}
+
+function drawGroups(groups, visibleCount) {
+  const present = state.students.filter(n => !absent.has(n));
+  let shown = 0;
+  $("grBody").innerHTML = `
+    <div class="label" style="text-align:left">Klasse: ${present.length} von ${state.students.length} anwesend</div>
+    <div class="chips">${state.students.map(n => `<button class="chip ${absent.has(n) ? "off" : ""}" data-st="${esc(n)}" aria-pressed="${!absent.has(n)}">${esc(n)}</button>`).join("")}</div>
+    <div class="groups">${state.teams.map((t, i) => {
+      const g = (groups && groups[i]) || [];
+      return `<div class="group" style="--tc:${tc(i)}">
+        <div class="ghead">${badgeHTML(t, i)}<span>${esc(t.name)}</span><em>${g.length || ""}</em></div>
+        <ol>${g.map(n => { shown++; const vis = visibleCount === undefined || shown <= visibleCount; return vis ? `<li class="${visibleCount !== undefined && shown === visibleCount ? "new" : ""}">${esc(n)}</li>` : ""; }).join("")}</ol>
+      </div>`;
+    }).join("")}</div>`;
+}
+
+function dealGroups() {
+  if (dealing) return;
+  const present = shuffle(state.students.filter(n => !absent.has(n)));
+  if (present.length < state.teams.length) { $("grMsg").textContent = "Es braucht mindestens 4 anwesende Kinder."; return; }
+  const k = state.teams.length, start = Math.floor(Math.random() * k);
+  const groups = Array.from({ length: k }, () => []);
+  // reihum verteilen: Gruppen unterscheiden sich höchstens um 1 Kind
+  const order = [];
+  present.forEach((n, idx) => { const g = (start + idx) % k; groups[g].push(n); order.push(g); });
+  state.groups = groups; save();
+  // Animation: Namen nacheinander in der Reihenfolge der Verteilung zeigen
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const done = () => {
+    dealing = false; drawGroups(groups);
+    $("grDraw").disabled = false; $("grClose").disabled = false;
+    $("grDraw").textContent = "🎲 Neu auslosen";
+    $("grMsg").textContent = "✓ Gruppen sind eingeteilt und gespeichert.";
+    render(); cheer();
+  };
+  if (reduce) return done();
+  dealing = true; $("grDraw").disabled = true; $("grClose").disabled = true; $("grMsg").textContent = "";
+  // sichtbare Teilmenge pro Schritt: Namen in Gruppenreihenfolge zählen
+  const shownPerGroup = groups.map(() => 0);
+  let step = 0;
+  const tick = () => {
+    if (!$("grBody")) { dealing = false; return; }
+    shownPerGroup[order[step]]++;
+    step++;
+    renderPartial(groups, shownPerGroup, order[step - 1]);
+    beep(400 + order[step - 1] * 120, .08);
+    if (step < order.length) setTimeout(tick, 170); else setTimeout(done, 400);
+  };
+  tick();
+}
+
+function renderPartial(groups, counts, lastGroup) {
+  const partial = groups.map((g, i) => g.slice(0, counts[i]));
+  drawGroups(partial);
+  const lis = document.querySelectorAll(".group")[lastGroup]?.querySelectorAll("li");
+  if (lis && lis.length) lis[lis.length - 1].classList.add("new");
+}
+
+function podium() {
+  const ranked = state.teams.map((t, i) => ({ ...t, i })).sort((a, b) => b.score - a.score);
+  const order = [ranked[1], ranked[0], ranked[2], ranked[3]].filter(Boolean);
+  const top = Math.max(1, ranked[0].score);
+  show(`<div class="splash" style="color:var(--tile);text-shadow:0 6px 0 var(--board-deep);font-size:clamp(36px,6vw,96px)">Siegerehrung</div>
+    <div class="podium">${order.map(t => {
+      const place = ranked.indexOf(t) + 1;
+      const h = 60 + Math.max(0, t.score) / top * 160 * (place === 1 ? 1.15 : 1);
+      return `<div class="pod" style="--tc:${tc(t.i)}">${badgeHTML(t, t.i)}<div class="n">${esc(t.name)}</div><div class="s">${t.score} Punkte</div><div class="bar" style="height:${Math.round(h)}px">${place}.</div></div>`;
+    }).join("")}</div>
+    <div class="row"><button class="big ghost" id="close">Zurück zum Brett</button></div>`);
+  $("close").onclick = hide;
+  confetti(); cheer();
+}
+function confetti() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = document.createElement("canvas"); cv.className = "confetti"; document.body.appendChild(cv);
+  const ctx = cv.getContext("2d"); cv.width = innerWidth; cv.height = innerHeight;
+  const cols = ["#ffffff", "#d52b1e", "#ffffff", "#d52b1e", "#f0b400"];
+  const ps = Array.from({ length: 160 }, () => ({ x: Math.random() * cv.width, y: -Math.random() * cv.height, s: 6 + Math.random() * 8, v: 2 + Math.random() * 4, r: Math.random() * 6, c: cols[Math.floor(Math.random() * 5)] }));
+  let n = 0;
+  (function f() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ps.forEach(p => { p.y += p.v; p.x += Math.sin((p.y + p.r * 40) / 40); p.r += .05; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore(); });
+    if (++n < 260) requestAnimationFrame(f); else cv.remove();
+  })();
+}
+
+$("btnTimer").onclick = () => { state.timerOn = !state.timerOn; save(); render(); };
+$("btnEdit").onclick = () => settings();
+$("btnGroups").onclick = groupsView;
+$("btnReset").onclick = () => {
+  const next = (state.round + 1) % ROUNDS + 1;
+  confirmBox(`Runde ${next} starten?<br><span style="font-size:.6em;color:var(--muted)">Das Brett bekommt die Fragen von Runde ${next}, alle Punkte gehen auf 0. Fragen und Teams bleiben gleich.</span>`,
+    `Runde ${next} starten`, () => {
+      const prev = state;
+      state = fresh({ ...prev, round: (prev.round + 1) % ROUNDS });
+      save(); render();
+    });
+};
+$("btnEnd").onclick = podium;
+$("btnFull").onclick = () => {
+  try {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen().catch(() => {});
+  } catch (e) {}
+};
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("ov").hidden && !$("ovCard").classList.contains("settings")) hide();
+});
+
+window.claude?.hot?.snapshot?.(() => state);
+const start = d => { if (d && d.cats) { state = d; state.cats = normCats(state.cats); state.round = state.round || 0; state.students = state.students || STUDENTS.slice(); state.groups = state.groups || null; migrateQ(state); save(); } render(); };
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? null);
+</script>
+
+</body></html>

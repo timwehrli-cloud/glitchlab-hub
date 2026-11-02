@@ -1,0 +1,581 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>How Long Does It Take?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Tokens ---------- */
+  :root{
+    --bg: #EEF5F2;
+    --surface: #FFFFFF;
+    --surface-alt: #E4EFEA;
+    --ink: #17242E;
+    --ink-soft: #48595F;
+    --primary: #1F6560;
+    --primary-ink: #FFFFFF;
+    --accent: #DE8F2E;
+    --accent-ink: #2A1900;
+    --good: #237A50;
+    --good-bg: #DEF3E5;
+    --bad: #B5432E;
+    --bad-bg: #FBE4DD;
+    --border: #CFE1D9;
+    --shadow: 0 10px 28px -14px rgba(23,36,46,0.28);
+    --radius-lg: 22px;
+    --radius-md: 14px;
+    --radius-sm: 9px;
+    --font-display: "Baloo 2", "Segoe UI Rounded", system-ui, sans-serif;
+    --font-body: "Atkinson Hyperlegible", "Segoe UI", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg: #0F1B1C;
+      --surface: #16272A;
+      --surface-alt: #1B2F31;
+      --ink: #EAF3F1;
+      --ink-soft: #A9C2BD;
+      --primary: #57BBAF;
+      --primary-ink: #08211E;
+      --accent: #F0AC57;
+      --accent-ink: #2A1900;
+      --good: #57CC8E;
+      --good-bg: #143A2A;
+      --bad: #EE8A70;
+      --bad-bg: #3B1E17;
+      --border: #294142;
+      --shadow: 0 10px 28px -14px rgba(0,0,0,0.55);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #0F1B1C;
+    --surface: #16272A;
+    --surface-alt: #1B2F31;
+    --ink: #EAF3F1;
+    --ink-soft: #A9C2BD;
+    --primary: #57BBAF;
+    --primary-ink: #08211E;
+    --accent: #F0AC57;
+    --accent-ink: #2A1900;
+    --good: #57CC8E;
+    --good-bg: #143A2A;
+    --bad: #EE8A70;
+    --bad-bg: #3B1E17;
+    --border: #294142;
+    --shadow: 0 10px 28px -14px rgba(0,0,0,0.55);
+  }
+
+  *{ box-sizing: border-box; }
+  html{ color-scheme: light dark; }
+  body{
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+  h1,h2,h3{ font-family: var(--font-display); text-wrap: balance; margin: 0; }
+  p{ margin: 0; }
+  button{ font-family: inherit; }
+  :focus-visible{ outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .wrap{ max-width: 860px; margin: 0 auto; padding: 0 20px 90px; }
+
+  /* ---------- Header ---------- */
+  header.hero{
+    padding: 46px 20px 40px;
+    display: flex; justify-content: center;
+  }
+  .hero-inner{
+    max-width: 860px; width: 100%;
+    display: grid; grid-template-columns: auto 1fr; gap: 22px; align-items: center;
+  }
+  .clock-badge{
+    width: 76px; height: 76px; flex: none;
+  }
+  .eyebrow{
+    display:inline-block; font-family: var(--font-display); font-weight: 700;
+    font-size: 0.72rem; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--primary); background: var(--surface-alt);
+    border: 1px solid var(--border); border-radius: 999px;
+    padding: 5px 12px; margin-bottom: 10px;
+  }
+  h1.title{ font-size: clamp(1.9rem, 4.6vw, 2.6rem); font-weight: 800; color: var(--ink); }
+  .subtitle{ margin-top: 8px; color: var(--ink-soft); font-size: 1.02rem; max-width: 54ch; }
+
+  /* ---------- Sections ---------- */
+  section{ padding: 10px 20px 34px; }
+  .section-head{ max-width: 860px; margin: 0 auto 18px; display:flex; align-items:baseline; gap:10px; }
+  .section-num{ font-family: var(--font-display); font-weight: 700; color: var(--accent); font-size:0.95rem; }
+  h2.section-title{ font-size: 1.4rem; font-weight: 700; }
+
+  .cards{ max-width: 860px; margin: 0 auto; display: grid; gap: 16px; }
+  .card{
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 22px 24px; box-shadow: var(--shadow);
+  }
+  .card h3{ font-size: 1.05rem; margin-bottom: 12px; color: var(--primary); }
+
+  /* pattern chips */
+  .pattern-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 6px; }
+  .chip{
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    background: var(--surface-alt); border:1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 8px 12px; min-width: 54px;
+  }
+  .chip .word{ font-family: var(--font-display); font-weight:700; font-size:1.02rem; }
+  .chip .tag{ font-size: 0.66rem; color: var(--ink-soft); letter-spacing:0.02em; text-align:center; }
+  .chip.accent{ background: color-mix(in srgb, var(--accent) 16%, var(--surface)); border-color: var(--accent); }
+  .pattern-extra{ font-size: 0.9rem; color: var(--ink-soft); margin-top: 8px; }
+
+  .callout{
+    background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+    border-radius: var(--radius-md); padding: 14px 16px; font-size: 0.94rem;
+  }
+  .callout strong{ color: var(--accent-ink); }
+
+  table.vocab{ width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+  table.vocab th{ text-align:left; font-family: var(--font-display); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color: var(--ink-soft); padding: 6px 8px; border-bottom: 2px solid var(--border); }
+  table.vocab td{ padding: 8px 8px; border-bottom: 1px solid var(--border); }
+  table.vocab td.en{ font-family: var(--font-display); font-weight:600; color: var(--primary); }
+
+  .chat{ display:grid; gap:10px; }
+  .bubble{ max-width: 82%; padding: 10px 14px; border-radius: 16px; font-size: 0.96rem; }
+  .bubble.q{ background: var(--surface-alt); border:1px solid var(--border); border-bottom-left-radius: 4px; justify-self: start; }
+  .bubble.a{ background: var(--primary); color: var(--primary-ink); border-bottom-right-radius: 4px; justify-self: end; font-family: var(--font-display); font-weight: 600; }
+
+  .cta-row{ max-width: 860px; margin: 26px auto 0; display:flex; justify-content:center; }
+  .btn{
+    font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+    border: none; border-radius: 999px; padding: 13px 28px; cursor: pointer;
+    background: var(--primary); color: var(--primary-ink);
+    box-shadow: var(--shadow); transition: transform 0.15s ease;
+  }
+  .btn:hover{ transform: translateY(-2px); }
+  .btn:active{ transform: translateY(0); }
+  .btn.ghost{ background: transparent; color: var(--primary); border: 2px solid var(--primary); box-shadow:none; }
+  .btn[disabled]{ opacity: 0.45; cursor: not-allowed; transform:none; }
+
+  /* ---------- Practice ---------- */
+  .practice-shell{
+    max-width: 860px; margin: 0 auto; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .gate{ padding: 34px 30px; text-align:center; display:grid; gap:16px; justify-items:center; }
+  .gate .stats{ display:flex; gap:22px; flex-wrap:wrap; justify-content:center; margin: 4px 0 6px; }
+  .gate .stat{ display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .gate .stat b{ font-family: var(--font-display); font-size:1.5rem; color: var(--primary); }
+  .gate .stat span{ font-size:0.78rem; color: var(--ink-soft); }
+
+  .quiz-top{ padding: 16px 26px; border-bottom: 1px solid var(--border); display:flex; align-items:center; gap:16px; background: var(--surface-alt); }
+  .progress-track{ flex:1; height: 10px; border-radius: 999px; background: var(--border); overflow:hidden; }
+  .progress-fill{ height:100%; background: var(--primary); border-radius: 999px; transition: width 0.35s ease; width:0%; }
+  .score-badge{ font-family: var(--font-display); font-weight:700; color: var(--primary); font-size:0.92rem; white-space:nowrap; }
+  .part-label{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color: var(--ink-soft); white-space:nowrap; }
+
+  .quiz-body{ padding: 30px 28px 26px; min-height: 300px; display:flex; flex-direction:column; gap:20px; }
+  .q-prompt{ font-size: 1.08rem; }
+  .q-prompt .de{ color: var(--ink-soft); font-size:0.9rem; display:block; margin-bottom:6px; }
+  .q-prompt .en{ font-family: var(--font-display); font-weight: 700; font-size: 1.25rem; }
+  .q-prompt .en .gap{ display:inline-block; min-width: 92px; border-bottom: 2px dashed var(--primary); padding: 0 4px; text-align:center; color: var(--primary); }
+
+  .options{ display:grid; gap:10px; }
+  .options.grid2{ grid-template-columns: 1fr 1fr; }
+  @media (max-width: 560px){ .options.grid2{ grid-template-columns: 1fr; } }
+  .opt{
+    text-align:left; background: var(--surface-alt); border: 2px solid var(--border);
+    border-radius: var(--radius-md); padding: 12px 16px; font-size: 0.98rem; cursor:pointer;
+    color: var(--ink); transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .opt:hover:not([disabled]){ border-color: var(--primary); }
+  .opt.correct{ background: var(--good-bg); border-color: var(--good); color: var(--good); font-weight:700; }
+  .opt.wrong{ background: var(--bad-bg); border-color: var(--bad); color: var(--bad); font-weight:700; }
+  .opt[disabled]{ cursor: default; }
+
+  .feedback{ font-size: 0.92rem; padding: 10px 14px; border-radius: var(--radius-sm); display:none; }
+  .feedback.show{ display:block; }
+  .feedback.correct{ background: var(--good-bg); color: var(--good); }
+  .feedback.wrong{ background: var(--bad-bg); color: var(--bad); }
+
+  .quiz-nav{ display:flex; justify-content:flex-end; }
+
+  /* matching */
+  .match-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 560px){ .match-grid{ grid-template-columns: 1fr; } }
+  .match-col{ display:grid; gap:10px; }
+  .match-col-label{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color: var(--ink-soft); }
+  .match-item{
+    background: var(--surface-alt); border: 2px solid var(--border); border-radius: var(--radius-md);
+    padding: 11px 14px; text-align:left; cursor:pointer; font-size:0.94rem; color: var(--ink);
+  }
+  .match-item .sub{ display:block; font-size: 0.78rem; color: var(--ink-soft); margin-top:2px; }
+  .match-item.selected{ border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--surface-alt)); }
+  .match-item.solved{ border-color: var(--good); background: var(--good-bg); color: var(--good); font-weight:700; cursor:default; }
+  .match-item.shake{ border-color: var(--bad); background: var(--bad-bg); }
+
+  /* results */
+  .results{ padding: 40px 30px; text-align:center; display:grid; gap:14px; justify-items:center; }
+  .results .big-score{ font-family: var(--font-display); font-weight:800; font-size: 3rem; color: var(--primary); }
+  .results .msg{ font-size: 1.05rem; max-width: 46ch; }
+  .results .btn-row{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
+
+  [hidden]{ display:none !important; }
+
+  footer{ max-width: 860px; margin: 30px auto 0; padding: 0 20px; color: var(--ink-soft); font-size: 0.82rem; text-align:center; }
+</style>
+
+<header class="hero">
+  <div class="hero-inner">
+    <svg class="clock-badge" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="44" fill="none" stroke="var(--primary)" stroke-width="6"/>
+      <g stroke="var(--primary)" stroke-width="3" stroke-linecap="round">
+        <line x1="50" y1="10" x2="50" y2="16"/>
+        <line x1="50" y1="84" x2="50" y2="90"/>
+        <line x1="10" y1="50" x2="16" y2="50"/>
+        <line x1="84" y1="50" x2="90" y2="50"/>
+      </g>
+      <line x1="50" y1="50" x2="50" y2="27" stroke="var(--ink)" stroke-width="4.5" stroke-linecap="round"/>
+      <line x1="50" y1="50" x2="68" y2="58" stroke="var(--accent)" stroke-width="4.5" stroke-linecap="round"/>
+      <circle cx="50" cy="50" r="4.2" fill="var(--accent)"/>
+    </svg>
+    <div>
+      <span class="eyebrow">Englisch üben · 6. Klasse</span>
+      <h1 class="title">How long does it take?</h1>
+      <p class="subtitle">Nach der Dauer fragen und richtig antworten — mit Theorie zum Nachlesen und drei kurzen Übungen zum Schulalltag.</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section id="theory">
+    <div class="section-head"><span class="section-num">Teil 0</span><h2 class="section-title">Theorie</h2></div>
+    <div class="cards">
+
+      <div class="card">
+        <h3>Die Frage</h3>
+        <div class="pattern-row">
+          <div class="chip accent"><span class="word">How</span><span class="tag">Fragewort</span></div>
+          <div class="chip accent"><span class="word">long</span><span class="tag">"lange"</span></div>
+          <div class="chip"><span class="word">does</span><span class="tag">Hilfsverb</span></div>
+          <div class="chip"><span class="word">it</span><span class="tag">Pronomen</span></div>
+          <div class="chip"><span class="word">take</span><span class="tag">Hauptverb (ohne -s!)</span></div>
+        </div>
+        <p class="pattern-extra">Für eine bestimmte Aktivität ergänzt man <b>to + Verb</b>: <em>"How long does it take <b>to walk to school</b>?"</em></p>
+      </div>
+
+      <div class="card">
+        <h3>Die Antwort</h3>
+        <div class="pattern-row">
+          <div class="chip"><span class="word">It</span><span class="tag">Pronomen</span></div>
+          <div class="chip accent"><span class="word">takes</span><span class="tag">Hauptverb (+ -s!)</span></div>
+          <div class="chip accent"><span class="word">(ten minutes)</span><span class="tag">Zeitangabe</span></div>
+        </div>
+        <div class="callout">
+          <strong>Merke:</strong> In der Frage steht nach <em>does</em> das Verb ohne <em>-s</em>: <em>does it take</em>. Im Aussagesatz (der Antwort) bekommt das Verb ein <em>-s</em>, weil <em>it</em> die 3. Person Singular ist: <em>it take<b>s</b></em>.
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Zeitangaben</h3>
+        <table class="vocab">
+          <tr><th>Deutsch</th><th>Englisch</th></tr>
+          <tr><td>zwei Minuten</td><td class="en">two minutes</td></tr>
+          <tr><td>fünf Minuten</td><td class="en">five minutes</td></tr>
+          <tr><td>zehn Minuten</td><td class="en">ten minutes</td></tr>
+          <tr><td>fünfzehn Minuten</td><td class="en">fifteen minutes</td></tr>
+          <tr><td>zwanzig Minuten</td><td class="en">twenty minutes</td></tr>
+          <tr><td>eine halbe Stunde</td><td class="en">half an hour</td></tr>
+          <tr><td>eine Stunde</td><td class="en">an hour</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Beispiel-Dialog</h3>
+        <div class="chat">
+          <div class="bubble q">Tim: How long does it take to walk to school?</div>
+          <div class="bubble a">Lea: It takes fifteen minutes.</div>
+          <div class="bubble q">Tim: How long does it take to do your homework?</div>
+          <div class="bubble a">Lea: It takes half an hour.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="cta-row">
+      <button class="btn" id="startBtn">Übung starten →</button>
+    </div>
+  </section>
+
+  <section id="practice">
+    <div class="section-head"><span class="section-num">Teil 1–3</span><h2 class="section-title">Übung</h2></div>
+
+    <div class="practice-shell">
+
+      <div class="gate" id="gate">
+        <h3 style="font-size:1.2rem;">Bereit für 15 Fragen?</h3>
+        <div class="stats">
+          <div class="stat"><b>15</b><span>Fragen</span></div>
+          <div class="stat"><b>~10</b><span>Minuten</span></div>
+          <div class="stat"><b>3</b><span>Teile</span></div>
+        </div>
+        <p style="color:var(--ink-soft); max-width:44ch;">Lückentext · Multiple Choice · Zuordnung — direktes Feedback nach jeder Antwort.</p>
+        <button class="btn" id="gateStart">Los geht's</button>
+      </div>
+
+      <div id="quiz" hidden>
+        <div class="quiz-top">
+          <span class="part-label" id="partLabel">Teil 1 · Lückentext</span>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          <span class="score-badge" id="scoreBadge">0 / 15</span>
+        </div>
+        <div class="quiz-body" id="quizBody"></div>
+        <div class="quiz-nav" style="padding: 0 28px 26px;">
+          <button class="btn" id="nextBtn" disabled>Weiter</button>
+        </div>
+      </div>
+
+      <div id="results" class="results" hidden>
+        <div class="big-score" id="finalScore">0 / 15</div>
+        <p class="msg" id="finalMsg"></p>
+        <div class="btn-row">
+          <button class="btn" id="retryBtn">Nochmal üben</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<footer>Language Note: "How long does it take?" → "It takes (ten minutes)."</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var FILL = [
+    { sentence: ["How ", "___", " does it take to walk to school?"], options: ["long","far","much","many"], correct: 0 },
+    { sentence: ["How long ", "___", " it take to do your homework?"], options: ["do","does","is","are"], correct: 1 },
+    { sentence: ["How long does it ", "___", " to eat breakfast?"], options: ["takes","take","taking","took"], correct: 1 },
+    { sentence: ["It ", "___", " twenty minutes to get to school by bus."], options: ["take","takes","taking","took"], correct: 1 },
+    { sentence: ["It takes ", "___", " an hour to clean your room."], options: ["half","quarter","full","one"], correct: 0 }
+  ];
+
+  var MC = [
+    { de: "Wie fragst du auf Englisch, wie lange der Schulweg dauert?",
+      options: ["How long does it take to walk to school?","How much time is the school way?","How long take you to school?","How long is it to walk to school?"], correct: 0 },
+    { de: "Zähneputzen dauert zwei Minuten. Wie antwortest du auf \"How long does it take?\"",
+      options: ["It take two minutes.","It takes two minutes.","It is two minutes.","Two minutes it takes."], correct: 1 },
+    { de: "Der Bus zur Schule braucht zehn Minuten. Wie sagst du das?",
+      options: ["It takes ten minute.","It take ten minutes.","It is taking ten minutes.","It takes ten minutes."], correct: 3 },
+    { de: "Welche Frage passt zu einer Aktivität, die viel Zeit braucht, z. B. Hausaufgaben?",
+      options: ["Does it take how long homework?","How long does it take to do your homework?","How long it takes to do homework?","How long takes it to do homework?"], correct: 1 },
+    { de: "Der Schwimmunterricht dauert eine Stunde. Wie antwortest du?",
+      options: ["It takes a hour.","It take one hours.","It takes an hour.","It takes hour."], correct: 2 }
+  ];
+
+  var MATCH_LEFT = [
+    { id:"l1", label:"der Schulweg", sub:"15 Min." },
+    { id:"l2", label:"Znüni essen", sub:"5 Min." },
+    { id:"l3", label:"Hausaufgaben machen", sub:"30 Min." },
+    { id:"l4", label:"Schwimmunterricht", sub:"60 Min." },
+    { id:"l5", label:"Zähneputzen", sub:"2 Min." }
+  ];
+  var MATCH_RIGHT = [
+    { id:"r3", pair:"l3", label:"It takes half an hour." },
+    { id:"r1", pair:"l1", label:"It takes fifteen minutes." },
+    { id:"r5", pair:"l5", label:"It takes two minutes." },
+    { id:"r4", pair:"l4", label:"It takes an hour." },
+    { id:"r2", pair:"l2", label:"It takes five minutes." }
+  ];
+
+  var TOTAL = FILL.length + MC.length + MATCH_LEFT.length; // 15
+
+  var state = { step: 0, score: 0, matchSolved: 0, matchSel: { left:null, right:null } };
+
+  var quizBody = document.getElementById("quizBody");
+  var nextBtn = document.getElementById("nextBtn");
+  var progressFill = document.getElementById("progressFill");
+  var scoreBadge = document.getElementById("scoreBadge");
+  var partLabel = document.getElementById("partLabel");
+
+  function updateProgress(unitsDone){
+    progressFill.style.width = Math.round((unitsDone/TOTAL)*100) + "%";
+    scoreBadge.textContent = state.score + " / " + TOTAL;
+  }
+
+  function renderFillOrMC(){
+    var isFill = state.step < FILL.length;
+    var idx = isFill ? state.step : state.step - FILL.length;
+    var item = isFill ? FILL[idx] : MC[idx];
+    partLabel.textContent = isFill ? "Teil 1 · Lückentext" : "Teil 2 · Multiple Choice";
+    updateProgress(state.step);
+    nextBtn.disabled = true;
+
+    var promptHTML = "";
+    if(isFill){
+      promptHTML = '<div class="q-prompt"><span class="de">Setze das richtige Wort ein:</span>' +
+        '<span class="en">' + item.sentence[0] + '<span class="gap" id="gapSlot">___</span>' + item.sentence[2] + '</span></div>';
+    } else {
+      promptHTML = '<div class="q-prompt"><span class="de">' + item.de + '</span></div>';
+    }
+
+    var optsHTML = '<div class="options ' + (isFill ? "" : "grid2") + '" id="optsBox">';
+    item.options.forEach(function(opt, i){
+      optsHTML += '<button class="opt" data-i="' + i + '">' + opt + '</button>';
+    });
+    optsHTML += '</div><div class="feedback" id="fb"></div>';
+
+    quizBody.innerHTML = promptHTML + optsHTML;
+
+    var buttons = quizBody.querySelectorAll(".opt");
+    var answered = false;
+    buttons.forEach(function(btn){
+      btn.addEventListener("click", function(){
+        if(answered) return;
+        answered = true;
+        var i = parseInt(btn.getAttribute("data-i"), 10);
+        var correctIdx = item.correct;
+        var fb = document.getElementById("fb");
+        buttons.forEach(function(b, bi){
+          b.disabled = true;
+          if(bi === correctIdx) b.classList.add("correct");
+          else if(bi === i) b.classList.add("wrong");
+        });
+        if(i === correctIdx){
+          state.score++;
+          fb.className = "feedback show correct";
+          fb.textContent = "Richtig! ✓";
+          if(isFill){
+            var gap = document.getElementById("gapSlot");
+            if(gap) gap.textContent = item.options[correctIdx];
+          }
+        } else {
+          fb.className = "feedback show wrong";
+          fb.textContent = "Nicht ganz — richtig ist: \"" + item.options[correctIdx] + "\"";
+        }
+        updateProgress(state.step + 1);
+        nextBtn.disabled = false;
+      });
+    });
+  }
+
+  function renderMatch(){
+    partLabel.textContent = "Teil 3 · Zuordnung";
+    updateProgress(FILL.length + MC.length + state.matchSolved);
+    nextBtn.disabled = true;
+    nextBtn.textContent = "Weiter";
+
+    var html = '<p class="q-prompt"><span class="de">Ordne Situation und passende Antwort einander zu:</span></p>';
+    html += '<div class="match-grid">';
+    html += '<div class="match-col"><span class="match-col-label">Situation</span>';
+    MATCH_LEFT.forEach(function(l){
+      html += '<button class="match-item" data-side="left" data-id="' + l.id + '">' + l.label + '<span class="sub">' + l.sub + '</span></button>';
+    });
+    html += '</div><div class="match-col"><span class="match-col-label">Antwort</span>';
+    MATCH_RIGHT.forEach(function(r){
+      html += '<button class="match-item" data-side="right" data-id="' + r.id + '">' + r.label + '</button>';
+    });
+    html += '</div></div><div class="feedback" id="fb"></div>';
+    quizBody.innerHTML = html;
+
+    state.matchSel = { left:null, right:null };
+
+    quizBody.querySelectorAll(".match-item").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        if(btn.classList.contains("solved")) return;
+        var side = btn.getAttribute("data-side");
+        var id = btn.getAttribute("data-id");
+
+        quizBody.querySelectorAll('.match-item[data-side="' + side + '"]').forEach(function(b){
+          if(!b.classList.contains("solved")) b.classList.remove("selected");
+        });
+        btn.classList.add("selected");
+        state.matchSel[side] = id;
+
+        if(state.matchSel.left && state.matchSel.right){
+          var leftId = state.matchSel.left, rightId = state.matchSel.right;
+          var rightObj = MATCH_RIGHT.filter(function(r){ return r.id === rightId; })[0];
+          var leftBtn = quizBody.querySelector('.match-item[data-side="left"][data-id="' + leftId + '"]');
+          var rightBtn = quizBody.querySelector('.match-item[data-side="right"][data-id="' + rightId + '"]');
+          var fb = document.getElementById("fb");
+
+          if(rightObj.pair === leftId){
+            leftBtn.classList.remove("selected"); rightBtn.classList.remove("selected");
+            leftBtn.classList.add("solved"); rightBtn.classList.add("solved");
+            leftBtn.disabled = true; rightBtn.disabled = true;
+            state.matchSolved++;
+            state.score++;
+            fb.className = "feedback show correct";
+            fb.textContent = "Richtig! ✓ (" + state.matchSolved + " / 5 Paare)";
+            updateProgress(FILL.length + MC.length + state.matchSolved);
+            state.matchSel = { left:null, right:null };
+            if(state.matchSolved === MATCH_LEFT.length){
+              nextBtn.disabled = false;
+            }
+          } else {
+            leftBtn.classList.add("shake"); rightBtn.classList.add("shake");
+            fb.className = "feedback show wrong";
+            fb.textContent = "Das passt noch nicht zusammen — versuch's nochmal.";
+            setTimeout(function(){
+              leftBtn.classList.remove("selected","shake");
+              rightBtn.classList.remove("selected","shake");
+              state.matchSel = { left:null, right:null };
+            }, 650);
+          }
+        }
+      });
+    });
+  }
+
+  function showResults(){
+    document.getElementById("quiz").hidden = true;
+    var results = document.getElementById("results");
+    results.hidden = false;
+    document.getElementById("finalScore").textContent = state.score + " / " + TOTAL;
+    var msg;
+    if(state.score >= 13) msg = "Super gemacht! Du beherrschst \"How long does it take?\" richtig gut.";
+    else if(state.score >= 9) msg = "Gut gemacht! Schau dir die Theorie oben nochmal kurz an, dann sitzt es ganz sicher.";
+    else msg = "Kein Problem — lies die Theorie oben nochmal in Ruhe durch und versuch es dann noch einmal.";
+    document.getElementById("finalMsg").textContent = msg;
+  }
+
+  nextBtn.addEventListener("click", function(){
+    state.step++;
+    if(state.step < FILL.length + MC.length){
+      renderFillOrMC();
+    } else if(state.step === FILL.length + MC.length){
+      renderMatch();
+    } else {
+      showResults();
+    }
+  });
+
+  function startQuiz(){
+    document.getElementById("gate").hidden = true;
+    document.getElementById("quiz").hidden = false;
+    state = { step: 0, score: 0, matchSolved: 0, matchSel: { left:null, right:null } };
+    renderFillOrMC();
+    document.getElementById("quiz").scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+
+  document.getElementById("startBtn").addEventListener("click", function(){
+    document.getElementById("practice").scrollIntoView({ behavior:"smooth", block:"start" });
+  });
+  document.getElementById("gateStart").addEventListener("click", startQuiz);
+  document.getElementById("retryBtn").addEventListener("click", function(){
+    document.getElementById("results").hidden = true;
+    document.getElementById("gate").hidden = false;
+  });
+
+})();
+</script>
+
+</body></html>

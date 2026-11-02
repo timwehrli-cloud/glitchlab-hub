@@ -1,0 +1,491 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Tombola Romana</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+  :root {
+    --bg: #E7E1D3;
+    --panel: #F2EDE3;
+    --panel-2: #DAD2BE;
+    --ink: #2B241D;
+    --ink-soft: #5B5043;
+    --accent: #8A2E2A;
+    --accent-ink: #FBEAE3;
+    --gold: #8C6A2E;
+    --line: rgba(43,36,29,0.18);
+    --line-strong: rgba(43,36,29,0.32);
+    --shadow: rgba(43,36,29,0.28);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1E1A16;
+      --panel: #2A241D;
+      --panel-2: #362E24;
+      --ink: #EDE4D3;
+      --ink-soft: #BBA98F;
+      --accent: #C1453F;
+      --accent-ink: #2A100E;
+      --gold: #D2A94E;
+      --line: rgba(237,228,211,0.14);
+      --line-strong: rgba(237,228,211,0.26);
+      --shadow: rgba(0,0,0,0.55);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #1E1A16;
+    --panel: #2A241D;
+    --panel-2: #362E24;
+    --ink: #EDE4D3;
+    --ink-soft: #BBA98F;
+    --accent: #C1453F;
+    --accent-ink: #2A100E;
+    --gold: #D2A94E;
+    --line: rgba(237,228,211,0.14);
+    --line-strong: rgba(237,228,211,0.26);
+    --shadow: rgba(0,0,0,0.55);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'EB Garamond', 'Iowan Old Style', Georgia, serif;
+    padding-inline: 20px;
+    padding-block: 32px;
+    display: flex;
+    justify-content: center;
+  }
+
+  main {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.28em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: clamp(1.8rem, 6vw, 2.6rem);
+    letter-spacing: 0.04em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  /* Tablet / draw panel */
+  .tablet {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    box-shadow: 0 1px 0 var(--line) inset, 0 18px 40px -24px var(--shadow);
+    padding: clamp(20px, 5vw, 40px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    position: relative;
+  }
+
+  .tablet::before,
+  .tablet::after {
+    content: "";
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background: linear-gradient(180deg, transparent, var(--line-strong) 20%, var(--line-strong) 80%, transparent);
+  }
+  .tablet::before { left: 10px; }
+  .tablet::after { right: 10px; }
+
+  .draw-frame {
+    width: min(220px, 60vw);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 3px solid var(--gold);
+    box-shadow: 0 0 0 6px var(--panel), 0 0 0 7px var(--line-strong), inset 0 0 24px var(--shadow);
+    background: var(--panel-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .numeral {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: clamp(2.2rem, 12vw, 3.4rem);
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    transition: opacity 0.15s ease;
+  }
+  .numeral.placeholder {
+    color: var(--ink-soft);
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    letter-spacing: 0;
+    text-align: center;
+    padding-inline: 12px;
+  }
+
+  .status-line {
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .status-line strong { color: var(--ink); }
+
+  .controls {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  button {
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.82rem;
+    border-radius: 3px;
+    cursor: pointer;
+    padding: 13px 26px;
+    border: 1px solid var(--line-strong);
+    background: var(--panel);
+    color: var(--ink);
+  }
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  button:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  .btn-draw {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+    font-weight: 600;
+    box-shadow: 0 8px 18px -10px var(--shadow);
+  }
+  .btn-draw:hover:not(:disabled) { filter: brightness(1.06); }
+  .btn-draw:active:not(:disabled) { transform: translateY(1px); }
+
+  .btn-reset:hover:not(:disabled) { border-color: var(--ink-soft); }
+
+  /* History strip */
+  section.history h2,
+  section.board h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 10px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+  }
+
+  .history-track {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-block: 4px 8px;
+    scrollbar-width: thin;
+  }
+  .history-track:empty::after {
+    content: "Noch keine Zahl gezogen.";
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+
+  .chip {
+    flex: 0 0 auto;
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    padding: 7px 12px;
+    color: var(--ink-soft);
+  }
+  .chip.latest {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Board */
+  .board-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tile {
+    flex: 0 0 auto;
+    min-width: 2.4em;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.01em;
+    padding: 6px 5px;
+    border-radius: 2px;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    background: transparent;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  .tile.drawn {
+    background: var(--gold);
+    color: var(--accent-ink);
+    border-color: var(--gold);
+    font-weight: 600;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<main>
+  <header>
+    <span class="eyebrow">Ludus Numerorum</span>
+    <h1>Tombola Romana</h1>
+    <p class="subtitle">Der Bingo-Automat mit römischen Zahlen &mdash; I bis C, jede nur einmal pro Runde.</p>
+  </header>
+
+  <div class="tablet">
+    <div class="draw-frame">
+      <div class="numeral placeholder" id="numeralDisplay">Bereit zur ersten Ziehung</div>
+    </div>
+    <p class="status-line" id="statusLine">Verbleibend: <strong>100</strong> von 100</p>
+    <div class="controls">
+      <button class="btn-draw" id="drawBtn" type="button">Ziehen</button>
+      <button class="btn-reset" id="resetBtn" type="button">Neue Runde</button>
+    </div>
+  </div>
+
+  <section class="history">
+    <h2>Gezogene Zahlen</h2>
+    <div class="history-track" id="historyTrack"></div>
+  </section>
+
+  <section class="board">
+    <h2>Spielfeld</h2>
+    <div class="board-grid" id="boardGrid"></div>
+  </section>
+
+  <footer>Jede Zahl wird pro Runde nur einmal gezogen.</footer>
+</main>
+
+<script>
+(function () {
+  var STORAGE_KEY = 'tombola-romana-v1';
+  var TOTAL = 100;
+
+  function toRoman(num) {
+    var map = [
+      [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
+      [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']
+    ];
+    var out = '';
+    for (var i = 0; i < map.length; i++) {
+      while (num >= map[i][0]) {
+        out += map[i][1];
+        num -= map[i][0];
+      }
+    }
+    return out;
+  }
+
+  var numeralDisplay = document.getElementById('numeralDisplay');
+  var statusLine = document.getElementById('statusLine');
+  var drawBtn = document.getElementById('drawBtn');
+  var resetBtn = document.getElementById('resetBtn');
+  var historyTrack = document.getElementById('historyTrack');
+  var boardGrid = document.getElementById('boardGrid');
+
+  var state = null;
+
+  function freshState() {
+    var remaining = [];
+    for (var i = 1; i <= TOTAL; i++) remaining.push(i);
+    return { remaining: remaining, drawn: [] };
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return freshState();
+      var parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.remaining) || !Array.isArray(parsed.drawn)) {
+        return freshState();
+      }
+      return parsed;
+    } catch (e) {
+      return freshState();
+    }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      /* best effort only */
+    }
+  }
+
+  function buildBoard() {
+    boardGrid.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    for (var i = 1; i <= TOTAL; i++) {
+      var tile = document.createElement('div');
+      tile.className = 'tile';
+      tile.dataset.n = String(i);
+      tile.textContent = toRoman(i);
+      frag.appendChild(tile);
+    }
+    boardGrid.appendChild(frag);
+  }
+
+  function renderBoard() {
+    var drawnSet = {};
+    for (var i = 0; i < state.drawn.length; i++) drawnSet[state.drawn[i]] = true;
+    var tiles = boardGrid.children;
+    for (var j = 0; j < tiles.length; j++) {
+      var n = tiles[j].dataset.n;
+      if (drawnSet[n]) tiles[j].classList.add('drawn');
+      else tiles[j].classList.remove('drawn');
+    }
+  }
+
+  function renderHistory() {
+    historyTrack.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    for (var i = state.drawn.length - 1; i >= 0; i--) {
+      var chip = document.createElement('span');
+      chip.className = 'chip' + (i === state.drawn.length - 1 ? ' latest' : '');
+      chip.textContent = toRoman(state.drawn[i]);
+      frag.appendChild(chip);
+    }
+    historyTrack.appendChild(frag);
+  }
+
+  function renderStatus() {
+    var remainingCount = state.remaining.length;
+    statusLine.innerHTML = 'Verbleibend: <strong>' + remainingCount + '</strong> von ' + TOTAL;
+    if (remainingCount === 0) {
+      drawBtn.disabled = true;
+      drawBtn.textContent = 'Runde beendet';
+    } else {
+      drawBtn.disabled = false;
+      drawBtn.textContent = 'Ziehen';
+    }
+  }
+
+  function renderCurrent() {
+    if (state.drawn.length === 0) {
+      numeralDisplay.className = 'numeral placeholder';
+      numeralDisplay.textContent = 'Bereit zur ersten Ziehung';
+      return;
+    }
+    var current = state.drawn[state.drawn.length - 1];
+    numeralDisplay.className = 'numeral';
+    numeralDisplay.textContent = toRoman(current);
+  }
+
+  function renderAll() {
+    renderCurrent();
+    renderStatus();
+    renderHistory();
+    renderBoard();
+  }
+
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function drawNumber() {
+    if (state.remaining.length === 0) return;
+    var idx = Math.floor(Math.random() * state.remaining.length);
+    var value = state.remaining.splice(idx, 1)[0];
+    state.drawn.push(value);
+    saveState();
+
+    if (reduceMotion) {
+      renderAll();
+      return;
+    }
+
+    // brief shuffle flourish before settling on the real draw
+    var ticks = 6;
+    var delay = 45;
+    numeralDisplay.className = 'numeral';
+    var count = 0;
+    var timer = setInterval(function () {
+      var randomShown = Math.floor(Math.random() * TOTAL) + 1;
+      numeralDisplay.textContent = toRoman(randomShown);
+      count++;
+      if (count >= ticks) {
+        clearInterval(timer);
+        renderAll();
+      }
+    }, delay);
+  }
+
+  function resetRound() {
+    state = freshState();
+    saveState();
+    renderAll();
+  }
+
+  drawBtn.addEventListener('click', drawNumber);
+  resetBtn.addEventListener('click', resetRound);
+
+  buildBoard();
+  state = loadState();
+  renderAll();
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,1074 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Herbst-Jeopardy 6. Klasse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<style>
+/* Layout: Spielshow-Brett auf Tannengrün, Senfgelbe Felder, vier Herbsttier-Teams als Leiste unten. Bewusst ein einziges (dunkles) Erscheinungsbild für die Tafel. */
+:root {
+  --board: #123a35;
+  --board-deep: #0b2622;
+  --line: #22554d;
+  --tile: #f4b942;
+  --tile-hi: #ffd36e;
+  --tile-ink: #3d2606;
+  --chalk: #f7f1e3;
+  --muted: #a7c4bd;
+  --done: #1b4842;
+  --t0: #ee6b2f;
+  --t1: #48a9e6;
+  --t2: #e0559a;
+  --t3: #a7cf3c;
+  --display: "Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --body: "Nunito", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body {
+  background: radial-gradient(ellipse at 50% 0%, var(--board) 0%, var(--board-deep) 85%) fixed, var(--board-deep);
+  color: var(--chalk);
+  font-family: var(--body);
+  font-weight: 600;
+  overflow: hidden;
+}
+button { font-family: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--tile-hi); outline-offset: 2px; }
+
+.app { height: 100%; display: flex; flex-direction: column; gap: 1.2vh; padding-block: 1.4vh; padding-inline: max(16px, 1.6vw); box-sizing: border-box; }
+
+/* Kopfzeile */
+.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.logo { font-family: var(--display); font-size: clamp(22px, 3.2vw, 46px); letter-spacing: .01em; color: var(--tile); line-height: 1; margin: 0; text-shadow: 0 3px 0 var(--tile-ink); }
+.logo span { color: var(--chalk); }
+.turn { display: flex; align-items: center; gap: 10px; font-size: clamp(14px, 1.5vw, 22px); font-weight: 800; padding: 6px 16px 6px 8px; border-radius: 999px; background: var(--board-deep); border: 2px solid var(--line); }
+.turn .dot { width: 1.6em; height: 1.6em; border-radius: 50%; display: grid; place-items: center; font-size: .9em; }
+.tools { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.tool { background: transparent; color: var(--muted); border: 2px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: clamp(12px, 1.05vw, 16px); font-weight: 800; }
+.tool:hover { color: var(--chalk); border-color: var(--muted); }
+.tool[aria-pressed="false"] { opacity: .6; }
+
+/* Brett */
+.boardwrap { flex: 1; min-height: 0; overflow: auto; }
+.board { display: grid; gap: clamp(6px, .9vw, 14px); height: 100%; min-width: 560px; grid-template-rows: auto repeat(5, 1fr); }
+.cat { font-family: var(--display); font-size: clamp(14px, 1.9vw, 30px); text-align: center; display: grid; place-items: center; padding: .5em .3em; line-height: 1.05; text-wrap: balance; color: var(--chalk); border-bottom: 4px solid var(--tile); }
+.tile {
+  font-family: var(--display); font-size: clamp(26px, 4.6vw, 72px);
+  background: var(--tile); color: var(--tile-ink); border: 0; border-radius: 16px;
+  box-shadow: 0 6px 0 #b9831f, inset 0 -6px 0 rgba(0,0,0,.08);
+  transition: transform .12s, box-shadow .12s, background .12s;
+  min-height: 56px;
+}
+.tile:hover { background: var(--tile-hi); }
+.tile:active { transform: translateY(5px); box-shadow: 0 1px 0 #b9831f; }
+.tile.used { background: var(--done); color: transparent; box-shadow: none; cursor: default; position: relative; }
+.tile.used::after { content: attr(data-who); position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--body); font-weight: 900; font-size: clamp(11px, 1.2vw, 18px); color: var(--muted); }
+.tile.used[data-team] { background: color-mix(in srgb, var(--tc) 28%, var(--done)); }
+.tile.used[data-team]::after { color: var(--tc); }
+
+/* Teams */
+.teams { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(6px, .9vw, 14px); }
+.team { background: var(--board-deep); border: 3px solid var(--line); border-radius: 16px; padding: 8px 12px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 4px 10px; transition: border-color .2s, transform .2s; }
+.team.active { border-color: var(--tc); transform: translateY(-4px); box-shadow: 0 0 0 4px color-mix(in srgb, var(--tc) 25%, transparent); }
+.badge { width: clamp(34px, 3.6vw, 56px); height: clamp(34px, 3.6vw, 56px); border-radius: 50%; background: var(--tc); display: grid; place-items: center; grid-row: span 2; }
+.badge svg { width: 68%; height: 68%; }
+.tname { background: transparent; border: 0; color: var(--tc); font-family: var(--display); font-size: clamp(14px, 1.6vw, 26px); width: 100%; min-width: 0; padding: 0; }
+.score { font-family: var(--display); font-size: clamp(24px, 3.2vw, 50px); line-height: 1; font-variant-numeric: tabular-nums; }
+.adj { grid-row: span 2; display: flex; flex-direction: column; gap: 4px; }
+.adj button { background: var(--done); color: var(--chalk); border: 0; border-radius: 8px; font-weight: 900; font-size: clamp(11px, 1vw, 15px); padding: 4px 8px; }
+
+/* Overlays */
+.overlay { position: fixed; inset: 0; background: rgba(5, 20, 18, .92); display: grid; place-items: center; z-index: 10; padding: 16px; }
+.card { background: var(--board); border: 4px solid var(--tile); border-radius: 28px; width: min(1100px, 100%); max-height: 100%; overflow: auto; padding: clamp(18px, 3vw, 44px); box-sizing: border-box; display: flex; flex-direction: column; gap: clamp(12px, 2vh, 26px); }
+.qhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.qcat { font-family: var(--display); font-size: clamp(18px, 2.2vw, 34px); color: var(--tile); }
+.qval { font-family: var(--display); font-size: clamp(18px, 2.2vw, 34px); background: var(--tile); color: var(--tile-ink); border-radius: 12px; padding: 2px 14px; }
+.qval.double { background: var(--t2); color: #fff; }
+.qtext { font-size: clamp(26px, 4vw, 62px); font-weight: 900; line-height: 1.15; text-align: center; text-wrap: balance; margin: 2vh 0; }
+.timer { align-self: center; width: clamp(70px, 8vw, 120px); height: clamp(70px, 8vw, 120px); position: relative; }
+.timer svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.timer .num { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--display); font-size: clamp(24px, 3vw, 46px); }
+.timer.out .num { color: var(--t0); font-size: clamp(14px, 1.5vw, 22px); }
+.answer { font-size: clamp(24px, 3.4vw, 54px); font-weight: 900; text-align: center; color: var(--tile-hi); background: var(--board-deep); border-radius: 18px; padding: .5em .8em; text-wrap: balance; }
+.label { font-size: clamp(13px, 1.2vw, 18px); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); text-align: center; font-weight: 800; }
+.row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.big { font-family: var(--display); font-size: clamp(18px, 2vw, 30px); border: 0; border-radius: 16px; padding: .55em 1.1em; background: var(--tile); color: var(--tile-ink); box-shadow: 0 5px 0 #b9831f; }
+.big:active { transform: translateY(4px); box-shadow: 0 1px 0 #b9831f; }
+.big.team-btn { background: var(--tc); color: #fff; box-shadow: 0 5px 0 color-mix(in srgb, var(--tc) 60%, #000); text-shadow: 0 2px 0 rgba(0,0,0,.25); }
+.big.ghost { background: var(--done); color: var(--chalk); box-shadow: 0 5px 0 #0a2420; }
+.splash { font-family: var(--display); font-size: clamp(44px, 9vw, 150px); color: var(--t2); text-align: center; line-height: 1; animation: pop .6s cubic-bezier(.2,1.6,.4,1); text-shadow: 0 6px 0 #6b1d43; }
+.splash small { display: block; font-size: .35em; color: var(--chalk); text-shadow: none; margin-top: .4em; font-family: var(--body); font-weight: 900; }
+@keyframes pop { from { transform: scale(.3) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
+
+textarea { width: 100%; box-sizing: border-box; min-height: 46vh; background: var(--board-deep); color: var(--chalk); border: 2px solid var(--line); border-radius: 14px; padding: 14px; font: 600 16px/1.5 ui-monospace, "Cascadia Mono", Menlo, monospace; resize: vertical; }
+.hint { color: var(--muted); font-size: 16px; line-height: 1.5; margin: 0; }
+.hint code { color: var(--tile); }
+.err { color: var(--t0); font-weight: 900; min-height: 1.2em; margin: 0; }
+
+/* Einstellungen */
+.card.settings { width: min(1200px, 100%); height: 100%; gap: 14px; }
+.sethead { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tabs { display: flex; gap: 6px; background: var(--board-deep); padding: 5px; border-radius: 14px; }
+.tab { border: 0; background: transparent; color: var(--muted); font-family: var(--display); font-size: clamp(16px, 1.6vw, 22px); padding: 8px 18px; border-radius: 10px; }
+.tab[aria-selected="true"] { background: var(--tile); color: var(--tile-ink); }
+.setbody { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 14px; padding-right: 4px; }
+.setfoot { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: flex-end; border-top: 2px solid var(--line); padding-top: 14px; }
+.setfoot .err { margin-right: auto; }
+.big.reset-all { color: #ffb3a0; font-size: clamp(15px, 1.4vw, 20px); }
+.fld { background: var(--board-deep); color: var(--chalk); border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px; font: 700 16px/1.35 var(--body); width: 100%; box-sizing: border-box; min-width: 0; }
+.fld:focus { border-color: var(--tile); outline: none; }
+textarea.fld { min-height: 0; resize: vertical; font-family: var(--body); }
+.catcard { border: 2px solid var(--line); border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.catrow { display: flex; gap: 10px; align-items: center; }
+.catrow .fld { font-family: var(--display); font-size: 20px; font-weight: 400; color: var(--tile); }
+.qrow { display: grid; grid-template-columns: 64px 76px minmax(0, 3fr) minmax(0, 2fr); gap: 8px; align-items: start; }
+.qrow.first { margin-top: 6px; }
+.qrow .rl { font-size: 13px; font-weight: 800; color: var(--muted); padding-top: 11px; white-space: nowrap; }
+.qrow .pv { font-family: var(--display); background: var(--tile); color: var(--tile-ink); border-radius: 10px; text-align: center; padding: 8px 0; font-size: 18px; }
+.colhead { display: grid; grid-template-columns: 64px 76px minmax(0, 3fr) minmax(0, 2fr); gap: 8px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.mini { background: var(--done); color: var(--chalk); border: 0; border-radius: 10px; padding: 8px 12px; font-weight: 900; font-size: 15px; white-space: nowrap; }
+.mini:hover { background: var(--line); }
+.mini.warn { color: #ffb3a0; }
+.mini:disabled { opacity: .4; cursor: default; }
+.mini.gen { background: var(--tile); color: var(--tile-ink); }
+.mini.gen:hover { background: var(--tile-hi); }
+.mini.gen:disabled { opacity: .85; animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .55; } }
+.catcard.busy { border-color: var(--tile); }
+.catcard.busy textarea { opacity: .5; }
+.genmsg { margin: 0; font-weight: 800; color: var(--t3); font-size: 15px; }
+.genmsg.working { color: var(--tile); }
+.roundchip { font-family: var(--display); font-size: clamp(14px, 1.5vw, 22px); color: var(--tile-ink); background: var(--tile); border-radius: 999px; padding: 6px 14px; }
+.pod .badge { width: 64px; height: 64px; }
+.members { grid-column: 1 / -1; background: transparent; border: 0; padding: 0; text-align: left; color: var(--muted); font-weight: 800; font-size: clamp(10px, .85vw, 14px); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.members:hover { color: var(--chalk); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 2px solid var(--line); background: var(--board-deep); color: var(--chalk); border-radius: 999px; padding: 6px 14px; font-weight: 800; font-size: clamp(14px, 1.2vw, 18px); }
+.chip.off { opacity: .4; text-decoration: line-through; }
+.groups { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.group { border: 3px solid var(--tc); border-radius: 18px; padding: 12px; background: color-mix(in srgb, var(--tc) 10%, var(--board-deep)); min-height: 200px; }
+.ghead { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-size: clamp(18px, 1.8vw, 28px); color: var(--tc); }
+.ghead .badge { width: 46px; height: 46px; flex: none; }
+.ghead span { min-width: 0; overflow-wrap: anywhere; line-height: 1.05; }
+.ghead em { margin-left: auto; font-style: normal; font-size: .8em; color: var(--muted); }
+.group ol { margin: 10px 0 0; padding-left: 1.6em; display: grid; gap: 4px; font-size: clamp(18px, 1.9vw, 30px); font-weight: 900; }
+.group li.new { animation: pop .35s cubic-bezier(.2,1.6,.4,1); color: var(--tile-hi); }
+.err.ok { color: var(--t3); }
+.judge { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.jt { border: 3px solid var(--tc); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: color-mix(in srgb, var(--tc) 12%, var(--board-deep)); }
+.jn { font-family: var(--display); font-size: clamp(16px, 1.7vw, 26px); color: var(--tc); text-align: center; }
+.jb { display: flex; gap: 6px; }
+.jbtn { flex: 1; border: 0; border-radius: 12px; padding: .55em .3em; font-family: var(--display); font-size: clamp(15px, 1.5vw, 22px); color: #fff; }
+.jbtn.ok { background: #2e9e5b; box-shadow: 0 4px 0 #1c6b3c; }
+.jbtn.no { background: #c8433a; box-shadow: 0 4px 0 #862a24; }
+.jbtn:active { transform: translateY(3px); box-shadow: none; }
+.jt.wrong { opacity: .55; }
+.jt .minus { flex: 1; text-align: center; font-family: var(--display); font-size: clamp(20px, 2vw, 30px); color: #ff8a80; }
+.judgezone { display: flex; flex-direction: column; gap: 14px; }
+.answering { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.whopick { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.who { border: 3px solid var(--tc); background: transparent; color: var(--tc); border-radius: 999px; padding: 6px 16px; font-family: var(--display); font-size: clamp(15px, 1.5vw, 22px); }
+.who[aria-pressed="true"] { background: var(--tc); color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.25); }
+.judgezone .jbtn { flex: 0 1 280px; font-size: clamp(22px, 2.6vw, 40px); padding: .45em .8em; }
+.jbtn small { font-size: .6em; opacity: .9; }
+.verdict { font-family: var(--display); font-size: clamp(26px, 3.4vw, 52px); text-align: center; color: var(--tc, var(--chalk)); }
+@media (max-width: 700px) { .judge { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .groups { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.teamset { border: 2px solid var(--line); border-radius: 18px; padding: 14px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 16px; align-items: start; }
+.teamset .badge { width: 84px; height: 84px; grid-row: span 3; border: 4px solid var(--tc); }
+.teamset .fld { font-family: var(--display); font-size: 22px; font-weight: 400; color: var(--tc); }
+.picks { display: flex; flex-wrap: wrap; gap: 6px; }
+.pick { width: 48px; height: 48px; border-radius: 12px; border: 2px solid var(--line); background: var(--board-deep); display: grid; place-items: center; padding: 0; font-size: 26px; line-height: 1; }
+.pick svg { width: 76%; height: 76%; }
+.pick[aria-pressed="true"] { border-color: var(--tc); background: color-mix(in srgb, var(--tc) 35%, var(--board-deep)); }
+.upload { display: inline-flex; align-items: center; gap: 8px; }
+.upload input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.upload label { cursor: pointer; }
+.upload input:focus-visible + label { outline: 3px solid var(--tile-hi); outline-offset: 2px; }
+.badge.emoji { font-size: clamp(20px, 2.4vw, 36px); line-height: 1; }
+.teamset .badge.emoji { font-size: 50px; }
+.photo { background-size: cover; background-position: center; }
+.turn .dot svg { width: 70%; height: 70%; }
+.turn .dot.emoji { font-size: 1.05em; }
+@media (max-width: 700px) {
+  .qrow, .colhead { grid-template-columns: 1fr; }
+  .colhead { display: none; }
+  .teamset { grid-template-columns: 1fr; }
+}
+
+.podium { display: flex; justify-content: center; align-items: flex-end; gap: clamp(8px, 2vw, 30px); flex-wrap: wrap; }
+.pod { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.pod .bar { width: clamp(80px, 12vw, 180px); border-radius: 16px 16px 0 0; background: var(--tc); display: grid; place-items: start center; padding-top: 10px; font-family: var(--display); font-size: clamp(28px, 4vw, 60px); color: #fff; text-shadow: 0 3px 0 rgba(0,0,0,.25); }
+.pod .n { font-family: var(--display); font-size: clamp(16px, 1.8vw, 28px); color: var(--tc); }
+.pod .s { font-weight: 900; font-size: clamp(16px, 1.6vw, 24px); }
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 11; }
+
+@media (max-width: 700px) {
+  body { overflow: auto; }
+  .app { height: auto; min-height: 100%; }
+  .boardwrap { flex: none; height: 62vh; }
+  .teams { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="app">
+  <header class="top">
+    <h1 class="logo">Herbst<span>-</span>Jeopardy</h1>
+    <div class="turn" id="turn"></div>
+    <div class="roundchip" id="roundChip">Runde 1</div>
+    <div class="tools">
+      <button class="tool" id="btnTimer" aria-pressed="true">⏱ Timer 30 s</button>
+      <button class="tool" id="btnGroups">🎲 Gruppen</button>
+      <button class="tool" id="btnEdit">⚙ Einstellungen</button>
+      <button class="tool" id="btnReset">Neue Runde</button>
+      <button class="tool" id="btnFull">Vollbild</button>
+      <button class="tool" id="btnEnd">Siegerehrung</button>
+    </div>
+  </header>
+  <div class="boardwrap"><div class="board" id="board"></div></div>
+  <section class="teams" id="teams" aria-label="Punktestand"></section>
+</div>
+
+<div class="overlay" id="ov" hidden><div class="card" id="ovCard"></div></div>
+
+<script>
+const VALUES = [100, 200, 300, 400, 500];
+const ROUNDS = 4;
+const Q = (q, a) => ({ q, a });
+const DEFAULT_CATS = [
+  { name: "Römer", qs: [
+    [Q("Welche Stadt war die Hauptstadt des Römischen Reiches?", "Rom"),
+     Q("Wie hiessen die Kämpfer, die im Kolosseum gegeneinander antraten?", "Gladiatoren")],
+    [Q("Wie heissen die Zwillinge, die laut Sage Rom gegründet haben?", "Romulus und Remus"),
+     Q("Welche Sprache sprachen die alten Römer?", "Latein")],
+    [Q("Welche Zahl ist das: XLIX?", "49"),
+     Q("Welcher Fluss fliesst durch Rom?", "Der Tiber")],
+    [Q("Wie heisst die Römerstadt in der Nähe von Basel, die man heute noch besuchen kann?", "Augusta Raurica (in Augst/Kaiseraugst)"),
+     Q("Welcher berühmte römische Feldherr wurde 44 v. Chr. in Rom ermordet?", "Gaius Julius Caesar")],
+    [Q("Wie hiess das keltische Volk, das in der heutigen Schweiz lebte und 58 v. Chr. gegen Caesar verlor?", "Die Helvetier"),
+     Q("Schreibe die Jahreszahl 2026 in römischen Zahlen.", "MMXXVI")]
+  ] },
+  { name: "Stadt, Land, Fluss", qs: [
+    [Q("Welcher Fluss fliesst durch Basel?", "Der Rhein"),
+     Q("In welchem Land steht der Eiffelturm?", "Frankreich")],
+    [Q("Welches ist die grösste Stadt der Schweiz?", "Zürich"),
+     Q("Wie heisst die Hauptstadt von Spanien?", "Madrid")],
+    [Q("Wie viele Nachbarländer hat die Schweiz?", "5 (Deutschland, Frankreich, Italien, Österreich, Liechtenstein)"),
+     Q("In welchem Kanton liegt Lugano?", "Tessin")],
+    [Q("Wie heisst die Hauptstadt von Australien?", "Canberra (nicht Sydney!)"),
+     Q("Welcher Fluss fliesst durch Paris?", "Die Seine")],
+    [Q("Wie heisst die Hauptstadt von Kanada?", "Ottawa"),
+     Q("Welches ist der grösste See, der ganz in der Schweiz liegt?", "Der Neuenburgersee")]
+  ] },
+  { name: "Mathematik", qs: [
+    [Q("9 × 6 = ?", "54"),
+     Q("100 − 37 = ?", "63")],
+    [Q("72 : 8 = ?", "9"),
+     Q("Wie viele Gramm sind 2,5 kg?", "2500 g")],
+    [Q("Wie viel sind drei Viertel von 120?", "90"),
+     Q("Wie viele Sekunden hat eine Stunde?", "3600")],
+    [Q("Welche Zahl kommt als Nächstes? 1, 1, 2, 3, 5, 8, …", "13 (immer die zwei Zahlen davor zusammenzählen)"),
+     Q("Ein Pullover kostet 80 Franken. Im Ausverkauf gibt es 25 % Rabatt. Was kostet er jetzt?", "60 Franken")],
+    [Q("Ein Zug fährt 120 km pro Stunde. Wie weit kommt er in 45 Minuten?", "90 km"),
+     Q("Gesucht ist eine zweistellige Zahl, die durch 7 und durch 9 teilbar ist. Welche?", "63")]
+  ] },
+  { name: "Film und Serien", qs: [
+    [Q("Wie heissen die kleinen gelben Helfer mit Brille aus «Ich – Einfach unverbesserlich»?", "Minions"),
+     Q("Welche Farbe hat der Oger Shrek?", "Grün")],
+    [Q("Wie heisst die Zauberschule, die Harry Potter besucht?", "Hogwarts"),
+     Q("Wie heisst der kleine Clownfisch, den sein Vater Marlin sucht?", "Nemo")],
+    [Q("Wie heisst der Cowboy in «Toy Story»?", "Woody"),
+     Q("Wie heisst der Bösewicht mit der schwarzen Maske in «Star Wars»?", "Darth Vader")],
+    [Q("Wie heisst Harry Potters weisse Eule?", "Hedwig"),
+     Q("Wie heisst das Königreich in «Die Eiskönigin»?", "Arendelle")],
+    [Q("In welchem Jahr kam der erste «Toy Story»-Film ins Kino? (2 Jahre daneben gilt auch)", "1995"),
+     Q("Wie heisst der Schauspieler, der in den Filmen Harry Potter spielt?", "Daniel Radcliffe")]
+  ] },
+  { name: "Games", qs: [
+    [Q("Wie heisst der Klempner mit der roten Mütze von Nintendo?", "Mario"),
+     Q("In welchem Spiel baut man mit Blöcken und muss nachts vor Zombies und Creepern aufpassen?", "Minecraft")],
+    [Q("Wie heisst Marios Bruder mit der grünen Mütze?", "Luigi"),
+     Q("Wie heisst das gelbe Elektro-Pokémon, das Ash immer begleitet?", "Pikachu")],
+    [Q("Was macht ein Creeper in Minecraft, wenn er nahe an dich herankommt?", "Er explodiert"),
+     Q("Wie heisst die Prinzessin, die Mario immer wieder retten muss?", "Prinzessin Peach")],
+    [Q("Wie heisst der Held in «The Legend of Zelda»? (Achtung: nicht Zelda!)", "Link"),
+     Q("Aus welchem Block baut man in Minecraft ein Portal in den Nether?", "Obsidian")],
+    [Q("Welches Pokémon hat im Pokédex die Nummer 1?", "Bisasam (englisch: Bulbasaur)"),
+     Q("In welchem Jahr kam das erste «Super Mario Bros.» heraus? (3 Jahre daneben gilt auch)", "1985")]
+  ] },
+  { name: "Wortspiele", qs: [
+    [Q("Was ist das Gegenteil von «gross»?", "klein"),
+     Q("Was reimt sich auf «Maus» und ist ein Gebäude?", "Haus")],
+    [Q("Welches Wort passt in beide Lücken?  HAUS ___ / ___ SCHLOSS", "TÜR (Haustür, Türschloss)"),
+     Q("Buchstabensalat: L – U – C – S – E – H", "SCHULE")],
+    [Q("Wie lautet die Mehrzahl von «Museum»?", "Museen"),
+     Q("Welches Wort passt in beide Lücken?  FUSS ___ / ___ SPIEL", "BALL (Fussball, Ballspiel)")],
+    [Q("Ordne die Buchstaben von LAMPE neu. Es entsteht ein Baum. Welcher?", "PALME"),
+     Q("Wie nennt man Wörter mit der gleichen Bedeutung, z. B. «schnell» und «rasch»?", "Synonyme")],
+    [Q("Wie nennt man ein Wort, das man vorwärts und rückwärts gleich liest, z. B. OTTO oder RENTNER?", "Palindrom"),
+     Q("Zu welcher Wortart gehört das Wort «weil»?", "Konjunktion (Bindewort)")]
+  ] }
+];
+/* Fragen der ersten Fassung: gespeicherte Spiele mit unveränderten Beispielfragen bekommen automatisch die neuen */
+/* Runde 3 und 4: je Stufe zwei weitere Fragen */
+const EXTRA = {
+  "Römer": [
+    [Q("Wie heisst das grosse Stadion in Rom, in dem Gladiatoren kämpften?", "Das Kolosseum"),
+     Q("Welches Tier hat laut Sage die Zwillinge Romulus und Remus gesäugt?", "Eine Wölfin")],
+    [Q("Welche Zahl bedeutet das römische Zahlzeichen X?", "10"),
+     Q("Wie nannten die Römer ihre grossen öffentlichen Badeanlagen?", "Thermen")],
+    [Q("Welcher Vulkan hat im Jahr 79 n. Chr. die Stadt Pompeji verschüttet?", "Der Vesuv"),
+     Q("Wie heissen die Brücken-Wasserleitungen, mit denen die Römer Wasser in die Städte brachten?", "Aquädukte")],
+    [Q("Welcher Monat ist nach Julius Caesar benannt?", "Juli"),
+     Q("Wie hiess der erste römische Kaiser?", "Augustus")],
+    [Q("Wie hiess das grosse römische Legionslager beim heutigen Windisch im Aargau?", "Vindonissa"),
+     Q("Welcher Feldherr aus Karthago zog mit Elefanten über die Alpen gegen Rom?", "Hannibal")]
+  ],
+  "Stadt, Land, Fluss": [
+    [Q("Wie heisst die Hauptstadt von Frankreich?", "Paris"),
+     Q("Auf welchem Kontinent liegt die Schweiz?", "Europa")],
+    [Q("Wie heisst die Hauptstadt von Österreich?", "Wien"),
+     Q("In welcher Stadt steht das Bundeshaus?", "Bern")],
+    [Q("Wie heisst der Hauptort des Kantons Graubünden?", "Chur"),
+     Q("Welcher grosse Fluss fliesst durch Wien und Budapest?", "Die Donau")],
+    [Q("Wie heisst der höchste Berg der Schweiz?", "Die Dufourspitze (4634 m)"),
+     Q("Wie heisst die Hauptstadt von Portugal?", "Lissabon")],
+    [Q("Wie heisst die Hauptstadt der Türkei?", "Ankara (nicht Istanbul!)"),
+     Q("In welchen Fluss mündet die Aare?", "In den Rhein (bei Koblenz AG)")]
+  ],
+  "Mathematik": [
+    [Q("8 × 7 = ?", "56"),
+     Q("45 + 38 = ?", "83")],
+    [Q("Wie viele Minuten sind 2 ½ Stunden?", "150 Minuten"),
+     Q("1000 − 365 = ?", "635")],
+    [Q("Wie viele Ecken hat ein Würfel?", "8"),
+     Q("Ein Quadrat hat 9 cm lange Seiten. Wie gross ist seine Fläche?", "81 cm²")],
+    [Q("Wie viel sind 15 % von 200?", "30"),
+     Q("Mia ist 12, ihr Vater ist viermal so alt. Wie alt ist der Vater, wenn Mia 20 ist?", "56 (jetzt 48, plus 8 Jahre)")],
+    [Q("Wie viele Primzahlen gibt es zwischen 1 und 20?", "8 (2, 3, 5, 7, 11, 13, 17, 19)"),
+     Q("Ein Rechteck hat 30 cm Umfang und ist 9 cm lang. Wie breit ist es?", "6 cm")]
+  ],
+  "Film und Serien": [
+    [Q("Wie heisst der Schneemann in «Die Eiskönigin»?", "Olaf"),
+     Q("Wie heisst der gelbe Schwamm, der in einer Ananas unter dem Meer wohnt?", "SpongeBob Schwammkopf")],
+    [Q("Wie heisst Simbas böser Onkel in «Der König der Löwen»?", "Scar"),
+     Q("Wie heisst Harry Potters bester Freund mit den roten Haaren?", "Ron Weasley")],
+    [Q("Wie heisst der Weltraum-Ranger in «Toy Story»?", "Buzz Lightyear"),
+     Q("In welchem Film reist der Junge Miguel ins Land der Toten?", "Coco")],
+    [Q("Welche Fischart ist Dorie aus «Findet Nemo»?", "Ein Doktorfisch (Paletten-Doktorfisch)"),
+     Q("Wie heisst der Schulleiter von Hogwarts mit dem langen weissen Bart?", "Albus Dumbledore")],
+    [Q("Welche Startnummer hat Lightning McQueen in «Cars»?", "95"),
+     Q("Welches Filmstudio hat «Findet Nemo», «Cars» und «Oben» gemacht?", "Pixar")]
+  ],
+  "Games": [
+    [Q("Wie heisst der blaue, superschnelle Igel von SEGA?", "Sonic"),
+     Q("Welche Farbe hat Pac-Man?", "Gelb")],
+    [Q("Wie heisst der Schildkröten-König, der in den Mario-Spielen der Bösewicht ist?", "Bowser"),
+     Q("Wie heisst der grüne Dinosaurier, auf dem Mario reiten kann?", "Yoshi")],
+    [Q("Welche Spitzhacke braucht man in Minecraft mindestens, um Diamanten abzubauen?", "Eine Eisenspitzhacke"),
+     Q("Wie heisst Sonics Freund, ein Fuchs mit zwei Schwänzen?", "Tails")],
+    [Q("Zu welchem Pokémon entwickelt sich Glumanda am Ende?", "Glurak (englisch: Charizard)"),
+     Q("Welche Firma stellt die PlayStation her?", "Sony")],
+    [Q("Wie heisst die Dimension in Minecraft, in der man den Enderdrachen bekämpft?", "Das Ende (The End)"),
+     Q("Welches Spiel von 1972 ist wie Tischtennis und gilt als eines der ersten Videospiele?", "Pong")]
+  ],
+  "Wortspiele": [
+    [Q("Was ist das Gegenteil von «warm»?", "kalt"),
+     Q("Was reimt sich auf «Hose» und ist eine Blume?", "Rose")],
+    [Q("Buchstabensalat: F – E – L – A – P", "APFEL"),
+     Q("Welches Wort passt in beide Lücken?  APFEL ___ / ___ HAUS", "BAUM (Apfelbaum, Baumhaus)")],
+    [Q("Wie lautet die Mehrzahl von «Globus»?", "Globen (oder Globusse)"),
+     Q("Welches Wort ist falsch geschrieben: Fahrrad, Strasse, Frülling?", "Frülling (richtig: Frühling)")],
+    [Q("Ordne die Buchstaben von NEBEL neu. Es entsteht das Gegenteil von «Tod».", "LEBEN"),
+     Q("Wie nennt man Wörter mit gegenteiliger Bedeutung, z. B. «hell» und «dunkel»?", "Antonyme (Gegenwörter)")],
+    [Q("Setze in die Vergangenheit (Präteritum): «Ich bringe» → ?", "Ich brachte"),
+     Q("In welchem Fall steht «dem Hund» im Satz «Ich gebe dem Hund einen Knochen»?", "Dativ (3. Fall, Wem-Fall)")]
+  ]
+};
+DEFAULT_CATS.forEach(c => c.qs.forEach((lv, r) => lv.push(...EXTRA[c.name][r])));
+/* Fragen der ersten Fassung: gespeicherte Spiele mit unveränderten Beispielfragen bekommen automatisch die neuen */
+const OLD_Q = new Set(["Welche Stadt war die Hauptstadt des Römischen Reiches?", "Wie hiessen die Kämpfer, die im Kolosseum gegeneinander antraten?", "Wie heissen die Zwillinge, die laut Sage Rom gegründet haben?", "Welche Sprache sprachen die alten Römer?", "Welche Zahl ist das: XIV?", "Wie nannten die Römer ihre grossen öffentlichen Badeanlagen?", "Wie heisst die Römerstadt in der Nähe von Basel, die man heute noch besuchen kann?", "Welcher Vulkan hat im Jahr 79 n. Chr. die Stadt Pompeji verschüttet?", "Wie heissen die hohen Brücken-Wasserleitungen, mit denen die Römer Wasser in ihre Städte brachten?", "Schreibe die Jahreszahl 2026 in römischen Zahlen.", "Welcher Fluss fliesst durch Basel?", "In welchem Land steht der Eiffelturm?", "Welches ist die grösste Stadt der Schweiz?", "Wie heisst die Hauptstadt von Deutschland?", "Wie viele Nachbarländer hat die Schweiz?", "Basel grenzt an zwei Nachbarländer. Welche?", "Welcher ist der längste Fluss der Welt?", "In welchem Kanton liegt Lugano?", "Wie heisst die Hauptstadt von Australien?", "In welchem Land entspringt der Rhein?", "9 × 6 = ?", "100 − 37 = ?", "72 : 8 = ?", "Wie viele Zentimeter sind 3 Meter?", "Wie viel ist ein Viertel von 60?", "Wie viele Sekunden hat eine Stunde?", "25 × 16 = ?", "Ein Rechteck ist 8 cm lang und 5 cm breit. Wie gross ist sein Umfang?", "Welche Zahl kommt als Nächstes? 1, 1, 2, 3, 5, 8, …", "Ein Pullover kostet 80 Franken. Im Ausverkauf gibt es 25 % Rabatt. Was kostet er jetzt?", "Wie heissen die kleinen gelben Helfer mit Brille aus «Ich – Einfach unverbesserlich»?", "Welche Farbe hat der Oger Shrek?", "Wie heisst die Zauberschule, die Harry Potter besucht?", "Wie heisst der kleine Clownfisch, den sein Vater Marlin sucht?", "Wie heisst der Cowboy in «Toy Story»?", "In «Alles steht Kopf» leben Gefühle im Kopf eines Mädchens. Nenne drei davon.", "Wie heisst der Bösewicht mit der schwarzen Maske in «Star Wars»?", "In welcher Stadt wohnt die Familie Simpson?", "Welches Filmstudio hat «Toy Story», «Cars» und «Findet Nemo» gemacht?", "Wie heisst Harry Potters Eule?", "Wie heisst der Klempner mit der roten Mütze von Nintendo?", "In welchem Spiel baut man mit Blöcken und muss nachts vor Zombies und Creepern aufpassen?", "Wie heisst Marios Bruder mit der grünen Mütze?", "Wie heisst das gelbe Elektro-Pokémon, das Ash immer begleitet?", "Was macht ein Creeper in Minecraft, wenn er nahe an dich herankommt?", "Wie heisst die Prinzessin, die Mario immer wieder retten muss?", "In welchem Spiel muss man fallende Blöcke so drehen, dass volle Reihen verschwinden?", "Wie heisst der Held in «The Legend of Zelda»? (Achtung: nicht Zelda!)", "Aus welchem Land kommen die Firmen Nintendo und Sony?", "Welches Pokémon hat im Pokédex die Nummer 1?", "Was ist das Gegenteil von «gross»?", "Was reimt sich auf «Maus» und ist ein Gebäude?", "Welches Wort passt in beide Lücken?  HAUS ___ / ___ SCHLOSS", "Buchstabensalat: L – U – C – S – E – H", "Wie lautet die Mehrzahl von «Museum»?", "Welches Wort passt in beide Lücken?  FUSS ___ / ___ SPIEL", "Ordne die Buchstaben von LAMPE neu. Es entsteht ein Baum. Welcher?", "Wie nennt man ein Wort, das man vorwärts und rückwärts gleich liest, z. B. OTTO oder RENTNER?", "Wie nennt man Wörter mit der gleichen Bedeutung, z. B. «schnell» und «rasch»?", "Setze in die Vergangenheit (Präteritum): «Ich denke» → ?"]);
+const QV = 3;
+const TEAM_DEFAULTS = ["Füchse", "Eulen", "Igel", "Eichhörnchen"];
+const STUDENTS = ["Yasin", "Nahuel", "Lennox", "Sally", "Sarya", "Sara", "Lara", "Oholiab", "Fijona", "Enea", "Mila", "Leia", "Fatimah", "Lennert", "Allirah", "Mehmet Can", "Valerio", "Rodrigo", "Ramon", "Milo", "Melissa", "Tereza", "Élodie"];
+const ICONS = [
+  '<svg viewBox="0 0 40 40"><path d="M6 6l9 9h10l9-9-2 16-12 12L8 22z" fill="#fff"/><path d="M14 22l6 6 6-6-6 2z" fill="#3d2606"/><circle cx="15" cy="19" r="2" fill="#3d2606"/><circle cx="25" cy="19" r="2" fill="#3d2606"/></svg>',
+  '<svg viewBox="0 0 40 40"><path d="M8 8l6 4h12l6-4-1 18c0 6-5 10-11 10S9 32 9 26z" fill="#fff"/><circle cx="15" cy="18" r="5" fill="#3d2606"/><circle cx="25" cy="18" r="5" fill="#3d2606"/><circle cx="15" cy="18" r="2" fill="#fff"/><circle cx="25" cy="18" r="2" fill="#fff"/><path d="M18 23l2 4 2-4z" fill="#f4b942"/></svg>',
+  '<svg viewBox="0 0 40 40"><path d="M5 28c0-11 8-18 17-18 6 0 11 3 13 8l-5 3 4 3-6 1 3 4H5z" fill="#fff"/><path d="M8 18l-3-4 6 1M14 12l-1-5 4 4M21 10l2-5 1 6M28 12l4-4-1 6" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="24" r="1.8" fill="#3d2606"/></svg>',
+  '<svg viewBox="0 0 40 40"><path d="M27 34c8-4 9-16 2-22-5-4-12-1-12 5 0 4 4 6 7 4" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="13" cy="21" r="7" fill="#fff"/><path d="M8 15l1-6 4 5z" fill="#fff"/><circle cx="11" cy="20" r="1.6" fill="#3d2606"/><path d="M9 28h10v6H9z" fill="#fff"/></svg>'
+];
+const ICON_NAMES = ["Fuchs", "Eule", "Igel", "Eichhörnchen"];
+const EMOJIS = ["🦊", "🦉", "🦔", "🐿️", "🐻", "🐺", "🦁", "🐯", "🐸", "🐼", "🐧", "🐙", "🦄", "🐉", "🚀", "⚽", "🍕", "🍁", "🎃", "⭐"];
+const KEY = "tafelJeopardy.v2", OLD_KEY = "tafelJeopardy.v1";
+
+const $ = id => document.getElementById(id);
+const tc = i => `var(--t${i})`;
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const emptyQ = () => ({ q: "", a: "" });
+const blankCat = () => ({ name: "Neue Kategorie", qs: VALUES.map(() => Array.from({ length: ROUNDS }, emptyQ)) });
+
+/* Ältere Speicherstände: eine Frage pro Stufe → in Liste mit ROUNDS Einträgen umwandeln */
+function normCats(cats) {
+  return cats.map(c => ({
+    name: String(c.name || "").replace(/­/g, ""),
+    qs: VALUES.map((_, r) => {
+      let lv = c.qs && c.qs[r];
+      lv = Array.isArray(lv) ? lv : (lv ? [lv] : []);
+      const out = lv.slice(0, ROUNDS).map(x => ({ q: String(x.q || ""), a: String(x.a || "") }));
+      while (out.length < ROUNDS) out.push(emptyQ());
+      return out;
+    })
+  }));
+}
+
+function iconOf(t, i) { return (t && t.icon) || ("svg:" + i); }
+function iconParts(ic) {
+  if (ic.startsWith("img:")) return { cls: "photo", style: `background-image:url('${ic.slice(4)}');`, inner: "" };
+  if (ic.startsWith("emoji:")) return { cls: "emoji", style: "", inner: esc(ic.slice(6)) };
+  return { cls: "", style: "", inner: ICONS[+ic.slice(4)] || ICONS[0] };
+}
+function badgeHTML(t, i, tag = "div", base = "badge") {
+  const p = iconParts(iconOf(t, i));
+  return `<${tag} class="${base} ${p.cls}" style="background-color:${tc(i)};${p.style}">${p.inner}</${tag}>`;
+}
+
+function pickDD(cats) {
+  const keys = [];
+  cats.forEach((_, ci) => VALUES.forEach((v, r) => { if (r > 0) keys.push(ci + "-" + r); }));
+  return keys[Math.floor(Math.random() * keys.length)];
+}
+function fresh(prev) {
+  const cats = prev ? prev.cats : normCats(DEFAULT_CATS);
+  return {
+    cats: clone(cats),
+    teams: prev ? prev.teams.map(t => ({ name: t.name, icon: t.icon, score: 0 })) : TEAM_DEFAULTS.map(n => ({ name: n, score: 0 })),
+    used: {}, turn: 0, dd: pickDD(cats),
+    timerOn: prev ? prev.timerOn : true,
+    round: prev ? prev.round : 0,
+    students: prev && prev.students ? prev.students.slice() : STUDENTS.slice(),
+    groups: prev && prev.groups ? clone(prev.groups) : null,
+    qv: QV
+  };
+}
+function migrateQ(s) {
+  if ((s.qv || 0) >= QV) return s;
+  s.cats = s.cats.map(c => {
+    const d = DEFAULT_CATS.find(x => x.name === c.name);
+    if (!d) return c;
+    const dn = normCats([d])[0];
+    if (c.qs.flat().every(x => !x.q.trim() || OLD_Q.has(x.q))) return dn;
+    // fehlende Runden (3 und 4) mit den neuen Fragen füllen, eigene Fragen bleiben
+    c.qs.forEach((lv, r) => lv.forEach((x, k) => { if (!x.q.trim() && !x.a.trim()) lv[k] = clone(dn.qs[r][k]); }));
+    return c;
+  });
+  s.qv = QV;
+  return s;
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && s.cats && s.teams) { s.cats = normCats(s.cats); s.round = s.round || 0; s.students = s.students || STUDENTS.slice(); s.groups = s.groups || null;
+      migrateQ(s);
+      return s; }
+    const old = JSON.parse(localStorage.getItem(OLD_KEY));
+    if (old && old.teams) {
+      const st = fresh();
+      st.teams = old.teams.map((t, i) => ({ name: t.name || TEAM_DEFAULTS[i], icon: t.icon, score: 0 }));
+      st.timerOn = old.timerOn !== false;
+      return st;
+    }
+  } catch (e) {}
+  return null;
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+let state = null;
+state = load() || fresh();
+let timerId = null;
+
+/* Frage der aktuellen Runde; falls leer, die andere Runde nehmen */
+function curQ(ci, r) {
+  const lv = state.cats[ci].qs[r];
+  const k = state.round % ROUNDS;
+  return (lv[k] && lv[k].q.trim()) ? lv[k] : (lv.find(x => x.q.trim()) || lv[0]);
+}
+
+function render() {
+  const b = $("board");
+  b.style.gridTemplateColumns = `repeat(${state.cats.length}, minmax(0, 1fr))`;
+  let h = state.cats.map(c => `<div class="cat">${esc(c.name)}</div>`).join("");
+  VALUES.forEach((v, r) => state.cats.forEach((c, ci) => {
+    const k = ci + "-" + r, u = state.used[k];
+    if (u === undefined) h += `<button class="tile" data-k="${k}" aria-label="${esc(c.name)} für ${v}">${v}</button>`;
+    else if (u >= 0) h += `<button class="tile used" data-team="${u}" style="--tc:${tc(u)}" data-who="${esc(state.teams[u].name)}" disabled>${v}</button>`;
+    else h += `<button class="tile used" data-who="–" disabled>${v}</button>`;
+  }));
+  b.innerHTML = h;
+  b.querySelectorAll(".tile:not(.used)").forEach(t => t.onclick = () => openQ(t.dataset.k));
+
+  $("teams").innerHTML = state.teams.map((t, i) => `
+    <div class="team ${i === state.turn ? "active" : ""}" style="--tc:${tc(i)}">
+      ${badgeHTML(t, i)}
+      <input class="tname" id="tname${i}" value="${esc(t.name)}" aria-label="Teamname ${i + 1}">
+      <div class="adj"><button data-i="${i}" data-d="100" aria-label="100 Punkte dazu">+100</button><button data-i="${i}" data-d="-100" aria-label="100 Punkte abziehen">−100</button></div>
+      <div class="score">${t.score}</div>
+      ${state.groups && state.groups[i] && state.groups[i].length ? `<button class="members" data-members="1" title="Gruppen anzeigen">${state.groups[i].map(esc).join(" · ")}</button>` : ""}
+    </div>`).join("");
+  document.querySelectorAll("[data-members]").forEach(b => b.onclick = groupsView);
+  state.teams.forEach((t, i) => {
+    const inp = $("tname" + i);
+    inp.onchange = () => { t.name = inp.value.trim() || TEAM_DEFAULTS[i]; save(); render(); };
+  });
+  document.querySelectorAll(".adj button").forEach(btn => btn.onclick = () => {
+    state.teams[+btn.dataset.i].score += +btn.dataset.d; save(); render();
+  });
+
+  const t = state.turn;
+  $("turn").innerHTML = `${badgeHTML(state.teams[t], t, "span", "dot")}Am Zug: <span style="color:${tc(t)}">${esc(state.teams[t].name)}</span>`;
+  $("roundChip").textContent = `Runde ${state.round % ROUNDS + 1}`;
+  $("btnTimer").setAttribute("aria-pressed", state.timerOn);
+  $("btnTimer").textContent = state.timerOn ? "⏱ Timer 30 s" : "⏱ Timer aus";
+}
+
+function show(html, cls) { $("ovCard").className = "card " + (cls || ""); $("ovCard").innerHTML = html; $("ov").hidden = false; }
+function hide() { stopTimer(); $("ov").hidden = true; }
+
+function openQ(k) {
+  const [ci, r] = k.split("-").map(Number);
+  if (k === state.dd) {
+    show(`<div class="splash">Doppelte Punkte!<small>Diese Frage zählt ${VALUES[r] * 2} Punkte</small></div>
+      <div class="row"><button class="big" id="go">Frage zeigen</button></div>`);
+    $("go").onclick = () => question(ci, r, true);
+    beep(660, .15); setTimeout(() => beep(880, .25), 160);
+  } else question(ci, r, false);
+}
+
+function question(ci, r, dd) {
+  const c = state.cats[ci], item = curQ(ci, r), pts = VALUES[r] * (dd ? 2 : 1), half = Math.round(pts / 2);
+  const key = ci + "-" + r;
+  let who = state.turn, shown = false;
+  show(`
+    <div class="qhead"><div class="qcat">${esc(c.name)}</div><div class="qval ${dd ? "double" : ""}">${pts} Punkte</div></div>
+    <div class="qtext">${esc(item.q)}</div>
+    ${state.timerOn ? `<div class="timer" id="tm"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--line)" stroke-width="10"/><circle id="arc" cx="50" cy="50" r="44" fill="none" stroke="var(--tile)" stroke-width="10" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg><div class="num" id="tnum">30</div></div>` : ""}
+    <div id="ansSlot" class="row"><button class="big" id="reveal">Antwort zeigen</button></div>
+    <div id="judgeZone" class="judgezone">
+      <div class="answering">
+        <span class="label">Es antwortet:</span>
+        <div class="whopick">${state.teams.map((t, i) => `<button class="who" style="--tc:${tc(i)}" data-who="${i}" aria-pressed="${i === who}">${esc(t.name)}</button>`).join("")}</div>
+      </div>
+      <div class="row">
+        <button class="jbtn ok" id="right">✓ Richtig <small>+${pts}</small></button>
+        <button class="jbtn no" id="wrongBtn">✗ Falsch <small>−${half}</small></button>
+      </div>
+      <div class="row"><button class="big ghost" id="back">Zurück zum Brett</button></div>
+    </div>`);
+
+  const showAnswer = () => {
+    if (shown) return;
+    shown = true; stopTimer();
+    $("ansSlot").outerHTML = `<div class="answer" id="ansSlot">${esc(item.a)}</div>`;
+  };
+  const finish = () => {
+    hide(); render();
+    if (Object.keys(state.used).length === state.cats.length * 5) setTimeout(podium, 600);
+  };
+  const close = (winner, verdictHTML) => {
+    state.used[key] = winner;
+    state.turn = (state.turn + 1) % state.teams.length;
+    save(); render();
+    showAnswer();
+    $("judgeZone").innerHTML = `${verdictHTML}<div class="row"><button class="big" id="next">Weiter zum Brett</button></div>`;
+    $("next").onclick = finish;
+  };
+
+  $("reveal").onclick = showAnswer;
+  $("back").onclick = hide;
+  $("judgeZone").querySelector(".whopick").addEventListener("click", e => {
+    const b = e.target.closest("[data-who]");
+    if (!b) return;
+    who = +b.dataset.who;
+    document.querySelectorAll(".who").forEach(x => x.setAttribute("aria-pressed", +x.dataset.who === who));
+  });
+  $("right").onclick = () => {
+    state.teams[who].score += pts; cheer();
+    close(who, `<div class="verdict" style="--tc:${tc(who)}">Richtig! +${pts} Punkte für ${esc(state.teams[who].name)}</div>`);
+  };
+  $("wrongBtn").onclick = () => {
+    state.teams[who].score -= half; beep(220, .35);
+    close(-1, `<div class="verdict" style="--tc:#ff8a80">Leider falsch: −${half} Punkte für ${esc(state.teams[who].name)}</div>`);
+  };
+  if (state.timerOn) startTimer(30);
+}
+
+function startTimer(sec) {
+  stopTimer();
+  const end = Date.now() + sec * 1000;
+  const tick = () => {
+    const left = Math.max(0, (end - Date.now()) / 1000);
+    const num = $("tnum"), arc = $("arc");
+    if (!num) return stopTimer();
+    num.textContent = Math.ceil(left);
+    arc.setAttribute("stroke-dashoffset", (276.5 * (1 - left / sec)).toFixed(1));
+    if (left <= 5) arc.setAttribute("stroke", "var(--t0)");
+    if (left <= 0) { stopTimer(); $("tm").classList.add("out"); num.textContent = "Zeit um!"; beep(330, .5); }
+  };
+  tick(); timerId = setInterval(tick, 100);
+}
+function stopTimer() { if (timerId) clearInterval(timerId); timerId = null; }
+
+let actx = null;
+function beep(f, d) {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = "triangle"; o.frequency.value = f; g.gain.value = .15;
+    o.connect(g); g.connect(actx.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + d); o.stop(actx.currentTime + d);
+  } catch (e) {}
+}
+function cheer() { beep(523, .12); setTimeout(() => beep(659, .12), 110); setTimeout(() => beep(784, .25), 220); }
+
+function confirmBox(text, yesLabel, onYes) {
+  show(`<div class="qtext" style="font-size:clamp(22px,3vw,40px)">${text}</div>
+    <div class="row"><button class="big" id="yes">${yesLabel}</button><button class="big ghost" id="no">Abbrechen</button></div>`);
+  $("yes").onclick = () => { hide(); onYes(); };
+  $("no").onclick = hide;
+}
+
+/* ---------- Fragen automatisch erstellen (Claude) ---------- */
+let sampleApi = null;
+let draft = null, setTab = "fragen";
+const busy = new WeakSet(), genMsg = new WeakMap();
+(async () => {
+  try { sampleApi = (window.claude && window.claude.use) ? await window.claude.use("sample") : null; } catch (e) { sampleApi = null; }
+  if (draft && !$("ov").hidden && setTab === "fragen" && $("setBody")) drawCats();
+})();
+
+function genPrompt(name, avoid) {
+  return `Du erstellst Quizfragen für ein Jeopardy-Spiel an der Wandtafel in einer 6. Primarschulklasse in der Schweiz (Kinder 11–12 Jahre, 23 Kinder, Kanton Basel-Landschaft).
+Kategorie: «${name}»
+
+Erstelle für jede der 5 Punktestufen genau ${ROUNDS} verschiedene Fragen (eine pro Spielrunde), also ${ROUNDS * 5} Fragen.
+Schwierigkeit:
+- 100: so einfach, dass wirklich jedes Kind der Klasse sie beantworten kann.
+- 200: einfach.
+- 300: mittel.
+- 400: anspruchsvoll: nur etwa ein Drittel der Klasse weiss es.
+- 500: schwer: nur einzelne Kinder (etwa 2 bis 4 von 23) wissen es. Wissen, das über den Schulstoff hinausgeht, ist erwünscht, aber es muss für besonders interessierte 12-Jährige erreichbar sein.
+Die Fragen einer Stufe sollen ähnlich schwer sein.
+
+Regeln:
+- Schweizer Hochdeutsch (ss statt ß), kindgerecht.
+- Fragen kurz und klar, gut lesbar auf der Tafel (höchstens etwa 20 Wörter).
+- Antworten kurz und eindeutig. Nur sicher korrekte Fakten; wenn du bei etwas unsicher bist, nimm eine andere Frage.
+- Keine Fragen, die diesen bereits vorhandenen Fragen ähneln: ${avoid.length ? avoid.map(x => "«" + x + "»").join("; ") : "(keine)"}
+
+Antworte ausschliesslich mit JSON in genau dieser Form, die Stufen in der Reihenfolge 100, 200, 300, 400, 500:
+{"stufen":[[{"frage":"…","antwort":"…"}, … genau ${ROUNDS} Objekte …],[…],[…],[…],[…]]}`;
+}
+function parseGen(res) {
+  const st = res && (res.stufen || res.levels);
+  if (!Array.isArray(st) || st.length < 5) throw { code: "shape" };
+  return st.slice(0, 5).map(lv => {
+    if (!Array.isArray(lv) || lv.length < ROUNDS) throw { code: "shape" };
+    return lv.slice(0, ROUNDS).map(x => {
+      const q = String((x && (x.frage || x.q)) || "").trim(), a = String((x && (x.antwort || x.a)) || "").trim();
+      if (!q || !a) throw { code: "shape" };
+      return { q, a };
+    });
+  });
+}
+const catEmpty = c => c.qs.every(lv => lv.every(x => !x.q.trim() && !x.a.trim()));
+
+async function genCat(c) {
+  if (!sampleApi || busy.has(c)) return;
+  const name = c.name.trim();
+  if (!name) { genMsg.set(c, "Gib der Kategorie zuerst einen Namen."); drawCats(); return; }
+  busy.add(c); genMsg.delete(c);
+  if (setTab === "fragen") drawCats();
+  const avoid = draft.cats.filter(x => x !== c).flatMap(x => x.qs.flat().map(y => y.q).filter(Boolean)).slice(0, 80);
+  try {
+    const res = await sampleApi.json(genPrompt(name, avoid), { modelTier: "default" });
+    c.qs = parseGen(res);
+    genMsg.set(c, `✓ ${ROUNDS * 5} neue Fragen erstellt.`+" Bitte kurz durchlesen und dann speichern.");
+  } catch (e) {
+    const code = e && e.code;
+    genMsg.set(c, code === "not_granted" ? "Das automatische Erstellen wurde nicht erlaubt. Du kannst die Fragen von Hand eintragen."
+      : code === "rate_limited" ? "Gerade zu viele Anfragen. Bitte in einer Minute nochmals versuchen."
+      : "Die Fragen konnten nicht erstellt werden. Bitte nochmals versuchen.");
+  } finally {
+    busy.delete(c);
+    if (draft && !$("ov").hidden && setTab === "fragen" && $("setBody")) drawCats();
+  }
+}
+
+/* ---------- Einstellungen ---------- */
+
+function settings(tab) {
+  draft = {
+    cats: normCats(clone(state.cats)),
+    teams: state.teams.map((t, i) => ({ name: t.name, icon: iconOf(t, i) })),
+    students: state.students.join("\n")
+  };
+  setTab = tab || "fragen";
+  show(`
+    <div class="sethead">
+      <div class="qcat">Einstellungen</div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tabQ">Kategorien &amp; Fragen</button>
+        <button class="tab" role="tab" id="tabT">Teams</button>
+      </div>
+    </div>
+    <div class="setbody" id="setBody"></div>
+    <div class="setfoot">
+      <button class="big ghost reset-all" id="setResetAll">Alles zurücksetzen</button>
+      <p class="err" id="setErr"></p>
+      <button class="big ghost" id="setCancel">Abbrechen</button>
+      <button class="big" id="setSave">Speichern</button>
+    </div>`, "settings");
+  $("tabQ").onclick = () => { setTab = "fragen"; drawSet(); };
+  $("tabT").onclick = () => { setTab = "teams"; drawSet(); };
+  $("setCancel").onclick = hide;
+  $("setResetAll").onclick = resetAll;
+  $("setSave").onclick = saveSettings;
+  const body = $("setBody");
+  body.addEventListener("input", onSetInput);
+  body.addEventListener("click", onSetClick);
+  body.addEventListener("change", onSetChange);
+  drawSet();
+}
+
+function drawSet() {
+  $("tabQ").setAttribute("aria-selected", setTab === "fragen");
+  $("tabT").setAttribute("aria-selected", setTab === "teams");
+  $("setErr").textContent = "";
+  if (setTab === "fragen") drawCats(); else drawTeams();
+}
+
+function drawCats() {
+  const body = $("setBody"), top = body.scrollTop, n = draft.cats.length;
+  const genHint = sampleApi
+    ? `Neue Kategorie: Namen eintippen, dann erstellt Claude automatisch ${ROUNDS * 5} passende Fragen. Mit «✨ Fragen erstellen» kannst du die Fragen einer Kategorie jederzeit neu machen lassen.`
+    : "Automatisches Erstellen ist in dieser Ansicht nicht verfügbar; Fragen kannst du hier von Hand eintragen.";
+  body.innerHTML = `
+    <p class="hint">Jede Kategorie hat pro Punktestufe ${ROUNDS} Fragen, eine für jede Runde. So kannst du ${ROUNDS} Runden ohne Wiederholung spielen. Bleibt ein Feld leer, nimmt das Spiel dort die Frage einer anderen Runde. 100 = alle wissen es, 500 = eher schwer. ${genHint}</p>
+    ${draft.cats.map((c, ci) => {
+      const isBusy = busy.has(c), msg = genMsg.get(c);
+      return `
+      <div class="catcard ${isBusy ? "busy" : ""}">
+        <div class="catrow">
+          <input class="fld" id="cn${ci}" data-f="name" data-c="${ci}" value="${esc(c.name)}" aria-label="Name von Kategorie ${ci + 1}">
+          ${sampleApi ? `<button class="mini gen" data-gen="${ci}" ${isBusy ? "disabled" : ""}>${isBusy ? "Erstelle Fragen…" : "✨ Fragen erstellen"}</button>` : ""}
+          <button class="mini" data-mv="${ci}" data-d="-1" ${ci === 0 ? "disabled" : ""} aria-label="Kategorie nach links">◀</button>
+          <button class="mini" data-mv="${ci}" data-d="1" ${ci === n - 1 ? "disabled" : ""} aria-label="Kategorie nach rechts">▶</button>
+          <button class="mini warn" data-rm="${ci}" ${n <= 2 ? "disabled" : ""}>Entfernen</button>
+        </div>
+        ${isBusy ? `<p class="genmsg working">Claude schreibt gerade ${ROUNDS * 5} Fragen für «${esc(c.name)}». Das dauert etwa eine halbe Minute.</p>` : msg ? `<p class="genmsg">${esc(msg)}</p>` : ""}
+        <div class="colhead"><span>Punkte</span><span>Runde</span><span>Frage</span><span>Antwort</span></div>
+        ${c.qs.map((lv, r) => lv.map((x, k) => `
+          <div class="qrow ${k === 0 ? "first" : ""}">
+            <div class="pv">${k === 0 ? VALUES[r] : ""}</div>
+            <div class="rl">Runde ${k + 1}</div>
+            <textarea class="fld" rows="2" id="q${ci}_${r}_${k}" data-f="q" data-c="${ci}" data-r="${r}" data-k="${k}" placeholder="Frage für ${VALUES[r]} Punkte" aria-label="${esc(c.name)}, ${VALUES[r]} Punkte, Runde ${k + 1}, Frage" ${isBusy ? "disabled" : ""}>${esc(x.q)}</textarea>
+            <textarea class="fld" rows="2" id="a${ci}_${r}_${k}" data-f="a" data-c="${ci}" data-r="${r}" data-k="${k}" placeholder="Antwort" aria-label="${esc(c.name)}, ${VALUES[r]} Punkte, Runde ${k + 1}, Antwort" ${isBusy ? "disabled" : ""}>${esc(x.a)}</textarea>
+          </div>`).join("")).join("")}
+      </div>`;
+    }).join("")}
+    <div class="row" style="justify-content:flex-start">
+      <button class="mini" id="addCat" ${n >= 6 ? "disabled" : ""}>+ Kategorie hinzufügen</button>
+      <button class="mini" id="loadEx" data-arm="Beispielfragen laden">Beispielfragen laden</button>
+      <button class="mini warn" id="clearAll" data-arm="Alle Fragen leeren">Alle Fragen leeren</button>
+    </div>`;
+  body.scrollTop = top;
+}
+
+function drawTeams() {
+  const choices = [...ICONS.map((_, n) => "svg:" + n), ...EMOJIS.map(e => "emoji:" + e)];
+  $("setBody").innerHTML = `
+    <p class="hint">Wähle für jedes Team einen Namen und ein Bild. Du kannst auch ein eigenes Bild hochladen, zum Beispiel eine Zeichnung der Gruppe.</p>
+    ${draft.teams.map((t, i) => `
+      <div class="teamset" style="--tc:${tc(i)}">
+        ${badgeHTML(t, i)}
+        <input class="fld" id="tn${i}" data-tn="${i}" value="${esc(t.name)}" aria-label="Name von Team ${i + 1}">
+        <div class="picks">${choices.map((ic, k) => `<button class="pick" data-ti="${i}" data-ic="${esc(ic)}" aria-pressed="${t.icon === ic}" aria-label="${k < ICONS.length ? ICON_NAMES[k] : "Bild " + (k + 1)}">${iconParts(ic).inner}</button>`).join("")}</div>
+        <div class="upload">
+          <input type="file" accept="image/*" id="up${i}" data-up="${i}">
+          <label for="up${i}" class="mini">Eigenes Bild hochladen</label>
+          ${t.icon.startsWith("img:") ? '<span class="hint">Eigenes Bild ist ausgewählt</span>' : ""}
+        </div>
+      </div>`).join("")}
+    <div class="catcard">
+      <div class="qcat" style="font-size:22px">Klassenliste</div>
+      <p class="hint">Ein Name pro Zeile. Diese Kinder werden mit «🎲 Gruppen» zufällig auf die vier Teams verteilt.</p>
+      <textarea class="fld" id="studentList" data-students="1" rows="10" aria-label="Klassenliste">${esc(draft.students)}</textarea>
+    </div>`;
+}
+
+function onSetInput(e) {
+  const el = e.target, d = el.dataset;
+  if (d.f === "name") draft.cats[+d.c].name = el.value;
+  else if (d.f === "q" || d.f === "a") draft.cats[+d.c].qs[+d.r][+d.k][d.f] = el.value;
+  else if (d.tn !== undefined) draft.teams[+d.tn].name = el.value;
+  else if (d.students) draft.students = el.value;
+}
+
+function armed(btn, label) {
+  if (btn.dataset.armed) return true;
+  btn.dataset.armed = "1";
+  btn.textContent = label || "Sicher? Nochmals tippen";
+  setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = btn.dataset.arm || "Entfernen"; } }, 3000);
+  return false;
+}
+
+function onSetClick(e) {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const d = btn.dataset;
+  if (d.mv !== undefined) {
+    const a = +d.mv, b = a + +d.d;
+    [draft.cats[a], draft.cats[b]] = [draft.cats[b], draft.cats[a]];
+    drawCats();
+  } else if (d.rm !== undefined) {
+    if (armed(btn)) { draft.cats.splice(+d.rm, 1); drawCats(); }
+  } else if (d.gen !== undefined) {
+    const c = draft.cats[+d.gen];
+    d.arm = "✨ Fragen erstellen";
+    if (catEmpty(c) || armed(btn, "Fragen ersetzen? Nochmals tippen")) genCat(c);
+  } else if (btn.id === "addCat") {
+    draft.cats.push(blankCat()); drawCats();
+    const inp = $("cn" + (draft.cats.length - 1));
+    inp.scrollIntoView?.({ block: "center" }); inp.select();
+  } else if (btn.id === "loadEx") {
+    if (armed(btn)) { draft.cats = normCats(clone(DEFAULT_CATS)); drawCats(); }
+  } else if (btn.id === "clearAll") {
+    if (armed(btn)) { draft.cats.forEach(c => c.qs.forEach(lv => lv.forEach(x => { x.q = ""; x.a = ""; }))); drawCats(); }
+  } else if (d.ti !== undefined) {
+    draft.teams[+d.ti].icon = d.ic; drawTeams();
+  }
+}
+
+function onSetChange(e) {
+  const el = e.target;
+  // Neue (leere) Kategorie bekommt einen Namen → sofort Fragen erstellen lassen
+  if (el.dataset.f === "name") {
+    const c = draft.cats[+el.dataset.c];
+    if (c && c.name.trim() && c.name.trim() !== "Neue Kategorie" && catEmpty(c)) genCat(c);
+    return;
+  }
+  if (el.dataset.up === undefined || !el.files || !el.files[0]) return;
+  const i = +el.dataset.up, file = el.files[0];
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const S = 200, cv = document.createElement("canvas");
+      cv.width = cv.height = S;
+      const m = Math.min(img.width, img.height);
+      cv.getContext("2d").drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, S, S);
+      draft.teams[i].icon = "img:" + cv.toDataURL("image/jpeg", 0.85);
+      drawTeams();
+    };
+    img.onerror = () => { $("setErr").textContent = "Dieses Bild konnte nicht geöffnet werden. Versuche ein JPG oder PNG."; };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetAll() {
+  confirmBox("Alles zurücksetzen?<br><span style=\"font-size:.6em;color:var(--muted)\">Fragen, Kategorien, Teamnamen, Teambilder und Punkte gehen auf den Anfangszustand zurück. Das lässt sich nicht rückgängig machen.</span>",
+    "Ja, alles zurücksetzen", () => {
+      try { localStorage.removeItem(KEY); localStorage.removeItem(OLD_KEY); } catch (e) {}
+      state = null;
+      state = fresh();
+      save(); render();
+    });
+}
+
+function saveSettings() {
+  if (draft.cats.some(c => busy.has(c))) { $("setErr").textContent = "Claude erstellt noch Fragen. Bitte kurz warten."; return; }
+  const problems = [];
+  draft.cats.forEach((c, ci) => {
+    c.name = c.name.trim();
+    if (!c.name) problems.push(`Kategorie ${ci + 1} hat keinen Namen`);
+    const missing = [];
+    c.qs.forEach((lv, r) => {
+      lv.forEach((x, k) => { if (!!x.q.trim() !== !!x.a.trim()) missing.push(`${VALUES[r]} (Runde ${k + 1})`); });
+      if (!lv.some(x => x.q.trim() && x.a.trim())) missing.push(`${VALUES[r]} (alle Runden leer)`);
+    });
+    if (missing.length) problems.push(`«${c.name || "Kategorie " + (ci + 1)}»: Frage oder Antwort fehlt bei ${missing.slice(0, 3).join(", ")}${missing.length > 3 ? " …" : ""}`);
+  });
+  if (problems.length) {
+    setTab = "fragen"; drawSet();
+    $("setErr").textContent = problems[0] + (problems.length > 1 ? ` (und ${problems.length - 1} weitere)` : "");
+    return;
+  }
+  const changedLayout = draft.cats.length !== state.cats.length ||
+    draft.cats.some((c, i) => c.name !== state.cats[i].name);
+  state.cats = clone(draft.cats);
+  state.teams = state.teams.map((t, i) => ({ ...t, name: draft.teams[i].name.trim() || TEAM_DEFAULTS[i], icon: draft.teams[i].icon }));
+  const list = [...new Set(draft.students.split(/[\n,;]+/).map(x => x.trim()).filter(Boolean))];
+  if (list.join("|") !== state.students.join("|")) {
+    state.students = list;
+    if (state.groups) state.groups = state.groups.map(g => g.filter(n => list.includes(n)));
+  }
+  if (changedLayout) { state.used = {}; state.dd = pickDD(state.cats); }
+  save(); hide(); render();
+}
+
+
+/* ---------- Gruppen auslosen ---------- */
+let absent = new Set(), dealing = false;
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    let j;
+    try { const u = new Uint32Array(1); crypto.getRandomValues(u); j = u[0] % (i + 1); } catch (e) { j = Math.floor(Math.random() * (i + 1)); }
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function groupsView() {
+  absent = new Set([...absent].filter(n => state.students.includes(n)));
+  show(`
+    <div class="sethead">
+      <div class="qcat">Gruppen auslosen</div>
+      <p class="hint" style="margin:0">Fehlt heute jemand? Einfach auf den Namen tippen, dann wird das Kind nicht eingeteilt.</p>
+    </div>
+    <div class="setbody" id="grBody"></div>
+    <div class="setfoot">
+      <p class="err ok" id="grMsg"></p>
+      <button class="big ghost" id="grClose">Schliessen</button>
+      <button class="big" id="grDraw">🎲 Auslosen</button>
+    </div>`, "settings groupview");
+  $("grClose").onclick = () => { if (!dealing) hide(); };
+  $("grDraw").onclick = dealGroups;
+  $("grBody").addEventListener("click", e => {
+    const chip = e.target.closest("[data-st]");
+    if (!chip || dealing) return;
+    const n = chip.dataset.st;
+    absent.has(n) ? absent.delete(n) : absent.add(n);
+    drawGroups(state.groups);
+  });
+  drawGroups(state.groups);
+}
+
+function drawGroups(groups, visibleCount) {
+  const present = state.students.filter(n => !absent.has(n));
+  let shown = 0;
+  $("grBody").innerHTML = `
+    <div class="label" style="text-align:left">Klasse: ${present.length} von ${state.students.length} anwesend</div>
+    <div class="chips">${state.students.map(n => `<button class="chip ${absent.has(n) ? "off" : ""}" data-st="${esc(n)}" aria-pressed="${!absent.has(n)}">${esc(n)}</button>`).join("")}</div>
+    <div class="groups">${state.teams.map((t, i) => {
+      const g = (groups && groups[i]) || [];
+      return `<div class="group" style="--tc:${tc(i)}">
+        <div class="ghead">${badgeHTML(t, i)}<span>${esc(t.name)}</span><em>${g.length || ""}</em></div>
+        <ol>${g.map(n => { shown++; const vis = visibleCount === undefined || shown <= visibleCount; return vis ? `<li class="${visibleCount !== undefined && shown === visibleCount ? "new" : ""}">${esc(n)}</li>` : ""; }).join("")}</ol>
+      </div>`;
+    }).join("")}</div>`;
+}
+
+function dealGroups() {
+  if (dealing) return;
+  const present = shuffle(state.students.filter(n => !absent.has(n)));
+  if (present.length < state.teams.length) { $("grMsg").textContent = "Es braucht mindestens 4 anwesende Kinder."; return; }
+  const k = state.teams.length, start = Math.floor(Math.random() * k);
+  const groups = Array.from({ length: k }, () => []);
+  // reihum verteilen: Gruppen unterscheiden sich höchstens um 1 Kind
+  const order = [];
+  present.forEach((n, idx) => { const g = (start + idx) % k; groups[g].push(n); order.push(g); });
+  state.groups = groups; save();
+  // Animation: Namen nacheinander in der Reihenfolge der Verteilung zeigen
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const done = () => {
+    dealing = false; drawGroups(groups);
+    $("grDraw").disabled = false; $("grClose").disabled = false;
+    $("grDraw").textContent = "🎲 Neu auslosen";
+    $("grMsg").textContent = "✓ Gruppen sind eingeteilt und gespeichert.";
+    render(); cheer();
+  };
+  if (reduce) return done();
+  dealing = true; $("grDraw").disabled = true; $("grClose").disabled = true; $("grMsg").textContent = "";
+  // sichtbare Teilmenge pro Schritt: Namen in Gruppenreihenfolge zählen
+  const shownPerGroup = groups.map(() => 0);
+  let step = 0;
+  const tick = () => {
+    if (!$("grBody")) { dealing = false; return; }
+    shownPerGroup[order[step]]++;
+    step++;
+    renderPartial(groups, shownPerGroup, order[step - 1]);
+    beep(400 + order[step - 1] * 120, .08);
+    if (step < order.length) setTimeout(tick, 170); else setTimeout(done, 400);
+  };
+  tick();
+}
+
+function renderPartial(groups, counts, lastGroup) {
+  const partial = groups.map((g, i) => g.slice(0, counts[i]));
+  drawGroups(partial);
+  const lis = document.querySelectorAll(".group")[lastGroup]?.querySelectorAll("li");
+  if (lis && lis.length) lis[lis.length - 1].classList.add("new");
+}
+
+function podium() {
+  const ranked = state.teams.map((t, i) => ({ ...t, i })).sort((a, b) => b.score - a.score);
+  const order = [ranked[1], ranked[0], ranked[2], ranked[3]].filter(Boolean);
+  const top = Math.max(1, ranked[0].score);
+  show(`<div class="splash" style="color:var(--tile);text-shadow:0 6px 0 #8a5d10;font-size:clamp(36px,6vw,96px)">Siegerehrung</div>
+    <div class="podium">${order.map(t => {
+      const place = ranked.indexOf(t) + 1;
+      const h = 60 + Math.max(0, t.score) / top * 160 * (place === 1 ? 1.15 : 1);
+      return `<div class="pod" style="--tc:${tc(t.i)}">${badgeHTML(t, t.i)}<div class="n">${esc(t.name)}</div><div class="s">${t.score} Punkte</div><div class="bar" style="height:${Math.round(h)}px">${place}.</div></div>`;
+    }).join("")}</div>
+    <div class="row"><button class="big ghost" id="close">Zurück zum Brett</button></div>`);
+  $("close").onclick = hide;
+  confetti(); cheer();
+}
+function confetti() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = document.createElement("canvas"); cv.className = "confetti"; document.body.appendChild(cv);
+  const ctx = cv.getContext("2d"); cv.width = innerWidth; cv.height = innerHeight;
+  const cols = ["#ee6b2f", "#48a9e6", "#e0559a", "#a7cf3c", "#f4b942"];
+  const ps = Array.from({ length: 160 }, () => ({ x: Math.random() * cv.width, y: -Math.random() * cv.height, s: 6 + Math.random() * 8, v: 2 + Math.random() * 4, r: Math.random() * 6, c: cols[Math.floor(Math.random() * 5)] }));
+  let n = 0;
+  (function f() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ps.forEach(p => { p.y += p.v; p.x += Math.sin((p.y + p.r * 40) / 40); p.r += .05; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore(); });
+    if (++n < 260) requestAnimationFrame(f); else cv.remove();
+  })();
+}
+
+$("btnTimer").onclick = () => { state.timerOn = !state.timerOn; save(); render(); };
+$("btnEdit").onclick = () => settings();
+$("btnGroups").onclick = groupsView;
+$("btnReset").onclick = () => {
+  const next = (state.round + 1) % ROUNDS + 1;
+  confirmBox(`Runde ${next} starten?<br><span style="font-size:.6em;color:var(--muted)">Das Brett bekommt die Fragen von Runde ${next}, alle Punkte gehen auf 0. Fragen und Teams bleiben gleich.</span>`,
+    `Runde ${next} starten`, () => {
+      const prev = state;
+      state = fresh({ ...prev, round: (prev.round + 1) % ROUNDS });
+      save(); render();
+    });
+};
+$("btnEnd").onclick = podium;
+$("btnFull").onclick = () => {
+  try {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen().catch(() => {});
+  } catch (e) {}
+};
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("ov").hidden && !$("ovCard").classList.contains("settings")) hide();
+});
+
+window.claude?.hot?.snapshot?.(() => state);
+const start = d => { if (d && d.cats) { state = d; state.cats = normCats(state.cats); state.round = state.round || 0; state.students = state.students || STUDENTS.slice(); state.groups = state.groups || null; migrateQ(state); save(); } render(); };
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? null);
+</script>
+
+</body></html>

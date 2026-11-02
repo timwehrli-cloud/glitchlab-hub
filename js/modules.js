@@ -153,6 +153,25 @@
   /* ---------------------------------------------------------------
      Deutsch · Gespräche führen: Wüsten-Game (games/wueste) + Platzhalter
      --------------------------------------------------------------- */
+  /* ---------- Spiele aus eigenen Artefakten (laufen im Rahmen, «✓ Fertig» gibt 1 Stern) ---------- */
+  H.themes.push(
+    { id: "mg-quiz", subject: "mg", title: "Quiz-Shows", teaser: "Jeopardy für die ganze Klasse: Die Lehrperson leitet das Spiel.", art: "hallo", c: "#7048E8", c2: "#24104F", lpOnly: true },
+    { id: "en-time", subject: "en", title: "How long does it take?", teaser: "Nach der Dauer fragen und richtig antworten.", art: "hallo", c: "#C2255C", c2: "#4A0A23" }
+  );
+  const game = (o) => H.registerModule(Object.assign({ kind: "frame", doneBtn: true, activities: [{ id: "fertig", title: "Fertig gemeldet", maxStars: 1 }] }, o));
+  game({ id: "mg-jeopardy-schweiz", subject: "mg", theme: "mg-quiz", src: "games/jeopardy-schweiz/index.html", title: "Schweiz-Jeopardy", minutes: 45, lpOnly: true, emoji: "🇨🇭", c: "#D52B1E",
+    teaser: "Fragen rund um die Schweiz, in Teams gespielt. Nur im Lehrpersonen-Konto sichtbar." });
+  game({ id: "mg-jeopardy-herbst", subject: "mg", theme: "mg-quiz", src: "games/jeopardy-herbst/index.html", title: "Herbst-Jeopardy", minutes: 45, lpOnly: true, emoji: "🍂", c: "#E8590C",
+    teaser: "Herbst-Fragen für die 6. Klasse, in Teams gespielt. Nur im Lehrpersonen-Konto sichtbar." });
+  game({ id: "en-how-long", subject: "en", theme: "en-time", src: "games/how-long/index.html", title: "How long does it take?", minutes: 30, emoji: "⏱️", c: "#C2255C",
+    teaser: "Theorie zum Nachlesen und drei kurze Übungen zum Schulalltag." });
+  game({ id: "nmg-tombola-romana", subject: "nmg", theme: "nmg-roemer", src: "games/tombola-romana/index.html", title: "Tombola Romana", minutes: 20, emoji: "🎲", c: "#8A2E2A",
+    teaser: "Bingo mit römischen Zahlen von I bis C." });
+  game({ id: "nmg-statuen-pose", subject: "nmg", theme: "nmg-roemer", src: "games/statuen-pose-blitz/index.html", title: "Römische Statuen – Pose-Blitz", minutes: 20, emoji: "🗿", c: "#C9A227",
+    teaser: "Die Drehscheibe wählt eine römische Figur. Schnell die Pose einnehmen und erstarren!" });
+  game({ id: "nmg-essen-tierlist", subject: "nmg", theme: "nmg-roemer", src: "games/essen-tierlist/index.html", title: "Römisches Essen – Tier-List", minutes: 25, emoji: "🍇", c: "#7A3E9D",
+    teaser: "Römische Speisen bewerten und in eine Rangliste von S bis D sortieren." });
+
   H.registerModule({
     id: "de-wueste", subject: "de", theme: "de-gespraech", kind: "frame", src: "games/wueste/index.html", work: "wueste",
     title: "Wüsten-Game", minutes: 90, frameBg: "#FFF6E0",
