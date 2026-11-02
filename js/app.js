@@ -501,6 +501,7 @@
     S.me.extras = Object.assign({}, S.me.extras || {}, x);
     clearTimeout(extT); extT = setTimeout(() => S.be.saveExtras(S.token, S.me.extras).catch(() => {}), 800);
   }
+  let ovTimer = null;
   window.GLHubBridge = {
     context(lab) {
       const k = s => ({ id: s.id, n: s.first_name, c: s.color });
@@ -570,6 +571,15 @@
     overlay(on) {
       const f = document.getElementById("roomFrame"); if (!f) return;
       f.classList.toggle("full", on); document.body.style.overflow = on ? "hidden" : "";
+      /* Sicherheitsnetz: Ist im Zimmer kein Fenster mehr offen, gibt der Hub die Seite wieder frei (sonst wären die Fächer blockiert) */
+      clearInterval(ovTimer);
+      if (on) ovTimer = setInterval(() => {
+        const fr = document.getElementById("roomFrame"); if (!fr || !fr.classList.contains("full")) return clearInterval(ovTimer);
+        try { const d = fr.contentDocument, w = fr.contentWindow;
+          const open = [...d.querySelectorAll("body > .wd-ov, body > .pt-ov")].some(el => !el.hidden && w.getComputedStyle(el).display !== "none");
+          if (!open) { fr.classList.remove("full"); document.body.style.overflow = ""; clearInterval(ovTimer); }
+        } catch (e) { /* anderer Ursprung: nichts tun */ }
+      }, 2000);
     }
   };
 

@@ -628,8 +628,13 @@ function homeHooks(){
   try { new ResizeObserver(size).observe(portalEl); } catch(e){ setInterval(size, 1000); }
   size();
   let open = false;
-  const check = ()=>{ const now = !!document.querySelector("body > .wd-ov, body > .pt-ov"); if (now !== open){ open = now; try { HB.overlay && HB.overlay(now); } catch(e){} } };
-  new MutationObserver(check).observe(document.body, {childList:true});
+  const visible = el => !el.hidden && getComputedStyle(el).display !== "none" && getComputedStyle(el).visibility !== "hidden";
+  const check = ()=>{ const now = [...document.querySelectorAll("body > .wd-ov, body > .pt-ov")].some(visible); if (now !== open){ open = now; try { HB.overlay && HB.overlay(now); } catch(e){} } };
+  new MutationObserver(check).observe(document.body, {childList:true, subtree:true, attributes:true, attributeFilter:["hidden","style","class"]});
+  setInterval(check, 1500);
+  /* Escape schliesst jedes offene Fenster */
+  document.addEventListener("keydown", e=>{ if (e.key !== "Escape") return; const ov = [...document.querySelectorAll("body > .wd-ov, body > .pt-ov")].filter(visible).pop(); if (!ov) return;
+    const x = ov.querySelector('[data-pt$="-close"], [data-gl-lex="close"]'); if (x) x.click(); else ov.remove(); setTimeout(check, 50); });
 }
 function railBtn(act, ic, n, sub, isNew, c, k){
   return `<button type="button" class="pt-rb" data-pt="${act}" style="--rc:${c}; --rd:${(k*.35).toFixed(2)}s"${act === "sound" ? ` aria-pressed="${window.GLAB_R.soundOn()}"` : ""}><span class="pt-rb-ic" aria-hidden="true">${ic}</span><span class="pt-rb-t"><b>${n}</b><small>${sub}</small></span>${isNew ? `<span class="pt-new">NEU</span>` : ""}</button>`;

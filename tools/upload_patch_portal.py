@@ -47,3 +47,13 @@ urep('''  window.GLAB_ROOMBG = id; saveD();''', '''  const cb = CU.bgs.find(x=>x
   if (id !== "pixel" && id !== "chalet" && !cb) return;
   window.GLAB_ROOMBG = id; saveD();''')
 urep('''  if (a === "bg-pixel" || a === "bg-chalet"){ return pickBg(a.slice(3)); }''', '''  if (a && a.startsWith("bg-")){ return pickBg(a.slice(3)); }''')
+
+# Fenster-Erkennung robuster: nur sichtbare Fenster zählen, auch versteckte/umgestylte erkennen, plus Sicherheits-Takt
+urep('''  const check = ()=>{ const now = !!document.querySelector("body > .wd-ov, body > .pt-ov"); if (now !== open){ open = now; try { HB.overlay && HB.overlay(now); } catch(e){} } };
+  new MutationObserver(check).observe(document.body, {childList:true});''', '''  const visible = el => !el.hidden && getComputedStyle(el).display !== "none" && getComputedStyle(el).visibility !== "hidden";
+  const check = ()=>{ const now = [...document.querySelectorAll("body > .wd-ov, body > .pt-ov")].some(visible); if (now !== open){ open = now; try { HB.overlay && HB.overlay(now); } catch(e){} } };
+  new MutationObserver(check).observe(document.body, {childList:true, subtree:true, attributes:true, attributeFilter:["hidden","style","class"]});
+  setInterval(check, 1500);
+  /* Escape schliesst jedes offene Fenster */
+  document.addEventListener("keydown", e=>{ if (e.key !== "Escape") return; const ov = [...document.querySelectorAll("body > .wd-ov, body > .pt-ov")].filter(visible).pop(); if (!ov) return;
+    const x = ov.querySelector('[data-pt$="-close"], [data-gl-lex="close"]'); if (x) x.click(); else ov.remove(); setTimeout(check, 50); });''')
