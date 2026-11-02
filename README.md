@@ -42,7 +42,7 @@ Das **Chalet** als Zimmer-Hintergrund wird frei, sobald die «Alte Eidgenossensc
 Das **Wüsten-Game** mit seinen 3 Levels. Pro Level gibt es bis zu 10 Sterne (Wasserstand ÷ 10).
 
 Dazu kommen **Dschungel-Game** und **Tundra-Game** (je 3 Levels) und das **Lava-Game** (1 Level, Heimtraining allein). Jedes Game hat Diplome (Level mit 6+ Sternen, Meister = alle Tanks voll), ein Emote (Hälfte in Level 1), einen Hintergrund (alle Level gespielt) und einen Skin (90 % der Sterne). Die Belohnungen stehen in `js/app.js` (GAME_REW und BUILTIN_BGS).
-Die Gruppe ist mit den Namen des Teams schon ausgefüllt. **Dschungel-Game** und **Tundra-Game** sind als «Bald» vorbereitet.
+Die Gruppe ist mit den Namen des Teams schon ausgefüllt.
 
 ## Module aus dem gLiTCh-Lab (M&I)
 
