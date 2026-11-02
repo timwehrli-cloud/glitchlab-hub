@@ -49,6 +49,8 @@ post = """<script>
 """
 pre = pre.replace("@G", GAME).replace("@K2", K2).replace("@K1", K1)
 post = post.replace("@G", GAME)
+if GAME == "tundra":
+    exec(open(pathlib.Path(__file__).with_name("tundra_patch.py"), encoding="utf-8").read())
 # Spielzustand für die Brücke sichtbar machen (das Spiel steckt in einer Funktion)
 end = src.rindex("</script>")
 k = src.rindex("})();", 0, end)

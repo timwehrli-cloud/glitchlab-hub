@@ -597,6 +597,7 @@ td,th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertic
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-weight:700}
 pre.sum{white-space:pre-wrap;font-family:var(--body);font-size:14px;background:var(--bg);border:2px solid var(--line);border-radius:8px;padding:12px;max-height:280px;overflow:auto}
 .city{font-family:var(--hud);font-size:22px;line-height:1.1;white-space:pre;color:var(--accent);overflow-x:auto}
+.solvebox{border:2px dashed var(--e2);margin:0 0 14px}.solve-l{margin:0;padding-left:20px}.solve-l li{margin:8px 0;line-height:1.4}
 </style>
 </head>
 <body>
@@ -912,7 +913,7 @@ function reasonPro(t){return /\b(weil|denn|damit|deshalb|darum|da)\b/i.test(t||"
 function waterParts(){
  const ms=members();const frac=(n,d)=>d?Math.min(1,n/d):0;
  const e1=frac(QUIZ.filter((q,i)=>S.quiz[i]===q.r).length,QUIZ.length)*6+frac(rmFound(),rmTotal())*7+frac(argsTrue().filter(i=>S.args&&S.args[i]).length,argsTrue().length)*4+frac(CUR.match.filter((m,i)=>S.match&&S.match[i]===m.a).length,CUR.match.length)*5+(S.approved.gate1?3:0);
- let a=0,b=0;ms.forEach(m=>{const o=S.op&&S.op[m];if(!o)return;if(o.side&&opOk(o.text))a++;CUR.fit.forEach((f,k)=>{const fx=o.fit&&o.fit[k];if(fx&&fx.tech&&(fx.text||"").trim().length>=15)b++})});
+ let a=0,b=0;ms.forEach(m=>{const o=S.op&&S.op[m];if(!o)return;if(o.side&&opOk(o.text))a++;CUR.fit.forEach((f,k)=>{const fx=o.fit&&o.fit[k];if(fx&&fx.tech&&(fx.text||"").trim().length>=15)b+=o.solved?.5:1})});
  const e2=frac(a,ms.length)*8+frac(b,ms.length*CUR.fit.length)*12+(S.approved.gate2?5:0);
  const e3=frac(CUR.pk.filter((x,i)=>S.pk&&S.pk[i]===(x.pro?"pro":"kon")).length,CUR.pk.length)*6+(opOk(S.pkPro)?3:0)+(opOk(S.pkKon)?3:0)+(S.rec?2:0)+(S.r1Done?3:0)+(S.r2Done?3:0)+(S.approved.gate3?5:0);
  const e4=(S.heard?3:0)+frac(Object.keys(S.rating).length,KRIT.length)*8+(S.good.trim().length>10?3:0)+(S.better.trim().length>10?3:0)+frac(S.tips.filter(t=>t.trim().length>10).length,2)*6+(step()==="ziel"?2:0);
@@ -1112,6 +1113,14 @@ R.woerter=()=>{
  <div class="stack">${CUR.match.map((m,i)=>{const v=(S.match&&S.match[i])||"";const ok=v===m.a;return `<div class="box"><p style="margin-bottom:8px"><span class="rmtag">${esc(m.rm)}</span></p><select data-match="${i}" aria-label="Passender Satzteil ${i+1}" ${ok?"disabled":""}><option value="">Satzteil aus der Diskussion wählen …</option>${opts.map(o=>`<option ${v===o?"selected":""}>${esc(o)}</option>`).join("")}</select>${v?ok?`<div class="fb ok">Passt! +1 Wärme</div>`:`<div class="fb no">Das bedeutet etwas anderes. Lest nochmals in der Diskussion nach.</div>`:""}</div>`}).join("")}</div>`+
  nav(matchDone(),"Weiter","Ordnet alle Redemittel richtig zu.");
 };
+const SOLVE_ORDER=["zu","wider","erg","frag"];
+const SOLVE_OP="Ich finde, dass es Vorteile und Nachteile hat, weil nicht alle Kinder gleich sind.";
+function solveTxt(f,id){const w=f.who;return id==="zu"?`Da hast du recht, ${w}, denn das sehe ich genauso.`:id==="wider"?`Das sehe ich anders, ${w}, weil man das nicht für alle Kinder so sagen kann.`:id==="erg"?`Du hast gesagt: «${f.t}» Dazu möchte ich ergänzen, dass es auf die Situation ankommt.`:`Wie meinst du das, ${w}? Kannst du ein Beispiel nennen?`}
+function solveBox(name){S.opShow=S.opShow||{};if(!S.opShow[name])return `<div class="row" style="margin:0 0 10px"><button class="btn small" data-a="opSolve">💡 Auflösen: Musterlösung zeigen</button></div>`;
+ return `<div class="box solid solvebox"><h3>💡 Musterlösung</h3><p class="hint" style="margin:0 0 8px">So könntest du reagieren. Jede Art kommt genau einmal vor. Eigene Sätze sind noch besser!</p>
+ <ol class="solve-l">${CUR.fit.map((f,k)=>{const id=SOLVE_ORDER[k%4];const t=T_TECH.find(x=>x.id===id);return `<li><b>${esc(f.who)}</b> → <span class="rmtag">${esc(t.t)}</span><br>«${esc(solveTxt(f,id))}»</li>`}).join("")}</ol>
+ <p class="hint" style="margin:8px 0">Deine Meinung, zum Beispiel: «${esc(SOLVE_OP)}»</p>
+ <div class="row"><button class="btn small" data-a="opFill">Musterlösung einsetzen</button><button class="btn small" data-a="opSolve">Ausblenden</button><span class="hint">Eingesetzte Antworten zählen nur halb für den Tank.</span></div></div>`}
 R.meinung=()=>{
  const ms=members();const i=Math.min(S.opIdx||0,ms.length);
  if(i>=ms.length){return head("Alle sind fertig!","Jede Person hat ihre Meinung begründet und auf vier Beiträge reagiert.")+
@@ -1128,7 +1137,7 @@ R.meinung=()=>{
  <div class="chips" style="margin-bottom:8px">${["Ich finde, dass …","Meiner Meinung nach …","Ich bin dafür, weil …","Ich bin dagegen, denn …","Ein Grund dafür ist, …"].map(s=>`<button class="chip" data-a="ins" data-t="op_text" data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>
  <textarea id="op_text" data-op placeholder="Meiner Meinung nach …, weil …">${esc(o.text)}</textarea>
  <div class="fb ${opOk(o.text)?"ok":"no"}" id="op_fb">${opFb(o.text)}</div></div>
- <h2 style="margin-top:22px">B1 Geh auf die Beiträge ein</h2><p class="hint">Reagiere auf jeden Beitrag auf eine andere Art: widersprechen, zustimmen, wiederholen und ergänzen, nachfragen. Jede Art genau einmal!</p>
+ <h2 style="margin-top:22px">B1 Geh auf die Beiträge ein</h2><p class="hint">Reagiere auf jeden Beitrag auf eine andere Art: widersprechen, zustimmen, wiederholen und ergänzen, nachfragen. Jede Art genau einmal!</p>${solveBox(name)}
  <div class="stack">${CUR.fit.map((f,k)=>{const fx=o.fit[k]||{};const tt=T_TECH.find(x=>x.id===fx.tech);return `<div class="box solid fitbox"><div class="fit-say"><b>${esc(f.who)}:</b> «${esc(f.t)}»</div>
   <label for="tech_${k}">So reagiere ich:</label><select id="tech_${k}" data-tech="${k}"><option value="">Art wählen …</option>${T_TECH.map(x=>{const taken=used.includes(x.id)&&fx.tech!==x.id;return `<option value="${x.id}" ${fx.tech===x.id?"selected":""} ${taken?"disabled":""}>${x.t}${taken?" (schon gewählt)":""}</option>`}).join("")}</select>
   ${tt?`<p class="hint" style="margin:6px 0">Zum Beispiel: «${esc(tt.hint)}»</p>`:""}
@@ -1182,6 +1191,10 @@ document.addEventListener("click",ev=>{
  if(a==="rmtip"){let key=null;CUR.dialog.forEach(([w,segs],li)=>segs.forEach((x,si)=>{if(!key&&typeof x!=="string"&&!(S.marks&&S.marks[li+"-"+si]))key=li+"-"+si}));if(!key)return;S.rmTips=(S.rmTips||0)+1;save();const el=document.querySelector(`[data-a=seg][data-k="${key}"]`);if(el){el.classList.remove("tip");void el.offsetWidth;el.classList.add("tip");el.scrollIntoView({block:"center",behavior:"smooth"})}say("Schau auf die Stelle, die blinkt. Tippe sie an!",3500);return}
  if(a==="arg"){const i=+b.dataset.i;S.argTries=S.argTries||{};S.argTries[i]=1;if(CUR.args[i].ok){S.args=S.args||{};S.args[i]=1;sfx("good")}else{sfx("bad");say("Diesen Satz sagt niemand in der Diskussion. Lest nochmals nach.",3500)}save();render();if(argsDone())hop();return}
  if(a==="opUncover"){S.opCover=false;save();render();say(TIPS.meinung);return}
+ if(a==="opSolve"||a==="opFill"){const ms=members(),n=ms[Math.min(S.opIdx||0,ms.length-1)];if(!n)return;S.op=S.op||{};
+  if(a==="opSolve"){S.opShow=S.opShow||{};S.opShow[n]=!S.opShow[n];save();render();return}
+  const o=S.op[n]||(S.op[n]={side:"",text:"",fit:{}});o.fit=o.fit||{};o.solved=true;if(!o.side)o.side="Teils, teils";if(!opOk(o.text))o.text=SOLVE_OP;
+  CUR.fit.forEach((f,k)=>{const id=SOLVE_ORDER[k%4];o.fit[k]={tech:id,text:solveTxt(f,id)}});save();render();say("Die Musterlösung ist eingesetzt. Ändere sie ruhig in deine eigenen Worte!");return}
  if(a==="opside"){const n=members()[S.opIdx||0];S.op[n].side=b.dataset.s;save();render();return}
  if(a==="opDone"){sfx("good");S.opIdx=(S.opIdx||0)+1;S.opCover=true;save();render();hop();say(S.opIdx>=members().length?"Alle sind fertig. Super!":"Sehr gut! Gib das iPad weiter.");window.scrollTo({top:0,behavior:"smooth"});return}
  if(a==="opRedo"){S.opIdx=+b.dataset.k;S.opCover=true;save();render();return}
