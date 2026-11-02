@@ -998,7 +998,7 @@ function levelsHTML(){
       const gifts = LIB.OUTFITS.filter(o=>o.lv === k).map(o=>`<span class="pt-gift"><i class="glitch">${LIB.glitchSVG("normal", {outfit:{[o.slot]:o.id}})}</i>${esc(o.n)}</span>`).concat(RR.rewardsAt(k).map(r=>`<span class="pt-gift"><i>${r.ic}</i>${esc(r.n)}</span>`));
       return `<li class="pt-lv-row ${k < li ? "done" : k === li ? "cur" : "next"}"><span class="pt-lv-n">${k+1}</span><div><b>${esc(l.n)}</b><small>${k ? `ab ${l.s} ★` : "Start"}</small><div class="pt-gifts">${gifts.join("") || `<span class="pt-gift">Futter für gLiTCh im Modul</span>`}</div></div><span aria-hidden="true">${k < li ? "✓" : k === li ? "★" : "🔒"}</span></li>`; }).join("")}${LV_TEASER}</ol></div>`;
 }
-const LV_TEASER = `<li class="pt-lv-row pt-lv-more" aria-label="Weitere Level folgen"><span class="pt-lv-n">51+</span><div><b>Weitere Level</b><small>bald</small><div class="pt-gifts"><span class="pt-gift">🔒 Neue Module bringen neue Level, Belohnungen und Emotes</span></div></div><span aria-hidden="true">✨</span></li>`;
+const LV_TEASER = "";
 function openLevels(){
   closeOv("ptLv"); const ov = document.createElement("div"); ov.className = "wd-ov"; ov.id = "ptLv"; ov.innerHTML = levelsHTML();
   document.body.appendChild(ov); document.body.style.overflow = "hidden";

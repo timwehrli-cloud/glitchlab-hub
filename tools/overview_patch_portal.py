@@ -146,3 +146,8 @@ portal = portal.replace(_o, '''function openWardrobe(){
 _o = "wall: p.wall || null, bg: window.GLAB_ROOMBG"
 assert _o in portal
 portal = portal.replace(_o, "wall: p.wall || null, seenW: p.seenW || null, seenR: p.seenR || null, bg: window.GLAB_ROOMBG", 1)
+
+# «Alle Level»: die alte Zeile «51+ Weitere Level · bald» fällt weg (die Level sind jetzt nach oben offen)
+import re as _re
+portal, _n = _re.subn(r"const LV_TEASER = `[^`]*`;", 'const LV_TEASER = "";', portal, count=1)
+assert _n == 1
