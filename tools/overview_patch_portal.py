@@ -151,3 +151,12 @@ portal = portal.replace(_o, "wall: p.wall || null, seenW: p.seenW || null, seenR
 import re as _re
 portal, _n = _re.subn(r"const LV_TEASER = `[^`]*`;", 'const LV_TEASER = "";', portal, count=1)
 assert _n == 1
+
+# Sterne-Anzeige unten beim Level: gleiche Grafik wie früher oben in der Kopfleiste (goldene Pixel-Pille)
+_o = '<span class="pt-stars" aria-label="${T.stars} Sterne">★ ${T.stars}</span>'
+assert _o in portal
+portal = portal.replace(_o, '<span class="pt-stars" title="Deine Sterne" aria-label="${T.stars} Sterne"><i aria-hidden="true">★</i>${T.stars}</span>', 1)
+_o = '+ ".acc-emo{'
+assert _o in portal
+portal = portal.replace(_o, '''+ ".pt-stars{font-family:Silkscreen,ui-monospace,monospace!important;font-size:1.15rem!important;color:#FFE08A!important;background:rgba(255,204,51,.2);border:2px solid rgba(255,204,51,.6);border-radius:999px;padding:6px 14px;gap:8px!important;font-variant-numeric:tabular-nums;box-shadow:0 0 14px rgba(255,204,51,.25)}.pt-stars i{font-style:normal;color:#FFCC33}"
+  + ".acc-emo{''', 1)

@@ -711,7 +711,7 @@ function dashHTML(){
           <div class="pt-room-say" id="ptSay"><b class="gname">gLiTCh</b>${esc(greet)}</div>
           <span class="pt-room-hint">Auf gLiTCh tippen und nach unten ziehen: Emote!</span></div>
         <div class="pt-lvl" style="margin-top:16px"><span class="pt-ring">${li+1}</span><div><span>${li < 100 ? `Level ${li+1} von 100` : `Level ${li+1} · über 100!`}</span><b>${esc(L[li].n)}</b><span>${nx ? `noch ${nx.s - T.stars} Sterne bis «${esc(nx.n)}»` : "Level 100 geschafft! Du bist die ultimative gLiTCh-Legende."}</span></div>
-          <span class="pt-stars" aria-label="${T.stars} Sterne">★ ${T.stars}</span></div>
+          <span class="pt-stars" title="Deine Sterne" aria-label="${T.stars} Sterne"><i aria-hidden="true">★</i>${T.stars}</span></div>
         <div class="pt-bar" aria-hidden="true"><i style="width:${Math.max(3, Math.min(100, pct))}%"></i></div>
       </div>
       <nav class="pt-rail" aria-label="Mein gLiTCh">
@@ -909,6 +909,7 @@ document.addEventListener("click", e=>{ const b = e.target.closest && e.target.c
   + ".vf-next > span:first-child{font-size:1.4rem}.vf-next small{display:block;opacity:.8;font-size:.8rem;margin-top:2px}"
   + ".vf-new{position:absolute;top:6px;left:6px;padding:1px 6px;border-radius:999px;background:#FF2BD6;color:#fff;font:900 .62rem/1.4 system-ui,sans-serif;letter-spacing:.04em}"
   + ".vf-empty{margin:0;padding:6px 14px 16px;opacity:.8;font-size:.9rem}.wd-sk{position:relative}.wd-sk .vf-new{top:2px;left:2px}"
+  + ".pt-stars{font-family:Silkscreen,ui-monospace,monospace!important;font-size:1.15rem!important;color:#FFE08A!important;background:rgba(255,204,51,.2);border:2px solid rgba(255,204,51,.6);border-radius:999px;padding:6px 14px;gap:8px!important;font-variant-numeric:tabular-nums;box-shadow:0 0 14px rgba(255,204,51,.25)}.pt-stars i{font-style:normal;color:#FFCC33}"
   + ".acc-emo{font-size:26px;line-height:1;display:grid;place-items:center;width:100%;height:100%}";
   (document.head || document.documentElement).appendChild(st); })();
 /* ---- Zimmer einrichten ---- */

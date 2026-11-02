@@ -358,7 +358,7 @@
     return `<header class="top"><div class="wrap">
       <button type="button" class="brand" data-home aria-label="Zur Startseite">${brandLogo("happy", S.me?.class_name || "")}</button>
       <div class="top-r">
-        ${st ? `${clsChip(S.me.class_name || "")}<span class="starcount" title="Deine Sterne"><i>★</i>${allStars()}</span>
+        ${st ? `${clsChip(S.me.class_name || "")}
         <div class="team"><span class="chip">${kidG("normal", st, "still")}${esc(st.first_name)}</span>${team}
         ${S.team.length < 3 ? `<button type="button" class="btn small" data-addteam>+ Teampartner</button>` : ""}</div>
         <button type="button" class="btn small" data-logout>Abmelden</button>` : ""}
