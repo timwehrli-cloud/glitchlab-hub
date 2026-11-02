@@ -54,7 +54,10 @@ function lsSet(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return t
 /* ===== Brücke zum Glitchlab-Hub =====
    Der Hub liefert Kind, Team, Sterne und Extras. Alles wird dort gespeichert. */
 const HB = (()=>{ try { return window.parent !== window && window.parent.GLHubBridge ? window.parent.GLHubBridge : null; } catch(e){ return null; } })();
-const MODE = (location.hash || "#lobby").slice(1);
+const MODE0 = (location.hash || "#lobby").slice(1);
+/* Prompt-Labor: Teil 1 und Teil 2 sind im Hub zwei Module (gleiche Arbeit, eigene Ansicht) */
+window.GLAB_PART = HB ? (MODE0 === "prompt2" ? 2 : MODE0 === "prompt" ? 1 : 0) : 0;
+const MODE = MODE0 === "prompt2" ? "prompt" : MODE0;
 const LAB_MODS = ["prompt","fakenews","kibilder"].concat(MODULES.filter(m=>!["prompt","fakenews","kibilder"].includes(m.id) && m.live).map(m=>m.id));
 const curMod = LAB_MODS.includes(MODE) ? MODE : null;
 const ctx = HB ? HB.context(curMod) : null;

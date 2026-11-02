@@ -531,7 +531,7 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
     });
     if (ready) { const html = buildModule(); const pv = $("#pv"); if (pv.dataset.sig !== String(html.length) + D.plan.titel + JSON.stringify(D.opt)) { pv.srcdoc = html; pv.dataset.sig = String(html.length) + D.plan.titel + JSON.stringify(D.opt); } pv.hidden = false; $("#pvEmpty").hidden = true; $("#pvName").textContent = slug(D.plan.titel) + ".html"; }
     else { $("#pv").hidden = true; $("#pvEmpty").hidden = false; }
-    $("#btnDl").disabled = !ready;
+    $("#btnDl").disabled = !ready; $("#btnPdf").disabled = !ready;
   }
   function manifest() {
     const P = D.plan;
@@ -574,6 +574,74 @@ ${T("rt-css")}</style>
 </body>
 </html>`;
   }
+  /* ---------- Übersicht für die Lehrperson als PDF: Etappen, Aufgaben und Lösungen ---------- */
+  function loadJsPdf() { return window.jspdf ? Promise.resolve() : new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"; sc.onload = ok; sc.onerror = () => no(new Error("PDF-Bibliothek nicht erreichbar")); document.head.appendChild(sc); }); }
+  const pl = t => String(t ?? "").replace(/\*\*/g, "").replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, "").replace(/[ \t]+/g, " ").trim();
+  function solution(a) {
+    const L = l => (l || []).map(pl);
+    switch (a.typ) {
+      case "mc": return [`Frage: ${pl(a.frage)}`, ...L(a.optionen).map((o, i) => `${i === +a.richtig ? "[richtig]" : "[ ]"} ${o}`)];
+      case "tf": return [`Aussage: ${pl(a.aussage)}`, `Lösung: ${a.richtig ? "richtig" : "falsch"}`];
+      case "text": return [`Frage: ${pl(a.frage)}`, `Lösung: ${L(a.antworten).join(" / ")}`];
+      case "mehrfach": return [`Frage: ${pl(a.frage)}`, ...L(a.optionen).map((o, i) => `${(a.richtig || []).includes(i) ? "[richtig]" : "[ ]"} ${o}`)];
+      case "luecke": return [pl(a.anleitung), `Text: ${pl(a.text).replace(/\[\[(.+?)\]\]/g, (m, x) => "[" + x.split("|")[0] + "]")}`];
+      case "ordnen": return [pl(a.frage), ...L(a.elemente).map((x, i) => `${i + 1}. ${x}`)];
+      case "zuordnen": case "memory": return [pl(a.frage), ...(a.paare || []).map(p => `${pl(p[0])} – ${pl(p[1])}`)];
+      case "sortieren": return [pl(a.frage), ...(a.kategorien || []).map(k => `${pl(k)}: ${(a.elemente || []).filter(x => x.kat === k).map(x => pl(x.text)).join(", ")}`)];
+      case "zeitmaschine": return [pl(a.frage), ...(a.ereignisse || []).map(x => `${x.jahr} – ${pl(x.text)}`)];
+      case "raetsel": return [pl(a.frage), ...L(a.hinweise).map((h, i) => `Hinweis ${i + 1}: ${h}`), `Lösung: ${L(a.antworten).join(" / ")}`];
+      case "schaetzen": return [pl(a.frage), `Lösung: ${a.antwort} ${pl(a.einheit)} (gilt ± ${a.toleranz})`];
+      case "schreiben": case "gestalten": return [`Auftrag: ${pl(a.auftrag)}`, `Mindestens ${a.mindestwoerter || 20} Wörter`];
+      case "wortsalat": case "wortraten": return [pl(a.frage), `Lösung: ${pl(a.wort)}`];
+      case "blitz": return [pl(a.frage), ...(a.aussagen || []).map(x => `${x.richtig ? "richtig" : "falsch"}: ${pl(x.text)}`)];
+      case "markieren": return [pl(a.anleitung), `Text: ${pl(a.text).replace(/\*([^*]+)\*/g, "[$1]")}`];
+      case "wortsuche": return [pl(a.frage), `Wörter: ${L(a.woerter).join(", ")}`];
+      case "karteikarten": return [pl(a.frage), ...(a.karten || []).map(k => `${pl(k[0])} = ${pl(k[1])}`)];
+      case "chat": return [`Chat mit ${pl(a.person)}`, ...(a.schritte || []).map((x, i) => `${i + 1}. «${pl(x.sagt)}» = ${pl((x.optionen || [])[+x.richtig])}`)];
+      case "meinung": return [pl(a.frage), `Skala: ${pl(a.links)} / ${pl(a.rechts)}`, ...L(a.argumente).map(x => `• ${x}`), "Keine richtige Lösung: Begründung zählt."];
+      default: return [];
+    }
+  }
+  async function lpPdf() {
+    const b = $("#btnPdf"), t0 = b.textContent; b.disabled = true; b.textContent = "PDF wird erstellt …";
+    try {
+      await loadJsPdf();
+      const P = D.plan, doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" }), W = 210, X = 16, MW = W - 2 * X; let y = 18;
+      const col = isCol(P.farbe) ? P.farbe : "#7B4CEF", rgb = [1, 3, 5].map(i => parseInt(col.slice(i, i + 2), 16));
+      const need = h => { if (y + h > 282) { doc.addPage(); y = 18; } };
+      const text = (t, size = 10, style = "normal", color = [30, 24, 50], gap = 1, ind = 0) => { doc.setFont("helvetica", style); doc.setFontSize(size); doc.setTextColor(...color);
+        doc.splitTextToSize(pl(t), MW - ind).forEach(l => { need(size * .45); doc.text(l, X + ind, y); y += size * .42 + .5; }); y += gap; };
+      doc.setFillColor(...rgb); doc.rect(0, 0, W, 30, "F"); doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text(doc.splitTextToSize(pl(P.titel), MW)[0], X, 14);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.text(pl(`Übersicht für die Lehrperson · ${fachName()} · ${D.klasse}. Klasse · ca. ${D.minuten} Minuten · ${D.inhalt.length} Etappen`), X, 23);
+      y = 40;
+      if (P.beschreibung) text(P.beschreibung, 10.5, "italic", [80, 70, 110], 2);
+      const G = (D.opt.gates || []).map(g => ({ selbst: "Selbsteinschätzung", praes: "Präsentation", lp: "LP-Code" })[g]);
+      text(`Maskottchen: ${GLMascot.nameOf(D.opt.mascot)} · Freigabe nach jeder Etappe: ${G.length ? G.join(", ") : "keine"} · Sterne total: ${D.inhalt.reduce((n, e) => n + etSterne(e), 0)}`, 9.5, "normal", [90, 82, 120], 4);
+      D.inhalt.forEach((E, e) => {
+        need(18); doc.setDrawColor(...rgb); doc.setLineWidth(.6); doc.line(X, y, X + MW, y); y += 6;
+        text(`Etappe ${e + 1}: ${E.titel || (P.etappen[e] || {}).titel || ""}`, 13, "bold", [20, 10, 50], 1);
+        if ((P.etappen[e] || {}).ziel) text("Ziel: " + P.etappen[e].ziel, 10, "italic", [70, 60, 100], 2);
+        let nr = 0;
+        (E.aufgaben || []).forEach(a => {
+          if (a.typ === "info") { text(`Info${a.titel ? ": " + a.titel : ""}`, 10, "bold", [60, 50, 90], 0); text(a.text, 9.5, "normal", [70, 65, 90], 2, 3); return; }
+          nr++; text(`${nr}. ${(TYPES.find(x => x[0] === a.typ) || [, a.typ])[1]}${a.titel ? " · " + a.titel : ""} (${wert(a)} ${wert(a) === 1 ? "Stern" : "Sterne"})`, 10.5, "bold", rgb, .5);
+          solution(a).filter(Boolean).forEach(l => text(l, 9.5, "normal", [40, 35, 60], .2, 4));
+          if (a.erklaerung) text("Erklärung: " + a.erklaerung, 9, "italic", [100, 95, 120], .5, 4);
+          y += 1.5;
+        });
+      });
+      if ((P.lexikon || []).length) { need(16); doc.line(X, y, X + MW, y); y += 6; text("Lexikon", 13, "bold", [20, 10, 50], 2); P.lexikon.forEach(w => { text(w.wort, 10, "bold", [40, 30, 70], 0); text(w.erklaerung, 9.5, "normal", [70, 65, 90], 1.2, 3); }); }
+      if (D.diplome.length) { need(16); text("Diplome", 13, "bold", [20, 10, 50], 2); D.diplome.forEach(d => text(`${d.name}: ${d.beschreibung || ""}`, 10)); }
+      const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150, 140, 170); doc.text(`gLiTCh-Editor · ${pl(P.titel)} · Seite ${i} von ${n}`, W - X, 290, { align: "right" }); }
+      const name = `${slug(P.titel) || "modul"}-uebersicht.pdf`, blob = doc.output("blob");
+      let dl = null; try { dl = await claude.use("downloads"); } catch (e) { dl = null; }
+      if (dl) { try { await dl.save({ filename: name, data: blob }); toast(`«${name}» gespeichert.`); } catch (e) { if (!(e && e.code === "declined")) toast("Speichern hat nicht geklappt."); } }
+      else { const u = URL.createObjectURL(blob), a = document.createElement("a"); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
+    } catch (e) { toast("Das PDF konnte nicht erstellt werden: " + (e.message || e)); }
+    b.disabled = false; b.textContent = t0;
+  }
+  $("#btnPdf").onclick = lpPdf;
   $("#btnDl").onclick = async () => {
     const html = buildModule(), name = (slug(D.plan.titel) || "modul") + ".html";
     let dl = null; try { dl = await claude.use("downloads"); } catch (e) { dl = null; }

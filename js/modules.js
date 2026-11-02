@@ -139,8 +139,11 @@
      Ihre Sterne sind offen nach oben (maxStars: null), Diplome zählen hub-weit.
      --------------------------------------------------------------- */
   const LAB = [
-    { id: "lab-prompt", lab: "prompt", theme: "mi-ki", title: "Prompt-Labor", minutes: 135,
-      teaser: "Baut in der Gruppe den ultimativen Prompt für eine Klassen-App, testet sie und macht sie besser." },
+    { id: "lab-prompt", lab: "prompt", theme: "mi-ki", title: "Prompt-Labor 1: Prompt bauen", minutes: 90,
+      teaser: "Baut in der Gruppe den ultimativen Prompt für eine Klassen-App und präsentiert ihn Etappe für Etappe." },
+    { id: "lab-prompt2", lab: "prompt", hash: "prompt2", alias: "lab-prompt", theme: "mi-ki", title: "Prompt-Labor 2: Testen und verbessern", minutes: 45,
+      teaser: "Eine Woche später: Testet eure Klassen-App, findet Fehler und schreibt einen Verbesserungs-Prompt.",
+      req: { badge: "buehne", txt: "Wird frei, sobald du im Prompt-Labor 1 alle 4 Etappen präsentiert hast." } },
     { id: "lab-fakenews", lab: "fakenews", theme: "mi-medien", title: "Fake-News-Detektiv", minutes: 90,
       teaser: "Echte Meldung oder Falle? Spuren sichern, Bilder rückwärts suchen und eine Faktencheck-Karte gestalten.",
       req: { badge: "buehne", txt: "Wird frei, sobald du im Prompt-Labor alle 4 Etappen präsentiert hast." } },
@@ -148,7 +151,7 @@
       teaser: "Wie entstehen KI-Bilder und Filter? Unterschiede entdecken und ein eigenes Vorher-Nachher erklären.",
       req: { badge: "fn_alle", txt: "Wird frei, sobald du alle 6 Fallakten im Fake-News-Detektiv gelöst hast." } }
   ];
-  LAB.forEach(m => H.registerModule(Object.assign({ subject: "mi", kind: "lab", activities: [{ id: "lab", title: m.title, maxStars: null }] }, m)));
+  LAB.forEach(m => H.registerModule(Object.assign({ subject: "mi", kind: "lab", activities: m.alias ? [] : [{ id: "lab", title: m.title, maxStars: null }] }, m)));
 
   /* ---------------------------------------------------------------
      Deutsch · Gespräche führen: Wüsten-Game (games/wueste) + Platzhalter

@@ -75,7 +75,10 @@ a = portal.index("let D = lsGet(PKEY)"); b = portal.index("const OUTFIT_MAP")
 portal = portal[:a] + r'''/* ===== Brücke zum Glitchlab-Hub =====
    Der Hub liefert Kind, Team, Sterne und Extras. Alles wird dort gespeichert. */
 const HB = (()=>{ try { return window.parent !== window && window.parent.GLHubBridge ? window.parent.GLHubBridge : null; } catch(e){ return null; } })();
-const MODE = (location.hash || "#lobby").slice(1);
+const MODE0 = (location.hash || "#lobby").slice(1);
+/* Prompt-Labor: Teil 1 und Teil 2 sind im Hub zwei Module (gleiche Arbeit, eigene Ansicht) */
+window.GLAB_PART = HB ? (MODE0 === "prompt2" ? 2 : MODE0 === "prompt" ? 1 : 0) : 0;
+const MODE = MODE0 === "prompt2" ? "prompt" : MODE0;
 const LAB_MODS = ["prompt","fakenews","kibilder"].concat(MODULES.filter(m=>!["prompt","fakenews","kibilder"].includes(m.id) && m.live).map(m=>m.id));
 const curMod = LAB_MODS.includes(MODE) ? MODE : null;
 const ctx = HB ? HB.context(curMod) : null;
@@ -263,6 +266,7 @@ for marker in ["window.GLAB_FN = {", "window.GLAB_KI = {"]:
 page = src[:s0] + extra + '<script src="hub-portal.js"></script>' + src[s1 + len("</script>"):]
 shim = '''<script>
 /* Speichern von Bildern/PDFs ausserhalb der Claude-Ansicht: normaler Download */
+try { if (!(window.claude && window.claude.use) && window.parent !== window && window.parent.claude && window.parent.claude.use) window.claude = window.parent.claude; } catch (e) { /* anderer Ursprung */ }
 if (!(window.claude && window.claude.use)) window.claude = Object.assign(window.claude || {}, {use: async n => n === "downloads" ? {save: async ({filename, data}) => {
   const u = URL.createObjectURL(data), a = document.createElement("a"); a.href = u; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u), 4000); }} : null});
 </script>

@@ -86,7 +86,7 @@
   const newTeacherCode = taken => { let c; do { c = Array.from({ length: 4 }, () => 1 + Math.floor(Math.random() * 9)).join(""); } while (taken.includes(c)); return c; };
   const modSet = m => ((S.me?.class_settings || {}).mods || {})[m.id] || "";
   const modPrev = m => { const list = H.modules.filter(x => x.theme === m.theme && !x.soon); const i = list.findIndex(x => x.id === m.id); return i > 0 ? list[i - 1] : null; };
-  const modSolved = m => { const st = modStars(m), mx = H.maxStars(m); return H.openEnded(m) || !mx ? st > 0 : st >= Math.ceil(mx / 2); };
+  const modSolved = m0 => { const m = m0.alias ? (H.modules.find(x => x.id === m0.alias) || m0) : m0; const st = modStars(m), mx = H.maxStars(m); return H.openEnded(m) || !mx ? st > 0 : st >= Math.ceil(mx / 2); };
   const modOpen = m => {
     if (m.soon) return false; if (isLP()) return true; if (m.lpOnly) return false;
     if (lpStat(m) === "arbeit" || lpStat(m) === "fertig") return true;   // von der Lehrperson für dieses Kind gesetzt
@@ -397,8 +397,8 @@
       ${tag ? `<span class="mod-where">${esc(tag)}</span>` : ""}${lab ? `<span class="mod-tag">gLiTCh-Lab · Teamarbeit</span>` : ""}${lpStat(m) === "fertig" ? `<span class="mod-stat done">✓ Abgeschlossen</span>` : lpStat(m) === "arbeit" ? `<span class="mod-stat">In Bearbeitung</span>` : ""}
       <h3>${esc(m.title)}</h3><p>${esc(open || m.soon ? (m.teaser || "") : lockTxt(m))}</p>
       ${lab || m.custom || m.kind === "frame" ? "" : `<div class="acts">${m.activities.map(x => { const p = progOf(m.id, x.id); return `<span class="act${p && p.stars > 0 ? " done" : ""}">${esc(x.title)}</span>`; }).join("")}</div>`}
-      <div class="row"><span>${m.minutes ? `ca. ${m.minutes} Min.` : ""}</span>${H.openEnded(m) ? `<span class="stars">★ <b style="color:var(--ink)">${got}</b></span>` : starRow(got, max)}</div>
-      ${H.openEnded(m) ? "" : `<span class="bar" style="--c:${a.c}"><i style="width:${max ? Math.round(got / max * 100) : 0}%"></i></span>`}
+      <div class="row"><span>${m.minutes ? `ca. ${m.minutes} Min.` : ""}</span>${m.alias ? `<span class="stars" title="Sterne zählen zusammen mit Teil 1">★ <b style="color:var(--ink)">${modStars(H.modules.find(x => x.id === m.alias) || m)}</b></span>` : H.openEnded(m) ? `<span class="stars">★ <b style="color:var(--ink)">${got}</b></span>` : starRow(got, max)}</div>
+      ${H.openEnded(m) || m.alias ? "" : `<span class="bar" style="--c:${a.c}"><i style="width:${max ? Math.round(got / max * 100) : 0}%"></i></span>`}
     </button>`;
   }
 
@@ -525,7 +525,7 @@
     context(lab) {
       const k = s => ({ id: s.id, n: s.first_name, c: s.color });
       const mods = {}; let labSum = 0;
-      H.modules.filter(m => m.kind === "lab").forEach(m => {
+      H.modules.filter(m => m.kind === "lab" && !m.alias).forEach(m => {
         const l = m.lab, p = progOf(m.id, "lab"), done = lpStat(m) === "fertig"; if (!p && !done) return;
         const d = (p && p.data) || {}, stars = done ? fullAct({ maxStars: null }, p ? p.stars : 0) : p.stars;
         mods[l] = { stars, badges: [...new Set([...(d.badges || []), ...(done ? labBadges(m) : [])])], fed: d.fed || 0, deaths: d.deaths || 0 };
@@ -629,7 +629,7 @@
     const fr = document.createElement("iframe");
     fr.className = "labframe"; fr.title = m ? m.title : "gLiTChs Zimmer";
     if (upHtml != null) fr.srcdoc = H.uploadDoc(upHtml, m, workKey(lab), S.me.student.first_name, S.team.map(t => t.student.first_name));
-    else fr.src = m && m.src ? m.src : "lab/index.html#" + lab;
+    else fr.src = m && m.src ? m.src : "lab/index.html#" + ((m && m.hash) || lab);
     if (m && m.frameBg) fr.style.background = m.frameBg;
     fr.onload = () => { const l = $("#labLoad"); if (l) l.remove(); };
     $(".labshell").appendChild(fr);
@@ -804,6 +804,12 @@
   /* ---------- Login-Karten als PDF: 8 Karten pro A4 (2 × 4), zum Ausschneiden ---------- */
   function loadJs(src) { return new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = src; sc.onload = ok; sc.onerror = () => no(new Error("Bibliothek nicht geladen")); document.head.appendChild(sc); }); }
   function svgImg(svg) { return new Promise(ok => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg.replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ')); }); }
+  /* Datei speichern: in claude.ai über die Download-Freigabe, sonst als normaler Download */
+  async function saveFile(blob, name) {
+    let dl = null; try { dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null; } catch (e) { dl = null; }
+    if (dl) { await dl.save({ filename: name, data: blob }); return; }
+    const u = URL.createObjectURL(blob), a = document.createElement("a"); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+  }
   async function cardsPdf(c, kids) {
     if (!kids.length) { toast("In dieser Klasse gibt es noch keine Kinder."); return; }
     if (!window.jspdf) await loadJs("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
@@ -839,7 +845,7 @@
       doc.setDrawColor(190); doc.setLineDashPattern([1.5, 1.5], 0); doc.rect(cx - 1.5, cy - 1.5, W + 3, Hc + 3);
     });
     const name = "Login-Karten-" + c.name.replace(/[^\wäöüÄÖÜ-]+/g, "-") + ".pdf";
-    doc.save(name);
+    await saveFile(doc.output("blob"), name);
     toast(`PDF «${name}» mit ${kids.length} Karten erstellt.`, "star", 4500);
   }
 
@@ -912,7 +918,7 @@
       <div class="km-all row"><span class="hint" style="margin:0">Alles auf einmal für ${ALL ? "die ganze Klasse" : esc(k.first_name)}:</span><button type="button" class="btn small" data-kall="fertig">Alle Module abschliessen</button><button type="button" class="btn small" data-kall="">Alle automatisch</button></div>
       <div class="acc">${subjects.map(sj => `<div class="acc-s"><h3 style="--c:${sj.color}"><span>${esc(sj.short)}</span>${esc(sj.name)}</h3>
         ${H.themes.filter(t => t.subject === sj.id && H.modules.some(m => m.theme === t.id && !m.soon && !m.lpOnly)).map(t => `<div class="acc-t"><small>${esc(t.title)}</small>
-          ${H.modules.filter(m => m.theme === t.id && !m.soon && !m.lpOnly).map(row).join("")}</div>`).join("")}</div>`).join("")}</div></section>`;
+          ${H.modules.filter(m => m.theme === t.id && !m.soon && !m.lpOnly && !m.alias).map(row).join("")}</div>`).join("")}</div>`).join("")}</div></section>`;
   }
   function bindKidModsPanel() {
     const keep = async fn => { const y = window.scrollY; await fn(); await render(); window.scrollTo(0, y); };

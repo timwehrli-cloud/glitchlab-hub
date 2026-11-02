@@ -1879,6 +1879,7 @@ details.pt-acc .wd-grid{padding:4px 14px 14px; animation:accIn .25s ease-out}
   "Titel":"Der Titel ist die grosse Überschrift ganz oben, zum Beispiel der Name des Programms."
 }};</script><script>
 /* Speichern von Bildern/PDFs ausserhalb der Claude-Ansicht: normaler Download */
+try { if (!(window.claude && window.claude.use) && window.parent !== window && window.parent.claude && window.parent.claude.use) window.claude = window.parent.claude; } catch (e) { /* anderer Ursprung */ }
 if (!(window.claude && window.claude.use)) window.claude = Object.assign(window.claude || {}, {use: async n => n === "downloads" ? {save: async ({filename, data}) => {
   const u = URL.createObjectURL(data), a = document.createElement("a"); a.href = u; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u), 4000); }} : null});
 </script>
@@ -7455,6 +7456,8 @@ try {
   const raw = localStorage.getItem(KEY);
   if (raw){ const o = JSON.parse(raw); state = o.state || {}; approved = o.approved || {}; steps = Object.assign(steps, o.steps||{}); mode = o.mode==="verbessern" && o.unlocked2 ? "verbessern" : "bauen"; unlocked2 = !!o.unlocked2; }
 } catch(e) {}
+const HUB_PART = (()=>{ try { return window.parent !== window && window.parent.GLHubBridge ? (location.hash === "#prompt2" ? 2 : location.hash === "#prompt" ? 1 : 0) : 0; } catch(e){ return 0; } })();
+if (HUB_PART === 2){ unlocked2 = true; mode = "verbessern"; } else if (HUB_PART === 1) mode = "bauen";
 if (window.GLAB && !GLAB.lobby) GLAB.applyTo(state);
 function save(){ try { localStorage.setItem(KEY, JSON.stringify({state, approved, steps, mode, unlocked2, at: Date.now()})); } catch(e) {} glabSync(); }
 var glabT = null;
@@ -7758,6 +7761,7 @@ const pwOK = v => window.GLAB_CODE_OK ? GLAB_CODE_OK(v, window.GLAB && GLAB.code
 
 /* ================= Kopf: Teile + Aktionen ================= */
 function renderTabs(){
+  if (HUB_PART){ $("#tabs").innerHTML = HUB_PART === 1 ? `<button type="button" class="tab" aria-pressed="true" disabled><b>Teil 1<span class="tl-x"> · Prompt bauen</span><span class="tl-s"> · Bauen</span></b><span>Prompt-Labor 1</span></button>` : `<button type="button" class="tab" aria-pressed="true" disabled><b>Teil 2<span class="tl-x"> · Testen &amp; verbessern</span><span class="tl-s"> · Testen</span></b><span>Prompt-Labor 2</span></button>`; $("#sub").textContent = M.sub; $("#promptTitle").textContent = M.promptTitle; return; }
   $("#tabs").innerHTML = `
     <button type="button" class="tab" data-mode="bauen" aria-pressed="${mode==="bauen"}"><b>Teil 1<span class="tl-x"> · Prompt bauen</span><span class="tl-s"> · Bauen</span></b><span>Lektion 1</span></button>
     <button type="button" class="tab" data-mode="verbessern" aria-pressed="${mode==="verbessern"}"><b>Teil 2<span class="tl-x"> · Testen &amp; verbessern</span><span class="tl-s"> · Testen</span>${unlocked2?"":'<i class="lock" aria-label="gesperrt"></i>'}</b><span>eine Woche später</span></button>`;

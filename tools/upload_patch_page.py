@@ -63,3 +63,14 @@ page = page.replace(_a, '<rect x="2" y="3" width="1" height="1" fill="${_sk.hi}"
 
 page = _lpfix(page)
 page = _lvfix(page)
+
+
+# Prompt-Labor im Hub: Teil 1 und Teil 2 als eigene Module (je nur ihr Reiter)
+_a = 'mode = o.mode==="verbessern" && o.unlocked2 ? "verbessern" : "bauen"; unlocked2 = !!o.unlocked2; }\n} catch(e) {}'
+assert _a in page
+page = page.replace(_a, _a + '''
+const HUB_PART = (()=>{ try { return window.parent !== window && window.parent.GLHubBridge ? (location.hash === "#prompt2" ? 2 : location.hash === "#prompt" ? 1 : 0) : 0; } catch(e){ return 0; } })();
+if (HUB_PART === 2){ unlocked2 = true; mode = "verbessern"; } else if (HUB_PART === 1) mode = "bauen";''', 1)
+_a = 'function renderTabs(){\n  $("#tabs").innerHTML = `'
+assert _a in page
+page = page.replace(_a, 'function renderTabs(){\n  if (HUB_PART){ $("#tabs").innerHTML = HUB_PART === 1 ? `<button type="button" class="tab" aria-pressed="true" disabled><b>Teil 1<span class="tl-x"> · Prompt bauen</span><span class="tl-s"> · Bauen</span></b><span>Prompt-Labor 1</span></button>` : `<button type="button" class="tab" aria-pressed="true" disabled><b>Teil 2<span class="tl-x"> · Testen &amp; verbessern</span><span class="tl-s"> · Testen</span></b><span>Prompt-Labor 2</span></button>`; $("#sub").textContent = M.sub; $("#promptTitle").textContent = M.promptTitle; return; }\n  $("#tabs").innerHTML = `', 1)

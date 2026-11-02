@@ -583,6 +583,12 @@
   /* ---------- Zusammenfassung als PDF ---------- */
   const plain = t => String(t || "").replace(/\*\*/g, "").replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, "").replace(/[ \t]+/g, " ").trim();
   function loadJsPdf() { return window.jspdf ? Promise.resolve() : new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"; sc.onload = ok; sc.onerror = () => no(new Error("PDF-Bibliothek nicht erreichbar")); document.head.appendChild(sc); }); }
+  async function saveFile(blob, name) {
+    let dl = null;
+    try { const C = (window.claude && window.claude.use) ? window.claude : (window.parent !== window && window.parent.claude && window.parent.claude.use) ? window.parent.claude : null; dl = C ? await C.use("downloads") : null; } catch (e) { dl = null; }
+    if (dl) { await dl.save({ filename: name, data: blob }); return; }
+    const u = URL.createObjectURL(blob), a = document.createElement("a"); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+  }
   async function summaryPdf(btn) {
     const t0 = btn ? btn.textContent : ""; if (btn) { btn.disabled = true; btn.textContent = "PDF wird erstellt …"; }
     try {
@@ -612,7 +618,7 @@
       const got = DIP.filter(d => S.dips.includes(d.id));
       if (got.length) { need(16); text("Meine Diplome", 14, "bold", [20, 10, 50], 2); got.forEach(d => text(`${d.name}${d.beschreibung ? ": " + d.beschreibung : ""}`, 10.5)); }
       const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFontSize(8.5); doc.setTextColor(150, 140, 170); doc.text(`gLiTCh-Lab · Seite ${i} von ${n}`, W - X, 290, { align: "right" }); }
-      doc.save(`Zusammenfassung-${slug(M.titel || "modul") || "modul"}.pdf`);
+      await saveFile(doc.output("blob"), `Zusammenfassung-${slug(M.titel || "modul") || "modul"}.pdf`);
       say("Deine Zusammenfassung ist bereit! 📄", "cool", 5000);
     } catch (err) { say("Das PDF ging gerade nicht. Probiert es später nochmals.", "sad", 6000); }
     if (btn) { btn.disabled = false; btn.textContent = t0; }
