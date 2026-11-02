@@ -160,3 +160,75 @@ _o = '+ ".acc-emo{'
 assert _o in portal
 portal = portal.replace(_o, '''+ ".pt-stars{font-family:Silkscreen,ui-monospace,monospace!important;font-size:1.15rem!important;color:#FFE08A!important;background:rgba(255,204,51,.2);border:2px solid rgba(255,204,51,.6);border-radius:999px;padding:6px 14px;gap:8px!important;font-variant-numeric:tabular-nums;box-shadow:0 0 14px rgba(255,204,51,.25)}.pt-stars i{font-style:normal;color:#FFCC33}"
   + ".acc-emo{''', 1)
+
+# ---------- Eigener Knopf «Hintergrund» (zwischen Diplome und Lexikon) ----------
+_o = "const bgOpen = (b, T) => !b.badge || T.badges.has(b.badge);"
+assert _o in portal
+portal = portal.replace(_o, "const bgOpen = (b, T) => (b.lv == null || LIB.levelOf(T.stars) >= b.lv) && (!b.badge || T.badges.has(b.badge));", 1)
+_o = '    .concat(CU.bgs.map(x=>({id:x.id, n:x.n, ic:x.ic || "🖼️", open:bgOpen(x, T), req:x.reqTxt || ""})));'
+assert _o in portal
+portal = portal.replace(_o, '''    .concat(CU.bgs.map(x=>({id:x.id, n:x.n, ic:x.ic || "🖼️", open:bgOpen(x, T), req:x.reqTxt || "", lv:x.lv, wand:x.wand, svg:x.svg, grp: x.lv != null ? 0 : String(x.id).startsWith("bg_p") ? 2 : 1})))
+    .map((x,i)=>Object.assign({i}, x)).sort((a,b)=>((a.grp == null ? -1 : a.grp) - (b.grp == null ? -1 : b.grp)) || ((a.lv || 0) - (b.lv || 0)) || (a.i - b.i));''', 1)
+# Zimmer-Dialog: Hintergrund-Abschnitt raus (hat jetzt einen eigenen Knopf)
+_o = "    ${bgHTML(T)}\n    ${RR.ROOM_SLOTS.map(sl=>{"
+assert _o in portal
+portal = portal.replace(_o, "    ${RR.ROOM_SLOTS.map(sl=>{", 1)
+_o = "const BL = bgList(T), nOpen = RR.ROOM.filter(x=>roomOpen(x, li)).length + BL.filter(x=>x.open).length, nAll = RR.ROOM.length + BL.length;"
+assert _o in portal
+portal = portal.replace(_o, "const nOpen = RR.ROOM.filter(x=>roomOpen(x, li)).length, nAll = RR.ROOM.length;", 1)
+_o = 'Neues gibt es mit höheren Leveln und für Diplome aus den Modulen.</p>'
+assert _o in portal
+portal = portal.replace(_o, 'Neues gibt es mit höheren Leveln und für Diplome aus den Modulen. Den Hintergrund wählst du rechts unter «Hintergrund».</p>', 1)
+# Dialog «Hintergrund»
+_o = "function pickBg(id){"
+assert _o in portal
+portal = portal.replace(_o, r'''function bgThumb(x){
+  const w = x.id === "pixel" ? ["#241052","#4B2696"] : x.id === "chalet" ? ["#6B3F1F","#9C6534"] : (x.wand || ["#241052","#4B2696"]), u = "bgt_" + String(x.id).replace(/[^\w-]/g, "");
+  return `<svg viewBox="0 0 160 64" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="${u}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="${w[0]}"/><stop offset="1" stop-color="${w[1] || w[0]}"/></linearGradient></defs><rect width="160" height="64" fill="url(#${u})"/>${x.svg || (x.id === "chalet" ? '<path d="M0 40h160M0 52h160M40 28v36M120 28v36" stroke="#4A2A12" stroke-width="2"/>' : "")}</svg>`;
+}
+function bgsHTML(){
+  const s = student(D.me), T = totalsFor(s.id), li = LIB.levelOf(T.stars), L = bgList(T), cur = window.GLAB_ROOMBG || "pixel", NW = NEWSET.bg || new Set();
+  const show = vfSort(L.filter(x=>vfShow("bg", x.open, cur === x.id)), x=>x.open), nOpen = L.filter(x=>x.open).length;
+  const nx = L.filter(x=>!x.open && x.lv != null && x.lv > li).sort((a,b)=>a.lv - b.lv)[0];
+  const need = nx && LIB.LEVELS[nx.lv] ? Math.max(0, LIB.LEVELS[nx.lv].s - T.stars) : 0;
+  return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptBgT">
+    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptBgT">Hintergrund</h2><p>Wähle den Hintergrund für gLiTChs Zimmer. Neue gibt es mit den Leveln, für Module und für Prestige.</p></div>
+      <button type="button" class="btn" data-pt="bgs-close">Fertig</button></div>
+    ${vfBar("bg", nOpen, L.length)}${nx ? `<div class="vf-next"><span aria-hidden="true">🎁</span><span><b>Nächster Hintergrund:</b> ${nx.ic} ${esc(nx.n)}<small>ab Level ${nx.lv + 1}${need ? ` · noch ${need} ★` : ""}</small></span></div>` : ""}
+    ${show.length ? `<div class="bg-grid">${show.map(x=>`<button type="button" class="bg-card${cur === x.id ? " on" : ""}${x.open ? "" : " locked"}" data-pt="bg-${x.id}" ${x.open ? "" : 'aria-disabled="true"'} aria-pressed="${cur === x.id}">${vfNew(NW.has("bg:" + x.id))}<span class="bg-th">${bgThumb(x)}</span><b>${x.ic} ${esc(x.n)}</b><small>${x.open ? (cur === x.id ? "aktiv" : "antippen") : esc(x.req)}</small>${x.open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`).join("")}</div>` : vfEmpty("bg")}
+  </div>`;
+}
+function openBgs(){
+  closeOv("ptBg"); const T = totalsFor(D.me), p = prog(D.me), ids = bgList(T).filter(x=>x.open).map(x=>"bg:" + x.id);
+  const had = Array.isArray(p.seenB) ? new Set(p.seenB) : null; NEWSET.bg = had ? new Set(ids.filter(i=>!had.has(i))) : new Set(); p.seenB = ids; saveD();
+  const ov = document.createElement("div"); ov.className = "wd-ov"; ov.id = "ptBg"; ov.innerHTML = bgsHTML();
+  document.body.appendChild(ov); document.body.style.overflow = "hidden"; ov.querySelector('[data-pt="bgs-close"]').focus({preventScroll:true});
+}
+(function(){ if (document.getElementById("bgCss")) return; const st = document.createElement("style"); st.id = "bgCss";
+  st.textContent = ".bg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:6px}"
+  + ".bg-card{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:grid;gap:4px;padding:8px;border-radius:14px;background:#2A0F66;border:2px solid #4A23A0;text-align:center}"
+  + ".bg-card.on{border-color:#FFC21A;box-shadow:0 0 0 2px rgba(255,194,26,.35)}.bg-card:focus-visible{outline:3px solid #00E5FF;outline-offset:2px}"
+  + ".bg-th{display:block;aspect-ratio:160/64;border-radius:9px;overflow:hidden;background:#14062E}.bg-th svg{width:100%;height:100%;display:block}"
+  + ".bg-card b{font:800 .86rem/1.2 system-ui,sans-serif}.bg-card small{font-size:.74rem;opacity:.8}.bg-card.locked .bg-th{filter:grayscale(.7) brightness(.55)}.bg-card.locked b{opacity:.7}";
+  (document.head || document.documentElement).appendChild(st); })();
+''' + _o, 1)
+_o = "  const ov = document.getElementById(\"ptRm\"); if (ov){ const sc = ov.scrollTop; ov.innerHTML = roomHTML(); ov.scrollTop = sc; }\n}"
+assert _o in portal, "pickBg Ende"
+portal = portal.replace(_o, "  const ov = document.getElementById(\"ptRm\"); if (ov){ const sc = ov.scrollTop; ov.innerHTML = roomHTML(); ov.scrollTop = sc; }\n  const ob = document.getElementById(\"ptBg\"); if (ob){ const sc = ob.scrollTop; ob.innerHTML = bgsHTML(); ob.scrollTop = sc; render(); }\n}", 1)
+_o = "const el = document.querySelector('[data-pt=\"bg-chalet\"]');"
+# Knopf in der Leiste
+_o = '${railBtn("lexikon", "📖", "Lexikon", "als PDF", false, "#8B5CFF", 4)}'
+assert _o in portal
+portal = portal.replace(_o, '${railBtn("bgs", "🖼️", "Hintergrund", `${bgList(T).filter(x=>x.open).length} / ${bgList(T).length}`, bgList(T).filter(x=>x.open).length > ((prog(D.me).seenB || []).length || 99), "#00E5FF", 4)}\n        ' + _o, 1)
+_o = '  if (a === "diplome") return openDiplomas();'
+assert _o in portal
+portal = portal.replace(_o, _o + '\n  if (a === "bgs") return openBgs();\n  if (a === "bgs-close"){ closeOv("ptBg"); render(); return; }', 1)
+_o = 'seenW: p.seenW || null, seenR: p.seenR || null,'
+assert _o in portal
+portal = portal.replace(_o, 'seenW: p.seenW || null, seenR: p.seenR || null, seenB: p.seenB || null,', 1)
+_o = 'window.GLAB_VF = window.GLAB_VF || {wd:"mine", rm:"mine"};'
+assert _o in portal
+portal = portal.replace(_o, 'window.GLAB_VF = window.GLAB_VF || {wd:"mine", rm:"mine", bg:"all"};', 1)
+_o = '''const ov = document.getElementById(kind === "wd" ? "ptWd" : "ptRm"); if (ov){ const sc = ov.scrollTop; ov.innerHTML = kind === "wd" ? wardrobeHTML() : roomHTML(); ov.scrollTop = sc; } });'''
+assert _o in portal
+portal = portal.replace(_o, '''const ov = document.getElementById(kind === "wd" ? "ptWd" : kind === "bg" ? "ptBg" : "ptRm"); if (ov){ const sc = ov.scrollTop; ov.innerHTML = kind === "wd" ? wardrobeHTML() : kind === "bg" ? bgsHTML() : roomHTML(); ov.scrollTop = sc; } });''', 1)

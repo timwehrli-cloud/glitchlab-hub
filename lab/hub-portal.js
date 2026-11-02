@@ -168,10 +168,10 @@ if (window.GLAB_R){
   CU.room.forEach(r=>{ if (!window.GLAB_R.ROOM.some(x=>x.id === r.id)) window.GLAB_R.ROOM.push({id:r.id, slot:r.slot, n:r.n, lv:0, box:r.box, svg:r.svg, badge:r.badge || null, reqTxt:r.reqTxt || ""}); });
 }
 const roomOpen = (x, li) => x.sw ? swCount(totalsFor(D.me)) >= x.sw : x.badge ? totalsFor(D.me).badges.has(x.badge) : x.lv <= li;
-const bgOpen = (b, T) => !b.badge || T.badges.has(b.badge);
+const bgOpen = (b, T) => (b.lv == null || LIB.levelOf(T.stars) >= b.lv) && (!b.badge || T.badges.has(b.badge));
 const emoteOpen = (x, T) => !x.req || T.badges.has(x.req.badge);
 const emoteReq = x => x.req ? (x.req.txt || `Modul «${x.req.mod}» schaffen`) : "von Anfang an";
-const pickExtras = p => ({outfit: p.outfit || {}, outfitAt: p.outfitAt || 0, seen: p.seen || 0, room: p.room || null, roomSeen: p.roomSeen || 0, emote: p.emote || null, prefsAt: p.prefsAt || 0, wall: p.wall || null, seenW: p.seenW || null, seenR: p.seenR || null, bg: window.GLAB_ROOMBG});
+const pickExtras = p => ({outfit: p.outfit || {}, outfitAt: p.outfitAt || 0, seen: p.seen || 0, room: p.room || null, roomSeen: p.roomSeen || 0, emote: p.emote || null, prefsAt: p.prefsAt || 0, wall: p.wall || null, seenW: p.seenW || null, seenR: p.seenR || null, seenB: p.seenB || null, bg: window.GLAB_ROOMBG});
 function saveD(){ if (HB && D.me && D.prog[D.me]) HB.saveExtras(pickExtras(D.prog[D.me])); }
 function cloudPush(){}
 let S = {};
@@ -723,6 +723,7 @@ function dashHTML(){
         ${railBtn("room", "🛋️", "Zimmer", `${roomUnl} / ${RR.ROOM.length}`, roomUnl > (p.roomSeen || 0), "#00E5FF", 1)}
         ${railBtn("emotes", "✨", "Emotes", `${emoUnl} / ${RR.EMOTES.length}`, false, "#FFC21A", 2)}
         ${railBtn("diplome", "📜", "Diplome", `${LIB.BADGES.filter(b=>T.badges.has(b.id)).length} / ${LIB.BADGES.length}`, false, "#3CFF7A", 3)}
+        ${railBtn("bgs", "🖼️", "Hintergrund", `${bgList(T).filter(x=>x.open).length} / ${bgList(T).length}`, bgList(T).filter(x=>x.open).length > ((prog(D.me).seenB || []).length || 99), "#00E5FF", 4)}
         ${railBtn("lexikon", "📖", "Lexikon", "als PDF", false, "#8B5CFF", 4)}
         ${railBtn("levels", "🏆", "Alle Level", (li < 100 ? `${li+1} / 100` : `${li+1} ★`), false, "#B79CFF", 4)}
         ${railBtn("sound", window.GLAB_R.soundOn() ? "🔊" : "🔇", "Ton", window.GLAB_R.soundOn() ? "an" : "aus", false, "#FF7A00", 5)}
@@ -870,7 +871,7 @@ const MOD_ART = {
 };
 
 /* ---- Übersicht für Garderobe und Zimmer ---- */
-window.GLAB_VF = window.GLAB_VF || {wd:"mine", rm:"mine"};
+window.GLAB_VF = window.GLAB_VF || {wd:"mine", rm:"mine", bg:"all"};
 const NEWSET = {wd:new Set(), rm:new Set()};
 function markNew(kind){
   const s = student(D.me), p = prog(s.id), T = totalsFor(s.id), li = LIB.levelOf(T.stars);
@@ -904,7 +905,7 @@ function nextGift(kind, T){
 }
 document.addEventListener("click", e=>{ const b = e.target.closest && e.target.closest("[data-pt-vf]"); if (!b) return; e.preventDefault();
   const [kind, v] = b.dataset.ptVf.split(":"); window.GLAB_VF[kind] = v;
-  const ov = document.getElementById(kind === "wd" ? "ptWd" : "ptRm"); if (ov){ const sc = ov.scrollTop; ov.innerHTML = kind === "wd" ? wardrobeHTML() : roomHTML(); ov.scrollTop = sc; } });
+  const ov = document.getElementById(kind === "wd" ? "ptWd" : kind === "bg" ? "ptBg" : "ptRm"); if (ov){ const sc = ov.scrollTop; ov.innerHTML = kind === "wd" ? wardrobeHTML() : kind === "bg" ? bgsHTML() : roomHTML(); ov.scrollTop = sc; } });
 (function(){ if (document.getElementById("vfCss")) return; const st = document.createElement("style"); st.id = "vfCss";
   st.textContent = ".vf-bar{position:sticky;top:-20px;z-index:3;display:flex;gap:6px;flex-wrap:wrap;margin:10px -20px 8px;padding:10px 20px;background:#14062E;border-bottom:1px solid rgba(139,92,255,.35)}"
   + ".vf-b{all:unset;cursor:pointer;box-sizing:border-box;padding:7px 12px;border-radius:999px;border:2px solid #4A23A0;background:#2A0F66;font:800 .85rem/1.1 system-ui,sans-serif;color:#fff}"
@@ -919,7 +920,8 @@ document.addEventListener("click", e=>{ const b = e.target.closest && e.target.c
 /* ---- Zimmer einrichten ---- */
 function bgList(T){
   return [{id:"pixel", n:"Pixel-Zimmer", ic:"🟪", open:true, req:""}, {id:"chalet", n:"Schweizer Chalet", ic:"🏔️", open:T.badges.has(CHALET_BADGE), req:"nach dem ersten NMG-Modul (Alte Eidgenossenschaft)"}]
-    .concat(CU.bgs.map(x=>({id:x.id, n:x.n, ic:x.ic || "🖼️", open:bgOpen(x, T), req:x.reqTxt || ""})));
+    .concat(CU.bgs.map(x=>({id:x.id, n:x.n, ic:x.ic || "🖼️", open:bgOpen(x, T), req:x.reqTxt || "", lv:x.lv, wand:x.wand, svg:x.svg, grp: x.lv != null ? 0 : String(x.id).startsWith("bg_p") ? 2 : 1})))
+    .map((x,i)=>Object.assign({i}, x)).sort((a,b)=>((a.grp == null ? -1 : a.grp) - (b.grp == null ? -1 : b.grp)) || ((a.lv || 0) - (b.lv || 0)) || (a.i - b.i));
 }
 function bgHTML(T){
   const cur = window.GLAB_ROOMBG || "pixel", L = bgList(T), NW = NEWSET.rm, c = L.find(x=>x.id === cur) || L[0];
@@ -927,6 +929,35 @@ function bgHTML(T){
   return window.GLAB_ACC("rm", "bg", "Hintergrund", {cur: esc(c.n), prev: `<span class="acc-emo">${c.ic}</span>`, n: L.filter(x=>x.open).length, t: L.length, isNew: L.some(x=>NW.has("bg:" + x.id))}, true)
     + (show.length ? `<div class="wd-grid">${show.map(x=>`<button type="button" class="wd-item${cur === x.id ? " on" : ""}${x.open ? "" : " locked"}" data-pt="bg-${x.id}" ${x.open ? "" : 'aria-disabled="true"'} aria-pressed="${cur === x.id}">${vfNew(NW.has("bg:" + x.id))}<span class="pt-emo-ic" aria-hidden="true">${x.ic}</span><b>${esc(x.n)}</b><small>${x.open ? (cur === x.id ? "aktiv" : "antippen") : esc(x.req)}</small>${x.open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`).join("")}</div>` : vfEmpty("rm")) + `</details>`;
 }
+function bgThumb(x){
+  const w = x.id === "pixel" ? ["#241052","#4B2696"] : x.id === "chalet" ? ["#6B3F1F","#9C6534"] : (x.wand || ["#241052","#4B2696"]), u = "bgt_" + String(x.id).replace(/[^\w-]/g, "");
+  return `<svg viewBox="0 0 160 64" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="${u}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="${w[0]}"/><stop offset="1" stop-color="${w[1] || w[0]}"/></linearGradient></defs><rect width="160" height="64" fill="url(#${u})"/>${x.svg || (x.id === "chalet" ? '<path d="M0 40h160M0 52h160M40 28v36M120 28v36" stroke="#4A2A12" stroke-width="2"/>' : "")}</svg>`;
+}
+function bgsHTML(){
+  const s = student(D.me), T = totalsFor(s.id), li = LIB.levelOf(T.stars), L = bgList(T), cur = window.GLAB_ROOMBG || "pixel", NW = NEWSET.bg || new Set();
+  const show = vfSort(L.filter(x=>vfShow("bg", x.open, cur === x.id)), x=>x.open), nOpen = L.filter(x=>x.open).length;
+  const nx = L.filter(x=>!x.open && x.lv != null && x.lv > li).sort((a,b)=>a.lv - b.lv)[0];
+  const need = nx && LIB.LEVELS[nx.lv] ? Math.max(0, LIB.LEVELS[nx.lv].s - T.stars) : 0;
+  return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptBgT">
+    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptBgT">Hintergrund</h2><p>Wähle den Hintergrund für gLiTChs Zimmer. Neue gibt es mit den Leveln, für Module und für Prestige.</p></div>
+      <button type="button" class="btn" data-pt="bgs-close">Fertig</button></div>
+    ${vfBar("bg", nOpen, L.length)}${nx ? `<div class="vf-next"><span aria-hidden="true">🎁</span><span><b>Nächster Hintergrund:</b> ${nx.ic} ${esc(nx.n)}<small>ab Level ${nx.lv + 1}${need ? ` · noch ${need} ★` : ""}</small></span></div>` : ""}
+    ${show.length ? `<div class="bg-grid">${show.map(x=>`<button type="button" class="bg-card${cur === x.id ? " on" : ""}${x.open ? "" : " locked"}" data-pt="bg-${x.id}" ${x.open ? "" : 'aria-disabled="true"'} aria-pressed="${cur === x.id}">${vfNew(NW.has("bg:" + x.id))}<span class="bg-th">${bgThumb(x)}</span><b>${x.ic} ${esc(x.n)}</b><small>${x.open ? (cur === x.id ? "aktiv" : "antippen") : esc(x.req)}</small>${x.open ? "" : '<span class="wd-lock" aria-hidden="true"></span>'}</button>`).join("")}</div>` : vfEmpty("bg")}
+  </div>`;
+}
+function openBgs(){
+  closeOv("ptBg"); const T = totalsFor(D.me), p = prog(D.me), ids = bgList(T).filter(x=>x.open).map(x=>"bg:" + x.id);
+  const had = Array.isArray(p.seenB) ? new Set(p.seenB) : null; NEWSET.bg = had ? new Set(ids.filter(i=>!had.has(i))) : new Set(); p.seenB = ids; saveD();
+  const ov = document.createElement("div"); ov.className = "wd-ov"; ov.id = "ptBg"; ov.innerHTML = bgsHTML();
+  document.body.appendChild(ov); document.body.style.overflow = "hidden"; ov.querySelector('[data-pt="bgs-close"]').focus({preventScroll:true});
+}
+(function(){ if (document.getElementById("bgCss")) return; const st = document.createElement("style"); st.id = "bgCss";
+  st.textContent = ".bg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:6px}"
+  + ".bg-card{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:grid;gap:4px;padding:8px;border-radius:14px;background:#2A0F66;border:2px solid #4A23A0;text-align:center}"
+  + ".bg-card.on{border-color:#FFC21A;box-shadow:0 0 0 2px rgba(255,194,26,.35)}.bg-card:focus-visible{outline:3px solid #00E5FF;outline-offset:2px}"
+  + ".bg-th{display:block;aspect-ratio:160/64;border-radius:9px;overflow:hidden;background:#14062E}.bg-th svg{width:100%;height:100%;display:block}"
+  + ".bg-card b{font:800 .86rem/1.2 system-ui,sans-serif}.bg-card small{font-size:.74rem;opacity:.8}.bg-card.locked .bg-th{filter:grayscale(.7) brightness(.55)}.bg-card.locked b{opacity:.7}";
+  (document.head || document.documentElement).appendChild(st); })();
 function pickBg(id){
   const T = totalsFor(D.me);
   if (id === "chalet" && !T.badges.has(CHALET_BADGE)){ const el = document.querySelector('[data-pt="bg-chalet"]'); if (el) el.animate([{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"none"}], {duration:300}); return; }
@@ -935,16 +966,16 @@ function pickBg(id){
   if (id !== "pixel" && id !== "chalet" && !cb) return;
   window.GLAB_ROOMBG = id; saveD();
   const ov = document.getElementById("ptRm"); if (ov){ const sc = ov.scrollTop; ov.innerHTML = roomHTML(); ov.scrollTop = sc; }
+  const ob = document.getElementById("ptBg"); if (ob){ const sc = ob.scrollTop; ob.innerHTML = bgsHTML(); ob.scrollTop = sc; render(); }
 }
 function roomHTML(){
   const s = student(D.me), p = prog(s.id), T = totalsFor(s.id), li = LIB.levelOf(T.stars), RR = window.GLAB_R, items = roomOf(p), NW = NEWSET.rm;
-  const BL = bgList(T), nOpen = RR.ROOM.filter(x=>roomOpen(x, li)).length + BL.filter(x=>x.open).length, nAll = RR.ROOM.length + BL.length;
+  const nOpen = RR.ROOM.filter(x=>roomOpen(x, li)).length, nAll = RR.ROOM.length;
   return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptRmT">
-    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptRmT">Zimmer einrichten</h2><p>Pro Platz einen Gegenstand antippen, nochmals tippen räumt ihn weg. Neues gibt es mit höheren Leveln und für Diplome aus den Modulen.</p></div>
+    <div class="wd-head"><div><small>${esc(s.n)} · Level ${li+1}</small><h2 id="ptRmT">Zimmer einrichten</h2><p>Pro Platz einen Gegenstand antippen, nochmals tippen räumt ihn weg. Neues gibt es mit höheren Leveln und für Diplome aus den Modulen. Den Hintergrund wählst du rechts unter «Hintergrund».</p></div>
       <button type="button" class="btn" data-pt="rm-close">Fertig</button></div>
     <div class="pt-room" style="margin-top:14px">${RR.roomSVG(items)}<span class="pt-room-g glitch"><span>${LIB.glitchSVG("cool", {outfit: p.outfit || {}})}</span></span></div>
     ${vfBar("rm", nOpen, nAll)}${nextGift("rm", T)}
-    ${bgHTML(T)}
     ${RR.ROOM_SLOTS.map(sl=>{
       const its = RR.ROOM.filter(x=>x.slot === sl.id), cur = its.find(x=>items[sl.id] === x.id), isOpen = x=>roomOpen(x, li);
       const show = vfSort(its.filter(x=>vfShow("rm", isOpen(x), items[sl.id] === x.id)), isOpen);
@@ -1408,6 +1439,8 @@ document.addEventListener("click", e=>{
   if (a === "emotes") return openEmotes();
   if (a === "levels") return openLevels();
   if (a === "diplome") return openDiplomas();
+  if (a === "bgs") return openBgs();
+  if (a === "bgs-close"){ closeOv("ptBg"); render(); return; }
   if (a === "lexikon"){ if (window.GLAB_LEX) window.GLAB_LEX.open({who: (student(D.me) || {}).n || "", haveOf: m=>{ const out = new Set(); [groupOf(D.me, m), "p:" + D.me].filter(Boolean).forEach(nr=>{ const v = lsGet(workKey(nr, m)); ((v && v.buddy && v.buddy.lex) || []).forEach(w=>out.add(w)); }); return [...out]; }}); return; }
   if (a === "dp-close"){ closeOv("ptDp"); render(); return; }
   if (a === "rm-close" || a === "em-close" || a === "lv-close"){ closeOv({"rm-close":"ptRm","em-close":"ptEm","lv-close":"ptLv"}[a]); render(); return; }

@@ -8,35 +8,37 @@ _SKFX = (_pl.Path(__file__).resolve().parent.parent / "css" / "style.css").read_
 _SKFX = _SKFX[_SKFX.index("/* Animierte Prestige-Skins (gLiTCh) */"):]
 _CSS = _SKFX + r'''
 /* Prestige-Hintergründe */
-.pb-tw{animation:pbTw 2.2s steps(2) infinite}
-.pb-pulse{animation:pbPulse 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
-.pb-float{animation:pbFloat 3s ease-in-out infinite}
-.pb-drift{animation:pbDrift 8s ease-in-out infinite}
-.pb-spin{animation:pbSpin 14s linear infinite}
-.pb-shoot{animation:pbShoot 5s linear infinite;opacity:0}
-.pb-rise{animation:pbRise 3.2s linear infinite;opacity:0}
-.pb-flick{animation:pbFlick .5s steps(3) infinite;transform-box:fill-box;transform-origin:50% 100%}
-.pb-swing{animation:pbSwing 3s ease-in-out infinite}
-.pb-sway{animation:pbSway 4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+.pb-tw{animation:pbTw 3.4s ease-in-out infinite}
+.pb-pulse{animation:pbPulse 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.pb-float{animation:pbFloat 5s ease-in-out infinite}
+.pb-drift{animation:pbDrift 14s ease-in-out infinite}
+.pb-spin{animation:pbSpin 40s linear infinite}
+.pb-shoot{animation:pbShoot 9s linear infinite;opacity:0}
+.pb-rise{animation:pbRise 5s linear infinite;opacity:0}
+.pb-fall{animation:pbFall 7s linear infinite;opacity:0}
+.pb-flick{animation:pbFlick 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+.pb-swing{animation:pbSwing 5s ease-in-out infinite}
+.pb-sway{animation:pbSway 6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
 .pb-blink{animation:pbBlink 4s steps(1) infinite}
-.pb-hue{animation:pbHue 8s linear infinite}
-.pb-shine{animation:pbShine 2.8s ease-in-out infinite}
-.pb-glitch{animation:pbGlitch 2.4s steps(1) infinite}
-.pb-scan{animation:pbScan 4s linear infinite}
-@keyframes pbTw{50%{opacity:.15}}
-@keyframes pbPulse{0%,100%{transform:scale(.88)}50%{transform:scale(1.12)}}
-@keyframes pbFloat{0%,100%{translate:0 0}50%{translate:2px -4px}}
-@keyframes pbDrift{0%,100%{translate:-10px 0}50%{translate:12px 2px}}
+.pb-hue{animation:pbHue 16s ease-in-out infinite}
+.pb-shine{animation:pbShine 5s ease-in-out infinite}
+.pb-glitch{animation:pbGlitch 5s steps(1) infinite}
+.pb-scan{animation:pbScan 8s linear infinite}
+@keyframes pbTw{50%{opacity:.35}}
+@keyframes pbPulse{0%,100%{transform:scale(.95);opacity:.8}50%{transform:scale(1.05);opacity:1}}
+@keyframes pbFloat{0%,100%{translate:0 0}50%{translate:1px -2px}}
+@keyframes pbDrift{0%,100%{translate:-5px 0}50%{translate:6px 1px}}
 @keyframes pbSpin{to{transform:rotate(360deg)}}
-@keyframes pbShoot{0%,78%{opacity:0;translate:0 0}82%{opacity:1}94%{opacity:0;translate:40px 16px}100%{opacity:0}}
-@keyframes pbRise{0%{translate:0 0;opacity:0}15%{opacity:1}100%{translate:0 -36px;opacity:0}}
-@keyframes pbFlick{0%{transform:scale(1,1)}33%{transform:scale(.92,1.12)}66%{transform:scale(1.06,.9)}}
-@keyframes pbSwing{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
-@keyframes pbSway{0%,100%{transform:skewX(-5deg)}50%{transform:skewX(5deg)}}
+@keyframes pbShoot{0%,86%{opacity:0;translate:0 0}89%{opacity:.7}97%{opacity:0;translate:34px 14px}100%{opacity:0}}
+@keyframes pbRise{0%{translate:0 0;opacity:0}20%{opacity:.7}100%{translate:0 -28px;opacity:0}}
+@keyframes pbFall{0%{translate:0 0;opacity:0}10%{opacity:.8}100%{translate:-6px 66px;opacity:0}}
+@keyframes pbFlick{0%,100%{transform:scale(1,1)}50%{transform:scale(.97,1.05)}}
+@keyframes pbSwing{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@keyframes pbSway{0%,100%{transform:skewX(-2deg)}50%{transform:skewX(2deg)}}
 @keyframes pbBlink{0%,88%,100%{opacity:1}90%,94%{opacity:0}}
-@keyframes pbHue{to{filter:hue-rotate(360deg)}}
-@keyframes pbShine{0%,100%{filter:brightness(1)}50%{filter:brightness(1.6) drop-shadow(0 0 2px #fff)}}
-@keyframes pbGlitch{0%,70%,100%{translate:0 0;opacity:1}72%{translate:3px 0;opacity:.4}74%{translate:-4px 1px;opacity:1}76%{translate:0 0;opacity:.2}78%{opacity:1}}
+@keyframes pbHue{0%,100%{filter:hue-rotate(-25deg)}50%{filter:hue-rotate(25deg)}}
+@keyframes pbShine{0%,100%{filter:brightness(.9)}50%{filter:brightness(1.2)}}
+@keyframes pbGlitch{0%,88%,100%{translate:0 0;opacity:1}90%{translate:2px 0;opacity:.5}92%{translate:-2px 0;opacity:1}94%{translate:0 0}}
 @keyframes pbScan{from{translate:0 0}to{translate:0 60px}}
 /* Beschwörungs-Portal */
 .sm-portal{display:block;border-radius:50%;background:radial-gradient(ellipse at center,#14062E 32%,var(--pc) 52%,var(--pc2) 66%,transparent 72%);box-shadow:0 0 18px var(--pc);animation:smPortal .9s linear infinite}

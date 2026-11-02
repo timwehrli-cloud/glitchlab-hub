@@ -318,7 +318,7 @@
   if (window.GL_PRESTIGE && window.GLGlitch && GLGlitch.addSkins) GLGlitch.addSkins(GL_PRESTIGE.RANKS.map((R, i) => ({ id: "ps_" + (i + 1), n: R.skin.n, base: R.skin.base, fx: R.skin.fx })));
   const builtinExtras = () => { const lp = isLP(), ge = gameExtras(lp), pe = prestigeExtras(lp);
     ["dips", "mods", "emotes", "skins"].forEach(k => { ge.custom[k] = (ge.custom[k] || []).concat(pe.custom[k]); }); ge.earned = ge.earned.concat(pe.earned);
-    return { bgs: BUILTIN_BGS.map(({ done, ...b }) => Object.assign({ badge: "hb:" + b.id }, b)).concat(pe.custom.bgs), earned: BUILTIN_BGS.filter(b => lp || b.done()).map(b => "hb:" + b.id).concat(ge.earned), custom: ge.custom }; };
+    return { bgs: BUILTIN_BGS.map(({ done, ...b }) => Object.assign({ badge: "hb:" + b.id }, b)).concat(pe.custom.bgs).concat((window.GL_LEVEL_BGS || []).map(b => Object.assign({ reqTxt: `ab Level ${b.lv + 1}` }, b))), earned: BUILTIN_BGS.filter(b => lp || b.done()).map(b => "hb:" + b.id).concat(ge.earned), custom: ge.custom }; };
 
   /* ---------- gLiTCh streicheln: mit Finger oder Maus hin und her über gLiTCh fahren ---------- */
   const PET_LINES = ["Hihi! Das kitzelt!", "Mehr! Mein Code schnurrt!", "Oh, so lieb!", "Bzzzt … das tut gut!", "Pixel-Kuschelzeit!"];
@@ -1204,6 +1204,25 @@
     const tick = async () => { if (!S.me || S.token !== LIVE.tok) return; try { liveApply(await S.be.live(S.token) || {}); } catch (e) { /* nächstes Mal */ } };
     tick(); LIVE.t = setInterval(tick, 5000);
   }
+  /* Wieder im Vordergrund (z. B. Web-App auf dem iPad): sofort nachfragen */
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && LIVE.t && S.me) S.be.live(S.token).then(L => liveApply(L || {})).catch(() => {}); });
+  /* Neue Version online? Auf Übersichtsseiten gleich neu laden, in Modulen einen Hinweis zeigen (nichts geht verloren) */
+  let verBanner = null;
+  async function checkVersion() {
+    if (!window.GL_V || !navigator.onLine) return;
+    try {
+      const h = await fetch("index.html?check=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.text() : "");
+      const v = (h.match(/window\.GL_V = "(\w+)"/) || [])[1]; if (!v || v === window.GL_V) return;
+      const calm = !S.view || ["home", "names", "subject", "theme", "gate", "code"].includes(S.view.name);
+      if (calm && !document.getElementById("livePause")) { location.reload(); return; }
+      if (verBanner) return;
+      verBanner = document.createElement("button"); verBanner.type = "button"; verBanner.className = "ver-banner";
+      verBanner.textContent = "✨ Neue Version vom Glitchlab. Hier tippen zum Aktualisieren.";
+      verBanner.onclick = () => location.reload(); document.body.appendChild(verBanner);
+    } catch (e) { /* offline */ }
+  }
+  setInterval(checkVersion, 120000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkVersion(); });
   function liveApply(L) {
     let ov = document.getElementById("livePause");
     if (L.pause && !ov) {
