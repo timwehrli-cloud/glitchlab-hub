@@ -10,7 +10,9 @@
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   const slug = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, " ").trim();
-  const gl = (mood, cls = "") => `<span class="glitch ${cls}">${G ? G.svg(mood, "#8B5CFF") : ""}</span>`;
+  /* gLiTCh so, wie das Kind ihn im Hub angezogen hat (ohne Hub: ohne Outfit) */
+  const gsvg = mood => { try { const x = HUB && HUB.glitch && HUB.glitch(mood); if (x) return x; } catch (e) { /* ohne Hub */ } return G ? G.svg(mood, "#8B5CFF") : ""; };
+  const gl = (mood, cls = "") => `<span class="glitch ${cls}">${gsvg(mood)}</span>`;
   const ET = (M.etappen || []).filter(e => e && Array.isArray(e.aufgaben));
   const LEX = (M.lexikon || []).filter(w => w && w.wort);
   const DIP = (M.diplome || []).filter(d => d && d.id);
@@ -73,61 +75,128 @@
     let h = "", pos = 0;
     taken.forEach(x => { h += esc(raw.slice(pos, x.st)) + `<button type="button" class="lex" data-lex="${esc(x.w)}">${esc(raw.slice(x.st, x.en))}</button>`; pos = x.en; });
     h += esc(raw.slice(pos));
-    h = h.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    h = h.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
     return h.split(/\n\s*\n/).map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
   }
 
-  /* ---------- Ansichten ---------- */
+  /* ---------- Bausteine: jede Aufgabe ist ein Baustein, Infos davor sind «gLiTCh erklärt» ---------- */
+  const B = [];
+  ET.forEach((E, e) => {
+    let pend = [], any = false;
+    E.aufgaben.forEach((a, t) => { if (!scorable(a)) { pend.push(a); return; } B.push({ e, t, erkl: pend }); pend = []; any = true; });
+    if (pend.length) { if (any) B[B.length - 1].nach = pend; else B.push({ e, t: -1, erkl: pend, info: true }); }
+  });
+  const bDone = i => { const x = B[i]; return x.info ? !!S.ans[k(x.e, "seen")] : solved(x.e, x.t); };
+  const KIND = { info: "Info", mc: "Quiz", tf: "Richtig oder falsch?", text: "Antwort eintippen", luecke: "Lückentext", ordnen: "Reihenfolge", zuordnen: "Verbinden", schreiben: "Schreibauftrag",
+    sortieren: "Sortier-Spiel", zeitmaschine: "Zeitmaschine", raetsel: "Rätsel", memory: "Memory", mehrfach: "Mehrere richtig", schaetzen: "Schätzen", gestalten: "Gestalten" };
+  const TIPS = { mc: "Lies jede Antwort genau. Welche passt wirklich zur Frage?", tf: "Ein einziges falsches Wort macht die ganze Aussage falsch!", text: "Schau nochmals in «gLiTCh erklärt». Dort steht das Wort.",
+    luecke: "Lies den ganzen Satz laut. Welches Wort klingt richtig?", ordnen: "Was passiert zuerst? Beginne mit dem, was du sicher weisst.", zuordnen: "Fang mit dem Paar an, bei dem du ganz sicher bist.",
+    sortieren: "Überlege bei jeder Karte: Was ist das Besondere daran?", zeitmaschine: "Überlegt zuerst: Eher früher oder später als die anderen Ereignisse?", raetsel: "Holt euch ruhig den nächsten Hinweis!",
+    memory: "Merkt euch, wo die Karten liegen. Sagt die Begriffe laut!", mehrfach: "Prüft jede Antwort einzeln: stimmt sie oder nicht?", schaetzen: "Vergleicht mit etwas, das ihr kennt.",
+    gestalten: "Eine kurze, starke Überschrift und zwei, drei klare Sätze reichen.", schreiben: "Schreibt zuerst Stichworte, dann ganze Sätze." };
+  const PRAISE = ["Pixel-perfekt!", "Jawoll, richtig!", "Mega, das stimmt!", "Super gemacht!", "Volltreffer!"];
+  const short = a => a.titel || (a.frage || a.aussage || a.auftrag || a.anleitung || "").split(/[?.!:]/)[0].split(" ").slice(0, 3).join(" ") || KIND[a.typ];
+
   const app = document.getElementById("app");
-  let view = { name: "home" };
-  function top() {
-    return `<header class="top">${gl("happy")}<div class="top-t"><small>${esc(M.fachname || "gLiTCh-Modul")}${HUB ? "" : '<span class="test">Testmodus</span>'}</small><h1>${esc(M.emoji || "")} ${esc(M.titel || "Modul")}</h1></div>
-      <span class="stars" title="Sterne in diesem Modul">★ ${total()} / ${totalMax()}</span></header>`;
+  let view = { b: 0 }, sayT = null;
+  function say(text, mood = "happy", ms) {
+    const t = $("#sayT"), g = $("#bigG"); if (!t) return;
+    t.innerHTML = rich(text).replace(/^<p>|<\/p>$/g, ""); if (g) g.innerHTML = gsvg(mood);
+    $$(".lex", t).forEach(b => b.onclick = () => showLex(b.dataset.lex));
+    const bub = $("#say"); if (bub) { bub.classList.remove("pop"); void bub.offsetWidth; bub.classList.add("pop"); }
+    clearTimeout(sayT); if (ms) sayT = setTimeout(() => { const x = B[view.b]; say(x ? `Baustein ${view.b + 1}: ${short(ET[x.e].aufgaben[x.t] || x.erkl[0] || {})}. ${TIPS_START}` : "", "normal"); }, ms);
   }
-  function home() {
-    app.innerHTML = `<div class="wrap">${top()}
-      <section class="hero">${gl(S.fertig ? "cool" : "happy")}<div><div class="bubble"><b>gLiTCh</b><div>${rich(S.fertig ? (M.schluss || "Super, ihr habt alles geschafft!") : (M.intro || M.beschreibung || "Los geht's!"))}</div></div>
-        ${who() ? `<p class="who">Heute dabei: ${esc(who())}</p>` : ""}</div><span class="big-emo" aria-hidden="true">${esc(M.emoji || "")}</span></section>
-      <div class="grid">${ET.map((e, i) => { const mx = etMax(i), st = etStars(i);
-        return `<button type="button" class="card${etDone(i) ? " done" : ""}" data-et="${i}"><span class="nr">${i + 1}</span><span class="emo" aria-hidden="true">${esc(e.emoji || "⭐")}</span>
-          <h3>${esc(e.titel)}</h3><p>${esc(e.ziel || "")}</p>${mx ? `<span class="bar"><i style="width:${Math.round(st / mx * 100)}%"></i></span><small style="color:var(--muted)">★ ${st} / ${mx}</small>` : ""}</button>`; }).join("")}</div>
-      <div class="tools">${LEX.length ? `<button type="button" class="btn" data-go="lex">📖 Lexikon (${LEX.length})</button>` : ""}
-        ${DIP.length ? `<button type="button" class="btn" data-go="dip">🏅 Diplome ${S.dips.length}/${DIP.length}</button>` : ""}
-        ${(M.links || []).length ? `<button type="button" class="btn" data-go="links">🔗 Links</button>` : ""}
-        ${HUB ? `<button type="button" class="btn" data-go="exit">← Zurück zum Hub</button>` : ""}</div></div>`;
-    $$("[data-et]").forEach(b => b.onclick = () => openEt(+b.dataset.et));
-    bindTools();
+  const TIPS_START = "Brauchst du Hilfe? Tippe auf «💡 Tipp».";
+  function frame() {
+    app.innerHTML = `<header class="lab-top">
+        <button type="button" class="menu-btn" id="menuBtn" aria-haspopup="true" aria-expanded="false">☰ Menü</button>
+        <div class="logo"><span class="logo-g">gLiTCh</span><span class="logo-l">-Lab</span><span class="logo-chip">${esc(M.fachkurz || M.fachname || "Modul")}</span>
+          <small>${esc(M.emoji || "")} ${esc(M.titel || "")}${HUB ? "" : ' · <b class="test">Testmodus</b>'}</small></div>
+        <div class="talk"><div class="say-bub" id="say" aria-live="polite"><b>gLiTCh</b><p id="sayT"></p></div><span class="glitch big" id="bigG">${gsvg("happy")}</span></div>
+      </header>
+      <div class="menu" id="menu" hidden>
+        ${LEX.length ? `<button type="button" data-go="lex">📖 Lexikon <small>${LEX.length} Fachwörter</small></button>` : ""}
+        ${DIP.length ? `<button type="button" data-go="dip">🏅 Diplome <small>${S.dips.length} von ${DIP.length}</small></button>` : ""}
+        ${(M.links || []).length ? `<button type="button" data-go="links">🔗 Links</button>` : ""}
+        <button type="button" data-go="ziel">🏁 Ziel</button>
+        ${HUB ? `<button type="button" data-go="exit">← Zurück zum Hub</button>` : ""}
+      </div>
+      <nav class="tabs" id="tabs" aria-label="Bausteine"></nav>
+      <main class="lab-grid"><section class="stage" id="stage"></section><aside class="side" id="side"></aside></main>`;
+    const mb = $("#menuBtn"), mn = $("#menu");
+    mb.onclick = () => { mn.hidden = !mn.hidden; mb.setAttribute("aria-expanded", String(!mn.hidden)); };
+    document.addEventListener("click", ev => { if (!mn.hidden && !mn.contains(ev.target) && ev.target !== mb) { mn.hidden = true; mb.setAttribute("aria-expanded", "false"); } });
+    $$("[data-go]", mn).forEach(b => b.onclick = () => { mn.hidden = true; const g = b.dataset.go; if (g === "lex") showLex(); if (g === "dip") showDips(); if (g === "links") showLinks(); if (g === "ziel") goB(B.length); if (g === "exit" && HUB) HUB.beenden(); });
+    $("#bigG").onclick = () => { const x = B[view.b], a = x && ET[x.e].aufgaben[x.t]; say(a ? (a.tipp || TIPS[a.typ] || "Du schaffst das!") : "Hoi! Ich bin gLiTCh.", "wink", 7000); };
   }
-  function bindTools() {
-    $$("[data-go]").forEach(b => b.onclick = () => { const g = b.dataset.go; if (g === "lex") showLex(); if (g === "dip") showDips(); if (g === "links") showLinks(); if (g === "exit" && HUB) HUB.beenden(); if (g === "home") { view = { name: "home" }; home(); } });
+  function paintTabs() {
+    let lastE = -1;
+    $("#tabs").innerHTML = B.map((x, i) => { const a = ET[x.e].aufgaben[x.t] || x.erkl[0] || {}, sep = x.e !== lastE; lastE = x.e;
+      return `${sep ? `<span class="tab-sep" title="${esc(ET[x.e].titel)}">${esc(ET[x.e].emoji || "")}</span>` : ""}<button type="button" class="tab${i === view.b ? " cur" : ""}${bDone(i) ? " done" : ""}" data-b="${i}" aria-current="${i === view.b ? "step" : "false"}"><b>${bDone(i) ? "✓" : i + 1}</b><span>${esc(short(a))}</span></button>`; }).join("")
+      + `<button type="button" class="tab ziel${view.b >= B.length ? " cur" : ""}" data-b="${B.length}"><b>🏁</b><span>Ziel</span></button>`;
+    $$("[data-b]", $("#tabs")).forEach(b => b.onclick = () => goB(+b.dataset.b));
+    const cur = $(".tab.cur"); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "center" });
   }
-  function openEt(e) {
-    const A = ET[e].aufgaben; let t = A.findIndex((a, i) => scorable(a) && !(S.ans[k(e, i)] || {}).ok);
-    if (t < 0 || !A.some((a, i) => S.ans[k(e, i)])) t = 0;
-    view = { name: "et", e, t, intro: true }; etView(); window.scrollTo(0, 0);
+  function paintSide() {
+    const sd = $("#side"); if (!sd) return;
+    const st = total(), mx = totalMax(), dn = B.filter((_, i) => bDone(i)).length;
+    sd.innerHTML = `<div class="side-card lvl"><div class="ring" style="--p:${mx ? Math.round(st / mx * 100) : 0}"><span>★</span></div><div><small>Sterne in diesem Modul</small><b>${st} von ${mx}</b>${who() ? `<small>Team: ${esc(who())}</small>` : ""}</div></div>
+      ${DIP.length ? `<div class="side-card"><small class="cap">Diplome: ${esc(M.titel || "")}</small><div class="hexes">${DIP.map(d => `<button type="button" class="hex${S.dips.includes(d.id) ? " got" : ""}" data-dip="${esc(d.id)}" title="${esc(d.name)}">${S.dips.includes(d.id) ? esc(d.emoji || "🏅") : "🔒"}</button>`).join("")}</div>
+        <p class="side-note">Tippt ein Diplom an, dann verrät gLiTCh, wie ihr es bekommt.</p></div>` : ""}
+      <div class="side-card"><div class="prog-h"><b>Fortschritt</b><span>${dn} / ${B.length}</span></div><div class="pbar"><i style="width:${B.length ? Math.round(dn / B.length * 100) : 0}%"></i></div>
+        ${ET.map((E, e) => `<div class="et-row${etDone(e) ? " ok" : ""}"><span>${esc(E.emoji || "⭐")}</span><span>${esc(E.titel)}</span><small>${etDone(e) ? "✓" : `★ ${etStars(e)}/${etMax(e)}`}</small></div>`).join("")}</div>
+      ${LEX.length ? `<div class="side-card"><div class="prog-h"><b>📖 Fachwörter</b><span>${(S.words || []).length} / ${LEX.length}</span></div><p class="side-note">Wörter mit gepunkteter Linie antippen: gLiTCh erklärt sie.</p><button type="button" class="btn small" data-golex>Lexikon öffnen</button></div>` : ""}`;
+    $$("[data-dip]", sd).forEach(b => b.onclick = () => { const d = DIP.find(x => x.id === b.dataset.dip); say(S.dips.includes(d.id) ? `${d.emoji || "🏅"} **${d.name}**: geschafft! ${d.beschreibung || ""}` : `${d.emoji || "🏅"} **${d.name}**: ${d.beschreibung || "Löst die Bausteine, dann bekommt ihr es."}`, S.dips.includes(d.id) ? "cool" : "wink", 7000); });
+    const gl2 = $("[data-golex]", sd); if (gl2) gl2.onclick = () => showLex();
   }
-  function etView() {
-    const { e } = view, E = ET[e], A = E.aufgaben;
-    const steps = A.map((a, i) => { const s = S.ans[k(e, i)]; return `<i class="${i === view.t && !view.intro ? "cur" : s && s.ok ? "ok" : !scorable(a) && s ? "ok" : ""}"></i>`; }).join("");
-    app.innerHTML = `<div class="wrap">${top()}<section class="panel">
-      <div class="ehead"><span class="emo" aria-hidden="true">${esc(E.emoji || "⭐")}</span><h2>Etappe ${e + 1}: ${esc(E.titel)}</h2><button type="button" class="btn small" data-go="home">← Übersicht</button></div>
-      <div class="steps" aria-label="Fortschritt">${steps}</div>
-      ${view.intro ? `<div class="hero" style="margin-top:6px">${gl("wink")}<div class="bubble"><b>gLiTCh</b><div>${rich(E.intro || E.ziel || "Los geht's!")}</div></div></div>
-        <div class="nav"><span></span><button type="button" class="btn primary" data-start>Los geht's →</button></div>` : `<div id="task"></div>`}
-      </section>${LEX.length ? `<div class="tools"><button type="button" class="btn small" data-go="lex">📖 Lexikon</button></div>` : ""}</div>`;
-    bindTools();
-    const st = $("[data-start]"); if (st) st.onclick = () => { view.intro = false; etView(); };
-    if (!view.intro) renderTask();
+  function goB(i) { view.b = Math.max(0, Math.min(B.length, i)); paintTabs(); stage(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function readAloud(text) {
+    try { const u = new SpeechSynthesisUtterance(String(text).replace(/\*\*/g, "")); u.lang = "de-CH"; u.rate = .95; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { say("Vorlesen geht auf diesem Gerät leider nicht.", "sad", 4000); }
+  }
+  function erklHTML(list, cls = "") {
+    return list.map((a, n) => `<div class="erkl ${cls}"><div class="erkl-h">${gl("normal", "mini")}<b>gLiTCh erklärt</b>${a.titel ? `<span>· ${esc(a.titel)}</span>` : ""}<button type="button" class="btn small" data-read="${n}">🔊 Vorlesen</button></div><div class="txt">${rich(a.text || "")}</div></div>`).join("");
+  }
+  function stage() {
+    const sg = $("#stage");
+    if (view.b >= B.length) return ziel();
+    const x = B[view.b], E = ET[x.e], a = E.aufgaben[x.t];
+    const first = B.findIndex(y => y.e === x.e) === view.b, nInE = B.filter(y => y.e === x.e).length, posInE = B.slice(0, view.b).filter(y => y.e === x.e).length + 1;
+    sg.innerHTML = `<div class="stage-card" style="--ec:${["#E3A300", "#1F9D68", "#2E6BE6", "#DD4646", "#7B4CEF", "#00B3C7"][x.e % 6]}">
+      <div class="eyebrow"><span>Etappe ${x.e + 1} · ${esc(E.titel)}</span><span>Baustein ${view.b + 1} von ${B.length}</span></div>
+      <h1>${esc(a ? short(a) : (x.erkl[0].titel || E.titel))}</h1>${first && E.ziel ? `<p class="lead">${esc(E.ziel)}</p>` : ""}
+      ${erklHTML(x.erkl)}
+      ${x.info ? `<div class="nav"><button type="button" class="btn" data-prev ${view.b ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${view.b === B.length - 1 ? "Zum Ziel 🏁" : "Weiter →"}</button></div>` : `<div id="task"></div>`}
+      ${x.nach ? `<div id="nach" ${bDone(view.b) ? "" : "hidden"}>${erklHTML(x.nach, "nach")}</div>` : ""}
+    </div>`;
+    $$("[data-read]", sg).forEach((b, n) => b.onclick = () => { const all = [...x.erkl, ...(x.nach || [])]; readAloud((all[n] || {}).text || ""); });
+    $$(".erkl .lex", sg).forEach(b => b.onclick = () => showLex(b.dataset.lex));
+    if (x.info) { S.ans[k(x.e, "seen")] = { seen: true }; save(); checkDips(); paintSide(); $("[data-prev]").onclick = () => goB(view.b - 1); $("[data-next]").onclick = () => goB(view.b + 1); }
+    else { view.e = x.e; view.t = x.t; renderTask(); }
+    if (first && posInE === 1 && !bDone(view.b)) say(E.intro || `Etappe ${x.e + 1}: ${E.titel}. Los geht's!`, "happy", 9000);
+    else say(`${a ? KIND[a.typ] : "Info"}: ${posInE} von ${nInE} in dieser Etappe. ${TIPS_START}`, "normal");
+  }
+  function ziel() {
+    const all = ET.every((_, e) => etDone(e)), st = total(), mx = totalMax();
+    $("#stage").innerHTML = `<div class="stage-card ziel-card"><div class="eyebrow"><span>Ziel</span><span>${B.filter((_, i) => bDone(i)).length} von ${B.length} Bausteinen</span></div>
+      <h1>${all ? "Geschafft! 🎉" : "Fast am Ziel"}</h1>
+      <div class="ziel-hero">${gl(all ? "cool" : "wink", "huge")}<div><p class="ziel-stars">★ ${st} <small>von ${mx}</small></p><p>${esc(all ? (M.schluss || "Super, ihr habt alles geschafft!") : "Löst die offenen Bausteine (ohne ✓ in der Leiste oben), dann seid ihr am Ziel.")}</p></div></div>
+      ${DIP.length ? `<h3>Diplome</h3><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e" aria-hidden="true">${esc(d.emoji || "🏅")}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>` : ""}
+      <div class="nav"><button type="button" class="btn" data-prev>← Zurück</button>${HUB ? `<button type="button" class="btn primary" data-exit>Zurück zum Hub</button>` : ""}</div></div>`;
+    $("[data-prev]").onclick = () => goB(B.length - 1);
+    const ex = $("[data-exit]"); if (ex) ex.onclick = () => HUB.beenden();
+    say(all ? (M.schluss || "Ihr habt alles geschafft!") : "Noch nicht ganz! Schaut, welche Bausteine noch kein ✓ haben.", all ? "cool" : "wink");
+    if (all) confetti(40);
   }
   function done(e, t, ok, first, extra, pts) {
     const key = k(e, t), old = S.ans[key] || {}, a = ET[e].aufgaben[t];
     if (old.ok) return;
-    const tries = (old.tries || 0) + 1;
+    const wasDone = etDone(e), tries = (old.tries || 0) + 1;
     if (pts == null) pts = ok ? Math.max(1, wert(a) - (tries - 1)) : 0;
     S.ans[key] = Object.assign({}, old, extra || {}, { ok, tries, pts, first: ok && tries === 1 && pts >= wert(a) });
     save(); if (ok) { report(e); confetti(); }
-    checkDips();
-    $(".stars").textContent = `★ ${total()} / ${totalMax()}`;
+    checkDips(); paintSide(); paintTabs();
+    const nach = $("#nach"); if (ok && nach) nach.hidden = false;
+    if (ok && !wasDone && etDone(e)) setTimeout(() => say(`${ET[e].lob || "Etappe geschafft!"} ⭐`, "cool", 9000), 900);
   }
   function fb(ok, text) {
     const f = document.createElement("div"); f.className = "fb " + (ok ? "ok" : "bad");
@@ -135,13 +204,14 @@
     const old = $("#task .fb"); if (old) old.remove();
     $("#task .task").appendChild(f);
     $$(".lex", f).forEach(b => b.onclick = () => showLex(b.dataset.lex));
+    const x = B[view.b], a = x && ET[x.e].aufgaben[x.t];
+    if (ok) say(PRAISE[Math.floor(Math.random() * PRAISE.length)] + (a && wert(a) > 1 ? " Spiel gemeistert!" : ""), "happy", 5000);
+    else say(a && a.tipp ? `Kleiner Tipp: ${a.tipp}` : (TIPS[a && a.typ] || "Versuch es nochmal!"), "hmm", 9000);
   }
   function renderTask() {
     const { e, t } = view, A = ET[e].aufgaben, a = A[t], key = k(e, t), st = S.ans[key] || {};
-    const last = t === A.length - 1;
-    const KIND = { info: "Info", mc: "Quiz", tf: "Richtig oder falsch?", text: "Antwort eintippen", luecke: "Lückentext", ordnen: "Reihenfolge", zuordnen: "Verbinden", schreiben: "Schreibauftrag",
-      sortieren: "Sortier-Spiel", zeitmaschine: "Zeitmaschine", raetsel: "Rätsel", memory: "Memory", mehrfach: "Mehrere richtig", schaetzen: "Schätzen", gestalten: "Gestalten" };
-    const stars = wert(a) > 1 && scorable(a) ? ` · bis ${"★".repeat(wert(a))}` : "";
+    const last = view.b === B.length - 1;
+    const stars = wert(a) > 1 && scorable(a) ? ` · bis ${"★".repeat(wert(a))}` : " · ★";
     let body = "";
     if (a.typ === "info") body = `<h3>${esc(a.titel || "")}</h3><div class="txt">${rich(a.text || "")}</div>`;
     if (a.typ === "mc") body = `<h3>${rich(a.frage).replace(/^<p>|<\/p>$/g, "")}</h3><div class="opts">${(a.optionen || []).map((o, i) => `<button type="button" class="opt${st.ok && i === +a.richtig ? " ok" : ""}" data-o="${i}" ${st.ok ? 'aria-disabled="true"' : ""}>${esc(o)}</button>`).join("")}</div>`;
@@ -206,8 +276,9 @@
         </div><div class="poster" id="gePv"></div></div><p class="hintline" id="geInfo"></p><button type="button" class="btn primary" data-check>Fertig gestaltet</button>`;
     }
     if (a.typ === "schreiben") body = `<h3>${rich(a.auftrag).replace(/^<p>|<\/p>$/g, "")}</h3><textarea class="in" id="wr" placeholder="Schreibe hier …">${esc(st.v || "")}</textarea><p style="color:var(--muted);margin:6px 0" id="wc"></p><button type="button" class="btn primary" data-check>Abgeben</button>`;
-    $("#task").innerHTML = `<div class="task"><span class="kind">${KIND[a.typ] || "Aufgabe"} · ${t + 1}/${A.length}${stars}</span>${body}</div>
-      <div class="nav"><button type="button" class="btn" data-prev ${t ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${last ? "Etappe abschliessen ✓" : "Weiter →"}</button></div>`;
+    $("#task").innerHTML = `<div class="task"><div class="task-h"><span class="kind">${KIND[a.typ] || "Aufgabe"}${stars}</span><button type="button" class="tipbtn" data-tip>💡 Tipp von gLiTCh</button></div>${body}</div>
+      <div class="nav"><button type="button" class="btn" data-prev ${view.b ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${last ? "Zum Ziel 🏁" : "Weiter →"}</button></div>`;
+    $("[data-tip]").onclick = () => say(a.tipp || TIPS[a.typ] || "Lies nochmals in «gLiTCh erklärt» nach!", "wink", 10000);
     $$("#task .lex").forEach(b => b.onclick = () => showLex(b.dataset.lex));
     if (a.typ === "info") { S.ans[key] = { ok: false, seen: true }; if (!etMax(e)) S.ans[k(e, "seen")] = { seen: true }; save(); }
     if (st.ok && a.typ !== "info") fb(true, a.erklaerung);
@@ -280,14 +351,17 @@
       paint(); chk.onclick = () => { const n = (V.text.match(/\S+/g) || []).length, ok = V.titel.trim().length >= 3 && n >= min && !!V.farbe; done(e, t, ok, true, { v: Object.assign({}, V) }, ok ? 2 : 0); fb(ok, ok ? (a.erklaerung || "Sieht super aus!") : "Es fehlt noch etwas: Überschrift, genug Text und eine Farbe."); }; }
     if (a.typ === "schreiben") { const min = +a.mindestwoerter || 20, wc = () => { const n = ($("#wr").value.match(/\S+/g) || []).length; $("#wc").textContent = `${n} von mindestens ${min} Wörtern`; return n; };
       wc(); $("#wr").oninput = wc; chk.onclick = () => { const ok = wc() >= min; done(e, t, ok, true, { v: $("#wr").value }); fb(ok, ok ? (a.erklaerung || "Super geschrieben!") : `Schreibe noch etwas mehr (mindestens ${min} Wörter).`); }; }
-    $("[data-prev]").onclick = () => { view.t--; etView(); };
-    $("[data-next]").onclick = () => {
-      if (!last) { view.t++; etView(); return; }
-      checkDips();
-      const ok = etDone(e);
-      showMsg(ok ? "cool" : "hmm", ok ? (ET[e].lob || "Etappe geschafft!") : `Es ${etOpen(e) === 1 ? "fehlt noch 1 Aufgabe" : `fehlen noch ${etOpen(e)} Aufgaben`}. Die grauen Striche oben zeigen, welche.`, ok ? "Zur Übersicht" : "Weiterarbeiten", () => { if (ok) { view = { name: "home" }; home(); } else { view.t = ET[e].aufgaben.findIndex((x, i) => scorable(x) && !(S.ans[k(e, i)] || {}).ok); etView(); } });
-    };
+    $("[data-prev]").onclick = () => goB(view.b - 1);
+    $("[data-next]").onclick = () => goB(view.b + 1);
   }
+  function start() {
+    frame();
+    let i = B.findIndex((_, n) => !bDone(n)); if (i < 0) i = B.length;
+    view.b = i; paintTabs(); paintSide(); stage();
+    if (!Object.keys(S.ans).length) say(M.intro || M.beschreibung || "Hoi! Los geht's!", "happy", 10000);
+    checkDips();
+  }
+
   function shuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } if (b.length > 1 && b.every((x, i) => x === a[i])) [b[0], b[1]] = [b[1], b[0]]; return b; }
 
   /* ---------- Fenster ---------- */
@@ -301,6 +375,7 @@
   function showMsg(mood, text, btn, then) { const ov = dlg(`<div class="hero">${gl(mood)}<div class="bubble"><b>gLiTCh</b><div>${rich(text)}</div></div></div>`, then); $("[data-x]", ov).textContent = btn; }
   function showLex(word) {
     if (!S.lex) { S.lex = true; save(); checkDips(); }
+    if (word) { S.words = [...new Set([...(S.words || []), word])]; save(); paintSide(); }
     const ov = dlg(`<h2>📖 Lexikon</h2><input class="in" id="lq" placeholder="Wort suchen …" style="margin-bottom:10px"><dl class="dl" id="ll"></dl>`);
     const paint = q => { $("#ll", ov).innerHTML = LEX.filter(w => !q || norm(w.wort + " " + w.erklaerung).includes(norm(q))).sort((a, b) => a.wort.localeCompare(b.wort, "de")).map(w => `<div${word && w.wort === word ? ' style="border-color:var(--teal)"' : ""}><dt>${esc(w.wort)}</dt><dd>${esc(w.erklaerung)}</dd></div>`).join("") || "<p>Nichts gefunden.</p>"; };
     paint(""); $("#lq", ov).oninput = ev => paint(ev.target.value);
@@ -314,5 +389,5 @@
     for (let i = 0; i < n; i++) { const c = document.createElement("i"); c.className = "confetti"; c.style.cssText += `left:${50 + (Math.random() - .5) * 40}vw;top:40vh;background:${["#FFC21A", "#FF2BD6", "#2EE6D6", "#A07CFF", "#3CFF7A"][i % 5]}`; document.body.appendChild(c);
       c.animate([{ transform: "translate(0,0) rotate(0)", opacity: 1 }, { transform: `translate(${(Math.random() - .5) * 600}px,${200 + Math.random() * 300}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }], { duration: 1200 + Math.random() * 800, easing: "cubic-bezier(.2,.7,.4,1)" }).onfinish = () => c.remove(); }
   }
-  home(); checkDips();
+  start();
 })();

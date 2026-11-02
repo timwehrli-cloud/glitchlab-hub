@@ -513,3 +513,11 @@ footer.foot { text-align: center; padding-block: 8px 28px; }
 .name .glitch.kidg { width: 64px; height: 64px; margin-top: 6px; }
 .chip .glitch.kidg { width: 30px; height: 30px; }
 .glitch.kidg::after { content: ""; position: absolute; left: 22%; right: 22%; bottom: -3px; height: 4px; border-radius: 99px; background: var(--kc); opacity: .75; filter: blur(.5px); }
+
+/* gLiTCh in der Ecke von Spielen und hochgeladenen Modulen */
+.corner-g { position: fixed; right: max(12px, env(safe-area-inset-right, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px)); z-index: 30; display: flex; align-items: flex-end; gap: 6px; pointer-events: none; }
+.corner-btn { pointer-events: auto; width: 74px; height: 74px; border-radius: 50%; border: 2.5px solid var(--accent); background: radial-gradient(circle, rgba(46,230,214,.25), rgba(18,10,36,.85) 70%); box-shadow: 0 0 0 3px rgba(255,43,214,.35), 0 10px 24px rgba(0,0,0,.45); cursor: pointer; padding: 8px; overflow: visible; }
+.corner-btn .glitch { width: 100%; height: 100%; }
+.corner-btn:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+.corner-say { pointer-events: auto; max-width: 220px; margin: 0 0 18px; background: #14062E; color: #fff; border: 2px solid #FF2BD6; border-radius: 14px; padding: 8px 12px; font-weight: 700; font-size: .9rem; box-shadow: 3px 3px 0 #00E5FF; }
+@media (prefers-reduced-motion: reduce) { .corner-btn svg { animation: none; } }

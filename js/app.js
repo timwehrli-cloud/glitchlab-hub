@@ -394,7 +394,7 @@
     const s = H.subjects.find(x => x.id === m.subject);
     app.innerHTML = topbar() + `<main class="wrap">
       <div class="mod-head"><button type="button" class="btn small" data-back>← ${esc((H.themes.find(t => t.id === m.theme) || {}).title || s.short)}</button><h1>${esc(m.title)}</h1>
-        <div class="buddy">${gl("normal", "#8B5CFF")}<p id="buddySay" aria-live="polite">Los geht's!</p></div></div>
+        <div class="buddy"><span class="glitch">${G.svg("normal", "#8B5CFF", { outfit: outfitOf() })}</span><p id="buddySay" aria-live="polite">Los geht's!</p></div></div>
       <section class="mod-body" id="modBody"></section></main>${footer()}`;
     bindTop(); bindFoot();
     $("[data-back]").onclick = () => go({ name: "theme", id: m.theme });
@@ -558,6 +558,7 @@
         toast(`Spezial-Aufgabe geschafft!${newly.earned.length ? " Schaut in gLiTChs Zimmer nach Neuem." : ""}`, "star");
       }).catch(err => toast(err.message, "err", 5000));
     },
+    glitchSvg(mood) { return G.svg(mood || "happy", "#8B5CFF", { outfit: outfitOf(), calm: true }); },
     upDone(moduleId) { window.GLHubBridge.score(moduleId, "fertig", 1); },
     exit() { labFlush(); const v = S.view, m = v.name === "module" && H.modules.find(x => x.id === v.id); go(m ? { name: "theme", id: m.theme } : { name: "home" }); },
     lib() { /* Daten liegen schon in js/glitch-data.js */ },
@@ -601,6 +602,16 @@
     if (m && m.frameBg) fr.style.background = m.frameBg;
     fr.onload = () => { const l = $("#labLoad"); if (l) l.remove(); };
     $(".labshell").appendChild(fr);
+    /* gLiTCh sitzt in der Ecke, so wie er angezogen ist (nicht bei Lab-Modulen, die ihn schon zeigen, und nicht bei Spielen mit eigenem Maskottchen) */
+    const ownGlitch = m && (m.kind === "lab" || m.noBuddy || (m.upload && m.meta && m.meta.maskottchen));
+    if (m && !ownGlitch) {
+      const LINES = ["Du schaffst das!", "Ich bin da, falls ihr Hilfe braucht.", "Wenn ihr fertig seid: oben auf «✓ Fertig» tippen!", "Pixel-Power! Weiter so!", "Kleine Pause? Kurz strecken, dann weiter!"];
+      const cb = document.createElement("div"); cb.className = "corner-g";
+      cb.innerHTML = `<p class="corner-say" hidden></p><button type="button" class="corner-btn" aria-label="gLiTCh"><span class="glitch">${G.svg("happy", "#8B5CFF", { outfit: outfitOf() })}</span></button>`;
+      $(".labshell").appendChild(cb);
+      let n = 0, tm = null;
+      $(".corner-btn", cb).onclick = () => { const p = $(".corner-say", cb); p.textContent = LINES[n++ % LINES.length]; p.hidden = false; clearTimeout(tm); tm = setTimeout(() => { p.hidden = true; }, 4000); };
+    }
     S.cleanup = () => { labFlush(); if (stop) stop(); };
   }
 
@@ -675,13 +686,18 @@
     if (LP.cards) {
       app.innerHTML = head + `<main class="wrap">
         <div class="row no-print"><button type="button" class="btn small" data-cardsoff>← Zurück zur Klasse</button>
-          ${inFrame ? `<span class="hint">Zum Drucken die Seite in einem eigenen Browser-Tab öffnen.</span>` : `<button type="button" class="btn small primary" data-print>Drucken</button>`}</div>
+          <button type="button" class="btn small primary" data-pdf>📄 PDF herunterladen (8 Karten pro A4)</button>
+          ${inFrame ? "" : `<button type="button" class="btn small" data-print>Drucken</button>`}</div>
         <h1 style="font-size:26px">Login-Karten · ${esc(c.name)}</h1>
-        <div class="lp-kids">${LP.kids.map(k => `<div class="kcard"><div class="top-k">${gl("happy", k.color, "still")}<b>${esc(k.first_name)}</b></div>
+        <p class="hint no-print">Das Lehrpersonen-Konto ist absichtlich nicht dabei: Sein Bild-Passwort steht nur in deiner Tabelle.</p>
+        <div class="lp-kids">${LP.kids.filter(k => !k.is_teacher).map(k => `<div class="kcard"><div class="top-k">${gl("happy", k.color, "still")}<b>${esc(k.first_name)}</b></div>
           <small>Klassencode</small><span class="code-pill">${esc(c.code)}</span><small>Mein geheimes Bild-Passwort</small><span class="pinv">${pinPics(k.pin)}</span></div>`).join("")}</div></main>`;
       bindLpTop();
       $("[data-cardsoff]").onclick = () => { LP.cards = false; render(); };
       const pr = $("[data-print]"); if (pr) pr.onclick = () => window.print();
+      $("[data-pdf]").onclick = async ev => { const b = ev.currentTarget, t = b.textContent; b.disabled = true; b.textContent = "PDF wird erstellt …";
+        try { await cardsPdf(c, LP.kids.filter(k => !k.is_teacher)); } catch (err) { toast("Das PDF konnte nicht erstellt werden: " + (err.message || err), "err", 6000); }
+        b.disabled = false; b.textContent = t; };
       return;
     }
     app.innerHTML = head + `<main class="wrap">
@@ -744,6 +760,48 @@
       catch (err) { toast(err.message, "err"); }
     };
   }
+  /* ---------- Login-Karten als PDF: 8 Karten pro A4 (2 × 4), zum Ausschneiden ---------- */
+  function loadJs(src) { return new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = src; sc.onload = ok; sc.onerror = () => no(new Error("Bibliothek nicht geladen")); document.head.appendChild(sc); }); }
+  function svgImg(svg) { return new Promise(ok => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg.replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ')); }); }
+  async function cardsPdf(c, kids) {
+    if (!kids.length) { toast("In dieser Klasse gibt es noch keine Kinder."); return; }
+    if (!window.jspdf) await loadJs("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+    const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
+    const W = 92, Hc = 66, GX = 6, GY = 5, X0 = 10, Y0 = 9, PX = 10;   // mm, 10 px pro mm auf der Zeichenfläche
+    const link = location.origin + location.pathname.replace(/index\.html$/, "");
+    const gimg = await svgImg(G.svg("happy", "#8B5CFF", { calm: true }));
+    const card = k => {
+      const cv = document.createElement("canvas"); cv.width = W * PX; cv.height = Hc * PX; const x = cv.getContext("2d");
+      const rr = (X, Y, w, h, r) => { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); };
+      x.fillStyle = "#FFFFFF"; rr(4, 4, cv.width - 8, cv.height - 8, 40); x.fill();
+      x.lineWidth = 6; x.strokeStyle = "#7B4CEF"; x.stroke();
+      x.save(); rr(4, 4, cv.width - 8, 130, 40); x.clip(); const gr = x.createLinearGradient(0, 0, cv.width, 0); gr.addColorStop(0, "#2A1466"); gr.addColorStop(1, "#7B4CEF"); x.fillStyle = gr; x.fillRect(4, 4, cv.width - 8, 130); x.restore();
+      if (gimg) x.drawImage(gimg, 30, 18, 100, 100);
+      x.fillStyle = "#FFFFFF"; x.font = "800 34px system-ui, -apple-system, Segoe UI, sans-serif"; x.fillText("Glitchlab-Hub", 145, 62);
+      x.font = "600 24px system-ui, sans-serif"; x.fillStyle = "#D9CCFF"; x.fillText(c.name, 145, 100);
+      x.fillStyle = k.color || "#7B4CEF"; x.beginPath(); x.arc(cv.width - 70, 68, 26, 0, Math.PI * 2); x.fill();
+      x.fillStyle = "#14062E"; x.font = "900 64px system-ui, sans-serif"; x.fillText(k.first_name, 40, 222);
+      x.fillStyle = "#625A7E"; x.font = "700 22px system-ui, sans-serif"; x.fillText("KLASSENCODE", 40, 280); x.fillText("MEIN GEHEIMES BILD-PASSWORT", 40, 420);
+      x.fillStyle = "#F3EEFF"; rr(36, 296, 420, 76, 16); x.fill(); x.fillStyle = "#14062E"; x.font = "800 48px ui-monospace, Menlo, monospace"; x.fillText(c.code, 56, 350);
+      String(k.pin).split("-").forEach((p, i) => { const bx = 40 + i * 150; x.fillStyle = "#FFF8E7"; rr(bx, 440, 130, 130, 22); x.fill(); x.strokeStyle = "#E3A300"; x.lineWidth = 4; x.stroke();
+        x.fillStyle = "#14062E"; x.font = "800 22px system-ui, sans-serif"; x.fillText(String(i + 1), bx + 10, 468);
+        x.font = "84px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText((PICS[+p] || ["?"])[0], bx + 65, 510); x.textAlign = "left"; x.textBaseline = "alphabetic"; });
+      x.fillStyle = "#625A7E"; x.font = "600 19px system-ui, sans-serif"; x.fillText("Geheim halten! Nicht weitergeben.", 520, 470);
+      x.fillText("Anmelden auf:", 520, 520); x.font = "700 18px ui-monospace, monospace"; x.fillStyle = "#7B4CEF";
+      const words = link.replace(/^https?:\/\//, "").match(/.{1,26}/g) || []; words.slice(0, 3).forEach((w, i) => x.fillText(w, 520, 550 + i * 24));
+      return cv.toDataURL("image/png");
+    };
+    kids.forEach((k, i) => {
+      const n = i % 8; if (i && !n) doc.addPage();
+      const cx = X0 + (n % 2) * (W + GX), cy = Y0 + Math.floor(n / 2) * (Hc + GY);
+      doc.addImage(card(k), "PNG", cx, cy, W, Hc);
+      doc.setDrawColor(190); doc.setLineDashPattern([1.5, 1.5], 0); doc.rect(cx - 1.5, cy - 1.5, W + 3, Hc + 3);
+    });
+    const name = "Login-Karten-" + c.name.replace(/[^\wäöüÄÖÜ-]+/g, "-") + ".pdf";
+    doc.save(name);
+    toast(`PDF «${name}» mit ${kids.length} Karten erstellt.`, "star", 4500);
+  }
+
   /* ---------- Module für diese Klasse freischalten ---------- */
   const ACCESS = [["", "Standard"], ["offen", "Offen"], ["kette", "Nach dem Modul davor"], ["zu", "Gesperrt"]];
   function stdTxt(m) { return m.soon ? "kommt bald" : m.req ? "Standard: " + m.req.txt : "Standard: offen"; }

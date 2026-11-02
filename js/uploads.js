@@ -98,7 +98,7 @@
     return {
       title: str(g("titel", "title") || "Neues Modul", 60), dips, teaser: str(g("beschreibung", "teaser", "description"), 160),
       subject, theme: str(g("thema", "theme"), 50), minutes: Math.max(0, Math.min(240, +g("minuten", "minutes") || 0)),
-      c: isCol(g("farbe", "color")) ? g("farbe", "color") : "", emoji: str(g("emoji"), 8),
+      c: isCol(g("farbe", "color")) ? g("farbe", "color") : "", emoji: str(g("emoji"), 8), maskottchen: str(g("maskottchen", "mascot"), 20),
       activities: acts, extras: { outfits, emotes, room, bgs }
     };
   };
@@ -178,7 +178,8 @@ sterne:function(a,n){if(B&&B.score)B.score(C.mid,String(a),Number(n)||0)},
 badge:function(n){if(B&&B.upBadge)B.upBadge(C.mid,String(n))},
 speichern:function(o){try{localStorage.setItem(C.key,JSON.stringify(o))}catch(e){}},
 laden:function(){try{return JSON.parse(localStorage.getItem(C.key))}catch(e){return null}},
-fertig:function(){if(B&&B.upDone)B.upDone(C.mid)},beenden:function(){if(B&&B.exit)B.exit()}};
+fertig:function(){if(B&&B.upDone)B.upDone(C.mid)},beenden:function(){if(B&&B.exit)B.exit()},
+glitch:function(m){try{return B&&B.glitchSvg?B.glitchSvg(m):null}catch(e){return null}}};
 api.stars=api.sterne;api.score=api.sterne;api.save=api.speichern;api.load=api.laden;api.done=api.fertig;api.exit=api.beenden;window.GLHub=api;})();<\/script>`;
     if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, m0 => m0 + api);
     if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, m0 => m0 + api);

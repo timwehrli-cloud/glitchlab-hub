@@ -252,7 +252,8 @@ Beispiel: {"${keys[0]}": [ … ]}`;
 
   /* ---------- 4 Erstellen ---------- */
   const TASK_DOC = `AUFGABEN (JSON-Objekte mit Feld "typ"):
-- {"typ":"info","titel":"…","text":"2–5 kurze Sätze. Absätze mit Leerzeile. **fett** erlaubt."}
+Jede Aufgabe (nicht info) hat zusätzlich "titel" (Name des Bausteins, 1–3 Wörter, z. B. "Der Bundesbrief") und "tipp" (ein Hinweis von gLiTCh, der hilft, ohne die Lösung zu verraten).
+- {"typ":"info","titel":"…","text":"gLiTCh erklärt: 2–5 kurze Sätze für Kinder. Absätze mit Leerzeile. **fett** erlaubt. Ein Merksatz oder «Falsch gedacht: … / Richtig: …» macht es lebendig."}
 - {"typ":"mc","frage":"…","optionen":["…","…","…"],"richtig":0,"erklaerung":"…","tipp":"…"}   (3–4 Optionen, richtig = Index)
 - {"typ":"tf","aussage":"…","richtig":true,"erklaerung":"…","tipp":"…"}
 - {"typ":"text","frage":"…","antworten":["Bern","die Stadt Bern"],"erklaerung":"…","tipp":"…"}   (eindeutige Antwort aus 1–3 Wörtern, mehrere gültige Schreibweisen)
@@ -270,6 +271,10 @@ Beispiel: {"${keys[0]}": [ … ]}`;
   const typesAllowed = () => D.typen.length ? D.typen : TYPES.map(t => t[0]);
   const perEt = () => Math.max(3, Math.min(8, Math.round(+D.minuten / 6 / (+D.etappen || 4))));
   function validTask(a) {
+    const r = validTask0(a); if (r && r.typ !== "info") { r.titel = String(a.titel || "").trim().slice(0, 40); if (!r.tipp && a.tipp) r.tipp = String(a.tipp).trim(); }
+    return r;
+  }
+  function validTask0(a) {
     if (!a || typeof a !== "object") return null; const t = a.typ, s = v => String(v ?? "").trim();
     if (t === "info") return s(a.text) ? { typ: t, titel: s(a.titel), text: s(a.text) } : null;
     if (t === "mc") { const o = (a.optionen || []).map(s).filter(Boolean); const r = +a.richtig; return s(a.frage) && o.length >= 2 && r >= 0 && r < o.length ? { typ: t, frage: s(a.frage), optionen: o, richtig: r, erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null; }
@@ -324,11 +329,12 @@ Etappen: ${P.etappen.map((e, k) => `${k + 1}. ${e.titel} – ${e.ziel}`).join(" 
 Lexikon-Wörter: ${P.lexikon.map(w => w.wort).join(", ")}
 
 AUFGABE: Schreibe Etappe ${i + 1} «${E.titel}» (Ziel: ${E.ziel}).
-- Beginne mit einer «info»-Seite, die das Wichtigste erklärt. Weitere kurze «info»-Seiten sind zwischen den Aufgaben erlaubt.
+- Aufbau wie in den gLiTCh-Lab-Modulen: lauter BAUSTEINE. Ein Baustein = eine kurze «info» (gLiTCh erklärt) direkt vor einer Aufgabe. Vor jeder ersten oder zweiten Aufgabe kommt eine neue «info», sodass die Kinder immer zuerst lesen und dann knobeln.
 - Danach ${perEt()} Aufgaben. Erlaubte Aufgabenarten: ${typesAllowed().join(", ")}.
 - Abwechslung ist das Wichtigste: in jeder Etappe mindestens ${Math.min(3, typesAllowed().length)} verschiedene Arten, darunter mindestens ein Spiel (${["memory", "sortieren", "zeitmaschine", "raetsel", "zuordnen", "schaetzen", "mehrfach"].filter(x => typesAllowed().includes(x)).join(", ") || "beliebig"}). Nimm Arten, die in den anderen Etappen noch selten vorkommen.${usedTypes(i)}
 - «zeitmaschine» nur, wenn es sichere Jahreszahlen gibt. «schaetzen» nur mit gesicherten Zahlen. «gestalten» höchstens einmal pro Modul, gut als Abschluss.
-- Aufgaben prüfen, was in den Infos steht. Erklärungen sagen kurz, warum die Antwort stimmt. «tipp» hilft beim zweiten Versuch, ohne die Lösung zu verraten.
+- Aufgaben prüfen, was in den Infos steht. Erklärungen sagen kurz, warum die Antwort stimmt. Jede Aufgabe hat «titel» und «tipp» (gLiTCh gibt den Tipp auf Knopfdruck).
+- Schwierige Wörter kommen ins Lexikon und werden in den Texten benutzt: Die Kinder tippen sie an und gLiTCh erklärt sie.
 - Bleib in der Rahmengeschichte. Benutze Lexikon-Wörter.${wish ? `\n- Wunsch der Lehrperson für diese Etappe: ${wish}` : ""}
 
 ${TASK_DOC}
@@ -406,12 +412,12 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
         zimmer: D.zimmer.map(x => ({ id: x.id, name: x.name, platz: x.platz, emoji: x.emoji, freischalten: un(x) })),
         hintergruende: D.hintergruende.map(x => ({ id: x.id, name: x.name, emoji: x.emoji, wand: x.wand || [], boden: x.boden || [], freischalten: un(x) }))
       },
-      erstellt: "gLiTCh-Editor"
+      erstellt: "gLiTCh-Editor", maskottchen: "glitch"
     };
   }
   function buildModule() {
     const P = D.plan, j = o => JSON.stringify(o).replace(/</g, "\\u003c");
-    const mod = { titel: P.titel, beschreibung: P.beschreibung, emoji: P.emoji, farbe: P.farbe, intro: P.intro, schluss: P.schluss, fachname: fachName(),
+    const mod = { titel: P.titel, beschreibung: P.beschreibung, emoji: P.emoji, farbe: P.farbe, intro: P.intro, schluss: P.schluss, fachname: fachName(), fachkurz: ({ mi: "M&I", nmg: "NMG", de: "DE", ma: "MA", en: "EN", fr: "FR", sp: "SPORT", mg: "GAMES" })[D.fach] || "",
       etappen: D.inhalt, lexikon: P.lexikon, diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, bedingung: d.bedingung })), links: linkList() };
     const T = id => document.getElementById(id).textContent;
     const SC = "<" + "/script>";

@@ -230,109 +230,152 @@ option,optgroup{background:var(--surface);color:var(--ink)}
   </section>
 </div>
 
-<script type="text/plain" id="rt-css">:root{--bg:#06030D;--surface:#120A24;--surface2:#1C1036;--line:#3A2A66;--ink:#F4EEFF;--muted:#A99BC8;--accent:#A07CFF;--teal:#2EE6D6;--pink:#FF2BD6;--gold:#FFC21A;--ok:#3CFF7A;--bad:#FF5A6E;--mc:var(--accent);color-scheme:dark}
+<script type="text/plain" id="rt-css">:root{--bg:#F4F1FB;--surface:#FFFFFF;--surface2:#F6F2FF;--line:#DCD3F2;--ink:#1B1530;--muted:#625A7E;--accent:#7B4CEF;--teal:#00A9BC;--pink:#FF2BD6;--gold:#E3A300;--ok:#1F9D68;--bad:#DD4646;--mc:var(--accent);--dark:#14062E;color-scheme:light}
 [hidden]{display:none!important}
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
-body{background:radial-gradient(1200px 600px at 10% -10%,rgba(139,92,255,.28),transparent 60%),radial-gradient(900px 500px at 110% 10%,rgba(46,230,214,.16),transparent 60%),var(--bg);color:var(--ink);font:16px/1.5 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(160,124,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(160,124,255,.05) 1px,transparent 1px);background-size:32px 32px}
+body{background:radial-gradient(900px 420px at 0% -10%,rgba(123,76,239,.12),transparent 60%),radial-gradient(700px 380px at 110% 0%,rgba(0,169,188,.10),transparent 60%),var(--bg);color:var(--ink);font:16px/1.55 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px));padding-block:12px 40px}
 button{font:inherit;color:inherit}
-h1,h2,h3{font-family:"Bricolage Grotesque","Inter",system-ui,sans-serif;line-height:1.15;margin:0}
-.wrap{max-width:980px;margin:0 auto;padding:16px 16px 60px;position:relative}
-.btn{appearance:none;border:1.5px solid var(--line);background:var(--surface2);border-radius:14px;padding:10px 16px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .12s,background .15s,border-color .15s}
-.btn:hover{border-color:var(--accent)}
-.btn:active{transform:scale(.97)}
-.btn:focus-visible,.opt:focus-visible,.card:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
-.btn.primary{background:linear-gradient(135deg,var(--accent),var(--pink));border-color:transparent;color:#fff;box-shadow:0 6px 20px rgba(160,124,255,.35)}
-.btn.small{padding:6px 12px;font-size:.9rem;border-radius:11px}
-.btn[disabled]{opacity:.5;cursor:default}
-.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0 14px}
-.top .glitch{width:46px;height:46px}
-.top-t{flex:1;min-width:0}
-.top-t small{display:block;color:var(--teal);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.72rem}
-.top-t h1{font-size:clamp(1.3rem,3.6vw,1.9rem)}
-.stars{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;background:rgba(255,194,26,.12);border:1.5px solid rgba(255,194,26,.6);font-weight:900;color:var(--gold)}
-.hero{position:relative;overflow:hidden;border-radius:24px;padding:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--mc) 55%,#1A0B3A),#1A0B3A 70%);border:1.5px solid color-mix(in srgb,var(--mc) 60%,transparent);display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center}
-.hero .glitch{width:110px;height:110px}
-.hero .big-emo{position:absolute;right:-10px;bottom:-26px;font-size:130px;opacity:.18;transform:rotate(-12deg);pointer-events:none}
-.bubble{position:relative;background:var(--surface);border:1.5px solid var(--pink);border-radius:18px;padding:12px 16px;box-shadow:3px 3px 0 var(--teal)}
-.bubble b{display:block;font-family:ui-monospace,Menlo,monospace;color:var(--pink);font-size:.8rem}
-.bubble p{margin:2px 0 0}
-.who{color:var(--muted);font-size:.9rem;margin-top:8px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:18px}
-.card{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:20px;background:var(--surface);border:1.5px solid color-mix(in srgb,var(--mc) 50%,transparent);position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
-.card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.4),0 0 0 1px var(--mc)}
-.card .emo{font-size:2.2rem;line-height:1}
-.card h3{font-size:1.1rem}
-.card p{margin:0;color:var(--muted);font-size:.92rem}
-.card .nr{position:absolute;top:12px;right:14px;font-weight:900;color:var(--mc);font-family:ui-monospace,monospace}
-.card.done{border-color:var(--ok)}
-.card.done::after{content:"✓";position:absolute;top:10px;right:12px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--ok);color:#06030D;font-weight:900}
-.card.done .nr{display:none}
-.bar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:inherit;transition:width .4s}
-.tools{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-.panel{background:var(--surface);border:1.5px solid var(--line);border-radius:22px;padding:18px;margin-top:16px}
-.ehead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.ehead .emo{font-size:2rem}
-.ehead h2{flex:1;font-size:1.4rem}
-.steps{display:flex;gap:6px;margin:14px 0;flex-wrap:wrap}
-.steps i{width:26px;height:8px;border-radius:99px;background:rgba(255,255,255,.12)}
-.steps i.on{background:var(--accent)} .steps i.ok{background:var(--ok)} .steps i.cur{background:var(--teal);box-shadow:0 0 10px var(--teal)}
-.task{background:var(--surface2);border:1.5px solid var(--line);border-radius:20px;padding:18px;margin-top:12px;animation:pop .3s ease-out}
-@keyframes pop{from{opacity:0;transform:translateY(8px)}}
-.task h3{font-size:1.15rem;margin-bottom:10px}
-.task .kind{display:inline-block;font-size:.72rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
+h1,h2,h3{font-family:"Bricolage Grotesque","Inter",system-ui,sans-serif;line-height:1.15;margin:0;text-wrap:balance}
+.btn{appearance:none;border:2px solid var(--dark);background:#fff;border-radius:12px;padding:9px 15px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:3px 3px 0 var(--dark);transition:transform .1s,box-shadow .1s}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--dark)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--dark)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.small{padding:5px 10px;font-size:.85rem;border-radius:10px;box-shadow:2px 2px 0 var(--dark)}
+.btn[disabled]{opacity:.45;cursor:default;transform:none}
+.btn:focus-visible,.opt:focus-visible,.tab:focus-visible,.menu-btn:focus-visible,.hex:focus-visible,.tipbtn:focus-visible,.lex:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+/* Kopf: Menü · Logo · gLiTCh mit Sprechblase */
+.lab-top{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,auto);gap:14px;align-items:center;max-width:1180px;margin:0 auto}
+.menu-btn{border:2.5px solid var(--dark);background:var(--dark);color:#fff;font-weight:800;border-radius:14px;padding:10px 14px;cursor:pointer;box-shadow:-3px 3px 0 var(--pink),3px -3px 0 #00E5FF}
+.logo{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;min-width:0}
+.logo-g{font:900 clamp(1.4rem,3.4vw,2.1rem)/1 "Bricolage Grotesque",system-ui,sans-serif;background:linear-gradient(90deg,var(--accent),var(--pink),#00C2D6);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+.logo-l{font:900 clamp(1.4rem,3.4vw,2.1rem)/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--dark)}
+.logo-chip{margin-left:6px;align-self:center;font:900 .78rem/1 ui-monospace,monospace;padding:6px 9px;border-radius:8px;background:#D52B1E;color:#fff;border:2px solid var(--dark);transform:rotate(-3deg);box-shadow:-2px 2px 0 #00E5FF}
+.logo small{flex-basis:100%;color:var(--gold);font-weight:800;font-size:.85rem}
+.logo small .test{color:var(--pink)}
+.talk{display:flex;align-items:center;gap:8px;justify-self:end;max-width:min(520px,100%)}
+.say-bub{position:relative;background:var(--dark);color:#fff;border:2.5px solid var(--pink);border-radius:16px;padding:10px 14px;box-shadow:4px 4px 0 #00E5FF;min-width:0;font-size:.95rem}
+.say-bub::after{content:"";position:absolute;right:-12px;top:50%;width:14px;height:14px;background:var(--dark);border-right:2.5px solid var(--pink);border-top:2.5px solid var(--pink);transform:translateY(-50%) rotate(45deg)}
+.say-bub b{font:800 .75rem ui-monospace,monospace;color:var(--pink)}
+.say-bub p{margin:2px 0 0}
+.say-bub .lex{color:#9FF6FF;border-bottom-color:#9FF6FF}
+.say-bub.pop{animation:pop .35s ease-out}
+.glitch.big{width:92px;height:92px;flex:none;cursor:pointer;border-radius:50%;background:radial-gradient(circle,rgba(255,43,214,.25),transparent 70%)}
+.menu{position:absolute;z-index:40;left:max(14px,env(safe-area-inset-left,0px));top:78px;display:grid;gap:4px;min-width:240px;background:#fff;border:2.5px solid var(--dark);border-radius:16px;padding:8px;box-shadow:5px 5px 0 var(--dark)}
+.menu button{all:unset;cursor:pointer;padding:10px 12px;border-radius:10px;font-weight:800;display:flex;justify-content:space-between;gap:12px}
+.menu button:hover,.menu button:focus-visible{background:var(--surface2)}
+.menu small{color:var(--muted);font-weight:600}
+/* Baustein-Leiste */
+.tabs{max-width:1180px;margin:14px auto 0;display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:thin;align-items:flex-start}
+.tab{all:unset;box-sizing:border-box;cursor:pointer;flex:0 0 96px;display:grid;justify-items:center;gap:4px;text-align:center}
+.tab b{display:grid;place-items:center;width:100%;height:36px;border-radius:10px;background:#E9E4F7;border:2px solid transparent;font-weight:900;color:var(--muted)}
+.tab span{font-size:.74rem;line-height:1.2;color:var(--muted);max-width:96px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tab.done b{background:#DDF5EA;color:var(--ok)}
+.tab.cur b{background:#fff;border-color:var(--dark);color:var(--dark);box-shadow:3px 3px 0 var(--dark)}
+.tab.cur span{color:var(--ink);font-weight:800}
+.tab.ziel b{border:2px dashed var(--line);background:transparent}
+.tab-sep{flex:0 0 auto;align-self:center;font-size:1.2rem;padding:0 2px;opacity:.8}
+/* Hauptbereich */
+.lab-grid{max-width:1180px;margin:8px auto 0;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+.stage-card{background:var(--surface);border-radius:20px;border:2px solid var(--line);border-top:6px solid var(--ec,var(--accent));padding:20px;box-shadow:0 14px 30px -24px rgba(20,6,46,.5)}
+.eyebrow{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font:800 .74rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.eyebrow span:first-child{color:var(--ec,var(--accent))}
+.stage-card h1{font-size:clamp(1.7rem,4vw,2.4rem);margin:6px 0 4px}
+.lead{color:var(--muted);margin:0 0 12px;font-size:1.05rem}
+.erkl{margin:14px 0;border-radius:16px;background:#FFF8E7;border:2px solid #F0DDA8;padding:14px 16px}
+.erkl.nach{background:#E9FBF2;border-color:#A8E3C6}
+.erkl-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.erkl-h b{color:var(--accent);font-family:"Bricolage Grotesque",system-ui,sans-serif}
+.erkl-h span{color:var(--muted);font-weight:700}
+.erkl-h .btn{margin-left:auto}
+.glitch.mini{width:30px;height:30px}
+.txt p{margin:0 0 10px}
+.txt p:last-child{margin-bottom:0}
+.lex{all:unset;cursor:help;border-bottom:2px dotted var(--accent);font-weight:800;color:inherit}
+.task{background:var(--surface2);border:2px solid var(--line);border-radius:18px;padding:16px;margin-top:14px}
+.task-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.task .kind{font:900 .74rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+.tipbtn{border:2px solid var(--gold);background:#FFF6D6;color:#6B4A00;font-weight:800;border-radius:99px;padding:5px 12px;cursor:pointer;font-size:.85rem}
+.task h3{font-size:1.18rem;margin-bottom:10px}
 .task .txt p{margin:0 0 10px}
 .opts{display:grid;gap:10px}
-.opt{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 14px;border-radius:14px;background:var(--surface);border:1.5px solid var(--line);font-weight:700}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 14px;border-radius:14px;background:#fff;border:2px solid var(--line);font-weight:700}
 .opt:hover{border-color:var(--accent)}
-.opt.ok{border-color:var(--ok);background:rgba(60,255,122,.12)}
-.opt.bad{border-color:var(--bad);background:rgba(255,90,110,.12)}
+.opt.ok{border-color:var(--ok);background:#E3F7EC}
+.opt.bad{border-color:var(--bad);background:#FDECEC}
 .opt[aria-disabled=true]{cursor:default}
 .tf{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.in{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;width:100%}
-.in:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(46,230,214,.25)}
+.in{font:inherit;color:var(--ink);background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px 12px;width:100%}
+.in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(123,76,239,.2)}
 textarea.in{min-height:120px;resize:vertical}
 .gap{display:inline-block;min-width:110px;width:auto;padding:4px 8px;margin:2px;border-radius:9px}
-select.in{appearance:none;padding-right:28px;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%232EE6D6' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 10px center}
+select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237B4CEF' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 10px center}
 .gap.ok{border-color:var(--ok)} .gap.bad{border-color:var(--bad)}
-.order li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:var(--surface);border:1.5px solid var(--line);margin-bottom:8px;list-style:none}
+.order li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:#fff;border:2px solid var(--line);margin-bottom:8px;list-style:none}
 .order{padding:0;margin:0}
 .order li span{flex:1}
 .order li.ok{border-color:var(--ok)} .order li.bad{border-color:var(--bad)}
-.pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:center;margin-bottom:8px}
-.pair b{padding:10px 12px;border-radius:12px;background:var(--surface);border:1.5px solid var(--line)}
 .fb{margin-top:12px;padding:12px 14px;border-radius:14px;display:flex;gap:10px;align-items:flex-start}
-.fb .glitch{width:44px;height:44px}
-.fb.ok{background:rgba(60,255,122,.1);border:1.5px solid var(--ok)}
-.fb.bad{background:rgba(255,90,110,.1);border:1.5px solid var(--bad)}
+.fb .glitch{width:44px;height:44px;flex:none}
+.fb.ok{background:#E3F7EC;border:2px solid var(--ok)}
+.fb.bad{background:#FDECEC;border:2px solid var(--bad)}
 .fb p{margin:0}
-.nav{display:flex;justify-content:space-between;gap:10px;margin-top:14px;flex-wrap:wrap}
-.lex{all:unset;cursor:help;border-bottom:2px dotted var(--teal);color:#BFFAF4;font-weight:700}
-.ov{position:fixed;inset:0;z-index:50;background:rgba(6,3,13,.78);backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px}
-.dlg{width:min(680px,100%);max-height:88vh;overflow:auto;background:var(--surface);border:2px solid var(--accent);border-radius:24px;padding:20px;box-shadow:0 0 0 4px rgba(46,230,214,.2)}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+/* Seitenleiste */
+.side{display:grid;gap:12px;position:sticky;top:10px}
+.side-card{background:linear-gradient(160deg,#2A1466,#14062E);color:#fff;border-radius:18px;padding:14px;display:grid;gap:8px;border:2px solid #3A1D7A}
+.side-card small{color:#C9B8FF}
+.side-card .cap{font:800 .7rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#FFC21A}
+.side-card .btn{justify-self:start;color:var(--dark)}
+.lvl{grid-template-columns:auto 1fr;align-items:center}
+.lvl b{display:block;font-size:1.25rem;font-family:"Bricolage Grotesque",system-ui,sans-serif}
+.ring{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#FFC21A calc(var(--p)*1%),rgba(255,255,255,.15) 0)}
+.ring span{width:44px;height:44px;border-radius:50%;background:#14062E;display:grid;place-items:center;color:#FFC21A;font-size:1.3rem}
+.hexes{display:flex;flex-wrap:wrap;gap:8px}
+.hex{all:unset;cursor:pointer;width:46px;height:50px;display:grid;place-items:center;font-size:1.2rem;background:rgba(255,255,255,.08);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.hex.got{background:linear-gradient(160deg,#FFE680,#E3A300)}
+.side-note{margin:0;font-size:.82rem;color:#C9B8FF}
+.prog-h{display:flex;justify-content:space-between;align-items:baseline}
+.pbar{height:10px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
+.pbar i{display:block;height:100%;background:linear-gradient(90deg,#FF2BD6,#FFC21A,#3CFF7A);border-radius:inherit;transition:width .4s}
+.et-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;font-size:.88rem;align-items:center}
+.et-row span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.et-row.ok small{color:#3CFF7A}
+/* Ziel */
+.ziel-hero{display:flex;gap:16px;align-items:center;margin:12px 0}
+.glitch.huge{width:120px;height:120px;flex:none}
+.ziel-stars{font:900 2.4rem/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--gold);margin:0 0 6px}
+.ziel-stars small{font-size:1rem;color:var(--muted)}
+.ziel-card h3{margin:16px 0 8px}
+/* Fenster */
+.ov{position:fixed;inset:0;z-index:50;background:rgba(20,6,46,.55);backdrop-filter:blur(4px);display:grid;place-items:center;padding:16px}
+.dlg{width:min(680px,100%);max-height:88vh;overflow:auto;background:#fff;border:2.5px solid var(--dark);border-radius:22px;padding:20px;box-shadow:6px 6px 0 var(--dark)}
 .dlg h2{margin-bottom:10px}
+.hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center}
+.hero .glitch{width:90px;height:90px}
+.bubble{position:relative;background:var(--dark);color:#fff;border:2px solid var(--pink);border-radius:16px;padding:12px 16px;box-shadow:3px 3px 0 #00E5FF}
+.bubble b{display:block;font:800 .8rem ui-monospace,monospace;color:var(--pink)}
+.bubble p{margin:2px 0 0}
 .dl{display:grid;gap:8px}
 .dl div{padding:10px 12px;border-radius:12px;background:var(--surface2);border:1px solid var(--line)}
-.dl dt{font-weight:900;color:var(--teal)} .dl dd{margin:2px 0 0}
+.dl dt{font-weight:900;color:var(--accent)} .dl dd{margin:2px 0 0}
 .dips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.dip{padding:14px;border-radius:16px;background:var(--surface2);border:1.5px solid var(--line);text-align:center}
+.dip{padding:14px;border-radius:16px;background:var(--surface2);border:2px solid var(--line);text-align:center}
 .dip .e{font-size:2.2rem;display:block}
-.dip.got{border-color:var(--gold);box-shadow:0 0 18px rgba(255,194,26,.25)}
+.dip.got{border-color:var(--gold);box-shadow:0 0 18px rgba(227,163,0,.25)}
 .dip:not(.got){opacity:.55;filter:grayscale(.7)}
 .dip small{display:block;color:var(--muted)}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;background:var(--gold);color:#140A00;font-weight:900;padding:12px 18px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);animation:pop .3s}
-.links a{color:var(--teal);word-break:break-all}
+.links a{color:var(--accent);word-break:break-all}
 .confetti{position:fixed;width:8px;height:8px;z-index:70;pointer-events:none}
-.test{display:inline-block;margin-left:8px;font-size:.75rem;padding:2px 8px;border-radius:99px;background:rgba(255,194,26,.18);color:var(--gold);font-weight:800}
-@media (max-width:600px){.hero{grid-template-columns:1fr;text-align:left}.hero .glitch{width:80px;height:80px}.tf{grid-template-columns:1fr}.pair{grid-template-columns:1fr}}
+@keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98)}}
+@media (max-width:900px){.lab-grid{grid-template-columns:1fr}.side{position:static}.lab-top{grid-template-columns:auto minmax(0,1fr)}.talk{grid-column:1/-1;justify-self:stretch;flex-direction:row-reverse}.say-bub::after{left:-12px;right:auto;transform:translateY(-50%) rotate(-135deg)}}
+@media (max-width:600px){.tf{grid-template-columns:1fr}.glitch.big{width:70px;height:70px}.stage-card{padding:14px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 /* ---------- Mini-Spiele ---------- */
 .hintline{color:var(--muted);margin:-4px 0 10px;font-size:.92rem}
 .connect{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .connect .col{display:grid;gap:8px;align-content:start}
-.cn{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 14px;border-radius:14px;background:var(--surface);border:2px solid var(--line);font-weight:700;transition:transform .12s,border-color .12s}
+.cn{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 14px;border-radius:14px;background:#fff;border:2px solid var(--line);font-weight:700;transition:transform .12s,border-color .12s}
 .cn:hover{border-color:var(--accent)}
 .cn.sel{border-color:var(--teal);box-shadow:0 0 0 3px rgba(46,230,214,.3);transform:translateX(4px)}
 .cn.bad{border-color:var(--bad);animation:shake .4s}
@@ -340,11 +383,11 @@ select.in{appearance:none;padding-right:28px;background:var(--surface) url("data
 .cn.c0{background:#2EE6D6}.cn.c1{background:#FFC21A}.cn.c2{background:#FF8AD8}.cn.c3{background:#A07CFF}.cn.c4{background:#3CFF7A}.cn.c5{background:#FF9F5A}
 @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 .sorter{display:grid;gap:14px}
-.sort-card{min-height:120px;display:grid;place-items:center;text-align:center;gap:4px;padding:18px;border-radius:20px;background:linear-gradient(160deg,var(--surface2),var(--surface));border:2px solid var(--accent);box-shadow:0 10px 0 -4px rgba(160,124,255,.35);font-size:1.15rem}
+.sort-card{min-height:120px;display:grid;place-items:center;text-align:center;gap:4px;padding:18px;border-radius:20px;background:#fff;border:2.5px solid var(--dark);box-shadow:5px 5px 0 var(--accent);font-size:1.15rem}
 .sort-card small{color:var(--teal);font-family:ui-monospace,monospace;font-size:.75rem}
 .sort-card.good{border-color:var(--ok)} .sort-card.bad{border-color:var(--bad);animation:shake .4s}
 .sort-bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-.bin{all:unset;box-sizing:border-box;cursor:pointer;text-align:center;padding:16px 10px;border-radius:16px;font-weight:900;background:hsl(var(--h) 70% 22%);border:2px solid hsl(var(--h) 80% 60%);color:hsl(var(--h) 90% 88%)}
+.bin{all:unset;box-sizing:border-box;cursor:pointer;text-align:center;padding:16px 10px;border-radius:16px;font-weight:900;background:hsl(var(--h) 85% 92%);border:2.5px solid hsl(var(--h) 60% 40%);color:hsl(var(--h) 70% 22%);box-shadow:3px 3px 0 hsl(var(--h) 60% 40%)}
 .bin:hover{transform:translateY(-2px)} .bin:disabled{opacity:.45;cursor:default;transform:none}
 .tm{display:grid;gap:12px;justify-items:stretch}
 .tm-ev{text-align:center;padding:14px;border-radius:16px;background:var(--surface);border:1.5px solid var(--line);display:grid;gap:4px}
@@ -356,7 +399,7 @@ select.in{appearance:none;padding-right:28px;background:var(--surface) url("data
 .tm-ticks{display:flex;justify-content:space-between;color:var(--muted);font:600 .8rem ui-monospace,monospace}
 .tm-log{list-style:none;padding:0;margin:0;display:grid;gap:6px}
 .tm-log li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:8px 12px;border-radius:12px;background:var(--surface);border-left:4px solid var(--line)}
-.tm-log li small{grid-column:1/-1;color:var(--gold)} .tm-log li.p3{border-color:var(--ok)} .tm-log li.p2{border-color:var(--teal)} .tm-log li.p1{border-color:var(--gold)} .tm-log li.p0{border-color:var(--bad)}
+.tm-log li small{grid-column:1/-1;color:#8A6200} .tm-log li.p3{border-color:var(--ok)} .tm-log li.p2{border-color:var(--teal)} .tm-log li.p1{border-color:var(--gold)} .tm-log li.p0{border-color:var(--bad)}
 .clues{margin:0 0 12px;padding-left:22px;display:grid;gap:6px}
 .clues li{padding:8px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);animation:pop .3s}
 .memory{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
@@ -491,7 +534,9 @@ select.in{appearance:none;padding-right:28px;background:var(--surface) url("data
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   const slug = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, " ").trim();
-  const gl = (mood, cls = "") => `<span class="glitch ${cls}">${G ? G.svg(mood, "#8B5CFF") : ""}</span>`;
+  /* gLiTCh so, wie das Kind ihn im Hub angezogen hat (ohne Hub: ohne Outfit) */
+  const gsvg = mood => { try { const x = HUB && HUB.glitch && HUB.glitch(mood); if (x) return x; } catch (e) { /* ohne Hub */ } return G ? G.svg(mood, "#8B5CFF") : ""; };
+  const gl = (mood, cls = "") => `<span class="glitch ${cls}">${gsvg(mood)}</span>`;
   const ET = (M.etappen || []).filter(e => e && Array.isArray(e.aufgaben));
   const LEX = (M.lexikon || []).filter(w => w && w.wort);
   const DIP = (M.diplome || []).filter(d => d && d.id);
@@ -554,61 +599,128 @@ select.in{appearance:none;padding-right:28px;background:var(--surface) url("data
     let h = "", pos = 0;
     taken.forEach(x => { h += esc(raw.slice(pos, x.st)) + `<button type="button" class="lex" data-lex="${esc(x.w)}">${esc(raw.slice(x.st, x.en))}</button>`; pos = x.en; });
     h += esc(raw.slice(pos));
-    h = h.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    h = h.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
     return h.split(/\n\s*\n/).map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
   }
 
-  /* ---------- Ansichten ---------- */
+  /* ---------- Bausteine: jede Aufgabe ist ein Baustein, Infos davor sind «gLiTCh erklärt» ---------- */
+  const B = [];
+  ET.forEach((E, e) => {
+    let pend = [], any = false;
+    E.aufgaben.forEach((a, t) => { if (!scorable(a)) { pend.push(a); return; } B.push({ e, t, erkl: pend }); pend = []; any = true; });
+    if (pend.length) { if (any) B[B.length - 1].nach = pend; else B.push({ e, t: -1, erkl: pend, info: true }); }
+  });
+  const bDone = i => { const x = B[i]; return x.info ? !!S.ans[k(x.e, "seen")] : solved(x.e, x.t); };
+  const KIND = { info: "Info", mc: "Quiz", tf: "Richtig oder falsch?", text: "Antwort eintippen", luecke: "Lückentext", ordnen: "Reihenfolge", zuordnen: "Verbinden", schreiben: "Schreibauftrag",
+    sortieren: "Sortier-Spiel", zeitmaschine: "Zeitmaschine", raetsel: "Rätsel", memory: "Memory", mehrfach: "Mehrere richtig", schaetzen: "Schätzen", gestalten: "Gestalten" };
+  const TIPS = { mc: "Lies jede Antwort genau. Welche passt wirklich zur Frage?", tf: "Ein einziges falsches Wort macht die ganze Aussage falsch!", text: "Schau nochmals in «gLiTCh erklärt». Dort steht das Wort.",
+    luecke: "Lies den ganzen Satz laut. Welches Wort klingt richtig?", ordnen: "Was passiert zuerst? Beginne mit dem, was du sicher weisst.", zuordnen: "Fang mit dem Paar an, bei dem du ganz sicher bist.",
+    sortieren: "Überlege bei jeder Karte: Was ist das Besondere daran?", zeitmaschine: "Überlegt zuerst: Eher früher oder später als die anderen Ereignisse?", raetsel: "Holt euch ruhig den nächsten Hinweis!",
+    memory: "Merkt euch, wo die Karten liegen. Sagt die Begriffe laut!", mehrfach: "Prüft jede Antwort einzeln: stimmt sie oder nicht?", schaetzen: "Vergleicht mit etwas, das ihr kennt.",
+    gestalten: "Eine kurze, starke Überschrift und zwei, drei klare Sätze reichen.", schreiben: "Schreibt zuerst Stichworte, dann ganze Sätze." };
+  const PRAISE = ["Pixel-perfekt!", "Jawoll, richtig!", "Mega, das stimmt!", "Super gemacht!", "Volltreffer!"];
+  const short = a => a.titel || (a.frage || a.aussage || a.auftrag || a.anleitung || "").split(/[?.!:]/)[0].split(" ").slice(0, 3).join(" ") || KIND[a.typ];
+
   const app = document.getElementById("app");
-  let view = { name: "home" };
-  function top() {
-    return `<header class="top">${gl("happy")}<div class="top-t"><small>${esc(M.fachname || "gLiTCh-Modul")}${HUB ? "" : '<span class="test">Testmodus</span>'}</small><h1>${esc(M.emoji || "")} ${esc(M.titel || "Modul")}</h1></div>
-      <span class="stars" title="Sterne in diesem Modul">★ ${total()} / ${totalMax()}</span></header>`;
+  let view = { b: 0 }, sayT = null;
+  function say(text, mood = "happy", ms) {
+    const t = $("#sayT"), g = $("#bigG"); if (!t) return;
+    t.innerHTML = rich(text).replace(/^<p>|<\/p>$/g, ""); if (g) g.innerHTML = gsvg(mood);
+    $$(".lex", t).forEach(b => b.onclick = () => showLex(b.dataset.lex));
+    const bub = $("#say"); if (bub) { bub.classList.remove("pop"); void bub.offsetWidth; bub.classList.add("pop"); }
+    clearTimeout(sayT); if (ms) sayT = setTimeout(() => { const x = B[view.b]; say(x ? `Baustein ${view.b + 1}: ${short(ET[x.e].aufgaben[x.t] || x.erkl[0] || {})}. ${TIPS_START}` : "", "normal"); }, ms);
   }
-  function home() {
-    app.innerHTML = `<div class="wrap">${top()}
-      <section class="hero">${gl(S.fertig ? "cool" : "happy")}<div><div class="bubble"><b>gLiTCh</b><div>${rich(S.fertig ? (M.schluss || "Super, ihr habt alles geschafft!") : (M.intro || M.beschreibung || "Los geht's!"))}</div></div>
-        ${who() ? `<p class="who">Heute dabei: ${esc(who())}</p>` : ""}</div><span class="big-emo" aria-hidden="true">${esc(M.emoji || "")}</span></section>
-      <div class="grid">${ET.map((e, i) => { const mx = etMax(i), st = etStars(i);
-        return `<button type="button" class="card${etDone(i) ? " done" : ""}" data-et="${i}"><span class="nr">${i + 1}</span><span class="emo" aria-hidden="true">${esc(e.emoji || "⭐")}</span>
-          <h3>${esc(e.titel)}</h3><p>${esc(e.ziel || "")}</p>${mx ? `<span class="bar"><i style="width:${Math.round(st / mx * 100)}%"></i></span><small style="color:var(--muted)">★ ${st} / ${mx}</small>` : ""}</button>`; }).join("")}</div>
-      <div class="tools">${LEX.length ? `<button type="button" class="btn" data-go="lex">📖 Lexikon (${LEX.length})</button>` : ""}
-        ${DIP.length ? `<button type="button" class="btn" data-go="dip">🏅 Diplome ${S.dips.length}/${DIP.length}</button>` : ""}
-        ${(M.links || []).length ? `<button type="button" class="btn" data-go="links">🔗 Links</button>` : ""}
-        ${HUB ? `<button type="button" class="btn" data-go="exit">← Zurück zum Hub</button>` : ""}</div></div>`;
-    $$("[data-et]").forEach(b => b.onclick = () => openEt(+b.dataset.et));
-    bindTools();
+  const TIPS_START = "Brauchst du Hilfe? Tippe auf «💡 Tipp».";
+  function frame() {
+    app.innerHTML = `<header class="lab-top">
+        <button type="button" class="menu-btn" id="menuBtn" aria-haspopup="true" aria-expanded="false">☰ Menü</button>
+        <div class="logo"><span class="logo-g">gLiTCh</span><span class="logo-l">-Lab</span><span class="logo-chip">${esc(M.fachkurz || M.fachname || "Modul")}</span>
+          <small>${esc(M.emoji || "")} ${esc(M.titel || "")}${HUB ? "" : ' · <b class="test">Testmodus</b>'}</small></div>
+        <div class="talk"><div class="say-bub" id="say" aria-live="polite"><b>gLiTCh</b><p id="sayT"></p></div><span class="glitch big" id="bigG">${gsvg("happy")}</span></div>
+      </header>
+      <div class="menu" id="menu" hidden>
+        ${LEX.length ? `<button type="button" data-go="lex">📖 Lexikon <small>${LEX.length} Fachwörter</small></button>` : ""}
+        ${DIP.length ? `<button type="button" data-go="dip">🏅 Diplome <small>${S.dips.length} von ${DIP.length}</small></button>` : ""}
+        ${(M.links || []).length ? `<button type="button" data-go="links">🔗 Links</button>` : ""}
+        <button type="button" data-go="ziel">🏁 Ziel</button>
+        ${HUB ? `<button type="button" data-go="exit">← Zurück zum Hub</button>` : ""}
+      </div>
+      <nav class="tabs" id="tabs" aria-label="Bausteine"></nav>
+      <main class="lab-grid"><section class="stage" id="stage"></section><aside class="side" id="side"></aside></main>`;
+    const mb = $("#menuBtn"), mn = $("#menu");
+    mb.onclick = () => { mn.hidden = !mn.hidden; mb.setAttribute("aria-expanded", String(!mn.hidden)); };
+    document.addEventListener("click", ev => { if (!mn.hidden && !mn.contains(ev.target) && ev.target !== mb) { mn.hidden = true; mb.setAttribute("aria-expanded", "false"); } });
+    $$("[data-go]", mn).forEach(b => b.onclick = () => { mn.hidden = true; const g = b.dataset.go; if (g === "lex") showLex(); if (g === "dip") showDips(); if (g === "links") showLinks(); if (g === "ziel") goB(B.length); if (g === "exit" && HUB) HUB.beenden(); });
+    $("#bigG").onclick = () => { const x = B[view.b], a = x && ET[x.e].aufgaben[x.t]; say(a ? (a.tipp || TIPS[a.typ] || "Du schaffst das!") : "Hoi! Ich bin gLiTCh.", "wink", 7000); };
   }
-  function bindTools() {
-    $$("[data-go]").forEach(b => b.onclick = () => { const g = b.dataset.go; if (g === "lex") showLex(); if (g === "dip") showDips(); if (g === "links") showLinks(); if (g === "exit" && HUB) HUB.beenden(); if (g === "home") { view = { name: "home" }; home(); } });
+  function paintTabs() {
+    let lastE = -1;
+    $("#tabs").innerHTML = B.map((x, i) => { const a = ET[x.e].aufgaben[x.t] || x.erkl[0] || {}, sep = x.e !== lastE; lastE = x.e;
+      return `${sep ? `<span class="tab-sep" title="${esc(ET[x.e].titel)}">${esc(ET[x.e].emoji || "")}</span>` : ""}<button type="button" class="tab${i === view.b ? " cur" : ""}${bDone(i) ? " done" : ""}" data-b="${i}" aria-current="${i === view.b ? "step" : "false"}"><b>${bDone(i) ? "✓" : i + 1}</b><span>${esc(short(a))}</span></button>`; }).join("")
+      + `<button type="button" class="tab ziel${view.b >= B.length ? " cur" : ""}" data-b="${B.length}"><b>🏁</b><span>Ziel</span></button>`;
+    $$("[data-b]", $("#tabs")).forEach(b => b.onclick = () => goB(+b.dataset.b));
+    const cur = $(".tab.cur"); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "center" });
   }
-  function openEt(e) {
-    const A = ET[e].aufgaben; let t = A.findIndex((a, i) => scorable(a) && !(S.ans[k(e, i)] || {}).ok);
-    if (t < 0 || !A.some((a, i) => S.ans[k(e, i)])) t = 0;
-    view = { name: "et", e, t, intro: true }; etView(); window.scrollTo(0, 0);
+  function paintSide() {
+    const sd = $("#side"); if (!sd) return;
+    const st = total(), mx = totalMax(), dn = B.filter((_, i) => bDone(i)).length;
+    sd.innerHTML = `<div class="side-card lvl"><div class="ring" style="--p:${mx ? Math.round(st / mx * 100) : 0}"><span>★</span></div><div><small>Sterne in diesem Modul</small><b>${st} von ${mx}</b>${who() ? `<small>Team: ${esc(who())}</small>` : ""}</div></div>
+      ${DIP.length ? `<div class="side-card"><small class="cap">Diplome: ${esc(M.titel || "")}</small><div class="hexes">${DIP.map(d => `<button type="button" class="hex${S.dips.includes(d.id) ? " got" : ""}" data-dip="${esc(d.id)}" title="${esc(d.name)}">${S.dips.includes(d.id) ? esc(d.emoji || "🏅") : "🔒"}</button>`).join("")}</div>
+        <p class="side-note">Tippt ein Diplom an, dann verrät gLiTCh, wie ihr es bekommt.</p></div>` : ""}
+      <div class="side-card"><div class="prog-h"><b>Fortschritt</b><span>${dn} / ${B.length}</span></div><div class="pbar"><i style="width:${B.length ? Math.round(dn / B.length * 100) : 0}%"></i></div>
+        ${ET.map((E, e) => `<div class="et-row${etDone(e) ? " ok" : ""}"><span>${esc(E.emoji || "⭐")}</span><span>${esc(E.titel)}</span><small>${etDone(e) ? "✓" : `★ ${etStars(e)}/${etMax(e)}`}</small></div>`).join("")}</div>
+      ${LEX.length ? `<div class="side-card"><div class="prog-h"><b>📖 Fachwörter</b><span>${(S.words || []).length} / ${LEX.length}</span></div><p class="side-note">Wörter mit gepunkteter Linie antippen: gLiTCh erklärt sie.</p><button type="button" class="btn small" data-golex>Lexikon öffnen</button></div>` : ""}`;
+    $$("[data-dip]", sd).forEach(b => b.onclick = () => { const d = DIP.find(x => x.id === b.dataset.dip); say(S.dips.includes(d.id) ? `${d.emoji || "🏅"} **${d.name}**: geschafft! ${d.beschreibung || ""}` : `${d.emoji || "🏅"} **${d.name}**: ${d.beschreibung || "Löst die Bausteine, dann bekommt ihr es."}`, S.dips.includes(d.id) ? "cool" : "wink", 7000); });
+    const gl2 = $("[data-golex]", sd); if (gl2) gl2.onclick = () => showLex();
   }
-  function etView() {
-    const { e } = view, E = ET[e], A = E.aufgaben;
-    const steps = A.map((a, i) => { const s = S.ans[k(e, i)]; return `<i class="${i === view.t && !view.intro ? "cur" : s && s.ok ? "ok" : !scorable(a) && s ? "ok" : ""}"></i>`; }).join("");
-    app.innerHTML = `<div class="wrap">${top()}<section class="panel">
-      <div class="ehead"><span class="emo" aria-hidden="true">${esc(E.emoji || "⭐")}</span><h2>Etappe ${e + 1}: ${esc(E.titel)}</h2><button type="button" class="btn small" data-go="home">← Übersicht</button></div>
-      <div class="steps" aria-label="Fortschritt">${steps}</div>
-      ${view.intro ? `<div class="hero" style="margin-top:6px">${gl("wink")}<div class="bubble"><b>gLiTCh</b><div>${rich(E.intro || E.ziel || "Los geht's!")}</div></div></div>
-        <div class="nav"><span></span><button type="button" class="btn primary" data-start>Los geht's →</button></div>` : `<div id="task"></div>`}
-      </section>${LEX.length ? `<div class="tools"><button type="button" class="btn small" data-go="lex">📖 Lexikon</button></div>` : ""}</div>`;
-    bindTools();
-    const st = $("[data-start]"); if (st) st.onclick = () => { view.intro = false; etView(); };
-    if (!view.intro) renderTask();
+  function goB(i) { view.b = Math.max(0, Math.min(B.length, i)); paintTabs(); stage(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function readAloud(text) {
+    try { const u = new SpeechSynthesisUtterance(String(text).replace(/\*\*/g, "")); u.lang = "de-CH"; u.rate = .95; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { say("Vorlesen geht auf diesem Gerät leider nicht.", "sad", 4000); }
+  }
+  function erklHTML(list, cls = "") {
+    return list.map((a, n) => `<div class="erkl ${cls}"><div class="erkl-h">${gl("normal", "mini")}<b>gLiTCh erklärt</b>${a.titel ? `<span>· ${esc(a.titel)}</span>` : ""}<button type="button" class="btn small" data-read="${n}">🔊 Vorlesen</button></div><div class="txt">${rich(a.text || "")}</div></div>`).join("");
+  }
+  function stage() {
+    const sg = $("#stage");
+    if (view.b >= B.length) return ziel();
+    const x = B[view.b], E = ET[x.e], a = E.aufgaben[x.t];
+    const first = B.findIndex(y => y.e === x.e) === view.b, nInE = B.filter(y => y.e === x.e).length, posInE = B.slice(0, view.b).filter(y => y.e === x.e).length + 1;
+    sg.innerHTML = `<div class="stage-card" style="--ec:${["#E3A300", "#1F9D68", "#2E6BE6", "#DD4646", "#7B4CEF", "#00B3C7"][x.e % 6]}">
+      <div class="eyebrow"><span>Etappe ${x.e + 1} · ${esc(E.titel)}</span><span>Baustein ${view.b + 1} von ${B.length}</span></div>
+      <h1>${esc(a ? short(a) : (x.erkl[0].titel || E.titel))}</h1>${first && E.ziel ? `<p class="lead">${esc(E.ziel)}</p>` : ""}
+      ${erklHTML(x.erkl)}
+      ${x.info ? `<div class="nav"><button type="button" class="btn" data-prev ${view.b ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${view.b === B.length - 1 ? "Zum Ziel 🏁" : "Weiter →"}</button></div>` : `<div id="task"></div>`}
+      ${x.nach ? `<div id="nach" ${bDone(view.b) ? "" : "hidden"}>${erklHTML(x.nach, "nach")}</div>` : ""}
+    </div>`;
+    $$("[data-read]", sg).forEach((b, n) => b.onclick = () => { const all = [...x.erkl, ...(x.nach || [])]; readAloud((all[n] || {}).text || ""); });
+    $$(".erkl .lex", sg).forEach(b => b.onclick = () => showLex(b.dataset.lex));
+    if (x.info) { S.ans[k(x.e, "seen")] = { seen: true }; save(); checkDips(); paintSide(); $("[data-prev]").onclick = () => goB(view.b - 1); $("[data-next]").onclick = () => goB(view.b + 1); }
+    else { view.e = x.e; view.t = x.t; renderTask(); }
+    if (first && posInE === 1 && !bDone(view.b)) say(E.intro || `Etappe ${x.e + 1}: ${E.titel}. Los geht's!`, "happy", 9000);
+    else say(`${a ? KIND[a.typ] : "Info"}: ${posInE} von ${nInE} in dieser Etappe. ${TIPS_START}`, "normal");
+  }
+  function ziel() {
+    const all = ET.every((_, e) => etDone(e)), st = total(), mx = totalMax();
+    $("#stage").innerHTML = `<div class="stage-card ziel-card"><div class="eyebrow"><span>Ziel</span><span>${B.filter((_, i) => bDone(i)).length} von ${B.length} Bausteinen</span></div>
+      <h1>${all ? "Geschafft! 🎉" : "Fast am Ziel"}</h1>
+      <div class="ziel-hero">${gl(all ? "cool" : "wink", "huge")}<div><p class="ziel-stars">★ ${st} <small>von ${mx}</small></p><p>${esc(all ? (M.schluss || "Super, ihr habt alles geschafft!") : "Löst die offenen Bausteine (ohne ✓ in der Leiste oben), dann seid ihr am Ziel.")}</p></div></div>
+      ${DIP.length ? `<h3>Diplome</h3><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e" aria-hidden="true">${esc(d.emoji || "🏅")}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>` : ""}
+      <div class="nav"><button type="button" class="btn" data-prev>← Zurück</button>${HUB ? `<button type="button" class="btn primary" data-exit>Zurück zum Hub</button>` : ""}</div></div>`;
+    $("[data-prev]").onclick = () => goB(B.length - 1);
+    const ex = $("[data-exit]"); if (ex) ex.onclick = () => HUB.beenden();
+    say(all ? (M.schluss || "Ihr habt alles geschafft!") : "Noch nicht ganz! Schaut, welche Bausteine noch kein ✓ haben.", all ? "cool" : "wink");
+    if (all) confetti(40);
   }
   function done(e, t, ok, first, extra, pts) {
     const key = k(e, t), old = S.ans[key] || {}, a = ET[e].aufgaben[t];
     if (old.ok) return;
-    const tries = (old.tries || 0) + 1;
+    const wasDone = etDone(e), tries = (old.tries || 0) + 1;
     if (pts == null) pts = ok ? Math.max(1, wert(a) - (tries - 1)) : 0;
     S.ans[key] = Object.assign({}, old, extra || {}, { ok, tries, pts, first: ok && tries === 1 && pts >= wert(a) });
     save(); if (ok) { report(e); confetti(); }
-    checkDips();
-    $(".stars").textContent = `★ ${total()} / ${totalMax()}`;
+    checkDips(); paintSide(); paintTabs();
+    const nach = $("#nach"); if (ok && nach) nach.hidden = false;
+    if (ok && !wasDone && etDone(e)) setTimeout(() => say(`${ET[e].lob || "Etappe geschafft!"} ⭐`, "cool", 9000), 900);
   }
   function fb(ok, text) {
     const f = document.createElement("div"); f.className = "fb " + (ok ? "ok" : "bad");
@@ -616,13 +728,14 @@ select.in{appearance:none;padding-right:28px;background:var(--surface) url("data
     const old = $("#task .fb"); if (old) old.remove();
     $("#task .task").appendChild(f);
     $$(".lex", f).forEach(b => b.onclick = () => showLex(b.dataset.lex));
+    const x = B[view.b], a = x && ET[x.e].aufgaben[x.t];
+    if (ok) say(PRAISE[Math.floor(Math.random() * PRAISE.length)] + (a && wert(a) > 1 ? " Spiel gemeistert!" : ""), "happy", 5000);
+    else say(a && a.tipp ? `Kleiner Tipp: ${a.tipp}` : (TIPS[a && a.typ] || "Versuch es nochmal!"), "hmm", 9000);
   }
   function renderTask() {
     const { e, t } = view, A = ET[e].aufgaben, a = A[t], key = k(e, t), st = S.ans[key] || {};
-    const last = t === A.length - 1;
-    const KIND = { info: "Info", mc: "Quiz", tf: "Richtig oder falsch?", text: "Antwort eintippen", luecke: "Lückentext", ordnen: "Reihenfolge", zuordnen: "Verbinden", schreiben: "Schreibauftrag",
-      sortieren: "Sortier-Spiel", zeitmaschine: "Zeitmaschine", raetsel: "Rätsel", memory: "Memory", mehrfach: "Mehrere richtig", schaetzen: "Schätzen", gestalten: "Gestalten" };
-    const stars = wert(a) > 1 && scorable(a) ? ` · bis ${"★".repeat(wert(a))}` : "";
+    const last = view.b === B.length - 1;
+    const stars = wert(a) > 1 && scorable(a) ? ` · bis ${"★".repeat(wert(a))}` : " · ★";
     let body = "";
     if (a.typ === "info") body = `<h3>${esc(a.titel || "")}</h3><div class="txt">${rich(a.text || "")}</div>`;
     if (a.typ === "mc") body = `<h3>${rich(a.frage).replace(/^<p>|<\/p>$/g, "")}</h3><div class="opts">${(a.optionen || []).map((o, i) => `<button type="button" class="opt${st.ok && i === +a.richtig ? " ok" : ""}" data-o="${i}" ${st.ok ? 'aria-disabled="true"' : ""}>${esc(o)}</button>`).join("")}</div>`;
@@ -687,8 +800,9 @@ select.in{appearance:none;padding-right:28px;background:var(--surface) url("data
         </div><div class="poster" id="gePv"></div></div><p class="hintline" id="geInfo"></p><button type="button" class="btn primary" data-check>Fertig gestaltet</button>`;
     }
     if (a.typ === "schreiben") body = `<h3>${rich(a.auftrag).replace(/^<p>|<\/p>$/g, "")}</h3><textarea class="in" id="wr" placeholder="Schreibe hier …">${esc(st.v || "")}</textarea><p style="color:var(--muted);margin:6px 0" id="wc"></p><button type="button" class="btn primary" data-check>Abgeben</button>`;
-    $("#task").innerHTML = `<div class="task"><span class="kind">${KIND[a.typ] || "Aufgabe"} · ${t + 1}/${A.length}${stars}</span>${body}</div>
-      <div class="nav"><button type="button" class="btn" data-prev ${t ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${last ? "Etappe abschliessen ✓" : "Weiter →"}</button></div>`;
+    $("#task").innerHTML = `<div class="task"><div class="task-h"><span class="kind">${KIND[a.typ] || "Aufgabe"}${stars}</span><button type="button" class="tipbtn" data-tip>💡 Tipp von gLiTCh</button></div>${body}</div>
+      <div class="nav"><button type="button" class="btn" data-prev ${view.b ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${last ? "Zum Ziel 🏁" : "Weiter →"}</button></div>`;
+    $("[data-tip]").onclick = () => say(a.tipp || TIPS[a.typ] || "Lies nochmals in «gLiTCh erklärt» nach!", "wink", 10000);
     $$("#task .lex").forEach(b => b.onclick = () => showLex(b.dataset.lex));
     if (a.typ === "info") { S.ans[key] = { ok: false, seen: true }; if (!etMax(e)) S.ans[k(e, "seen")] = { seen: true }; save(); }
     if (st.ok && a.typ !== "info") fb(true, a.erklaerung);
@@ -761,14 +875,17 @@ select.in{appearance:none;padding-right:28px;background:var(--surface) url("data
       paint(); chk.onclick = () => { const n = (V.text.match(/\S+/g) || []).length, ok = V.titel.trim().length >= 3 && n >= min && !!V.farbe; done(e, t, ok, true, { v: Object.assign({}, V) }, ok ? 2 : 0); fb(ok, ok ? (a.erklaerung || "Sieht super aus!") : "Es fehlt noch etwas: Überschrift, genug Text und eine Farbe."); }; }
     if (a.typ === "schreiben") { const min = +a.mindestwoerter || 20, wc = () => { const n = ($("#wr").value.match(/\S+/g) || []).length; $("#wc").textContent = `${n} von mindestens ${min} Wörtern`; return n; };
       wc(); $("#wr").oninput = wc; chk.onclick = () => { const ok = wc() >= min; done(e, t, ok, true, { v: $("#wr").value }); fb(ok, ok ? (a.erklaerung || "Super geschrieben!") : `Schreibe noch etwas mehr (mindestens ${min} Wörter).`); }; }
-    $("[data-prev]").onclick = () => { view.t--; etView(); };
-    $("[data-next]").onclick = () => {
-      if (!last) { view.t++; etView(); return; }
-      checkDips();
-      const ok = etDone(e);
-      showMsg(ok ? "cool" : "hmm", ok ? (ET[e].lob || "Etappe geschafft!") : `Es ${etOpen(e) === 1 ? "fehlt noch 1 Aufgabe" : `fehlen noch ${etOpen(e)} Aufgaben`}. Die grauen Striche oben zeigen, welche.`, ok ? "Zur Übersicht" : "Weiterarbeiten", () => { if (ok) { view = { name: "home" }; home(); } else { view.t = ET[e].aufgaben.findIndex((x, i) => scorable(x) && !(S.ans[k(e, i)] || {}).ok); etView(); } });
-    };
+    $("[data-prev]").onclick = () => goB(view.b - 1);
+    $("[data-next]").onclick = () => goB(view.b + 1);
   }
+  function start() {
+    frame();
+    let i = B.findIndex((_, n) => !bDone(n)); if (i < 0) i = B.length;
+    view.b = i; paintTabs(); paintSide(); stage();
+    if (!Object.keys(S.ans).length) say(M.intro || M.beschreibung || "Hoi! Los geht's!", "happy", 10000);
+    checkDips();
+  }
+
   function shuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } if (b.length > 1 && b.every((x, i) => x === a[i])) [b[0], b[1]] = [b[1], b[0]]; return b; }
 
   /* ---------- Fenster ---------- */
@@ -782,6 +899,7 @@ select.in{appearance:none;padding-right:28px;background:var(--surface) url("data
   function showMsg(mood, text, btn, then) { const ov = dlg(`<div class="hero">${gl(mood)}<div class="bubble"><b>gLiTCh</b><div>${rich(text)}</div></div></div>`, then); $("[data-x]", ov).textContent = btn; }
   function showLex(word) {
     if (!S.lex) { S.lex = true; save(); checkDips(); }
+    if (word) { S.words = [...new Set([...(S.words || []), word])]; save(); paintSide(); }
     const ov = dlg(`<h2>📖 Lexikon</h2><input class="in" id="lq" placeholder="Wort suchen …" style="margin-bottom:10px"><dl class="dl" id="ll"></dl>`);
     const paint = q => { $("#ll", ov).innerHTML = LEX.filter(w => !q || norm(w.wort + " " + w.erklaerung).includes(norm(q))).sort((a, b) => a.wort.localeCompare(b.wort, "de")).map(w => `<div${word && w.wort === word ? ' style="border-color:var(--teal)"' : ""}><dt>${esc(w.wort)}</dt><dd>${esc(w.erklaerung)}</dd></div>`).join("") || "<p>Nichts gefunden.</p>"; };
     paint(""); $("#lq", ov).oninput = ev => paint(ev.target.value);
@@ -795,7 +913,7 @@ select.in{appearance:none;padding-right:28px;background:var(--surface) url("data
     for (let i = 0; i < n; i++) { const c = document.createElement("i"); c.className = "confetti"; c.style.cssText += `left:${50 + (Math.random() - .5) * 40}vw;top:40vh;background:${["#FFC21A", "#FF2BD6", "#2EE6D6", "#A07CFF", "#3CFF7A"][i % 5]}`; document.body.appendChild(c);
       c.animate([{ transform: "translate(0,0) rotate(0)", opacity: 1 }, { transform: `translate(${(Math.random() - .5) * 600}px,${200 + Math.random() * 300}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }], { duration: 1200 + Math.random() * 800, easing: "cubic-bezier(.2,.7,.4,1)" }).onfinish = () => c.remove(); }
   }
-  home(); checkDips();
+  start();
 })();
 </script>
 <script>/* =====================================================================
@@ -1136,7 +1254,8 @@ Beispiel: {"${keys[0]}": [ … ]}`;
 
   /* ---------- 4 Erstellen ---------- */
   const TASK_DOC = `AUFGABEN (JSON-Objekte mit Feld "typ"):
-- {"typ":"info","titel":"…","text":"2–5 kurze Sätze. Absätze mit Leerzeile. **fett** erlaubt."}
+Jede Aufgabe (nicht info) hat zusätzlich "titel" (Name des Bausteins, 1–3 Wörter, z. B. "Der Bundesbrief") und "tipp" (ein Hinweis von gLiTCh, der hilft, ohne die Lösung zu verraten).
+- {"typ":"info","titel":"…","text":"gLiTCh erklärt: 2–5 kurze Sätze für Kinder. Absätze mit Leerzeile. **fett** erlaubt. Ein Merksatz oder «Falsch gedacht: … / Richtig: …» macht es lebendig."}
 - {"typ":"mc","frage":"…","optionen":["…","…","…"],"richtig":0,"erklaerung":"…","tipp":"…"}   (3–4 Optionen, richtig = Index)
 - {"typ":"tf","aussage":"…","richtig":true,"erklaerung":"…","tipp":"…"}
 - {"typ":"text","frage":"…","antworten":["Bern","die Stadt Bern"],"erklaerung":"…","tipp":"…"}   (eindeutige Antwort aus 1–3 Wörtern, mehrere gültige Schreibweisen)
@@ -1154,6 +1273,10 @@ Beispiel: {"${keys[0]}": [ … ]}`;
   const typesAllowed = () => D.typen.length ? D.typen : TYPES.map(t => t[0]);
   const perEt = () => Math.max(3, Math.min(8, Math.round(+D.minuten / 6 / (+D.etappen || 4))));
   function validTask(a) {
+    const r = validTask0(a); if (r && r.typ !== "info") { r.titel = String(a.titel || "").trim().slice(0, 40); if (!r.tipp && a.tipp) r.tipp = String(a.tipp).trim(); }
+    return r;
+  }
+  function validTask0(a) {
     if (!a || typeof a !== "object") return null; const t = a.typ, s = v => String(v ?? "").trim();
     if (t === "info") return s(a.text) ? { typ: t, titel: s(a.titel), text: s(a.text) } : null;
     if (t === "mc") { const o = (a.optionen || []).map(s).filter(Boolean); const r = +a.richtig; return s(a.frage) && o.length >= 2 && r >= 0 && r < o.length ? { typ: t, frage: s(a.frage), optionen: o, richtig: r, erklaerung: s(a.erklaerung), tipp: s(a.tipp) } : null; }
@@ -1208,11 +1331,12 @@ Etappen: ${P.etappen.map((e, k) => `${k + 1}. ${e.titel} – ${e.ziel}`).join(" 
 Lexikon-Wörter: ${P.lexikon.map(w => w.wort).join(", ")}
 
 AUFGABE: Schreibe Etappe ${i + 1} «${E.titel}» (Ziel: ${E.ziel}).
-- Beginne mit einer «info»-Seite, die das Wichtigste erklärt. Weitere kurze «info»-Seiten sind zwischen den Aufgaben erlaubt.
+- Aufbau wie in den gLiTCh-Lab-Modulen: lauter BAUSTEINE. Ein Baustein = eine kurze «info» (gLiTCh erklärt) direkt vor einer Aufgabe. Vor jeder ersten oder zweiten Aufgabe kommt eine neue «info», sodass die Kinder immer zuerst lesen und dann knobeln.
 - Danach ${perEt()} Aufgaben. Erlaubte Aufgabenarten: ${typesAllowed().join(", ")}.
 - Abwechslung ist das Wichtigste: in jeder Etappe mindestens ${Math.min(3, typesAllowed().length)} verschiedene Arten, darunter mindestens ein Spiel (${["memory", "sortieren", "zeitmaschine", "raetsel", "zuordnen", "schaetzen", "mehrfach"].filter(x => typesAllowed().includes(x)).join(", ") || "beliebig"}). Nimm Arten, die in den anderen Etappen noch selten vorkommen.${usedTypes(i)}
 - «zeitmaschine» nur, wenn es sichere Jahreszahlen gibt. «schaetzen» nur mit gesicherten Zahlen. «gestalten» höchstens einmal pro Modul, gut als Abschluss.
-- Aufgaben prüfen, was in den Infos steht. Erklärungen sagen kurz, warum die Antwort stimmt. «tipp» hilft beim zweiten Versuch, ohne die Lösung zu verraten.
+- Aufgaben prüfen, was in den Infos steht. Erklärungen sagen kurz, warum die Antwort stimmt. Jede Aufgabe hat «titel» und «tipp» (gLiTCh gibt den Tipp auf Knopfdruck).
+- Schwierige Wörter kommen ins Lexikon und werden in den Texten benutzt: Die Kinder tippen sie an und gLiTCh erklärt sie.
 - Bleib in der Rahmengeschichte. Benutze Lexikon-Wörter.${wish ? `\n- Wunsch der Lehrperson für diese Etappe: ${wish}` : ""}
 
 ${TASK_DOC}
@@ -1290,12 +1414,12 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
         zimmer: D.zimmer.map(x => ({ id: x.id, name: x.name, platz: x.platz, emoji: x.emoji, freischalten: un(x) })),
         hintergruende: D.hintergruende.map(x => ({ id: x.id, name: x.name, emoji: x.emoji, wand: x.wand || [], boden: x.boden || [], freischalten: un(x) }))
       },
-      erstellt: "gLiTCh-Editor"
+      erstellt: "gLiTCh-Editor", maskottchen: "glitch"
     };
   }
   function buildModule() {
     const P = D.plan, j = o => JSON.stringify(o).replace(/</g, "\\u003c");
-    const mod = { titel: P.titel, beschreibung: P.beschreibung, emoji: P.emoji, farbe: P.farbe, intro: P.intro, schluss: P.schluss, fachname: fachName(),
+    const mod = { titel: P.titel, beschreibung: P.beschreibung, emoji: P.emoji, farbe: P.farbe, intro: P.intro, schluss: P.schluss, fachname: fachName(), fachkurz: ({ mi: "M&I", nmg: "NMG", de: "DE", ma: "MA", en: "EN", fr: "FR", sp: "SPORT", mg: "GAMES" })[D.fach] || "",
       etappen: D.inhalt, lexikon: P.lexikon, diplome: D.diplome.map(d => ({ id: d.id, name: d.name, emoji: d.emoji, beschreibung: d.beschreibung, bedingung: d.bedingung })), links: linkList() };
     const T = id => document.getElementById(id).textContent;
     const SC = "<" + "/script>";

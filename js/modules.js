@@ -174,7 +174,7 @@
 
   H.registerModule({
     id: "de-wueste", subject: "de", theme: "de-gespraech", kind: "frame", src: "games/wueste/index.html", work: "wueste",
-    title: "Wüsten-Game", minutes: 90, frameBg: "#FFF6E0",
+    title: "Wüsten-Game", minutes: 90, frameBg: "#FFF6E0", noBuddy: true,   // hat schon den Wüstenfuchs
     teaser: "Wörter lernen, Superkräfte wählen und euch im Gespräch einigen: Rettet die Stadt vor dem Verdursten!",
     activities: [
       { id: "level1", title: "Level 1 · Die Wasserquelle", maxStars: 10 },
