@@ -1263,6 +1263,7 @@ function fillExample(n){
  S.step=STEPS.indexOf(n===1?"wahl":n===2?"spick":n===3?"hoeren":"ziel");S.maxStep=Math.max(S.maxStep||0,S.step);selObs=null;save();
 }
 const CODE="4313";
+const GL_CODES=()=>{var c=window.__GLCTX;return c&&c.code?[c.code].concat(c.codes||[]).map(String):[CODE]};
 function pinHTML(id,label,n){return `<div class="pin" id="${id}" data-v="" ${n!=null?`data-n="${n}"`:""}><div class="pin-label">${label}</div><div class="pin-dots" aria-live="polite"><i></i><i></i><i></i><i></i></div>
  <div class="pin-grid">${[1,2,3,4,5,6,7,8,9].map(d=>`<button type="button" data-a="pin" data-p="${id}" data-d="${d}">${d}</button>`).join("")}<button type="button" class="pin-del" data-a="pindel" data-p="${id}" aria-label="Letzte Zahl löschen">⌫ Löschen</button></div><div class="pin-err fb no" hidden>Falscher Code. Nochmals versuchen.</div></div>`}
 function pinOk(box){
@@ -1420,7 +1421,7 @@ document.addEventListener("click",ev=>{
  if(a==="pin"||a==="pindel"){const box=document.getElementById(b.dataset.p);if(!box)return;let v=box.dataset.v||"";
   if(a==="pindel"){v=v.slice(0,-1);sfx("back")}else if(v.length<4){v+=b.dataset.d;sfx("click")}
   box.dataset.v=v;box.querySelectorAll(".pin-dots i").forEach((d,k)=>d.classList.toggle("on",k<v.length));box.querySelector(".pin-err").hidden=true;
-  if(v.length===4){if(v===CODE){setTimeout(()=>pinOk(box),150)}else{sfx("bad");box.classList.remove("shake");void box.offsetWidth;box.classList.add("shake");box.querySelector(".pin-err").hidden=false;setTimeout(()=>{box.dataset.v="";box.querySelectorAll(".pin-dots i").forEach(d=>d.classList.remove("on"))},450)}}
+  if(v.length===4){if(GL_CODES().indexOf(v)>=0){setTimeout(()=>pinOk(box),150)}else{sfx("bad");box.classList.remove("shake");void box.offsetWidth;box.classList.add("shake");box.querySelector(".pin-err").hidden=false;setTimeout(()=>{box.dataset.v="";box.querySelectorAll(".pin-dots i").forEach(d=>d.classList.remove("on"))},450)}}
   return}
  if(a==="uncover"){S.wahlCover=false;save();render();say(TIPS.wahl);return}
  if(a==="pick"){const name=me();const p=S.picks[name];const id=b.dataset.id;const r=p.rank.indexOf(id);

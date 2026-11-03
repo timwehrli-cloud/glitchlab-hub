@@ -740,3 +740,5 @@ body.has-sitebg::after { opacity: .25; }
 
 /* Passwort ändern */
 .pw-panel { max-width: 560px; }
+.mcode-form{padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--accent) 8%,transparent);margin:4px 0 8px}
+.mcode-form .input{max-width:200px;font:800 20px/1 ui-monospace,Menlo,monospace;letter-spacing:.2em}

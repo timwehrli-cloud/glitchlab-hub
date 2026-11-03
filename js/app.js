@@ -83,7 +83,8 @@
   const nameFix = k => { if (k && k.is_teacher) k.first_name = CFG.TEACHER_NAME || "Lehrperson"; return k; };
   /* Freischaltung pro Klasse (Lehrpersonen-Bereich): offen, zu, kette (nach dem Modul davor) oder Standard */
   /* Freigabe-Codes: deiner (Einstellungen) und die der weiteren Lehrpersonen dieser Klasse */
-  const mainCode = () => String(CFG.TEACHER_PIN || "4313");
+  /* Freigabe-Code der Hauptlehrperson: pro Klasse änderbar (settings.mainCode), sonst der Code aus config.js */
+  const mainCode = st => String(((st !== undefined ? st : S.me?.class_settings) || {}).mainCode || CFG.TEACHER_PIN || "4313");
   const coTeachers = st => ((st || {}).teachers || []).filter(t => t && t.code);
   const classCodes = () => [mainCode()].concat(coTeachers(S.me?.class_settings).map(t => String(t.code)));
   const newTeacherCode = taken => { let c; do { c = Array.from({ length: 4 }, () => 1 + Math.floor(Math.random() * 9)).join(""); } while (taken.includes(c)); return c; };
@@ -995,7 +996,7 @@
         try {
           const names = $("#clsTeachers").value.split(/\n|,/).map(x => x.trim().slice(0, 40)).filter(Boolean);
           LP.cur = await S.be.createClass($("#clsName").value); LP.cards = false;
-          if (names.length) { const taken = [mainCode()], teachers = names.map(n => { const code = newTeacherCode(taken); taken.push(code); return { id: Math.random().toString(36).slice(2, 10), name: n, code }; });
+          if (names.length) { const taken = [mainCode({})], teachers = names.map(n => { const code = newTeacherCode(taken); taken.push(code); return { id: Math.random().toString(36).slice(2, 10), name: n, code }; });
             const settings = Object.assign({}, LP.cur.settings || {}, { teachers }); await S.be.saveClassSettings(LP.cur.id, settings); LP.cur.settings = settings; }
           toast(`Klasse angelegt. Code: ${LP.cur.code}${names.length ? ` · ${names.length} weitere ${names.length === 1 ? "Lehrperson" : "Lehrpersonen"}` : ""}`); render();
         }
@@ -1198,7 +1199,7 @@
       if (LP.who && LP.who.email && LP.who.email.toLowerCase() === mail) return toast("Das ist deine eigene Adresse.", "err");
       try {
         await S.be.addMember(c.id, mail);
-        const list = coTeachers(c.settings).slice(), taken = [mainCode()].concat(list.map(t => String(t.code)));
+        const list = coTeachers(c.settings).slice(), taken = [mainCode(c.settings)].concat(list.map(t => String(t.code)));
         let code = (list.find(t => t.email === mail) || {}).code;
         if (!code) { code = newTeacherCode(taken); list.push({ id: Math.random().toString(36).slice(2, 10), name, code, email: mail }); const settings = Object.assign({}, c.settings || {}, { teachers: list }); await S.be.saveClassSettings(c.id, settings); c.settings = settings; }
         toast(`${mail} hinzugefügt. Freigabe-Code: ${code}`, "star", 6000); render();
@@ -1214,7 +1215,11 @@
       <h3 style="margin-top:18px">Freigabe-Codes</h3>
       <p class="hint">Alle hier können den Kindern mit ihrem eigenen Freigabe-Code die nächste Etappe freigeben: im gLiTCh-Lab und in hochgeladenen Modulen mit «Freigabe mit LP-Code». Die Codes gelten nur in dieser Klasse.</p>
       <div class="tch-list">
-        <div class="tch main"><span class="tch-n"><b>${esc(CFG.TEACHER_NAME || "Du")}</b><small>Hauptlehrperson · dein Code aus den Einstellungen</small></span><span class="tch-code">${esc(mainCode())}</span><span></span></div>
+        <div class="tch main"><span class="tch-n"><b>${esc(isOwner(c) ? (CFG.TEACHER_NAME || "Du") : "Hauptlehrperson")}</b><small>Hauptlehrperson · Klassen-Code für alle Freigaben</small></span><span class="tch-code">${esc(mainCode(c.settings))}</span>
+          <span class="acts-cell">${isOwner(c) ? `<button type="button" class="btn small" data-mcode>${LP.mcode ? "Abbrechen" : "✏️ Code ändern"}</button>` : ""}</span></div>
+        ${isOwner(c) && LP.mcode ? `<form class="mcode-form" id="mcodeForm"><label class="f" for="mcodeIn">Neuer Freigabe-Code<input class="input" id="mcodeIn" inputmode="numeric" autocomplete="off" pattern="[1-9]{4}" maxlength="4" placeholder="z. B. 5827" required title="4 Ziffern von 1 bis 9"></label>
+          <p class="hint">Genau 4 Ziffern von 1 bis 9 (keine 0), damit er auf dem Zahlenfeld in allen Modulen und Spielen funktioniert. Der alte Code gilt danach in dieser Klasse nicht mehr.</p>
+          <div class="row"><button class="btn primary" type="submit">Code speichern</button>${mainCode(c.settings) !== String(CFG.TEACHER_PIN || "4313") ? `<button type="button" class="btn small" data-mcode-reset>Zurück auf ${esc(String(CFG.TEACHER_PIN || "4313"))}</button>` : ""}</div></form>` : ""}
         ${list.map(t => `<div class="tch"><span class="tch-n"><b>${esc(t.name)}</b><small>Weitere Lehrperson</small></span><span class="tch-code">${esc(t.code)}</span>
           <span class="acts-cell"><button type="button" class="btn small" data-tnew="${esc(t.id)}">Neuer Code</button><button type="button" class="btn small danger" data-tdel="${esc(t.id)}">${LP.confirm === "t" + t.id ? "Sicher?" : "Entfernen"}</button></span></div>`).join("")}
       </div>
@@ -1225,7 +1230,15 @@
   function bindTeachersPanel(c) {
     const store = async (teachers, msg) => { const settings = Object.assign({}, c.settings || {}, { teachers });
       try { await S.be.saveClassSettings(c.id, settings); c.settings = settings; LP.confirm = null; toast(msg); render(); } catch (err) { toast(err.message, "err"); } };
-    const list = () => coTeachers(c.settings).slice(), taken = () => [mainCode()].concat(list().map(t => String(t.code)));
+    const list = () => coTeachers(c.settings).slice(), taken = () => [mainCode(c.settings)].concat(list().map(t => String(t.code)));
+    const mc = $("[data-mcode]"); if (mc) mc.onclick = () => { LP.mcode = !LP.mcode; Promise.resolve(render()).then(() => { const i = $("#mcodeIn"); if (i) i.focus(); }); };
+    const saveMain = async (code, msg) => { const settings = Object.assign({}, c.settings || {}); if (code) settings.mainCode = code; else delete settings.mainCode;
+      try { await S.be.saveClassSettings(c.id, settings); c.settings = settings; LP.mcode = false; toast(msg, "star", 6000); render(); } catch (err) { toast(err.message, "err"); } };
+    const mf = $("#mcodeForm"); if (mf) mf.onsubmit = e => { e.preventDefault(); const v = $("#mcodeIn").value.trim();
+      if (!/^[1-9]{4}$/.test(v)) return toast("Der Code braucht genau 4 Ziffern von 1 bis 9.", "err");
+      if (list().some(t => String(t.code) === v)) return toast("Diesen Code hat schon eine andere Lehrperson in dieser Klasse.", "err");
+      saveMain(v, `Neuer Freigabe-Code: ${v}. Er gilt sofort in dieser Klasse.`); };
+    const mr = $("[data-mcode-reset]"); if (mr) mr.onclick = () => saveMain(null, `Freigabe-Code wieder ${String(CFG.TEACHER_PIN || "4313")}.`);
     $("#tchAdd").onsubmit = e => { e.preventDefault();
       const name = $("#tchName").value.trim().slice(0, 40), want = $("#tchCode").value.trim(); if (!name) return;
       if (want && !/^[1-9]{4,8}$/.test(want)) return toast("Der Code braucht 4 bis 8 Ziffern von 1 bis 9.", "err");

@@ -59,5 +59,8 @@ i = src.index("<body>") + len("<body>")
 page = src[:i] + "\n" + pre + src[i:]
 j = page.rindex("</body>") if "</body>" in page else len(page)
 page = page[:j] + post + page[j:]
+# Freigabe-Code aus der Klasse (Hub) statt fest 4313
+if "if(v===CODE)" in page:
+    page = page.replace("if(v===CODE)", "if(GL_CODES().indexOf(v)>=0)").replace('const CODE="4313";', 'const CODE="4313";\nconst GL_CODES=()=>{var c=window.__GLCTX;return c&&c.code?[c.code].concat(c.codes||[]).map(String):[CODE]};', 1)
 (out / "index.html").write_text(page, encoding="utf-8")
 print("ok", len(page))
