@@ -928,11 +928,19 @@
         <label class="f" for="lpPw">Passwort<input class="input" id="lpPw" type="password" autocomplete="current-password" minlength="${S.be.mode === "demo" ? 0 : 8}" ${S.be.mode === "demo" ? "" : "required"}></label>
         <p class="err" id="lpErr" role="alert"></p>
         <div class="row"><button class="btn primary" type="submit">Anmelden</button>${S.be.mode === "demo" ? "" : `<button class="btn" type="button" data-signup>Konto erstellen</button>`}</div>
+        ${S.be.mode === "demo" ? "" : `<p class="hint" style="margin:10px 0 0"><button type="button" class="link" data-forgot>Passwort vergessen?</button></p>`}
       </form></main>`;
       bindLpTop();
       $("#lpForm").onsubmit = async e => {
         e.preventDefault();
         try { await S.be.teacherSignIn($("#lpMail").value.trim(), $("#lpPw").value); LP.cur = null; render(); }
+        catch (err) { $("#lpErr").textContent = err.message; }
+      };
+      const fg = $("[data-forgot]");
+      if (fg) fg.onclick = async () => {
+        const mail = $("#lpMail").value.trim();
+        if (!mail || !$("#lpMail").checkValidity()) { $("#lpErr").textContent = "Schreib zuerst oben deine E-Mail-Adresse hin."; $("#lpMail").focus(); return; }
+        try { await S.be.teacherResetPw(mail); $("#lpErr").textContent = "Wir haben dir eine E-Mail geschickt. Tipp auf den Link darin, dann kannst du ein neues Passwort wählen."; }
         catch (err) { $("#lpErr").textContent = err.message; }
       };
       const su = $("[data-signup]");
@@ -944,6 +952,13 @@
           else render();
         } catch (err) { $("#lpErr").textContent = err.message; }
       };
+      return;
+    }
+    if (LP.recover) {
+      app.innerHTML = head + `<main class="wrap gate"><form class="card" id="pwForm">
+        <div class="gate-head">${gl("cool", "#8B5CFF")}<div><span class="lp-badge">Lehrperson</span><h1 style="margin-top:6px">Neues Passwort</h1><p>Wähle ein neues Passwort für ${esc(who.email)}.</p></div></div>
+        ${pwFields(false)}</form></main>`;
+      bindLpTop(); bindPwForm(false, () => { LP.recover = false; render(); });
       return;
     }
     LP.classes = await S.be.listClasses();
@@ -968,9 +983,12 @@
           <div id="restoreInfo"></div></section></div>
         <div class="lp-tab" data-tab="upload">${uploadsPanelHTML()}</div>
         <div class="lp-tab" data-tab="eigene">${modsPanelHTML()}</div>
+        <div class="lp-tab" data-tab="konto"><form class="panel pw-panel" id="pwForm"><h2>Passwort ändern</h2>
+          <p class="hint">Angemeldet als <b>${esc(who.email)}</b>. Das Passwort gilt nur für dein Lehrpersonen-Konto. Die Bild-Passwörter der Kinder bleiben gleich.</p>
+          ${pwFields(true)}</form></div>
         ${S.be.mode === "demo" ? `<p class="hint">Demo-Modus aktiv. <button type="button" class="link" data-resetdemo>Demo-Daten zurücksetzen</button></p>` : ""}
       </main>`;
-      bindLpTop(); bindLpTabs("home"); bindModsPanel(); bindUploadsPanel(); bindRestore();
+      bindLpTop(); bindLpTabs("home"); bindModsPanel(); bindUploadsPanel(); bindRestore(); bindPwForm(true);
       $$("[data-cls]").forEach(b => b.onclick = () => { LP.cur = LP.classes.find(c => c.id === b.dataset.cls); LP.cards = false; render(); });
       $("#newCls").onsubmit = async e => {
         e.preventDefault();
@@ -1235,8 +1253,29 @@
   /* ---------- Menü im Lehrpersonen-Bereich: Reiter, es ist immer nur ein Bereich offen ---------- */
   const LP_TABS = {
     cls: [["live", "📢", "Live"], ["kinder", "👥", "Kinder"], ["module", "🧩", "Module"], ["fortschritt", "📊", "Fortschritt"], ["lehrp", "🧑‍🏫", "Lehrpersonen"]],
-    home: [["klassen", "🏫", "Klassen"], ["upload", "⬆️", "Module hochladen"], ["eigene", "✏️", "Eigene Module"]]
+    home: [["klassen", "🏫", "Klassen"], ["upload", "⬆️", "Module hochladen"], ["eigene", "✏️", "Eigene Module"], ["konto", "🔑", "Konto"]]
   };
+  /* ---------- Passwort der Lehrperson ändern ---------- */
+  const pwFields = withOld => `
+    ${withOld ? `<label class="f" for="pwOld">Bisheriges Passwort<input class="input" id="pwOld" type="password" autocomplete="current-password" required></label>` : ""}
+    <label class="f" for="pwNew">Neues Passwort<input class="input" id="pwNew" type="password" placeholder="mindestens 8 Zeichen" autocomplete="new-password" minlength="8" required></label>
+    <label class="f" for="pwNew2">Neues Passwort noch einmal<input class="input" id="pwNew2" type="password" autocomplete="new-password" minlength="8" required></label>
+    <p class="err" id="pwErr" role="alert"></p>
+    <div class="row"><button class="btn primary" type="submit">🔑 Passwort speichern</button><button type="button" class="btn small" data-pwshow>👁 Anzeigen</button></div>`;
+  function bindPwForm(withOld, done) {
+    const f = $("#pwForm"); if (!f) return;
+    const sh = $("[data-pwshow]"); if (sh) sh.onclick = () => { const on = $("#pwNew").type === "password"; $$("#pwForm input[type=password], #pwForm input[data-pwvis]").forEach(i => { i.type = on ? "text" : "password"; i.toggleAttribute("data-pwvis", on); }); sh.textContent = on ? "🙈 Verbergen" : "👁 Anzeigen"; };
+    f.onsubmit = async e => {
+      e.preventDefault(); const err = $("#pwErr"); err.textContent = "";
+      const n1 = $("#pwNew").value, n2 = $("#pwNew2").value;
+      if (n1.length < 8) { err.textContent = "Das neue Passwort braucht mindestens 8 Zeichen."; return; }
+      if (n1 !== n2) { err.textContent = "Die beiden neuen Passwörter sind nicht gleich."; $("#pwNew2").focus(); return; }
+      const btn = f.querySelector("button[type=submit]"); btn.disabled = true;
+      try { await S.be.teacherChangePw(withOld ? $("#pwOld").value : null, n1); f.reset(); toast("Passwort geändert. Ab jetzt meldest du dich mit dem neuen Passwort an.", "star", 6000); if (done) done(); }
+      catch (x) { err.textContent = x.message; }
+      finally { btn.disabled = false; }
+    };
+  }
   LP.tabs = LP.tabs || {};
   const lpTabsNav = key => { const cur = LP.tabs[key] || LP_TABS[key][0][0];
     return `<nav class="lp-tabs" role="tablist" aria-label="Bereiche">${LP_TABS[key].map(([id, ic, n]) => `<button type="button" role="tab" class="lp-tb${id === cur ? " on" : ""}" data-lptab="${key}:${id}" aria-selected="${id === cur}"><span aria-hidden="true">${ic}</span>${n}</button>`).join("")}</nav>`; };
@@ -1685,10 +1724,17 @@
   catch (e) { app.innerHTML = `<main class="wrap gate"><div class="card"><h1>Keine Verbindung</h1><p>Das Glitchlab kann die Datenbank gerade nicht laden. Prüf das Internet und lade die Seite neu.</p></div></main>`; return; }
   /* Rückkehr vom Bestätigungslink in der E-Mail (Supabase hängt Daten an die Adresse an) */
   const authHash = new URLSearchParams((location.hash || "").replace(/^#/, "") + "&" + (location.search || "").replace(/^\?/, ""));
+  if ((authHash.get("type") === "recovery" || S.be.recovering) && !authHash.get("error")) {
+    await new Promise(r => setTimeout(r, 600));   // Supabase übernimmt die Anmeldung aus dem Link
+    history.replaceState(null, "", location.pathname);
+    LP.recover = true; go({ name: "lp" });
+    return;
+  }
   if (authHash.get("access_token") || authHash.get("type") === "signup" || authHash.get("code") || authHash.get("error")) {
     const err = authHash.get("error_description");
     await new Promise(r => setTimeout(r, 600));   // Supabase übernimmt die Anmeldung aus der Adresse
     history.replaceState(null, "", location.pathname);
+    if (S.be.recovering && !err) { LP.recover = true; return go({ name: "lp" }); }
     go({ name: "lp" });
     toast(err ? `Bestätigung hat nicht geklappt: ${err}. Melde dich einfach mit E-Mail und Passwort an.` : "E-Mail bestätigt! Melde dich mit E-Mail und Passwort an, falls du nicht schon drin bist.", err ? "err" : "star", 7000);
     return;

@@ -43,6 +43,7 @@
     constructor(url, key) {
       this.mode = "online";
       this.sb = window.supabase.createClient(url, key, { auth: { persistSession: true, storageKey: "glhub.lp" } });
+      this.sb.auth.onAuthStateChange(ev => { if (ev === "PASSWORD_RECOVERY") this.recovering = true; });   // Link aus «Passwort vergessen»
     }
     async rpc(fn, args) {
       const { data, error } = await this.sb.rpc(fn, args);
@@ -103,6 +104,21 @@
       return data.session ? "ok" : "bestaetigen";
     }
     async teacherSignOut() { await this.sb.auth.signOut(); }
+    /* Passwort ändern: mit dem bisherigen Passwort (oldPw) oder nach dem Link aus «Passwort vergessen» (oldPw = null) */
+    async teacherChangePw(oldPw, newPw) {
+      if (oldPw != null) {
+        const { data } = await this.sb.auth.getSession(); const email = data.session && data.session.user.email;
+        if (!email) throw new Error("Bitte melde dich zuerst wieder an.");
+        const r = await this.sb.auth.signInWithPassword({ email, password: oldPw });
+        if (r.error) throw new Error("Das bisherige Passwort stimmt nicht.");
+      }
+      const { error } = await this.sb.auth.updateUser({ password: newPw });
+      if (error) throw new Error(/different/i.test(error.message) ? "Das neue Passwort muss anders sein als das bisherige." : /at least|characters|weak/i.test(error.message) ? "Das Passwort ist zu kurz oder zu einfach." : error.message);
+    }
+    async teacherResetPw(email) {
+      const { error } = await this.sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+      if (error) throw new Error(/rate|seconds/i.test(error.message) ? "Bitte warte kurz und versuch es dann noch einmal." : error.message);
+    }
     async q(p) { const { data, error } = await p; if (error) throw new Error(error.message); return data; }
     listClasses() { return this.q(this.sb.from("classes").select("id,name,code,settings,created_at,teacher_id").order("created_at")); }
     /* Weitere Lehrpersonen mit eigenem Konto (per Mailadresse) */
@@ -335,6 +351,8 @@
     async teacherSignIn(email) { this.db.teacher = { email: email || "demo@glitchlab" }; this.save(); }
     async teacherSignUp(email) { await this.teacherSignIn(email); return "ok"; }
     async teacherSignOut() { this.db.teacher = null; this.save(); }
+    async teacherChangePw() { await this.wait(); }
+    async teacherResetPw() { await this.wait(); }
     async listClasses() { return this.wait(this.db.classes.map(({ teacher, ...c }) => Object.assign({ settings: {}, teacher_id: "demo" }, c))); }
     async classNow(ids) { let d = null; try { d = JSON.parse(localStorage.getItem(this.key)); } catch (e) { /* egal */ } const ex = (d || this.db).extras || {}; return ids.map(id => ({ student_id: id, now: (ex[id] || {}).now || null })); }
     async saveClassSettings(id, settings) { const c = this.db.classes.find(x => x.id === id); if (c) { c.settings = settings || {}; this.save(); } }
