@@ -127,6 +127,8 @@
     removeMember(classId, email) { return this.q(this.sb.from("class_members").delete().eq("class_id", classId).eq("email", email)); }
     saveClassSettings(id, settings) { return this.q(this.sb.from("classes").update({ settings: settings || {} }).eq("id", id)); }
     /* Wer macht was? Der zuletzt gemeldete Ort jedes Kindes (aus den Extras) */
+    /* Freigabe über das Lehrpersonen-Gerät: offene Anfragen der Kinder (nur aus den eigenen Klassen, dafür sorgt die Datenbank) */
+    async relRequests() { const r = await this.q(this.sb.from("extras").select("student_id,rel:data->rel,students(class_id)").not("data->rel", "is", null)); return (r || []).filter(x => x.rel).map(x => ({ student_id: x.student_id, class_id: (x.students || {}).class_id, rel: x.rel })); }
     async classNow(ids) { if (!ids.length) return []; const r = await this.q(this.sb.from("extras").select("student_id,now:data->now").in("student_id", ids)); return (r || []).map(x => ({ student_id: x.student_id, now: x.now || null })); }
     async createClass(name) {
       for (let i = 0; i < 5; i++) {
@@ -328,7 +330,10 @@
       this.save(); return u.id;
     }
     async deleteUpload(id) { this.db.uploads = this.db.uploads.filter(u => u.id !== id); await this.htmlDel(id); this.save(); }
-    async saveExtras(token, data) { const s = this.kid(token); this.db.extras[s.id] = data || {}; this.save(); }
+    async saveExtras(token, data) { this.fresh(); const s = this.kid(token); this.db.extras[s.id] = data || {}; this.save(); }
+    /* Demo: Lehrperson und Kinder können in zwei Fenstern desselben Geräts arbeiten, darum vor dem Speichern den neusten Stand holen */
+    fresh() { const d = this.load(); if (d) this.db = d; }
+    async relRequests() { this.fresh(); const ex = this.db.extras || {}; return Object.keys(ex).filter(id => ex[id] && ex[id].rel).map(id => ({ student_id: id, class_id: (this.db.students.find(s => s.id === id) || {}).class_id, rel: ex[id].rel })); }
     async workGet(tokens, moduleId) {
       const ids = tokens.map(t => this.kid(t).id);
       const w = this.db.work.filter(x => ids.includes(x.student_id) && x.module_id === moduleId).sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0];
@@ -353,9 +358,9 @@
     async teacherSignOut() { this.db.teacher = null; this.save(); }
     async teacherChangePw() { await this.wait(); }
     async teacherResetPw() { await this.wait(); }
-    async listClasses() { return this.wait(this.db.classes.map(({ teacher, ...c }) => Object.assign({ settings: {}, teacher_id: "demo" }, c))); }
+    async listClasses() { this.fresh(); return this.wait(this.db.classes.map(({ teacher, ...c }) => Object.assign({ settings: {}, teacher_id: "demo" }, c))); }
     async classNow(ids) { let d = null; try { d = JSON.parse(localStorage.getItem(this.key)); } catch (e) { /* egal */ } const ex = (d || this.db).extras || {}; return ids.map(id => ({ student_id: id, now: (ex[id] || {}).now || null })); }
-    async saveClassSettings(id, settings) { const c = this.db.classes.find(x => x.id === id); if (c) { c.settings = settings || {}; this.save(); } }
+    async saveClassSettings(id, settings) { this.fresh(); const c = this.db.classes.find(x => x.id === id); if (c) { c.settings = settings || {}; this.save(); } }
     async createClass(name) {
       let code; do { code = randCode(); } while (this.db.classes.some(c => c.code === code));
       const c = { id: this.uid(), name: cleanName(name).slice(0, 40), code, teacher: "demo", created_at: new Date().toISOString() };

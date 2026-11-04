@@ -1307,7 +1307,13 @@
   ];
   function livePanelHTML(c) {
     const L = (c.settings || {}).live || {}, t = L.pauseAt ? new Date(L.pauseAt).toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" }) : "";
-    return `<section class="panel live-panel"><h2>📢 Live-Steuerung</h2>
+    return `<section class="panel live-panel rel-mode"><h2>🔓 Freigabe der nächsten Etappe</h2>
+      <p class="hint">Wie gibst du den Kindern nach einer Etappe den nächsten Teil frei? Gilt im gLiTCh-Lab, in den Deutsch-Spielen und in eigenen Modulen.</p>
+      <div class="seg" role="radiogroup" aria-label="Art der Freigabe">
+        <button type="button" role="radio" class="seg-b${L.mode === "device" ? "" : " on"}" aria-checked="${L.mode !== "device"}" data-relmode="code"><b>🔢 Mit Code</b><small>Die Kinder kommen zu dir, du tippst deinen Freigabe-Code (${esc(mainCode(c.settings))}) auf ihrem Gerät ein.</small></button>
+        <button type="button" role="radio" class="seg-b${L.mode === "device" ? " on" : ""}" aria-checked="${L.mode === "device"}" data-relmode="device"><b>📲 Über mein Gerät</b><small>Die Kinder schicken eine Anfrage. Bei dir erscheint ein Fenster mit Namen und Lernstand. Du entscheidest per Knopfdruck und kannst einen Kommentar schreiben.</small></button>
+      </div></section>
+      <section class="panel live-panel"><h2>📢 Live-Steuerung</h2>
       <p class="hint">Gilt für alle Kinder dieser Klasse, die gerade angemeldet sind. Nach höchstens 5 Sekunden sehen sie es.</p>
       <div class="row live-row"><button type="button" class="btn ${L.pause ? "" : "primary"} live-big" data-live-pause>${L.pause ? "▶ Pause beenden" : "⏸ Ganze Klasse pausieren"}</button>
         <span class="live-state ${L.pause ? "on" : ""}">${L.pause ? `⏸ Pausiert${t ? " seit " + t : ""}` : "▶ Läuft"}</span></div>
@@ -1323,6 +1329,8 @@
       catch (err) { toast(err.message, "err", 5000); }
     };
     const L = () => (c.settings || {}).live || {};
+    $$("[data-relmode]").forEach(b => b.onclick = () => { const dev = b.dataset.relmode === "device"; if (dev === (L().mode === "device")) return;
+      set({ mode: dev ? "device" : "" }, dev ? "Freigabe jetzt über dein Gerät. Lass diese Seite (oder eine andere im Lehrpersonen-Bereich) offen." : "Freigabe jetzt wieder mit dem Code."); });
     $$("[data-live-pause]").forEach(b => b.onclick = () => set(L().pause ? { pause: false, pauseAt: 0 } : { pause: true, pauseAt: Date.now() }, L().pause ? "Pause beendet. Es geht weiter!" : "Die Klasse ist pausiert."));
     $$("[data-live-q]").forEach(b => { b.onclick = () => { const t = $("#liveMsg"); if (t) { t.value = b.dataset.liveQ; t.focus(); } };
       b.ondblclick = () => set({ msg: b.dataset.liveQ, msgAt: Date.now() }, "gLiTCh zeigt die Nachricht allen."); });
@@ -1383,6 +1391,156 @@
   }
   setInterval(checkVersion, 120000);
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkVersion(); });
+  /* =================================================================
+     Freigabe über das Lehrpersonen-Gerät
+     Kind: Glitchlab findet die Code-Felder in Lab, Spielen und eigenen Modulen, blendet sie aus und schickt eine Anfrage.
+     Lehrperson: Pop-up mit Namen und Lernstand, «Weiter» oder «Wiederholen» plus Kommentar.
+     Antwort: in den Klassen-Einstellungen (live.ans), die Kinder fragen sie alle 5 Sekunden ab.
+     ================================================================= */
+  const REL = { t: null, req: null, el: null, kind: null };
+  const relOn = () => !!(S.me && S.token && !isLP() && S.view && S.view.name !== "lp" && S.live && S.live.mode === "device");
+  const REL_KINDS = [
+    { k: "kp", sel: '.kp[data-kp]:not([data-kp="ptCodeIn"])', box: el => el.closest(".pt-dlg, .dlg-box, .sp-in, [role=dialog]") || el.parentElement },
+    { k: "game", sel: ".pin#gpin", box: el => el.closest(".splash") || el.parentElement },
+    { k: "ed", sel: ".dlg .pin .pin-pad", box: el => el.closest(".dlg") || el.parentElement, hideEl: el => el.closest(".pin") }
+  ];
+  function relDocs(doc, out) { out.push(doc); doc.querySelectorAll("iframe").forEach(f => { try { if (f.contentDocument && f.contentDocument.body) relDocs(f.contentDocument, out); } catch (e) { /* fremde Seite */ } }); return out; }
+  const relTxt = el => (el ? el.textContent : "").replace(/\s+/g, " ").trim();
+  function relReport(box) {
+    const title = relTxt(box.querySelector("h2, h3, .sp-title")).slice(0, 120), lines = [];
+    box.querySelectorAll("li").forEach(li => { if (lines.length < 14 && !li.closest(".kp, .pin, .pin-grid")) lines.push({ t: relTxt(li).replace(/^[✓·]\s*/, "").slice(0, 200), s: li.classList.contains("ok") ? "ok" : li.classList.contains("no") ? "no" : "" }); });
+    box.querySelectorAll("tr").forEach(tr => { if (lines.length < 14) { const ch = tr.querySelector(".gs-chip"); lines.push({ k: relTxt(tr.querySelector("th")).slice(0, 60), t: relTxt(tr.querySelector("td")).slice(0, 220), s: ch ? (ch.classList.contains("ok") ? "ok" : ch.classList.contains("no") ? "no" : "mid") : "" }); } });
+    const extra = [...box.querySelectorAll(".gs-name, .gs-ask, .bubble p, .sp-check, .sp-death")].map(relTxt).filter(Boolean);
+    const sum = [...box.querySelectorAll(":scope > p, .pt-dlg > p")].map(relTxt).filter(x => x && !/Code eingeben|Lehrperson:/.test(x));
+    return { title, lines, info: extra.concat(sum).slice(0, 5).map(x => x.slice(0, 260)) };
+  }
+  function relStatusBox(doc, waiting) {
+    const d = doc.createElement("div"); d.className = "glrel";
+    d.setAttribute("style", "margin:12px auto;padding:14px 16px;border-radius:14px;border:2px dashed #8B5CFF;background:rgba(139,92,255,.10);text-align:center;font:600 16px/1.4 system-ui,sans-serif;color:inherit;max-width:440px");
+    d.innerHTML = `<div style="font-size:34px;line-height:1" aria-hidden="true">📲</div><p style="margin:8px 0 4px"><b>${waiting ? "Anfrage ist bei deiner Lehrperson." : "Anfrage wird gesendet …"}</b></p><p style="margin:0;font-weight:400;opacity:.85">Sie sieht eure Arbeit auf ihrem Gerät und entscheidet. Bleib auf dieser Seite, es geht gleich weiter.</p>
+      <p data-relwait style="margin:8px 0 0;font-size:13px;opacity:.7" aria-live="polite"></p>`;
+    return d;
+  }
+  function relRestore(el) { if (!el) return; const h = el.__relHide || el; h.style.display = ""; if (el.__relBox) el.__relBox.remove(); delete el.__relBox; delete el.dataset.rel; }
+  function relClear() { if (REL.req) { REL.req = null; saveExtras({ rel: null }); } REL.el = null; REL.kind = null; REL.lost = 0; }
+  function relScan() {
+    const on = relOn();
+    const docs = S.me ? relDocs(document, []) : [document];
+    if (!on) {   // Code-Modus: alles wieder so, wie es war
+      docs.forEach(d => d.querySelectorAll("[data-rel]").forEach(relRestore)); if (REL.req) relClear(); return;
+    }
+    if (REL.el && !REL.el.isConnected) { if (!REL.lost) REL.lost = Date.now(); else if (Date.now() - REL.lost > 5000) { REL.lost = 0; relClear(); } }   // Fenster zu: Anfrage zurückziehen (kurz warten, die Seite zeichnet sich vielleicht nur neu)
+    for (const d of docs) for (const K of REL_KINDS) d.querySelectorAll(K.sel).forEach(el => {
+      if (el.dataset.rel) return;
+      el.dataset.rel = "1"; const hide = K.hideEl ? K.hideEl(el) : el; el.__relHide = hide; hide.style.display = "none";
+      const box = relStatusBox(d, false); hide.parentNode.insertBefore(box, hide.nextSibling); el.__relBox = box;
+      if (REL.req && REL.el && REL.el.isConnected && REL.el !== el) return;
+      if (REL.req && REL.lost && REL.kind === K.k) { REL.el = el; REL.lost = 0; box.querySelector("b").textContent = "Anfrage ist bei deiner Lehrperson."; return; }   // gleiche Stelle, nur neu gezeichnet
+      const rep = relReport(K.box(el)), m = S.view.name === "module" ? H.modules.find(x => x.id === S.view.id) : null;
+      REL.el = el; REL.kind = K.k;
+      REL.req = { id: Math.random().toString(36).slice(2, 10), at: Date.now(), names: [S.me.student.first_name].concat(S.team.map(x => x.student.first_name)), mod: m ? m.title : "", mid: m ? m.id : "", title: rep.title, lines: rep.lines, info: rep.info };
+      saveExtras({ rel: REL.req });
+      setTimeout(() => { if (el.__relBox) el.__relBox.querySelector("b").textContent = "Anfrage ist bei deiner Lehrperson."; }, 1200);
+    });
+    if (REL.req && REL.el) {
+      const w = REL.el.__relBox && REL.el.__relBox.querySelector("[data-relwait]"), s = Math.round((Date.now() - REL.req.at) / 1000);
+      if (w) w.textContent = s < 60 ? "" : `Wartet seit ${Math.floor(s / 60)} Min.`;
+      const a = ((S.live || {}).ans || {})[REL.req.id]; if (a && REL.el.isConnected) relAnswer(a);
+    }
+  }
+  function relAnswer(a) {
+    const el = REL.el, kind = REL.kind, doc = el.ownerDocument, code = mainCode(), by = a.by || "Deine Lehrperson";
+    relClear();
+    try {
+      if (a.ok) {
+        if (kind === "kp") { const inp = el.querySelector("input"); inp.value = code; const sel = el.dataset.kpOk;
+          if (sel) { const b = doc.querySelector(sel); if (b) b.click(); } else { const f = el.closest("form"); if (f) { if (f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true })); } } }
+        else if (kind === "game") { [...code].forEach(d => { const b = el.querySelector(`[data-d="${d}"]`); if (b) b.click(); }); }
+        else if (kind === "ed") { [...code].forEach(d => { const b = el.querySelector(`[data-pn="${d}"]`); if (b) b.click(); }); const ok = el.querySelector('[data-pn="ok"]'); if (ok) ok.click(); }
+      } else {
+        relRestore(el);
+        if (kind === "kp") { const bx = el.closest(".pt-dlg, .dlg-box, .sp-in, [role=dialog]") || doc; const c = bx.querySelector('[data-close-dlg], [data-close-splash], .sp-back, [data-ge="pres-close"], [data-fn="pres-close"], [data-ki="pres-close"]') || doc.querySelector("[data-close-splash], .sp-back"); if (c) c.click(); }
+        else if (kind === "game") { const b = doc.querySelector('[data-a="gredo"]'); if (b) b.click(); }
+        else if (kind === "ed") { const b = (el.closest(".dlg") || doc).querySelector("[data-x]"); if (b) b.click(); }
+      }
+    } catch (e) { console.error(e); }
+    relMsg(a.ok, a.c, by);
+  }
+  function relMsg(ok, c, by) {
+    let ov = document.getElementById("relMsg"); if (ov) ov.remove();
+    ov = document.createElement("div"); ov.id = "relMsg"; ov.className = "rel-msg"; ov.setAttribute("role", "alertdialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-labelledby", "relMsgT");
+    ov.innerHTML = `<div class="rel-msg-in ${ok ? "ok" : "redo"}"><div class="rel-msg-g">${G.svg(ok ? "love" : "wink", "#8B5CFF", { outfit: outfitOf() })}</div>
+      <div><h2 id="relMsgT">${ok ? "Freigegeben! Weiter geht's 🎉" : "Nochmals üben ↺"}</h2>
+      <p>${ok ? "Deine Lehrperson hat eure Arbeit angeschaut und den nächsten Teil freigegeben." : "Deine Lehrperson möchte, dass ihr diesen Teil nochmals anschaut und verbessert."}</p>
+      ${c ? `<div class="rel-msg-c"><b>${esc(by)} schreibt:</b><p>«${esc(c)}»</p></div>` : ""}
+      <button type="button" class="btn primary" data-relmsg-ok>${ok ? "Super, weiter!" : "Okay, wir verbessern"}</button></div></div>`;
+    document.body.appendChild(ov); ov.querySelector("[data-relmsg-ok]").onclick = () => ov.remove(); ov.querySelector("[data-relmsg-ok]").focus();
+  }
+  setInterval(() => { try { relScan(); } catch (e) { /* nächstes Mal */ } }, 1200);
+
+  /* ---------- Lehrperson: Pop-up auf jeder Seite des Lehrpersonen-Bereichs ---------- */
+  const REL_TPL = [
+    ["👍 Lob", ["Super gemacht, weiter so!", "Ihr habt sehr genau und sorgfältig gearbeitet.", "Tolle Zusammenarbeit im Team!", "Eure Präsentation war klar und gut verständlich."]],
+    ["➡️ Weiter mit Tipp", ["Gut! Achtet im nächsten Teil besonders auf die Rechtschreibung.", "Weiter so! Lest die Aufgaben im nächsten Teil ganz genau.", "Stark! Versucht im nächsten Level, eure Antworten zu begründen.", "Gut gemacht! Teilt die Arbeit im Team fairer auf."]],
+    ["↺ Wiederholen", ["Schaut euch die Punkte mit · nochmals genau an.", "Ihr seid fast da! Ergänzt noch die fehlenden Punkte.", "Lest die Aufgabe nochmals in Ruhe durch.", "Kontrolliert eure Antworten, bevor ihr wieder schickt.", "Holt euch Hilfe bei «gLiTCh erklärt» oder fragt ein anderes Team."]]
+  ];
+  const RELLP = { t: null, list: [], key: "", snooze: {}, busy: false };
+  async function relLpPoll() {
+    const want = S.view && S.view.name === "lp" && LP.who && S.be && S.be.relRequests;
+    if (!want) { const p = document.getElementById("relPop"); if (p) p.remove(); RELLP.key = ""; return; }
+    if (RELLP.busy) return; RELLP.busy = true;
+    try {
+      const [reqs, classes] = await Promise.all([S.be.relRequests(), S.be.listClasses()]);
+      const byId = Object.fromEntries(classes.map(c => [c.id, c])), now = Date.now();
+      RELLP.list = reqs.filter(r => { const c = byId[r.class_id], L = c && (c.settings || {}).live || {};
+        return c && L.mode === "device" && r.rel && r.rel.id && !(L.ans || {})[r.rel.id] && now - (r.rel.at || 0) < 3600000 && !(RELLP.snooze[r.rel.id] > now); })
+        .map(r => Object.assign({ cls: byId[r.class_id] }, r)).sort((a, b) => a.rel.at - b.rel.at);
+      relLpShow();
+    } catch (e) { /* nächstes Mal */ } finally { RELLP.busy = false; }
+  }
+  function relLpShow() {
+    const key = RELLP.list.map(r => r.rel.id).join(",");
+    let pop = document.getElementById("relPop");
+    if (!RELLP.list.length) { if (pop) pop.remove(); RELLP.key = ""; return; }
+    if (pop && key === RELLP.key) return;
+    const r = RELLP.list[0], q = r.rel, ago = Math.max(0, Math.round((Date.now() - q.at) / 60000));
+    if (pop && pop.dataset.rid === q.id) { const m = pop.querySelector(".rel-more"); if (m) m.textContent = RELLP.list.length > 1 ? `+${RELLP.list.length - 1} warten` : ""; RELLP.key = key; return; }
+    RELLP.key = key; if (pop) pop.remove();
+    const chip = s => s === "ok" ? `<span class="rel-s ok">✓</span>` : s === "no" ? `<span class="rel-s no">✗</span>` : s === "mid" ? `<span class="rel-s mid">~</span>` : `<span class="rel-s">·</span>`;
+    pop = document.createElement("div"); pop.id = "relPop"; pop.className = "rel-pop-ov"; pop.dataset.rid = q.id;
+    pop.innerHTML = `<div class="rel-pop" role="dialog" aria-modal="true" aria-labelledby="relPopT">
+      <div class="rel-head">${gl("cool", "#8B5CFF")}<div><span class="lp-badge">Freigabe gewünscht · ${esc(r.cls.name)}</span><h2 id="relPopT">${esc((q.names || []).join(" & "))}</h2>
+        <p>${esc([q.mod, q.title].filter(Boolean).join(" · "))}${ago ? ` · wartet seit ${ago} Min.` : ""}</p></div><span class="rel-more">${RELLP.list.length > 1 ? `+${RELLP.list.length - 1} warten` : ""}</span></div>
+      <div class="rel-report"><h3>📋 Lernstand</h3>
+        ${(q.info || []).map(x => `<p class="rel-info">${esc(x)}</p>`).join("")}
+        ${(q.lines || []).length ? `<ul>${q.lines.map(l => `<li>${chip(l.s)}<span>${l.k ? `<b>${esc(l.k)}:</b> ` : ""}${esc(l.t)}</span></li>`).join("")}</ul>` : `<p class="hint">Zu dieser Etappe gibt es keine Checkliste. Lass dir die Arbeit kurz zeigen oder entscheide direkt.</p>`}
+      </div>
+      <label class="f" for="relC">Kommentar an ${esc((q.names || []).length > 1 ? "die Kinder" : (q.names || [""])[0])} (freiwillig)<textarea class="input" id="relC" rows="2" maxlength="240" placeholder="z. B. Super gemacht, weiter so!"></textarea></label>
+      <div class="rel-tpl">${REL_TPL.map(([g, xs]) => `<div class="lq-g"><b>${g}</b><div class="lq-l">${xs.map(x => `<button type="button" class="btn small" data-reltpl="${esc(x)}">${esc(x)}</button>`).join("")}</div></div>`).join("")}</div>
+      <div class="row rel-act"><button type="button" class="btn primary rel-ok" data-relans="1">✅ Weiter ins nächste Level</button><button type="button" class="btn rel-redo" data-relans="0">↺ Baustein wiederholen</button><button type="button" class="btn small" data-rellater>Später</button></div></div>`;
+    document.body.appendChild(pop);
+    const ta = pop.querySelector("#relC");
+    pop.querySelectorAll("[data-reltpl]").forEach(b => b.onclick = () => { const v = ta.value.trim(); ta.value = (v ? v + " " : "") + b.dataset.reltpl; ta.focus(); });
+    pop.querySelector("[data-rellater]").onclick = () => { RELLP.snooze[q.id] = Date.now() + 90000; RELLP.list = RELLP.list.filter(x => x.rel.id !== q.id); relLpShow(); toast("Okay, das Fenster kommt in 90 Sekunden wieder."); };
+    pop.querySelectorAll("[data-relans]").forEach(b => b.onclick = () => relLpAnswer(r, b.dataset.relans === "1", ta.value.trim()));
+    try { const ac = new (window.AudioContext || window.webkitAudioContext)(), o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 880; g.gain.value = .05; o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + .15); } catch (e) { /* ohne Ton */ }
+  }
+  async function relLpAnswer(r, ok, c) {
+    const pop = document.getElementById("relPop"); pop && pop.querySelectorAll("button").forEach(b => b.disabled = true);
+    try {
+      const fresh = (await S.be.listClasses()).find(x => x.id === r.cls.id) || r.cls, st = Object.assign({}, fresh.settings || {}), live = Object.assign({}, st.live || {}), now = Date.now();
+      const ans = Object.fromEntries(Object.entries(live.ans || {}).filter(([, v]) => v && now - (v.at || 0) < 7200000));
+      const me = LP.who && LP.who.email ? coTeachers(st).find(t => t.email === LP.who.email.toLowerCase()) : null;
+      ans[r.rel.id] = { ok, c: String(c || "").slice(0, 240), at: now, by: me ? me.name : isOwner(fresh) ? (CFG.TEACHER_NAME || "") : "" };
+      live.ans = ans; st.live = live;
+      await S.be.saveClassSettings(fresh.id, st);
+      LP.classes.forEach(x => { if (x.id === fresh.id) x.settings = st; }); if (LP.cur && LP.cur.id === fresh.id) LP.cur.settings = st;
+      RELLP.list = RELLP.list.filter(x => x.rel.id !== r.rel.id); RELLP.key = ""; if (pop) pop.remove(); relLpShow();
+      toast(ok ? `${(r.rel.names || []).join(" & ")}: freigegeben ✅` : `${(r.rel.names || []).join(" & ")}: wiederholen ↺`, "star");
+    } catch (err) { toast(err.message, "err", 6000); pop && pop.querySelectorAll("button").forEach(b => b.disabled = false); }
+  }
+  setInterval(relLpPoll, 4000);
+
   /* Wer macht was? Das Gerät meldet, wo das Kind gerade ist und mit wem (höchstens alle 30 Sekunden, sofort bei Wechsel) */
   const PRES = { key: "", at: 0 };
   function presenceBeat() {
@@ -1397,6 +1555,7 @@
     saveExtras({ now: Object.assign({ at: Date.now(), team, mid: m ? m.id : "" }, where) });
   }
   function liveApply(L) {
+    S.live = L || {};
     let ov = document.getElementById("livePause");
     if (L.pause && !ov) {
       ov = document.createElement("div"); ov.id = "livePause"; ov.className = "live-pause"; ov.setAttribute("role", "alertdialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", "Pause");
