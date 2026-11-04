@@ -100,6 +100,18 @@ option,optgroup{background:var(--surface);color:var(--ink)}
 .et{padding:12px;border-radius:14px;background:var(--bg);border:1px solid var(--line);display:grid;gap:8px}
 .et-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .et-h b{flex:1;min-width:160px}
+.tl{display:grid;gap:5px;padding:8px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.tl-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;padding:5px 6px;border-radius:10px;background:var(--bg);border:1px solid var(--line);text-align:left;color:inherit;font:inherit}
+.tl-row.info{opacity:.8}.tl-row.tl-et{grid-template-columns:auto minmax(0,1fr) auto;cursor:pointer}
+.tl-s{appearance:none;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:2px;cursor:pointer;overflow:hidden;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
+.tl-s:hover{color:var(--teal)}.tl-b{display:flex;gap:4px}.tl-b .btn{padding:5px 8px}.tl-add{margin-top:4px}
+@media (max-width:640px){.tl-row{grid-template-columns:auto minmax(0,1fr)}.tl-b{grid-column:1/-1;justify-content:flex-end}}
+.edov{position:fixed;inset:0;z-index:50;background:rgba(7,4,15,.78);display:grid;place-items:center;padding:16px}
+.eddlg{width:min(680px,100%);max-height:calc(100vh - 32px);overflow:auto;background:var(--surface);border:1.5px solid var(--accent);border-radius:18px;padding:18px;display:grid;gap:12px}
+.eddlg h2{font-size:1.3rem}.ed-f{display:grid;gap:10px}.ed-b{display:flex;gap:8px;align-items:center}
+.in.mono{font-family:var(--f-mono);font-size:.9rem}
+.qhelp ul{margin:6px 0 0;padding-left:18px;display:grid;gap:3px}.qhelp summary{cursor:pointer;color:var(--teal);font-weight:700}
+.qprev .ok{color:var(--ok);margin:0;font-weight:700}.qprev .err{margin:2px 0;font-size:.88rem}
 .et-h .emo{font-size:1.4rem}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
 .tag{font-family:var(--f-mono);font-size:.72rem;padding:2px 8px;border-radius:99px;background:rgba(160,124,255,.16);color:#D9CCFF}
@@ -256,6 +268,12 @@ option,optgroup{background:var(--surface);color:var(--ink)}
       <div class="files" id="files"></div>
     </div>
     <div class="card">
+      <div class="card-h"><div><p class="eyebrow">Text einfügen</p><h2>Text aus einer Webseite oder einem Dokument</h2></div><p>Kopiere Text (z. B. von SRF Kids, aus einem Mail oder einem Lehrmittel) und füge ihn hier ein. gLiTCh benutzt ihn wie eine Datei.</p></div>
+      <label class="f" for="pasteName"><span>Name (freiwillig)</span><input class="in" id="pasteName" maxlength="60" placeholder="z. B. SRF Kids: Vulkane"></label>
+      <label class="f" for="pasteTxt" style="margin-top:8px"><span>Text</span><textarea class="in" id="pasteTxt" placeholder="Hier den kopierten Text einfügen …"></textarea></label>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn teal" id="pasteAdd">📋 Als Material hinzufügen</button></div>
+    </div>
+    <div class="card">
       <div class="card-h"><div><p class="eyebrow">Links</p><h2>Links fürs Modul</h2></div><p>Eine Adresse pro Zeile, optional mit Titel davor: <code>Vulkane bei SRF Kids | https://…</code>. Die Links stehen im Modul in einer Liste. gLiTCh kann die Seiten nicht selbst öffnen: Wichtige Inhalte kopierst du am besten als Text ins Ideen-Feld.</p></div>
       <textarea class="in" id="links" placeholder="Vulkane einfach erklärt | https://www.srf.ch/…"></textarea>
     </div>
@@ -286,6 +304,7 @@ option,optgroup{background:var(--surface);color:var(--ink)}
         <div class="say"><span class="glitch" id="sayG"></span><div class="bubble"><b>gLiTCh</b><p id="sayT">Alles bereit? Dann tippe auf «Modul erstellen».</p></div></div>
         <label class="f"><span>Gründlichkeit</span><select class="in" id="tier"><option value="default">Normal (schneller)</option><option value="complex">Gründlich (bessere Aufgaben, dauert länger)</option></select></label>
         <div class="row"><button type="button" class="btn primary" id="btnGen">⚙️ Modul erstellen</button><button type="button" class="btn" id="btnStop" hidden>Stopp</button></div>
+        <p class="hint" style="margin-top:8px">Du hast schon eigene Aufgaben, zum Beispiel aus einem Arbeitsblatt? <button type="button" class="btn small" id="btnManual">✍️ Ohne Claude: Modul selbst zusammenstellen</button></p>
         <div class="prog" id="prog"></div>
         <p class="err" id="genErr" role="alert"></p>
         <div id="result" hidden>
@@ -1933,6 +1952,12 @@ Gib NUR JSON zurück: {"name":"…","palette":{"a":"#rrggbb", …},"pixel":["...
       <button type="button" class="btn small danger" data-rmf="${m.id}" aria-label="${esc(m.name)} entfernen">✕</button></div>`).join("");
     $$("[data-rmf]").forEach(b => b.onclick = () => { D.material = D.material.filter(m => m.id !== b.dataset.rmf); renderFiles(); save(); paintSteps(); });
   }
+  $("#pasteAdd").onclick = () => {
+    const t = $("#pasteTxt").value.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim(); if (!t) { $("#pasteTxt").focus(); return; }
+    const nr = D.material.filter(m => m.kind === "Text eingefügt").length + 1, name = $("#pasteName").value.trim() || `Eingefügter Text ${nr}`;
+    D.material.push({ id: Math.random().toString(36).slice(2, 9), name, kind: "Text eingefügt", pages: 0, text: t.slice(0, MAXC), cut: t.length > MAXC });
+    $("#pasteTxt").value = ""; $("#pasteName").value = ""; renderFiles(); save(); paintSteps(); toast(`«${name}» als Material hinzugefügt.`);
+  };
   const drop = $("#drop");
   ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
   ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
@@ -2219,16 +2244,274 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
   $("#btnGen").onclick = generate;
   $("#btnStop").onclick = () => { if (ctl) ctl.abort(); };
 
+  /* ---------- Aufgaben einzeln bearbeiten ---------- */
+  const OPEN = new Set();
+  const hashStr = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = (h * 33 ^ s.charCodeAt(i)) >>> 0; return s.length + ":" + h; };
+  let KN = null;
+  const kindName = typ => { if (!KN) KN = Object.assign({ info: "Info" }, Object.fromEntries(TYPES), KIND); return KN[typ] || typ; };
+  const sumOf = a => String(a.frage || a.aussage || a.auftrag || a.anleitung || a.text || a.titel || "").replace(/\*\*|\[\[|\]\]/g, "").replace(/\s+/g, " ").slice(0, 90);
+  /* Felder pro Aufgabenart. Art: s Zeile · t Text · n Zahl · b Ja/Nein · lines Liste · pairs «A = B» · opts1/optsN Antworten mit * · events «Jahr = Ereignis» · sortel «Text = Kategorie = Grund» · blitz «+ / -» · chars Emojis · json */
+  const F_FRAGE = ["frage", "Frage", "t"];
+  const FORM = {
+    info: [["titel", "Überschrift (freiwillig)", "s"], ["text", "Text, den gLiTCh erklärt. **fett** geht, Absätze mit einer Leerzeile", "t"]],
+    mc: [F_FRAGE, ["optionen", "Antworten, eine pro Zeile. Die richtige mit * am Anfang", "opts1"]],
+    mehrfach: [F_FRAGE, ["optionen", "Antworten, eine pro Zeile. Alle richtigen mit * am Anfang", "optsN"]],
+    tf: [["aussage", "Aussage", "t"], ["richtig", "Die Aussage stimmt", "b"]],
+    text: [F_FRAGE, ["antworten", "Richtige Antworten, eine pro Zeile (verschiedene Schreibweisen)", "lines"]],
+    luecke: [["anleitung", "Anleitung", "s"], ["text", "Text mit Lücken in [[doppelten eckigen Klammern]], Varianten mit |, z. B. [[Bern|die Stadt Bern]]", "t"], ["optionen", "Auswahlliste für die Lücken (freiwillig), eine pro Zeile", "lines"]],
+    ordnen: [F_FRAGE, ["elemente", "Elemente in der RICHTIGEN Reihenfolge, eines pro Zeile", "lines"]],
+    zuordnen: [F_FRAGE, ["paare", "Paare, eines pro Zeile: Begriff = passende Erklärung", "pairs"]],
+    schreiben: [["auftrag", "Schreibauftrag", "t"], ["mindestwoerter", "Mindestens so viele Wörter", "n"]],
+    memory: [F_FRAGE, ["paare", "Kartenpaare, eines pro Zeile: Begriff = Gegenstück", "pairs"]],
+    sortieren: [F_FRAGE, ["kategorien", "Kategorien, eine pro Zeile", "lines"], ["elemente", "Karten, eine pro Zeile: Text = Kategorie = kurzer Grund (Grund freiwillig)", "sortel"]],
+    zeitmaschine: [F_FRAGE, ["von", "Zeitleiste von (Jahr)", "n"], ["bis", "bis (Jahr)", "n"], ["einheit", "Einheit (freiwillig, z. B. «v. Chr.»)", "s"], ["ereignisse", "Ereignisse, eines pro Zeile: Jahr = Ereignis", "events"]],
+    raetsel: [F_FRAGE, ["hinweise", "Hinweise vom schweren zum leichten, einer pro Zeile", "lines"], ["antworten", "Richtige Antworten, eine pro Zeile", "lines"]],
+    schaetzen: [F_FRAGE, ["min", "Schieberegler von", "n"], ["max", "bis", "n"], ["antwort", "Richtige Zahl", "n"], ["toleranz", "So weit daneben gilt noch als richtig", "n"], ["einheit", "Einheit (z. B. m, km, Jahre)", "s"]],
+    wortsalat: [["frage", "Umschreibung des Wortes (ohne es zu nennen)", "t"], ["wort", "Das gesuchte Wort", "s"]],
+    wortraten: [["frage", "Umschreibung des Wortes (ohne es zu nennen)", "t"], ["wort", "Das gesuchte Wort", "s"]],
+    blitz: [F_FRAGE, ["aussagen", "Aussagen, eine pro Zeile: + am Anfang = stimmt, - am Anfang = stimmt nicht", "blitz"], ["sekunden", "Sekunden pro Aussage", "n"]],
+    markieren: [["anleitung", "Anleitung, z. B. «Markiert alle Fehler»", "s"], ["text", "Text. Die gesuchten Wörter mit *Sternchen* markieren", "t"]],
+    wortsuche: [F_FRAGE, ["woerter", "Versteckte Wörter, eines pro Zeile", "lines"]],
+    karteikarten: [F_FRAGE, ["karten", "Karten, eine pro Zeile: Vorderseite = Rückseite", "pairs"]],
+    chat: [F_FRAGE, ["person", "Name der Figur", "s"], ["emoji", "Emoji der Figur", "s"], ["schritte", "Gesprächsschritte (Profi-Format JSON)", "json"]],
+    meinung: [F_FRAGE, ["links", "Beschriftung links", "s"], ["rechts", "Beschriftung rechts", "s"], ["argumente", "Argumente, eines pro Zeile", "lines"], ["mindestwoerter", "Mindestens so viele Wörter", "n"]],
+    gestalten: [["auftrag", "Gestaltungsauftrag", "t"], ["titelname", "Name des Titelfelds", "s"], ["textname", "Name des Textfelds", "s"], ["mindestwoerter", "Mindestens so viele Wörter", "n"], ["sticker", "Sticker (Emojis, mit Leerzeichen getrennt)", "chars"]]
+  };
+  const COMMON = [["titel", "Name des Bausteins (1–3 Wörter)", "s"], ["tipp", "Tipp von gLiTCh (hilft, ohne die Lösung zu verraten)", "s"], ["erklaerung", "Erklärung nach dem Lösen (warum stimmt es?)", "t"]];
+  const MINHINT = { info: "Der Text darf nicht leer sein.", mc: "Es braucht eine Frage, mindestens 2 Antworten und genau eine mit * davor.", mehrfach: "Es braucht eine Frage, mindestens 3 Antworten und mindestens eine mit * davor.", tf: "Die Aussage darf nicht leer sein.", text: "Es braucht eine Frage und mindestens eine richtige Antwort.", luecke: "Im Text braucht es mindestens eine Lücke in [[doppelten Klammern]].", ordnen: "Es braucht mindestens 3 verschiedene Elemente.", zuordnen: "Es braucht mindestens 2 Paare mit «=», und die rechten Seiten müssen verschieden sein.", schreiben: "Der Auftrag darf nicht leer sein.", memory: "Es braucht mindestens 3 Paare mit «=».", sortieren: "Es braucht mindestens 2 Kategorien und 4 Karten, deren Kategorie genau so heisst wie oben.", zeitmaschine: "Es braucht «von» und «bis» und mindestens 2 Ereignisse mit Jahr dazwischen.", raetsel: "Es braucht mindestens 2 Hinweise und eine Antwort.", schaetzen: "Die richtige Zahl muss zwischen «von» und «bis» liegen.", wortsalat: "Das Wort braucht 3 bis 14 Buchstaben, ohne Leerzeichen.", wortraten: "Das Wort braucht mindestens 3 Buchstaben.", blitz: "Es braucht mindestens 3 Aussagen mit + oder - davor.", markieren: "Im Text müssen Wörter mit *Sternchen* markiert sein.", wortsuche: "Es braucht mindestens 3 Wörter mit 2 bis 11 Buchstaben.", karteikarten: "Es braucht mindestens 3 Karten mit «=».", chat: "Es braucht mindestens 2 gültige Gesprächsschritte.", meinung: "Die Frage darf nicht leer sein.", gestalten: "Der Auftrag darf nicht leer sein." };
+  const BLANK = { info: { text: "" }, mc: { optionen: ["", ""], richtig: 0 }, mehrfach: { optionen: [], richtig: [] }, tf: { richtig: true }, schreiben: { mindestwoerter: 25 }, zeitmaschine: { von: 1200, bis: 2000 }, schaetzen: { min: 0, max: 100, antwort: 50, toleranz: 5 }, blitz: { sekunden: 8 }, chat: { person: "", emoji: "🙂", schritte: [{ sagt: "Hallo!", optionen: ["Antwort A", "Antwort B"], richtig: 0, antwort: "Genau!", falsch: "Nicht ganz." }] }, meinung: { links: "Ja", rechts: "Nein", mindestwoerter: 12 }, gestalten: { mindestwoerter: 20, sticker: ["⭐"] } };
+  const splitEq = l => { const k = l.indexOf("="); return k < 0 ? [l.trim(), ""] : [l.slice(0, k).trim(), l.slice(k + 1).trim()]; };
+  const linesOf = v => String(v || "").split("\n").map(x => x.trim()).filter(Boolean);
+  function toVal(a, key, kind) {
+    const v = a[key];
+    if (kind === "lines") return (v || []).join("\n");
+    if (kind === "pairs") return (v || []).map(p => p[0] + " = " + p[1]).join("\n");
+    if (kind === "opts1" || kind === "optsN") { const r = Array.isArray(a.richtig) ? a.richtig : [a.richtig]; return (v || []).map((o, i) => (r.includes(i) ? "* " : "") + o).join("\n"); }
+    if (kind === "events") return (v || []).map(e => e.jahr + " = " + e.text).join("\n");
+    if (kind === "sortel") return (v || []).map(e => [e.text, e.kat, e.warum].filter(Boolean).join(" = ")).join("\n");
+    if (kind === "blitz") return (v || []).map(x => (x.richtig ? "+ " : "- ") + x.text).join("\n");
+    if (kind === "chars") return (v || []).join(" ");
+    if (kind === "json") return JSON.stringify(v || [], null, 1);
+    if (kind === "b") return !!v;
+    return v == null ? "" : String(v);
+  }
+  function fromVal(o, key, kind, raw) {
+    if (kind === "lines") o[key] = linesOf(raw);
+    else if (kind === "pairs") o[key] = linesOf(raw).map(splitEq);
+    else if (kind === "opts1" || kind === "optsN") { const L = linesOf(raw), r = []; o[key] = L.map((l, i) => { if (/^\*/.test(l)) { r.push(i); return l.replace(/^\*\s*/, ""); } return l.replace(/^[-–]\s+/, ""); }); o.richtig = kind === "opts1" ? (r.length === 1 ? r[0] : -1) : r; }
+    else if (kind === "events") o[key] = linesOf(raw).map(l => { const [j, x] = splitEq(l); return { jahr: +j.replace(/[^\d-]/g, ""), text: x }; });
+    else if (kind === "sortel") o[key] = linesOf(raw).map(l => { const p = l.split("=").map(x => x.trim()); return { text: p[0], kat: p[1] || "", warum: p.slice(2).join(" = ") }; });
+    else if (kind === "blitz") o[key] = linesOf(raw).map(l => ({ text: l.replace(/^[+\-–]\s*/, ""), richtig: !/^[-–]/.test(l) }));
+    else if (kind === "chars") o[key] = String(raw || "").split(/\s+/).filter(Boolean);
+    else if (kind === "json") { try { o[key] = JSON.parse(raw); } catch (e) { o[key] = null; o.__jsonErr = true; } }
+    else if (kind === "n") o[key] = raw === "" ? undefined : +raw;
+    else if (kind === "b") o[key] = !!raw;
+    else o[key] = String(raw || "");
+  }
+  function taskListHTML(i) {
+    const c = D.inhalt[i]; if (!c) return "";
+    return `<div class="tl">
+      <button type="button" class="tl-row tl-et" data-etedit="${i}"><span class="tag">Etappe</span><span class="tl-s"><b>${esc(c.titel || "")}</b> · Einleitung und Lob von gLiTCh</span><span class="tl-ic">✏️</span></button>
+      ${c.aufgaben.map((a, k) => `<div class="tl-row${a.typ === "info" ? " info" : ""}"><span class="tag">${esc(kindName(a.typ))}</span><button type="button" class="tl-s" data-tedit="${i}:${k}" title="Bearbeiten">${esc(sumOf(a) || "(leer)")}</button>
+        <span class="tl-b"><button type="button" class="btn small" data-tmv="${i}:${k}:-1" ${k ? "" : "disabled"} aria-label="Nach oben">↑</button><button type="button" class="btn small" data-tmv="${i}:${k}:1" ${k < c.aufgaben.length - 1 ? "" : "disabled"} aria-label="Nach unten">↓</button><button type="button" class="btn small" data-tedit="${i}:${k}" aria-label="Bearbeiten">✏️</button>${a.typ !== "info" ? `<button type="button" class="btn small" data-tnew="${i}:${k}" ${SAMPLE ? "" : "disabled"} title="Nur diese Aufgabe von Claude neu schreiben lassen" aria-label="Neu schreiben">↻</button>` : ""}<button type="button" class="btn small danger" data-tdel="${i}:${k}" aria-label="Löschen">${DELC === i + ":" + k ? "Sicher?" : "🗑"}</button></span></div>`).join("")}
+      <div class="row tl-add"><select class="in" id="addTyp${i}" aria-label="Art der neuen Aufgabe" style="width:auto;padding:7px 30px 7px 10px"><option value="info">Info (gLiTCh erklärt)</option>${TYPES.map(([v, n]) => `<option value="${v}">${esc(n)}</option>`).join("")}</select><button type="button" class="btn small" data-tadd="${i}">＋ Aufgabe</button></div></div>`;
+  }
+  let DELC = "";
+  function bindTaskList() {
+    $$("[data-tlopen]").forEach(b => b.onclick = () => { const i = +b.dataset.tlopen; OPEN.has(i) ? OPEN.delete(i) : OPEN.add(i); renderResult(); });
+    $$("[data-tedit]").forEach(b => b.onclick = () => { const [i, k] = b.dataset.tedit.split(":").map(Number); taskDlg(i, k); });
+    $$("[data-etedit]").forEach(b => b.onclick = () => etDlg(+b.dataset.etedit));
+    $$("[data-tmv]").forEach(b => b.onclick = () => { const [i, k, d] = b.dataset.tmv.split(":").map(Number), A = D.inhalt[i].aufgaben; [A[k], A[k + d]] = [A[k + d], A[k]]; save(); renderResult(); });
+    $$("[data-tdel]").forEach(b => b.onclick = () => { if (DELC !== b.dataset.tdel) { DELC = b.dataset.tdel; return renderResult(); } const [i, k] = b.dataset.tdel.split(":").map(Number); DELC = ""; D.inhalt[i].aufgaben.splice(k, 1); save(); renderResult(); toast("Aufgabe gelöscht."); });
+    $$("[data-tadd]").forEach(b => b.onclick = () => { const i = +b.dataset.tadd; taskDlg(i, -1, $("#addTyp" + i).value); });
+    $$("[data-tnew]").forEach(b => b.onclick = () => redoTask(...b.dataset.tnew.split(":").map(Number), b));
+    $$("[data-quick]").forEach(b => b.onclick = () => quickDlg(+b.dataset.quick));
+  }
+  function edDlg(html) {
+    const ov = document.createElement("div"); ov.className = "edov"; ov.innerHTML = `<div class="eddlg" role="dialog" aria-modal="true">${html}</div>`;
+    document.body.appendChild(ov); const close = () => { ov.remove(); document.removeEventListener("keydown", esc_); };
+    const esc_ = e => { if (e.key === "Escape") close(); }; document.addEventListener("keydown", esc_);
+    ov.querySelectorAll("[data-edx]").forEach(b => b.onclick = close); setTimeout(() => { const f = ov.querySelector("textarea, input"); if (f) f.focus(); }, 30);
+    return { ov, close };
+  }
+  function taskDlg(i, k, newTyp) {
+    const isNew = k < 0, a = isNew ? Object.assign({ typ: newTyp }, JSON.parse(JSON.stringify(BLANK[newTyp] || {}))) : JSON.parse(JSON.stringify(D.inhalt[i].aufgaben[k])), typ = a.typ;
+    const fields = (FORM[typ] || []).concat(typ === "info" ? [] : COMMON.filter(([key]) => !(FORM[typ] || []).some(f => f[0] === key)));
+    const field = ([key, label, kind], n) => { const id = "tf" + n, v = toVal(a, key, kind);
+      if (kind === "b") return `<label class="f ed-b"><input type="checkbox" id="${id}" ${v ? "checked" : ""}> <span>${esc(label)}</span></label>`;
+      if (kind === "s" || kind === "n" || kind === "chars") return `<label class="f" for="${id}"><span>${esc(label)}</span><input class="in" id="${id}" ${kind === "n" ? 'type="number" inputmode="decimal"' : ""} value="${esc(v)}"></label>`;
+      const rows = Math.min(12, Math.max(3, String(v).split("\n").length + 1));
+      return `<label class="f" for="${id}"><span>${esc(label)}</span><textarea class="in${kind === "json" ? " mono" : ""}" id="${id}" rows="${rows}" style="min-height:0">${esc(v)}</textarea></label>`; };
+    const { ov, close } = edDlg(`<h2>${isNew ? "Neue Aufgabe" : "Aufgabe bearbeiten"} · <span class="tag">${esc(kindName(typ))}</span></h2>
+      ${["mc", "mehrfach"].includes(typ) ? `<p class="hint">Beispiel:<br><code>* Bern</code> (richtig)<br><code>Zürich</code><br><code>Genf</code></p>` : ""}
+      <div class="ed-f">${fields.map(field).join("")}</div><p class="err" id="tfErr" role="alert"></p>
+      <div class="row"><button type="button" class="btn primary" data-edok>💾 Speichern</button><button type="button" class="btn" data-edx>Abbrechen</button></div>`);
+    ov.querySelector("[data-edok]").onclick = () => {
+      const o = { typ };
+      fields.forEach(([key, , kind], n) => { const el = ov.querySelector("#tf" + n); fromVal(o, key, kind, kind === "b" ? el.checked : el.value); });
+      if (o.__jsonErr) { ov.querySelector("#tfErr").textContent = "Das JSON bei den Gesprächsschritten ist nicht gültig."; return; }
+      const v = validTask(o);
+      if (!v) { ov.querySelector("#tfErr").textContent = "Da fehlt noch etwas. " + (MINHINT[typ] || ""); return; }
+      if (typ !== "info" && !v.titel) v.titel = autoTitel(v);
+      if (isNew) D.inhalt[i].aufgaben.push(v); else D.inhalt[i].aufgaben[k] = v;
+      save(); close(); OPEN.add(i); renderResult(); toast(isNew ? "Aufgabe hinzugefügt." : "Gespeichert.");
+    };
+  }
+  function etDlg(i) {
+    const c = D.inhalt[i], P = D.plan;
+    const { ov, close } = edDlg(`<h2>Etappe ${i + 1} bearbeiten</h2><div class="ed-f">
+      <label class="f" for="etT"><span>Titel der Etappe</span><input class="in" id="etT" value="${esc(c.titel || "")}" maxlength="60"></label>
+      <label class="f" for="etE"><span>Emoji</span><input class="in" id="etE" value="${esc(c.emoji || "")}" maxlength="8" style="max-width:120px"></label>
+      <label class="f" for="etI"><span>gLiTCh leitet die Etappe ein</span><textarea class="in" id="etI" rows="3" style="min-height:0">${esc(c.intro || "")}</textarea></label>
+      <label class="f" for="etL"><span>gLiTCh lobt am Ende der Etappe</span><textarea class="in" id="etL" rows="2" style="min-height:0">${esc(c.lob || "")}</textarea></label></div>
+      <div class="row"><button type="button" class="btn primary" data-edok>💾 Speichern</button><button type="button" class="btn" data-edx>Abbrechen</button></div>`);
+    ov.querySelector("[data-edok]").onclick = () => {
+      c.titel = ov.querySelector("#etT").value.trim() || c.titel; c.emoji = ov.querySelector("#etE").value.trim() || c.emoji; c.intro = ov.querySelector("#etI").value.trim(); c.lob = ov.querySelector("#etL").value.trim();
+      if (P.etappen[i]) Object.assign(P.etappen[i], { titel: c.titel, emoji: c.emoji });
+      save(); close(); renderResult(); toast("Gespeichert.");
+    };
+  }
+  const autoTitel = a => { const w = String(a.frage || a.aussage || a.auftrag || a.anleitung || a.text || "Aufgabe").replace(/\[\[|\]\]|\*/g, "").replace(/[«»"?!.:,;()]/g, "").split(/\s+/).filter(Boolean);
+    const nomen = w.slice(1).filter(x => /^[A-ZÄÖÜ]/.test(x) && x.length > 2); return ((nomen.length ? nomen : w).slice(0, nomen.length ? 2 : 3).join(" ") || "Aufgabe").slice(0, 30); };
+  async function redoTask(i, k, btn) {
+    if (!SAMPLE || ctl) return; const P = D.plan, E = D.inhalt[i], old = E.aufgaben[k], wish = ($("#wish" + i) || {}).value || "";
+    btn.disabled = true; btn.textContent = "…"; ctl = new AbortController();
+    const prompt = `${context()}
+
+MODULPLAN
+Titel: ${P.titel}
+Etappe ${i + 1}: «${E.titel}» – ${E.ziel || ""}
+Lexikon-Wörter: ${P.lexikon.map(w => w.wort).join(", ")}
+Andere Aufgaben dieser Etappe: ${E.aufgaben.filter((x, n) => n !== k).map(x => kindName(x.typ) + ": " + sumOf(x)).join(" | ")}
+
+AUFGABE: Schreibe EINE neue Aufgabe vom Typ «${old.typ}», die diese ersetzt: ${JSON.stringify(old)}
+Sie soll zum Ziel der Etappe passen, etwas anderes fragen als die anderen Aufgaben und fachlich korrekt sein.${wish ? `\nWunsch der Lehrperson: ${wish}` : ""}
+
+${TASK_DOC}
+
+Gib NUR das JSON-Objekt dieser einen Aufgabe zurück.`;
+    try {
+      const r = await SAMPLE.json(prompt, { modelTier: $("#tier").value, cache: false, signal: ctl.signal });
+      const v = validTask(r && r.aufgabe ? r.aufgabe : r);
+      if (!v || v.typ !== old.typ) throw { code: "invalid_json" };
+      if (!v.titel) v.titel = autoTitel(v); E.aufgaben[k] = v; save(); toast("Aufgabe neu geschrieben.");
+    } catch (e) { toast(errMsg(e)); }
+    ctl = null; renderResult();
+  }
+
+  /* ---------- Schnell-Import: eigene Aufgaben in einem einfachen Muster ---------- */
+  const QUICK_EX = `Info: Bern ist seit 1848 die Bundesstadt der Schweiz. Dort arbeiten Bundesrat und Parlament.
+
+? Wie heisst die Bundesstadt der Schweiz?
+* Bern
+- Zürich
+- Genf
+Tipp: Dort steht das Bundeshaus.
+
+? Welche Städte liegen am Genfersee?
+* Lausanne
+* Genf
+- Basel
+- Luzern
+
+? In welchem Jahr wurde Bern Bundesstadt?
+= 1848
+
+R: Die Schweiz hat 26 Kantone.
+F: Der Rhein fliesst durch Genf.
+
+Lücke: Der höchste Berg der Schweiz ist die [Dufourspitze]. Sie liegt im Kanton [Wallis].
+
+Paare: Was gehört zusammen?
+Bern = Bundesstadt
+Genf = Uno-Stadt
+Basel = Rheinhafen
+
+Reihenfolge: Ordne von Norden nach Süden.
+Basel
+Luzern
+Lugano
+
+Schreiben: Beschreibe deinen Lieblingsort in der Schweiz in 3 bis 4 Sätzen.`;
+  function parseQuick(src) {
+    const out = [], errs = [], blocks = String(src || "").replace(/\r/g, "").split(/\n\s*\n/).map(b => b.split("\n").map(l => l.trim()).filter(Boolean)).filter(b => b.length);
+    blocks.forEach((L, bi) => {
+      const meta = {}; const lines = L.filter(l => { const m = l.match(/^(tipp|hinweis|erklärung|erklaerung|warum|titel)\s*:\s*(.*)$/i); if (!m) return true; const k = m[1].toLowerCase(); meta[k === "hinweis" ? "tipp" : /^erkl|warum/.test(k) ? "erklaerung" : k] = m[2]; return false; });
+      if (!lines.length) return;
+      const head = lines[0], rest = lines.slice(1), after = re => head.replace(re, "").trim();
+      const push = (a, nr) => { Object.assign(a, meta); const v = validTask(a); if (v) { if (v.typ !== "info" && !v.titel) v.titel = autoTitel(v); out.push(v); } else errs.push(`Block ${nr || bi + 1} («${head.slice(0, 40)}»): ${MINHINT[a.typ] || "nicht erkannt"}`); };
+      let m;
+      if (/^(info|merke|text|i)\s*:/i.test(head)) return push({ typ: "info", text: [after(/^(info|merke|text|i)\s*:/i)].concat(rest).join("\n") });
+      if (/^(r|f|richtig|falsch|stimmt|stimmt nicht)\s*:/i.test(head)) return lines.forEach(l => { const mm = l.match(/^(r|f|richtig|falsch|stimmt nicht|stimmt)\s*:\s*(.+)$/i); if (mm) push({ typ: "tf", aussage: mm[2], richtig: /^(r|richtig|stimmt)$/i.test(mm[1]) }); else errs.push(`Block ${bi + 1}: «${l.slice(0, 40)}» braucht R: oder F: am Anfang.`); });
+      if ((m = head.match(/^(lücke|luecke|lücken|luecken|l)\s*:\s*(.*)$/i))) { const txt = [m[2]].concat(rest.filter(l => !/^(auswahl|optionen)\s*:/i.test(l))).join(" ").replace(/\[\[(.+?)\]\]/g, "⟦$1⟧").replace(/\[(.+?)\]/g, "[[$1]]").replace(/⟦(.+?)⟧/g, "[[$1]]"); const opt = (rest.find(l => /^(auswahl|optionen)\s*:/i.test(l)) || "").replace(/^(auswahl|optionen)\s*:/i, "").split(/[,;]/).map(x => x.trim()).filter(Boolean); return push({ typ: "luecke", anleitung: "Fülle die Lücken aus.", text: txt, optionen: opt }); }
+      if ((m = head.match(/^(paare|zuordnen|verbinden|memory|karten|karteikarten|lernkarten)\s*:?\s*(.*)$/i))) { const k = m[1].toLowerCase(), typ = k === "memory" ? "memory" : /karten/.test(k) ? "karteikarten" : "zuordnen"; return push({ typ, frage: m[2] || (typ === "memory" ? "Findet die Paare!" : typ === "karteikarten" ? "Lernkarten" : "Was gehört zusammen?"), paare: rest.map(splitEq), karten: rest.map(splitEq) }); }
+      if ((m = head.match(/^(reihenfolge|ordnen)\s*:?\s*(.*)$/i))) return push({ typ: "ordnen", frage: m[2] || "Bringt in die richtige Reihenfolge.", elemente: rest.map(l => l.replace(/^\d+[.)]\s*/, "")) });
+      if ((m = head.match(/^(sortieren)\s*:?\s*(.*)$/i))) { const el = rest.map(l => { const p = l.split("=").map(x => x.trim()); return { text: p[0], kat: p[1] || "", warum: p[2] || "" }; }); return push({ typ: "sortieren", frage: m[2] || "Sortiert die Karten.", kategorien: [...new Set(el.map(e => e.kat).filter(Boolean))], elemente: el }); }
+      if ((m = head.match(/^(schreiben|auftrag)\s*:\s*(.*)$/i))) return push({ typ: "schreiben", auftrag: [m[2]].concat(rest).join(" "), mindestwoerter: 25 });
+      if ((m = head.match(/^(rätsel|raetsel)\s*:?\s*(.*)$/i))) { const an = rest.filter(l => /^=/.test(l)).flatMap(l => l.replace(/^=\s*/, "").split("|")).map(x => x.trim()); return push({ typ: "raetsel", frage: m[2] || "Wer oder was ist gemeint?", hinweise: rest.filter(l => !/^=/.test(l)).map(l => l.replace(/^[-–]\s*/, "")), antworten: an }); }
+      if (/^\?/.test(head) || /\?$/.test(head)) {
+        const frage = head.replace(/^\?\s*/, ""), eq = rest.filter(l => /^=/.test(l)), op = rest.filter(l => /^[*+\-–]/.test(l));
+        if (eq.length) return push({ typ: "text", frage, antworten: eq.flatMap(l => l.replace(/^=\s*/, "").split("|")).map(x => x.trim()) });
+        if (op.length) { const opt = op.map(l => l.replace(/^[*+\-–]\s*/, "")), r = op.map((l, i) => /^[*+]/.test(l) ? i : -1).filter(i => i >= 0); return push(r.length > 1 ? { typ: "mehrfach", frage, optionen: opt, richtig: r } : { typ: "mc", frage, optionen: opt, richtig: r.length ? r[0] : -1 }); }
+        return errs.push(`Block ${bi + 1} («${frage.slice(0, 40)}»): Nach der Frage fehlen die Antworten. Richtige mit * davor, falsche mit - davor, oder = Antwort.`);
+      }
+      errs.push(`Block ${bi + 1} («${head.slice(0, 40)}»): nicht erkannt. Beginne mit ?, Info:, R:/F:, Lücke:, Paare:, Memory:, Karten:, Reihenfolge:, Sortieren:, Rätsel: oder Schreiben:.`);
+    });
+    return { tasks: out, errs };
+  }
+  function quickDlg(i) {
+    const { ov, close } = edDlg(`<h2>⚡ Eigene Aufgaben einfügen · Etappe ${i + 1}</h2>
+      <p class="hint">Schreib deine Aufgaben in diesem einfachen Muster oder kopiere sie aus einem Arbeitsblatt. Zwischen zwei Aufgaben kommt eine leere Zeile. Claude erfindet hier nichts dazu: Es kommt genau das ins Modul, was du schreibst.</p>
+      <details class="qhelp"><summary>So schreibst du die Aufgaben</summary><ul>
+        <li><code>? Frage</code>, dann Antworten: richtige mit <code>*</code>, falsche mit <code>-</code>. Mehrere <code>*</code> = Mehrfachauswahl</li>
+        <li><code>? Frage</code> und <code>= Antwort</code> = Antwort eintippen (Varianten mit <code>|</code>)</li>
+        <li><code>R: Aussage</code> (stimmt) oder <code>F: Aussage</code> (stimmt nicht)</li>
+        <li><code>Lücke: Satz mit [Lösung]</code>, freiwillig <code>Auswahl: A, B, C</code></li>
+        <li><code>Paare:</code>, <code>Memory:</code> oder <code>Karten:</code>, dann Zeilen <code>Begriff = Erklärung</code></li>
+        <li><code>Reihenfolge:</code> und die Elemente in der richtigen Reihenfolge</li>
+        <li><code>Sortieren:</code> und Zeilen <code>Karte = Kategorie</code></li>
+        <li><code>Rätsel:</code>, Hinweise vom schweren zum leichten, <code>= Lösung</code></li>
+        <li><code>Schreiben: Auftrag</code> · <code>Info: Text</code>, den gLiTCh erklärt</li>
+        <li>In jeder Aufgabe freiwillig: <code>Tipp: …</code>, <code>Erklärung: …</code>, <code>Titel: …</code></li></ul></details>
+      <textarea class="in mono" id="qIn" rows="12" placeholder="? Wie heisst die Bundesstadt der Schweiz?&#10;* Bern&#10;- Zürich&#10;- Genf"></textarea>
+      <div class="row"><button type="button" class="btn small" data-qex>Beispiel einfügen</button></div>
+      <div id="qPrev" class="qprev" aria-live="polite"></div>
+      <div class="row"><button type="button" class="btn primary" data-edok disabled>＋ Zu Etappe ${i + 1} hinzufügen</button><button type="button" class="btn" data-edx>Abbrechen</button></div>`);
+    const inp = ov.querySelector("#qIn"), ok = ov.querySelector("[data-edok]");
+    let res = { tasks: [], errs: [] };
+    const prev = () => { res = parseQuick(inp.value); const c = {}; res.tasks.forEach(a => c[kindName(a.typ)] = (c[kindName(a.typ)] || 0) + 1);
+      ov.querySelector("#qPrev").innerHTML = (res.tasks.length ? `<p class="ok">✓ ${res.tasks.length} erkannt: ${Object.entries(c).map(([k, n]) => `${n}× ${esc(k)}`).join(", ")}</p>` : "") + res.errs.map(e => `<p class="err">⚠ ${esc(e)}</p>`).join("");
+      ok.disabled = !res.tasks.length; ok.textContent = res.tasks.length ? `＋ ${res.tasks.length} Aufgabe${res.tasks.length === 1 ? "" : "n"} zu Etappe ${i + 1} hinzufügen` : `＋ Zu Etappe ${i + 1} hinzufügen`; };
+    inp.oninput = prev;
+    ov.querySelector("[data-qex]").onclick = () => { inp.value = QUICK_EX; prev(); };
+    ok.onclick = () => { if (!res.tasks.length) return; D.inhalt[i].aufgaben.push(...res.tasks); save(); close(); OPEN.add(i); renderResult(); toast(`${res.tasks.length} Aufgaben hinzugefügt.`); };
+  }
+  /* Modul ohne Claude: nur ein Gerüst mit leeren Etappen, die man selbst füllt */
+  function manualModule() {
+    if (!D.titel.trim()) { go(1); $("#titel").focus(); toast("Gib zuerst ein Thema ein."); return; }
+    if (D.inhalt.length && !confirmManual) { confirmManual = true; $("#btnManual").textContent = "Wirklich? Das bisherige Modul wird ersetzt."; return; }
+    confirmManual = false; const n = +D.etappen || 4;
+    D.plan = { titel: D.titel.trim(), beschreibung: "", emoji: "⭐", farbe: "#A07CFF", intro: `Hallo! Heute geht es um ${D.titel.trim()}. Los geht's!`, schluss: "Super gemacht! Du hast alles geschafft.", etappen: Array.from({ length: n }, (_, k) => ({ titel: `Etappe ${k + 1}`, ziel: "", emoji: "⭐" })), lexikon: [] };
+    D.inhalt = D.plan.etappen.map(e => ({ titel: e.titel, ziel: "", emoji: e.emoji, intro: "", lob: "Stark gemacht!", aufgaben: [] }));
+    OPEN.clear(); D.inhalt.forEach((e, k) => OPEN.add(k)); save(); renderResult(); paintSteps(); $("#btnManual").textContent = "✍️ Ohne Claude: Modul selbst zusammenstellen";
+    say("Das Gerüst steht. Füge in jeder Etappe deine Aufgaben ein, mit «⚡ Eigene Aufgaben einfügen» oder «＋ Aufgabe».", "happy");
+  }
+  let confirmManual = false;
+  $("#btnManual").onclick = manualModule;
+
   /* ---------- Ergebnis, Vorschau, Datei ---------- */
   const KIND = { info: "Info", mc: "Quiz", tf: "R/F", text: "Eintippen", luecke: "Lücken", ordnen: "Ordnen", zuordnen: "Verbinden", schreiben: "Schreiben", mehrfach: "Mehrfach", memory: "Memory", sortieren: "Sortieren", zeitmaschine: "Zeitmaschine", raetsel: "Rätsel", schaetzen: "Schätzen", gestalten: "Gestalten" };
   function renderResult() {
-    const ready = D.plan && D.inhalt.length && D.inhalt.every(Boolean);
+    const ready = D.plan && D.inhalt.length && D.inhalt.every(e => e && e.aufgaben.some(a => a.typ !== "info"));
     $("#result").hidden = !D.inhalt.length;
     $("#btnGen").textContent = D.inhalt.length ? "⚙️ Ganz neu erstellen" : "⚙️ Modul erstellen";
     if (D.plan) $("#ets").innerHTML = D.plan.etappen.map((e, i) => { const c = D.inhalt[i];
       return `<div class="et"><div class="et-h"><span class="emo" aria-hidden="true">${esc(e.emoji)}</span><b>${i + 1}. ${esc(e.titel)}</b>${c ? `<span class="tag">★ ${etBudget(c)}</span>` : `<span class="tag">fehlt</span>`}</div>
         ${c ? `<div class="tags">${c.aufgaben.map(a => `<span class="tag">${KIND[a.typ]}</span>`).join("")}</div>` : ""}
-        <div class="row"><input class="in" id="wish${i}" placeholder="Änderungswunsch, z. B. «einfachere Fragen» oder «mehr zum Experiment»" style="flex:1;min-width:180px;padding:7px 10px"><button type="button" class="btn small" data-redo="${i}" ${SAMPLE ? "" : "disabled"}>↻ Neu schreiben</button></div></div>`; }).join("");
+        <div class="row"><input class="in" id="wish${i}" placeholder="Änderungswunsch, z. B. «einfachere Fragen» oder «mehr zum Experiment»" style="flex:1;min-width:180px;padding:7px 10px"><button type="button" class="btn small" data-redo="${i}" ${SAMPLE ? "" : "disabled"}>↻ Neu schreiben</button></div>
+        ${c ? `<div class="row"><button type="button" class="btn small" data-tlopen="${i}" aria-expanded="${OPEN.has(i)}">${OPEN.has(i) ? "▾" : "▸"} ✏️ Aufgaben bearbeiten (${c.aufgaben.length})</button><button type="button" class="btn small" data-quick="${i}">⚡ Eigene Aufgaben einfügen</button></div>
+        ${OPEN.has(i) ? taskListHTML(i) : ""}` : ""}</div>`; }).join("");
+    bindTaskList();
     $$("[data-redo]").forEach(b => b.onclick = async () => {
       const i = +b.dataset.redo; if (!SAMPLE || ctl) return;
       ctl = new AbortController(); b.disabled = true; b.textContent = "schreibt …"; $("#btnGen").disabled = true;
@@ -2237,8 +2520,9 @@ Gib NUR ein JSON-Objekt zurück: {"intro":"gLiTCh leitet die Etappe ein (1–2 S
       catch (e) { rows = [{ t: `Etappe ${i + 1}`, st: "err" }]; progRows(rows); $("#genErr").textContent = errMsg(e); }
       ctl = null; $("#btnGen").disabled = false; renderResult();
     });
-    if (ready) { const html = buildModule(); const pv = $("#pv"); if (pv.dataset.sig !== String(html.length) + D.plan.titel + JSON.stringify(D.opt)) { pv.srcdoc = html; pv.dataset.sig = String(html.length) + D.plan.titel + JSON.stringify(D.opt); } pv.hidden = false; $("#pvEmpty").hidden = true; $("#pvName").textContent = slug(D.plan.titel) + ".html"; }
-    else { $("#pv").hidden = true; $("#pvEmpty").hidden = false; }
+    if (ready) { const html = buildModule(); const pv = $("#pv"), sig = hashStr(html); if (pv.dataset.sig !== sig) { pv.srcdoc = html; pv.dataset.sig = sig; } pv.hidden = false; $("#pvEmpty").hidden = true; $("#pvName").textContent = slug(D.plan.titel) + ".html"; }
+    else { $("#pv").hidden = true; $("#pvEmpty").hidden = false; const leer = D.plan && D.inhalt.length ? D.inhalt.map((e, k) => e && e.aufgaben.some(a => a.typ !== "info") ? 0 : k + 1).filter(Boolean) : [];
+      if (leer.length) $("#pvEmpty p").innerHTML = `Etappe ${leer.join(", ")} hat noch keine Aufgaben.<br>Füge mit «⚡ Eigene Aufgaben einfügen» oder «＋ Aufgabe» welche hinzu.`; }
     $("#btnDl").disabled = !ready; $("#btnPdf").disabled = !ready;
   }
   /* ---------- Belohnungs-Paket (Addon) ---------- */

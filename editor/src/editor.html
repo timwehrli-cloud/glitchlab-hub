@@ -100,6 +100,18 @@ option,optgroup{background:var(--surface);color:var(--ink)}
 .et{padding:12px;border-radius:14px;background:var(--bg);border:1px solid var(--line);display:grid;gap:8px}
 .et-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .et-h b{flex:1;min-width:160px}
+.tl{display:grid;gap:5px;padding:8px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.tl-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;padding:5px 6px;border-radius:10px;background:var(--bg);border:1px solid var(--line);text-align:left;color:inherit;font:inherit}
+.tl-row.info{opacity:.8}.tl-row.tl-et{grid-template-columns:auto minmax(0,1fr) auto;cursor:pointer}
+.tl-s{appearance:none;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:2px;cursor:pointer;overflow:hidden;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
+.tl-s:hover{color:var(--teal)}.tl-b{display:flex;gap:4px}.tl-b .btn{padding:5px 8px}.tl-add{margin-top:4px}
+@media (max-width:640px){.tl-row{grid-template-columns:auto minmax(0,1fr)}.tl-b{grid-column:1/-1;justify-content:flex-end}}
+.edov{position:fixed;inset:0;z-index:50;background:rgba(7,4,15,.78);display:grid;place-items:center;padding:16px}
+.eddlg{width:min(680px,100%);max-height:calc(100vh - 32px);overflow:auto;background:var(--surface);border:1.5px solid var(--accent);border-radius:18px;padding:18px;display:grid;gap:12px}
+.eddlg h2{font-size:1.3rem}.ed-f{display:grid;gap:10px}.ed-b{display:flex;gap:8px;align-items:center}
+.in.mono{font-family:var(--f-mono);font-size:.9rem}
+.qhelp ul{margin:6px 0 0;padding-left:18px;display:grid;gap:3px}.qhelp summary{cursor:pointer;color:var(--teal);font-weight:700}
+.qprev .ok{color:var(--ok);margin:0;font-weight:700}.qprev .err{margin:2px 0;font-size:.88rem}
 .et-h .emo{font-size:1.4rem}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
 .tag{font-family:var(--f-mono);font-size:.72rem;padding:2px 8px;border-radius:99px;background:rgba(160,124,255,.16);color:#D9CCFF}
@@ -241,6 +253,12 @@ option,optgroup{background:var(--surface);color:var(--ink)}
       <div class="files" id="files"></div>
     </div>
     <div class="card">
+      <div class="card-h"><div><p class="eyebrow">Text einfügen</p><h2>Text aus einer Webseite oder einem Dokument</h2></div><p>Kopiere Text (z. B. von SRF Kids, aus einem Mail oder einem Lehrmittel) und füge ihn hier ein. gLiTCh benutzt ihn wie eine Datei.</p></div>
+      <label class="f" for="pasteName"><span>Name (freiwillig)</span><input class="in" id="pasteName" maxlength="60" placeholder="z. B. SRF Kids: Vulkane"></label>
+      <label class="f" for="pasteTxt" style="margin-top:8px"><span>Text</span><textarea class="in" id="pasteTxt" placeholder="Hier den kopierten Text einfügen …"></textarea></label>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn teal" id="pasteAdd">📋 Als Material hinzufügen</button></div>
+    </div>
+    <div class="card">
       <div class="card-h"><div><p class="eyebrow">Links</p><h2>Links fürs Modul</h2></div><p>Eine Adresse pro Zeile, optional mit Titel davor: <code>Vulkane bei SRF Kids | https://…</code>. Die Links stehen im Modul in einer Liste. gLiTCh kann die Seiten nicht selbst öffnen: Wichtige Inhalte kopierst du am besten als Text ins Ideen-Feld.</p></div>
       <textarea class="in" id="links" placeholder="Vulkane einfach erklärt | https://www.srf.ch/…"></textarea>
     </div>
@@ -271,6 +289,7 @@ option,optgroup{background:var(--surface);color:var(--ink)}
         <div class="say"><span class="glitch" id="sayG"></span><div class="bubble"><b>gLiTCh</b><p id="sayT">Alles bereit? Dann tippe auf «Modul erstellen».</p></div></div>
         <label class="f"><span>Gründlichkeit</span><select class="in" id="tier"><option value="default">Normal (schneller)</option><option value="complex">Gründlich (bessere Aufgaben, dauert länger)</option></select></label>
         <div class="row"><button type="button" class="btn primary" id="btnGen">⚙️ Modul erstellen</button><button type="button" class="btn" id="btnStop" hidden>Stopp</button></div>
+        <p class="hint" style="margin-top:8px">Du hast schon eigene Aufgaben, zum Beispiel aus einem Arbeitsblatt? <button type="button" class="btn small" id="btnManual">✍️ Ohne Claude: Modul selbst zusammenstellen</button></p>
         <div class="prog" id="prog"></div>
         <p class="err" id="genErr" role="alert"></p>
         <div id="result" hidden>
