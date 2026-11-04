@@ -64,6 +64,9 @@
       if (!this.noLive) { try { return (await this.rpc("kid_live", { p_token: token })) || {}; } catch (e) { if (!/kid_live|PGRST202|function|Funktion|schema cache/i.test(String(e.message || e.code || ""))) throw e; this.noLive = true; } }
       const m = await this.me(token); return ((m && m.class_settings) || {}).live || {};
     }
+    /* Lehrperson in der Kinder-Ansicht (gelbes gLiTCh): Freigabe-Anfragen der Klasse */
+    relKid(token) { return this.rpc("kid_rel", { p_token: token }); }
+    relKidAnswer(token, id, ans) { return this.rpc("kid_rel_answer", { p_token: token, p_id: id, p_ans: ans }); }
     award(tokens, moduleId, activityId, stars, data) {
       return this.rpc("kid_award", { p_tokens: tokens, p_module: moduleId, p_activity: activityId, p_stars: stars, p_data: data || {} });
     }
@@ -333,6 +336,10 @@
     async saveExtras(token, data) { this.fresh(); const s = this.kid(token); this.db.extras[s.id] = data || {}; this.save(); }
     /* Demo: Lehrperson und Kinder können in zwei Fenstern desselben Geräts arbeiten, darum vor dem Speichern den neusten Stand holen */
     fresh() { const d = this.load(); if (d) this.db = d; }
+    async relKid(token) { this.fresh(); const s = this.kid(token); if (!s.is_teacher) throw new Error("NUR_LEHRPERSON"); const c = this.db.classes.find(x => x.id === s.class_id) || {}, ex = this.db.extras || {};
+      return { cls: { id: c.id, name: c.name, live: (c.settings || {}).live || {} }, reqs: this.db.students.filter(x => x.class_id === s.class_id && ex[x.id] && ex[x.id].rel).map(x => ({ student_id: x.id, rel: ex[x.id].rel })) }; }
+    async relKidAnswer(token, id, ans) { this.fresh(); const s = this.kid(token); if (!s.is_teacher) throw new Error("NUR_LEHRPERSON"); const c = this.db.classes.find(x => x.id === s.class_id); if (!c) return;
+      const st = c.settings = c.settings || {}, live = st.live = st.live || {}, now = Date.now(); live.ans = Object.fromEntries(Object.entries(live.ans || {}).filter(([, v]) => v && now - (v.at || 0) < 7200000)); live.ans[id] = ans; this.save(); }
     async relRequests() { this.fresh(); const ex = this.db.extras || {}; return Object.keys(ex).filter(id => ex[id] && ex[id].rel).map(id => ({ student_id: id, class_id: (this.db.students.find(s => s.id === id) || {}).class_id, rel: ex[id].rel })); }
     async workGet(tokens, moduleId) {
       const ids = tokens.map(t => this.kid(t).id);

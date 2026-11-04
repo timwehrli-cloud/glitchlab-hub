@@ -444,7 +444,7 @@
       const kid = S.cls.students.find(s => s.id === b.dataset.kid);
       const res = await pinPad(kid, `Hoi ${kid.first_name}!`, "Tipp deine drei Bilder in der richtigen Reihenfolge.");
       if (!res) return;
-      S.token = res.token; store.set("glhub.token", S.token);
+      S.token = res.token; store.set("glhub.token", S.token); store.set("glhub.loginAt", Date.now());
       await loadMe(); go({ name: "home" });
       toast(`Willkommen, ${kid.first_name}!`);
     });
@@ -1348,17 +1348,29 @@
       if (!n) return { on: false }; return Object.assign({ on: Date.now() - n.at < 120000 }, n); };
     const list = kids.map(k => ({ k, i: info(k) }));
     const groups = {}; list.filter(x => x.i.on && x.i.t === "m").forEach(x => { (groups[x.i.mid || x.i.n] = groups[x.i.mid || x.i.n] || { n: x.i.n, sub: x.i.sub, kids: [] }).kids.push(x.k.first_name); });
+    const when = ts => { const d = new Date(ts), today = new Date().toDateString() === d.toDateString();
+      return (today ? "heute" : d.toLocaleDateString("de-CH", { weekday: "short", day: "2-digit", month: "2-digit" })) + ", " + d.toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" }); };
+    /* Fortschritt in den Bausteinen des Moduls, in dem das Kind gerade ist */
+    const bausteine = (kid, mid) => { const m = mid && H.modules.find(x => x.id === mid); if (!m || !m.activities || !m.activities.length || m.noStars) return "";
+      const done = lpStatOf(LP.prog, kid, m) === "fertig";
+      const acts = m.activities.map((x, n) => { const v = (LP.prog.find(p => p.student_id === kid && p.module_id === m.id && p.activity_id === x.id) || {}).stars || 0, mx = x.maxStars || 0;
+        return { n: n + 1, t: x.title || `Baustein ${n + 1}`, v: done ? mx || v : v, mx, full: done || (mx ? v >= mx : v > 0) }; });
+      const cur = acts.find(a => !a.full) || null, sum = acts.reduce((a, x) => a + Math.min(x.v, x.mx || x.v), 0), max = acts.reduce((a, x) => a + x.mx, 0);
+      return `<div class="who-bs" aria-label="Fortschritt in ${esc(m.title)}">${acts.map(a => `<span class="who-b${a.full ? " done" : a === cur ? " cur" : a.v ? " part" : ""}" title="${esc(a.t)}: ${a.v}${a.mx ? " von " + a.mx : ""} ★">${a.n}</span>`).join("")}
+        <span class="who-bt">${cur ? `Baustein ${cur.n} von ${acts.length}: «${esc(cur.t)}»${cur.mx ? ` · ★ ${cur.v}/${cur.mx}` : ""}` : `alle ${acts.length} Bausteine geschafft ✓`}${max ? ` <small>(Modul ★ ${sum}/${max})</small>` : ""}</span></div>`; };
     const placeTxt = i => i.t === "m" ? `<b>${esc(i.n)}</b>${i.sub ? ` <small>${esc(i.sub)}</small>` : ""}` : i.t === "s" ? `Fach ${esc(i.n)}` : i.t === "t" ? `Thema ${esc(i.n)}` : "Startseite / Zimmer";
     return `${Object.keys(groups).length ? `<div class="who-groups">${Object.values(groups).map(g => `<span class="who-g">🧩 <b>${esc(g.n)}</b>: ${g.kids.map(esc).join(", ")}</span>`).join("")}</div>` : ""}
       <div class="who-list">${list.map(({ k, i }) => `<div class="who-row ${i.on ? "on" : "off"}"><span class="who-dot" aria-hidden="true"></span>${gl("normal", k.color, "still")}<span class="who-n">${esc(k.first_name)}</span>
         <span class="who-p">${i.on ? placeTxt(i) : i.at ? `zuletzt ${agoTxt(Date.now() - i.at)}` : "nicht angemeldet"}</span>
-        <span class="who-t">${i.on && i.team && i.team.length ? `👥 mit ${i.team.map(esc).join(", ")}` : i.on ? "allein" : ""}</span></div>`).join("")}</div>
+        <span class="who-t">${i.on && i.team && i.team.length ? `👥 mit ${i.team.map(esc).join(", ")}` : i.on ? "allein" : ""}</span>
+        <div class="who-x"><span class="who-l">🔑 ${i.login ? `Letzte Anmeldung: ${when(i.login)}` : i.at ? `Zuletzt aktiv: ${when(i.at)}` : "Keine Anmeldung erfasst"}</span>${i.on && i.t === "m" ? bausteine(k.id, i.mid) : ""}</div></div>`).join("")}</div>
       <p class="hint" style="margin-top:8px">Aktualisiert sich alle 10 Sekunden. Grün = gerade aktiv (in den letzten 2 Minuten).</p>`;
   }
   let whoTimer = null;
   function bindWho() {
     clearInterval(whoTimer);
-    const load = async () => { const el = $("#whoNow"); if (!el) { clearInterval(whoTimer); return; } try { el.innerHTML = whoNowHTML(await S.be.classNow(LP.kids.map(k => k.id))); } catch (e) { el.innerHTML = `<p class="hint">Konnte nicht laden: ${esc(e.message)}</p>`; } };
+    const load = async () => { const el = $("#whoNow"); if (!el) { clearInterval(whoTimer); return; }
+      try { const [rows, prog] = await Promise.all([S.be.classNow(LP.kids.map(k => k.id)), LP.cur ? S.be.classProgress(LP.cur.id).catch(() => null) : null]); if (prog) LP.prog = prog; el.innerHTML = whoNowHTML(rows); } catch (e) { el.innerHTML = `<p class="hint">Konnte nicht laden: ${esc(e.message)}</p>`; } };
     if ($("#whoNow")) { load(); whoTimer = setInterval(load, 10000); }
   }
 
@@ -1486,11 +1498,14 @@
   ];
   const RELLP = { t: null, list: [], key: "", snooze: {}, busy: false };
   async function relLpPoll() {
-    const want = S.view && S.view.name === "lp" && LP.who && S.be && S.be.relRequests;
+    const kidLP = !!(S.me && S.token && isLP() && S.view && S.view.name !== "lp" && S.be && S.be.relKid);   // gelbes Lehrpersonen-gLiTCh in der Kinder-Ansicht
+    const want = kidLP || (S.view && S.view.name === "lp" && LP.who && S.be && S.be.relRequests);
     if (!want) { const p = document.getElementById("relPop"); if (p) p.remove(); RELLP.key = ""; return; }
     if (RELLP.busy) return; RELLP.busy = true;
     try {
-      const [reqs, classes] = await Promise.all([S.be.relRequests(), S.be.listClasses()]);
+      let reqs, classes;
+      if (kidLP) { const d = await S.be.relKid(S.token) || {}, c = d.cls || {}; classes = c.id ? [{ id: c.id, name: c.name, settings: { live: c.live || {} }, viaKid: true }] : []; reqs = (d.reqs || []).map(r => Object.assign({ class_id: c.id }, r)); }
+      else [reqs, classes] = await Promise.all([S.be.relRequests(), S.be.listClasses()]);
       const byId = Object.fromEntries(classes.map(c => [c.id, c])), now = Date.now();
       RELLP.list = reqs.filter(r => { const c = byId[r.class_id], L = c && (c.settings || {}).live || {};
         return c && L.mode === "device" && r.rel && r.rel.id && !(L.ans || {})[r.rel.id] && now - (r.rel.at || 0) < 3600000 && !(RELLP.snooze[r.rel.id] > now); })
@@ -1528,6 +1543,11 @@
   async function relLpAnswer(r, ok, c) {
     const pop = document.getElementById("relPop"); pop && pop.querySelectorAll("button").forEach(b => b.disabled = true);
     try {
+      if (r.cls.viaKid) {   // Kinder-Ansicht: über die Datenbank-Funktion für das Lehrpersonen-Konto
+        await S.be.relKidAnswer(S.token, r.rel.id, { ok, c: String(c || "").slice(0, 240), at: Date.now(), by: CFG.TEACHER_NAME || "" });
+        RELLP.list = RELLP.list.filter(x => x.rel.id !== r.rel.id); RELLP.key = ""; if (pop) pop.remove(); relLpShow();
+        toast(ok ? `${(r.rel.names || []).join(" & ")}: freigegeben ✅` : `${(r.rel.names || []).join(" & ")}: wiederholen ↺`, "star"); return;
+      }
       const fresh = (await S.be.listClasses()).find(x => x.id === r.cls.id) || r.cls, st = Object.assign({}, fresh.settings || {}), live = Object.assign({}, st.live || {}), now = Date.now();
       const ans = Object.fromEntries(Object.entries(live.ans || {}).filter(([, v]) => v && now - (v.at || 0) < 7200000));
       const me = LP.who && LP.who.email ? coTeachers(st).find(t => t.email === LP.who.email.toLowerCase()) : null;
@@ -1552,7 +1572,8 @@
     const team = S.team.map(t => t.student.first_name), key = JSON.stringify([where, team]);
     if (key === PRES.key && Date.now() - PRES.at < 30000) return;
     PRES.key = key; PRES.at = Date.now();
-    saveExtras({ now: Object.assign({ at: Date.now(), team, mid: m ? m.id : "" }, where) });
+    const login = store.get("glhub.loginAt", 0); if (login) S.me.extras = Object.assign({}, S.me.extras, { login });
+    saveExtras({ now: Object.assign({ at: Date.now(), team, mid: m ? m.id : "", login }, where) });
   }
   function liveApply(L) {
     S.live = L || {};

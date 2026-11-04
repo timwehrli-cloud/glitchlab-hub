@@ -319,6 +319,35 @@ begin
   return coalesce((select settings->'live' from public.classes where id = s.class_id), '{}'::jsonb)::json;
 end $$;
 
+-- Freigabe über das Lehrpersonen-Gerät, wenn die Lehrperson in der Kinder-Ansicht als «Lehrperson» angemeldet ist:
+-- offene Anfragen der eigenen Klasse lesen und beantworten (nur für das Lehrpersonen-Konto der Klasse)
+create or replace function public.kid_rel(p_token uuid)
+returns json language plpgsql security definer set search_path = public as $$
+declare s public.students;
+begin
+  s := public._kid_from_token(p_token);
+  if not s.is_teacher then raise exception 'NUR_LEHRPERSON'; end if;
+  return json_build_object(
+    'cls', (select json_build_object('id', c.id, 'name', c.name, 'live', coalesce(c.settings->'live', '{}'::jsonb)) from public.classes c where c.id = s.class_id),
+    'reqs', coalesce((select json_agg(json_build_object('student_id', e.student_id, 'rel', e.data->'rel'))
+                        from public.extras e join public.students st on st.id = e.student_id
+                       where st.class_id = s.class_id and e.data->'rel' is not null and jsonb_typeof(e.data->'rel') = 'object'), '[]'::json));
+end $$;
+create or replace function public.kid_rel_answer(p_token uuid, p_id text, p_ans jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+declare s public.students; a jsonb;
+begin
+  s := public._kid_from_token(p_token);
+  if not s.is_teacher then raise exception 'NUR_LEHRPERSON'; end if;
+  if char_length(coalesce(p_id, '')) not between 1 and 20 or pg_column_size(p_ans) > 2000 then raise exception 'UNGUELTIG'; end if;
+  select coalesce(jsonb_object_agg(k, v), '{}'::jsonb) into a
+    from public.classes c, jsonb_each(coalesce(c.settings->'live'->'ans', '{}'::jsonb)) as x(k, v)
+   where c.id = s.class_id and coalesce((v->>'at')::bigint, 0) > (extract(epoch from now()) * 1000)::bigint - 7200000;
+  update public.classes
+     set settings = jsonb_set(coalesce(settings, '{}'::jsonb), '{live}', coalesce(settings->'live', '{}'::jsonb) || jsonb_build_object('ans', a || jsonb_build_object(p_id, p_ans)))
+   where id = s.class_id;
+end $$;
+
 -- Sterne vergeben – an alle Kinder des Teams auf diesem Gerät.
 -- Es zählt immer das beste Resultat (Sterne gehen nie verloren).
 create or replace function public.kid_award(p_tokens uuid[], p_module text, p_activity text,
@@ -438,6 +467,8 @@ grant execute on function public.kid_award(uuid[], text, text, int, jsonb) to an
 grant execute on function public.kid_logout(uuid)                        to anon, authenticated;
 grant execute on function public.kid_extras_set(uuid, jsonb)            to anon, authenticated;
 grant execute on function public.kid_live(uuid)                       to anon, authenticated;
+grant execute on function public.kid_rel(uuid)                        to anon, authenticated;
+grant execute on function public.kid_rel_answer(uuid, text, jsonb)    to anon, authenticated;
 grant execute on function public.kid_work_get(uuid[], text)             to anon, authenticated;
 grant execute on function public.kid_work_put(uuid[], text, jsonb)      to anon, authenticated;
 grant execute on function public.kid_modules(uuid)                       to anon, authenticated;
