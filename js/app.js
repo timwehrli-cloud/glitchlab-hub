@@ -1298,6 +1298,27 @@
     $$(`[data-lptab^="${key}:"]`).forEach(b => b.onclick = () => { show(b.dataset.lptab.split(":")[1]); window.scrollTo({ top: 0, behavior: "smooth" }); });
   }
 
+  /* ---------- QR-Code zeichnen und drucken ---------- */
+  function qrSvg(text, cell) { const q = window.qrcode(0, "M"); q.addData(text); q.make(); return q.createSvgTag({ cellSize: cell || 6, margin: 2, scalable: true }); }
+  async function qrPrint(c, secret, days) {
+    try { await loadVendor("qrcode", "qrcode"); } catch (e) { return toast("QR-Code konnte nicht geladen werden.", "err"); }
+    const pages = days.map(day => `<section class="pg"><div class="top"><span class="lab">gLiTCh-Lab · Freigabe</span><span>${esc(c.name)}</span></div>
+      <h1>${esc(dayLong(day))}</h1><div class="qr">${qrSvg(relQrText(secret, day), 10)}</div>
+      <p class="code">Code zum Eintippen: <b>${esc(relDayCode(secret, day))}</b></p>
+      <p class="how">Die Kinder tippen an der Freigabe-Stelle auf «QR-Code scannen» und halten das iPad über diesen Code. Er gilt nur an diesem Tag und nur in dieser Klasse.</p></section>`).join("");
+    const html = `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>QR-Freigabe ${esc(c.name)}</title><style>
+      @page{size:A4;margin:16mm}body{font-family:system-ui,-apple-system,sans-serif;color:#14062E;margin:0}
+      .pg{page-break-after:always;text-align:center;padding-top:6mm}.pg:last-child{page-break-after:auto}
+      .top{display:flex;justify-content:space-between;font-size:14pt;color:#555}.lab{font-weight:800;color:#7B4CEF}
+      h1{font-size:26pt;margin:10mm 0 6mm}.qr svg{width:120mm;height:120mm}.code{font-size:18pt;margin:6mm 0}.code b{font-family:ui-monospace,Menlo,monospace;letter-spacing:.2em;font-size:24pt}
+      .how{font-size:13pt;max-width:150mm;margin:0 auto;color:#333}</style></head><body>${pages}<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`;
+    const w = window.open("", "_blank");
+    if (w) { w.document.open(); w.document.write(html); w.document.close(); return; }
+    const f = document.createElement("iframe"); f.style.cssText = "position:fixed;width:0;height:0;border:0;right:0;bottom:0"; document.body.appendChild(f);
+    f.contentDocument.open(); f.contentDocument.write(html.replace(/<script>[\s\S]*?<\/script>/, "")); f.contentDocument.close();
+    setTimeout(() => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) { toast("Drucken ging nicht. Erlaube Pop-up-Fenster für diese Seite.", "err", 6000); } setTimeout(() => f.remove(), 60000); }, 400);
+  }
+
   /* ---------- Live-Steuerung: Pause und Nachricht von gLiTCh an die ganze Klasse ---------- */
   const LIVE_QUICK = [
     ["⏰ Zeit", ["Noch 10 Minuten! ⏰", "Noch 5 Minuten! ⏰", "Noch 2 Minuten, langsam fertig machen. ⏳", "Die Zeit ist um. Bitte aufhören. 🛑"]],
@@ -1310,9 +1331,19 @@
     return `<section class="panel live-panel rel-mode"><h2>🔓 Freigabe der nächsten Etappe</h2>
       <p class="hint">Wie gibst du den Kindern nach einer Etappe den nächsten Teil frei? Gilt im gLiTCh-Lab, in den Deutsch-Spielen und in eigenen Modulen.</p>
       <div class="seg" role="radiogroup" aria-label="Art der Freigabe">
-        <button type="button" role="radio" class="seg-b${L.mode === "device" ? "" : " on"}" aria-checked="${L.mode !== "device"}" data-relmode="code"><b>🔢 Mit Code</b><small>Die Kinder kommen zu dir, du tippst deinen Freigabe-Code (${esc(mainCode(c.settings))}) auf ihrem Gerät ein.</small></button>
+        <button type="button" role="radio" class="seg-b${L.mode ? "" : " on"}" aria-checked="${!L.mode}" data-relmode="code"><b>🔢 Mit Code</b><small>Die Kinder kommen zu dir, du tippst deinen Freigabe-Code (${esc(mainCode(c.settings))}) auf ihrem Gerät ein.</small></button>
         <button type="button" role="radio" class="seg-b${L.mode === "device" ? " on" : ""}" aria-checked="${L.mode === "device"}" data-relmode="device"><b>📲 Über mein Gerät</b><small>Die Kinder schicken eine Anfrage. Bei dir erscheint ein Fenster mit Namen und Lernstand. Du entscheidest per Knopfdruck und kannst einen Kommentar schreiben.</small></button>
-      </div></section>
+        <button type="button" role="radio" class="seg-b${L.mode === "qr" ? " on" : ""}" aria-checked="${L.mode === "qr"}" data-relmode="qr"><b>📷 QR-Code</b><small>Die Kinder scannen einen QR-Code, den du ausdruckst. Er ist den ganzen Tag gleich und gilt am nächsten Tag nicht mehr.</small></button>
+      </div>
+      ${L.mode === "qr" && L.qrs ? `<div class="qr-lp">
+        <div class="qr-lp-code" id="qrToday" aria-label="QR-Code von heute"></div>
+        <div class="qr-lp-info"><h3>QR-Code von heute</h3><p>${esc(dayLong(relDay()))}</p>
+          <p>Code zum Eintippen, falls die Kamera nicht geht: <b class="qr-txt">${esc(relDayCode(L.qrs, relDay()))}</b></p>
+          <p class="hint">Alle Lehrpersonen dieser Klasse sehen hier den gleichen QR-Code und können ihn ausdrucken.</p>
+          <div class="row"><button type="button" class="btn primary" data-qrprint="today">🖨️ Heute drucken</button><button type="button" class="btn" data-qrprint="week">🖨️ Ganze Woche drucken (Mo–Fr)</button></div>
+          <div class="row" style="margin-top:8px"><label class="f" style="margin:0" for="qrDay">Anderer Tag<input class="input" type="date" id="qrDay" value="${relDay()}" style="width:auto"></label><button type="button" class="btn small" data-qrprint="day">🖨️ Diesen Tag drucken</button></div>
+          <p class="hint" style="margin-top:10px">Haben Kinder den QR-Code abfotografiert? <button type="button" class="link" data-qrnew>${LP.confirm === "qrnew" ? "Wirklich? Alle gedruckten QR-Codes werden ungültig. Nochmals tippen." : "Neuen QR-Code erzeugen"}</button></p></div></div>` : ""}
+      </section>
       <section class="panel live-panel"><h2>📢 Live-Steuerung</h2>
       <p class="hint">Gilt für alle Kinder dieser Klasse, die gerade angemeldet sind. Nach höchstens 5 Sekunden sehen sie es.</p>
       <div class="row live-row"><button type="button" class="btn ${L.pause ? "" : "primary"} live-big" data-live-pause>${L.pause ? "▶ Pause beenden" : "⏸ Ganze Klasse pausieren"}</button>
@@ -1329,8 +1360,16 @@
       catch (err) { toast(err.message, "err", 5000); }
     };
     const L = () => (c.settings || {}).live || {};
-    $$("[data-relmode]").forEach(b => b.onclick = () => { const dev = b.dataset.relmode === "device"; if (dev === (L().mode === "device")) return;
-      set({ mode: dev ? "device" : "" }, dev ? "Freigabe jetzt über dein Gerät. Lass diese Seite (oder eine andere im Lehrpersonen-Bereich) offen." : "Freigabe jetzt wieder mit dem Code."); });
+    $$("[data-relmode]").forEach(b => b.onclick = () => { const m = b.dataset.relmode === "code" ? "" : b.dataset.relmode; if (m === (L().mode || "")) return;
+      const patch = { mode: m }; if (m === "qr" && !L().qrs) patch.qrs = relNewSecret();
+      set(patch, m === "device" ? "Freigabe jetzt über dein Gerät. Lass diese Seite (oder eine andere im Lehrpersonen-Bereich) offen." : m === "qr" ? "Freigabe jetzt mit dem QR-Code. Drucke ihn unten aus." : "Freigabe jetzt wieder mit dem Code."); });
+    const qrEl = $("#qrToday");
+    if (qrEl && L().qrs) loadVendor("qrcode", "qrcode").then(() => { qrEl.innerHTML = qrSvg(relQrText(L().qrs, relDay()), 6); }).catch(() => { qrEl.textContent = "QR-Code konnte nicht geladen werden."; });
+    $$("[data-qrprint]").forEach(b => b.onclick = () => {
+      const k = b.dataset.qrprint, days = k === "today" ? [relDay()] : k === "day" ? [$("#qrDay").value || relDay()] : (() => { const d = new Date(), wd = d.getDay(), off = wd === 6 ? -2 : wd === 0 ? -1 : (wd + 6) % 7; d.setDate(d.getDate() - off); return [0, 1, 2, 3, 4].map(i => { const x = new Date(d); x.setDate(d.getDate() + i); return relDay(x); }); })();
+      qrPrint(c, L().qrs, days);
+    });
+    const qn = $("[data-qrnew]"); if (qn) qn.onclick = () => { if (LP.confirm !== "qrnew") { LP.confirm = "qrnew"; return render(); } LP.confirm = null; set({ qrs: relNewSecret() }, "Neuer QR-Code erzeugt. Drucke ihn neu aus."); };
     $$("[data-live-pause]").forEach(b => b.onclick = () => set(L().pause ? { pause: false, pauseAt: 0 } : { pause: true, pauseAt: Date.now() }, L().pause ? "Pause beendet. Es geht weiter!" : "Die Klasse ist pausiert."));
     $$("[data-live-q]").forEach(b => { b.onclick = () => { const t = $("#liveMsg"); if (t) { t.value = b.dataset.liveQ; t.focus(); } };
       b.ondblclick = () => set({ msg: b.dataset.liveQ, msgAt: Date.now() }, "gLiTCh zeigt die Nachricht allen."); });
@@ -1410,7 +1449,21 @@
      Antwort: in den Klassen-Einstellungen (live.ans), die Kinder fragen sie alle 5 Sekunden ab.
      ================================================================= */
   const REL = { t: null, req: null, el: null, kind: null };
-  const relOn = () => !!(S.me && S.token && !isLP() && S.view && S.view.name !== "lp" && S.live && S.live.mode === "device");
+  const relMode = () => (S.me && S.token && !isLP() && S.view && S.view.name !== "lp" && S.live && ["device", "qr"].includes(S.live.mode)) ? S.live.mode : "";
+  /* QR-Code des Tages: gleich für den ganzen Tag, ändert sich jede Nacht. Aus dem Geheimwort der Klasse (live.qrs) und dem Datum */
+  const relDay = (d = new Date()) => d.toLocaleDateString("sv-SE");   // JJJJ-MM-TT, lokale Zeit
+  function relDayCode(secret, day) {
+    const s = `glitchlab|${secret}|${day}`; let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let n = (h2 >>> 0) * 4294967296 + (h1 >>> 0), out = "";
+    for (let i = 0; i < 6; i++) { out += A[n % 32]; n = Math.floor(n / 32); } return out;
+  }
+  const relQrText = (secret, day) => `GLITCHLAB-FREIGABE ${day} ${relDayCode(secret, day)}`;
+  const relNewSecret = () => Array.from({ length: 16 }, () => "abcdefghijkmnpqrstuvwxyz23456789"[Math.floor(Math.random() * 32)]).join("");
+  const dayLong = day => new Date(day + "T12:00:00").toLocaleDateString("de-CH", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  function loadVendor(name, global) { if (window[global]) return Promise.resolve(window[global]);
+    return new Promise((res, rej) => { const s = document.createElement("script"); s.src = `js/vendor/${name}.js?v=${window.GL_V || 1}`; s.onload = () => window[global] ? res(window[global]) : rej(new Error("Laden fehlgeschlagen")); s.onerror = () => rej(new Error("Laden fehlgeschlagen")); document.head.appendChild(s); }); }
   const REL_KINDS = [
     { k: "kp", sel: '.kp[data-kp]:not([data-kp="ptCodeIn"])', box: el => el.closest(".pt-dlg, .dlg-box, .sp-in, [role=dialog]") || el.parentElement },
     { k: "game", sel: ".pin#gpin", box: el => el.closest(".splash") || el.parentElement },
@@ -1436,15 +1489,23 @@
   function relRestore(el) { if (!el) return; const h = el.__relHide || el; h.style.display = ""; if (el.__relBox) el.__relBox.remove(); delete el.__relBox; delete el.dataset.rel; }
   function relClear() { if (REL.req) { REL.req = null; saveExtras({ rel: null }); } REL.el = null; REL.kind = null; REL.lost = 0; }
   function relScan() {
-    const on = relOn();
+    const mode = relMode();
     const docs = S.me ? relDocs(document, []) : [document];
-    if (!on) {   // Code-Modus: alles wieder so, wie es war
-      docs.forEach(d => d.querySelectorAll("[data-rel]").forEach(relRestore)); if (REL.req) relClear(); return;
+    docs.forEach(d => d.querySelectorAll("[data-rel]").forEach(el => { if (el.dataset.rel !== mode) relRestore(el); }));   // Art gewechselt: zurück wie vorher
+    if (mode !== "device" && REL.req) relClear();
+    if (!mode) return;
+    if (mode === "qr") {
+      for (const d of docs) for (const K of REL_KINDS) d.querySelectorAll(K.sel).forEach(el => {
+        if (el.dataset.rel) return; el.dataset.rel = "qr";
+        const hide = K.hideEl ? K.hideEl(el) : el; el.__relHide = hide; hide.style.display = "none";
+        const box = relQrBox(d, el, K.k); hide.parentNode.insertBefore(box, hide.nextSibling); el.__relBox = box;
+      });
+      return;
     }
     if (REL.el && !REL.el.isConnected) { if (!REL.lost) REL.lost = Date.now(); else if (Date.now() - REL.lost > 5000) { REL.lost = 0; relClear(); } }   // Fenster zu: Anfrage zurückziehen (kurz warten, die Seite zeichnet sich vielleicht nur neu)
     for (const d of docs) for (const K of REL_KINDS) d.querySelectorAll(K.sel).forEach(el => {
       if (el.dataset.rel) return;
-      el.dataset.rel = "1"; const hide = K.hideEl ? K.hideEl(el) : el; el.__relHide = hide; hide.style.display = "none";
+      el.dataset.rel = "device"; const hide = K.hideEl ? K.hideEl(el) : el; el.__relHide = hide; hide.style.display = "none";
       const box = relStatusBox(d, false); hide.parentNode.insertBefore(box, hide.nextSibling); el.__relBox = box;
       if (REL.req && REL.el && REL.el.isConnected && REL.el !== el) return;
       if (REL.req && REL.lost && REL.kind === K.k) { REL.el = el; REL.lost = 0; box.querySelector("b").textContent = "Anfrage ist bei deiner Lehrperson."; return; }   // gleiche Stelle, nur neu gezeichnet
@@ -1461,10 +1522,15 @@
     }
   }
   function relAnswer(a) {
-    const el = REL.el, kind = REL.kind, doc = el.ownerDocument, code = mainCode(), by = a.by || "Deine Lehrperson";
-    relClear();
+    const el = REL.el, kind = REL.kind;
+    relClear(); relAct(el, kind, a.ok);
+    relMsg(a.ok, a.c, a.by || "Deine Lehrperson");
+  }
+  /* Die Freigabe-Stelle selbst bedienen: Code eintippen (weiter) oder schliessen bzw. Stufe wiederholen */
+  function relAct(el, kind, ok) {
+    const doc = el.ownerDocument, code = mainCode();
     try {
-      if (a.ok) {
+      if (ok) {
         if (kind === "kp") { const inp = el.querySelector("input"); inp.value = code; const sel = el.dataset.kpOk;
           if (sel) { const b = doc.querySelector(sel); if (b) b.click(); } else { const f = el.closest("form"); if (f) { if (f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true })); } } }
         else if (kind === "game") { [...code].forEach(d => { const b = el.querySelector(`[data-d="${d}"]`); if (b) b.click(); }); }
@@ -1476,14 +1542,76 @@
         else if (kind === "ed") { const b = (el.closest(".dlg") || doc).querySelector("[data-x]"); if (b) b.click(); }
       }
     } catch (e) { console.error(e); }
-    relMsg(a.ok, a.c, by);
   }
-  function relMsg(ok, c, by) {
+  /* ---------- QR-Code: Kasten an der Freigabe-Stelle und Kamera ---------- */
+  function relQrBox(doc, el, kind) {
+    const d = doc.createElement("div"); d.className = "glrel";
+    d.setAttribute("style", "margin:12px auto;padding:14px 16px;border-radius:14px;border:2px dashed #00B8D4;background:rgba(0,229,255,.08);text-align:center;font:600 16px/1.4 system-ui,sans-serif;color:inherit;max-width:440px");
+    d.innerHTML = `<div style="font-size:34px;line-height:1" aria-hidden="true">📷</div><p style="margin:8px 0 4px"><b>QR-Code der Lehrperson scannen</b></p><p style="margin:0 0 10px;font-weight:400;opacity:.85">Zeigt eure Arbeit eurer Lehrperson. Dann scannt ihr den QR-Code von heute und es geht weiter.</p>
+      <button type="button" data-qrscan style="font:700 18px system-ui,sans-serif;padding:12px 20px;border-radius:12px;border:0;background:#00B8D4;color:#fff;cursor:pointer">📷 QR-Code scannen</button>
+      <details style="margin-top:10px;font-weight:400"><summary style="cursor:pointer;font-size:14px;opacity:.85">Kamera geht nicht? Code eintippen</summary>
+        <form data-qrform style="display:flex;gap:6px;justify-content:center;margin-top:8px"><input data-qrin maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="z. B. K7QH2M" aria-label="Code unter dem QR-Code" style="font:700 18px ui-monospace,Menlo,monospace;letter-spacing:.15em;width:9em;padding:8px;border-radius:10px;border:2px solid #00B8D4;text-transform:uppercase"><button type="submit" style="font:700 16px system-ui,sans-serif;padding:8px 14px;border-radius:10px;border:0;background:#00B8D4;color:#fff">OK</button></form></details>
+      <p data-qrerr role="alert" style="margin:8px 0 0;color:#e74c3c;min-height:1em"></p>`;
+    const err = m => { d.querySelector("[data-qrerr]").textContent = m; };
+    const check = txt => { const r = relQrCheck(txt); if (r === true) { relAct(el, kind, true); relMsg(true, "", "", "Der QR-Code stimmt. Der nächste Teil ist frei."); } else err(r); return r === true; };
+    d.querySelector("[data-qrscan]").onclick = async () => { err(""); const txt = await relScanner(); if (txt != null) check(txt); };
+    d.querySelector("[data-qrform]").onsubmit = e => { e.preventDefault(); const v = d.querySelector("[data-qrin]").value.trim(); if (v) check(v); };
+    return d;
+  }
+  function relQrCheck(txt) {
+    const secret = (S.live || {}).qrs; if (!secret) return "Deine Lehrperson hat noch keinen QR-Code eingerichtet.";
+    const t = String(txt || "").trim().toUpperCase(), today = relDay(), want = relDayCode(secret, today);
+    const day = (t.match(/(\d{4}-\d{2}-\d{2})/) || [])[1], code = (t.match(/([A-Z0-9]{6})\s*$/) || [])[1];
+    if (/GLITCHLAB/.test(t) && day && day !== today) return `Dieser QR-Code gilt am ${new Date(day + "T12:00:00").toLocaleDateString("de-CH")}. Heute braucht es den QR-Code von heute.`;
+    if (code === want) return true;
+    if (/GLITCHLAB/.test(t)) return "Dieser QR-Code gehört zu einer anderen Klasse oder ist nicht mehr gültig.";
+    return t.length === 6 ? "Der Code stimmt nicht. Schau nochmals genau hin." : "Das ist kein Glitchlab-QR-Code.";
+  }
+  /* Kamera öffnen und QR-Code lesen. Gibt den Text zurück oder null (abgebrochen) */
+  function relScanner() {
+    return new Promise(resolve => {
+      const ov = document.createElement("div"); ov.className = "qr-scan"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", "QR-Code scannen");
+      ov.innerHTML = `<div class="qr-scan-in"><h2>📷 QR-Code scannen</h2><div class="qr-vid"><video playsinline muted></video><span class="qr-frame" aria-hidden="true"></span></div>
+        <p class="qr-st" aria-live="polite">Kamera startet …</p><button type="button" class="btn" data-qrclose>Abbrechen</button></div>`;
+      document.body.appendChild(ov);
+      const video = ov.querySelector("video"), st = ov.querySelector(".qr-st"); let stream = null, done = false, timer = null;
+      const finish = v => { if (done) return; done = true; clearTimeout(timer); if (stream) stream.getTracks().forEach(t => t.stop()); ov.remove(); resolve(v); };
+      ov.querySelector("[data-qrclose]").onclick = () => finish(null);
+      (async () => {
+        try {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error("nocam");
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+          if (done) { stream.getTracks().forEach(t => t.stop()); return; }
+          video.srcObject = stream; await video.play().catch(() => {});
+          st.textContent = "Halte den QR-Code in das Viereck.";
+          let detector = null;
+          try { if ("BarcodeDetector" in window && (await BarcodeDetector.getSupportedFormats()).includes("qr_code")) detector = new BarcodeDetector({ formats: ["qr_code"] }); } catch (e) { detector = null; }
+          const jsQR = detector ? null : await loadVendor("jsQR", "jsQR");
+          const cv = document.createElement("canvas"), cx = cv.getContext("2d", { willReadFrequently: true });
+          const tick = async () => {
+            if (done) return;
+            try {
+              if (video.readyState >= 2 && video.videoWidth) {
+                if (detector) { const r = await detector.detect(video); if (r && r[0] && r[0].rawValue) return finish(r[0].rawValue); }
+                else { const k = Math.min(1, 640 / video.videoWidth); cv.width = Math.round(video.videoWidth * k); cv.height = Math.round(video.videoHeight * k);
+                  cx.drawImage(video, 0, 0, cv.width, cv.height); const img = cx.getImageData(0, 0, cv.width, cv.height), r = jsQR(img.data, cv.width, cv.height, { inversionAttempts: "dontInvert" }); if (r && r.data) return finish(r.data); }
+              }
+            } catch (e) { /* weiter versuchen */ }
+            timer = setTimeout(tick, 180);
+          };
+          tick();
+        } catch (e) {
+          st.textContent = /NotAllowed|Permission/i.test(e && e.name || "") ? "Die Kamera ist nicht erlaubt. Erlaube sie in den Einstellungen oder tippe den Code unter dem QR-Code ein." : "Die Kamera geht hier nicht. Tippe den Code unter dem QR-Code ein.";
+        }
+      })();
+    });
+  }
+  function relMsg(ok, c, by, txt) {
     let ov = document.getElementById("relMsg"); if (ov) ov.remove();
     ov = document.createElement("div"); ov.id = "relMsg"; ov.className = "rel-msg"; ov.setAttribute("role", "alertdialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-labelledby", "relMsgT");
     ov.innerHTML = `<div class="rel-msg-in ${ok ? "ok" : "redo"}"><div class="rel-msg-g">${G.svg(ok ? "love" : "wink", "#8B5CFF", { outfit: outfitOf() })}</div>
       <div><h2 id="relMsgT">${ok ? "Freigegeben! Weiter geht's 🎉" : "Nochmals üben ↺"}</h2>
-      <p>${ok ? "Deine Lehrperson hat eure Arbeit angeschaut und den nächsten Teil freigegeben." : "Deine Lehrperson möchte, dass ihr diesen Teil nochmals anschaut und verbessert."}</p>
+      <p>${txt ? esc(txt) : ok ? "Deine Lehrperson hat eure Arbeit angeschaut und den nächsten Teil freigegeben." : "Deine Lehrperson möchte, dass ihr diesen Teil nochmals anschaut und verbessert."}</p>
       ${c ? `<div class="rel-msg-c"><b>${esc(by)} schreibt:</b><p>«${esc(c)}»</p></div>` : ""}
       <button type="button" class="btn primary" data-relmsg-ok>${ok ? "Super, weiter!" : "Okay, wir verbessern"}</button></div></div>`;
     document.body.appendChild(ov); ov.querySelector("[data-relmsg-ok]").onclick = () => ov.remove(); ov.querySelector("[data-relmsg-ok]").focus();

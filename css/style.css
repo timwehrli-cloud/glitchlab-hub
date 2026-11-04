@@ -778,3 +778,16 @@ body.has-sitebg::after { opacity: .25; }
 .who-b.part{background:rgba(255,194,26,.25);border-color:#FFC21A}.who-b.done{background:#1f9d55;border-color:#1f9d55;color:#fff}
 .who-b.cur{border:2px solid #00E5FF;box-shadow:0 0 6px #00E5FF}
 .who-bt{margin-left:4px}
+
+/* QR-Freigabe */
+.seg{grid-template-columns:repeat(3,1fr)}@media (max-width:820px){.seg{grid-template-columns:1fr}}
+.qr-lp{display:flex;gap:18px;align-items:flex-start;margin-top:14px;padding:14px;border-radius:14px;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.3)}
+.qr-lp-code{flex:none;width:200px;height:200px;background:#fff;border-radius:12px;padding:6px;display:grid;place-items:center;color:#14062E}
+.qr-lp-code svg{width:100%;height:100%}.qr-lp-info h3{margin:0 0 4px}.qr-lp-info p{margin:0 0 6px}
+.qr-txt{font:800 20px ui-monospace,Menlo,monospace;letter-spacing:.18em}
+@media (max-width:620px){.qr-lp{flex-direction:column;align-items:center}}
+.qr-scan{position:fixed;inset:0;z-index:2200;background:rgba(8,3,20,.9);display:grid;place-items:center;padding:16px}
+.qr-scan-in{width:min(480px,100%);text-align:center}.qr-scan-in h2{margin:0 0 10px}
+.qr-vid{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:1/1}.qr-vid video{width:100%;height:100%;object-fit:cover}
+.qr-frame{position:absolute;inset:18%;border:4px solid #00E5FF;border-radius:14px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.qr-st{margin:12px 0;min-height:1.4em}
