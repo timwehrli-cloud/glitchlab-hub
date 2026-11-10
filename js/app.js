@@ -1334,6 +1334,7 @@
         <button type="button" role="radio" class="seg-b${L.mode ? "" : " on"}" aria-checked="${!L.mode}" data-relmode="code"><b>🔢 Mit Code</b><small>Die Kinder kommen zu dir, du tippst deinen Freigabe-Code (${esc(mainCode(c.settings))}) auf ihrem Gerät ein.</small></button>
         <button type="button" role="radio" class="seg-b${L.mode === "device" ? " on" : ""}" aria-checked="${L.mode === "device"}" data-relmode="device"><b>📲 Über mein Gerät</b><small>Die Kinder schicken eine Anfrage. Bei dir erscheint ein Fenster mit Namen und Lernstand. Du entscheidest per Knopfdruck und kannst einen Kommentar schreiben.</small></button>
         <button type="button" role="radio" class="seg-b${L.mode === "qr" ? " on" : ""}" aria-checked="${L.mode === "qr"}" data-relmode="qr"><b>📷 QR-Code</b><small>Die Kinder scannen einen QR-Code, den du ausdruckst. Er ist den ganzen Tag gleich und gilt am nächsten Tag nicht mehr.</small></button>
+        <button type="button" role="radio" class="seg-b${L.mode === "auto" ? " on" : ""}" aria-checked="${L.mode === "auto"}" data-relmode="auto"><b>🚀 Ohne Freigabe</b><small>Nach jeder Etappe geht es automatisch weiter. Gut für Hausaufgaben, Wochenplan oder wenn du nicht im Raum bist.</small></button>
       </div>
       ${L.mode === "qr" && L.qrs ? `<div class="qr-lp">
         <div class="qr-lp-code" id="qrToday" aria-label="QR-Code von heute"></div>
@@ -1362,7 +1363,7 @@
     const L = () => (c.settings || {}).live || {};
     $$("[data-relmode]").forEach(b => b.onclick = () => { const m = b.dataset.relmode === "code" ? "" : b.dataset.relmode; if (m === (L().mode || "")) return;
       const patch = { mode: m }; if (m === "qr" && !L().qrs) patch.qrs = relNewSecret();
-      set(patch, m === "device" ? "Freigabe jetzt über dein Gerät. Lass diese Seite (oder eine andere im Lehrpersonen-Bereich) offen." : m === "qr" ? "Freigabe jetzt mit dem QR-Code. Drucke ihn unten aus." : "Freigabe jetzt wieder mit dem Code."); });
+      set(patch, m === "device" ? "Freigabe jetzt über dein Gerät. Lass diese Seite (oder eine andere im Lehrpersonen-Bereich) offen." : m === "qr" ? "Freigabe jetzt mit dem QR-Code. Drucke ihn unten aus." : m === "auto" ? "Module laufen jetzt ohne Freigabe: Nach jeder Etappe geht es automatisch weiter." : "Freigabe jetzt wieder mit dem Code."); });
     const qrEl = $("#qrToday");
     if (qrEl && L().qrs) loadVendor("qrcode", "qrcode").then(() => { qrEl.innerHTML = qrSvg(relQrText(L().qrs, relDay()), 6); }).catch(() => { qrEl.textContent = "QR-Code konnte nicht geladen werden."; });
     $$("[data-qrprint]").forEach(b => b.onclick = () => {
@@ -1449,7 +1450,7 @@
      Antwort: in den Klassen-Einstellungen (live.ans), die Kinder fragen sie alle 5 Sekunden ab.
      ================================================================= */
   const REL = { t: null, req: null, el: null, kind: null };
-  const relMode = () => (S.me && S.token && !isLP() && S.view && S.view.name !== "lp" && S.live && ["device", "qr"].includes(S.live.mode)) ? S.live.mode : "";
+  const relMode = () => (S.me && S.token && !isLP() && S.view && S.view.name !== "lp" && S.live && ["device", "qr", "auto"].includes(S.live.mode)) ? S.live.mode : "";
   /* QR-Code des Tages: gleich für den ganzen Tag, ändert sich jede Nacht. Aus dem Geheimwort der Klasse (live.qrs) und dem Datum */
   const relDay = (d = new Date()) => d.toLocaleDateString("sv-SE");   // JJJJ-MM-TT, lokale Zeit
   function relDayCode(secret, day) {
@@ -1494,6 +1495,14 @@
     docs.forEach(d => d.querySelectorAll("[data-rel]").forEach(el => { if (el.dataset.rel !== mode) relRestore(el); }));   // Art gewechselt: zurück wie vorher
     if (mode !== "device" && REL.req) relClear();
     if (!mode) return;
+    if (mode === "auto") {   // Ohne Freigabe: die Freigabe-Stelle gibt sich gleich selbst frei
+      for (const d of docs) for (const K of REL_KINDS) d.querySelectorAll(K.sel).forEach(el => {
+        if (el.dataset.rel) return; el.dataset.rel = "auto";
+        const hide = K.hideEl ? K.hideEl(el) : el; el.__relHide = hide; hide.style.display = "none";
+        setTimeout(() => { if (el.isConnected) relAct(el, K.k, true); }, 400);
+      });
+      return;
+    }
     if (mode === "qr") {
       for (const d of docs) for (const K of REL_KINDS) d.querySelectorAll(K.sel).forEach(el => {
         if (el.dataset.rel) return; el.dataset.rel = "qr";
