@@ -51,7 +51,7 @@
     { id: "mi-medien", subject: "mi", title: "Medien durchschauen", teaser: "Fake News entlarven und KI-Bilder von echten Fotos unterscheiden.", art: "fakenews", c: "#DD4646", c2: "#5A1414" },
     { id: "nmg-schweiz", subject: "nmg", title: "Entdeckungsreise Schweiz", teaser: "Kantone, Berge, Flüsse und Städte: Wir reisen quer durch die Schweiz.", art: "schweiz", c: "#4FB3E8", c2: "#0B3E5A" },
     { id: "nmg-roemer", subject: "nmg", title: "Die Römer", teaser: "Leben, Bauten und Erfindungen der Römerinnen und Römer.", art: "roemer", c: "#C98A00", c2: "#4A2E00" },
-    { id: "de-gespraech", subject: "de", title: "Gespräche führen", teaser: "Gesprächsregeln, eine Meinung vertreten und euch in der Gruppe einigen.", art: "gespraech", c: "#E3A300", c2: "#6B3A00" }
+    { id: "de-gespraech", subject: "de", title: "Gespräche führen", teaser: "Gesprächsregeln, eine Meinung vertreten und euch in der Gruppe einigen.", art: "gespraech", c: "#E3A300", c2: "#6B3A00", noGate: true }   // noGate: Module hier brauchen nie eine Freigabe der Lehrperson
   ];
   H.modules = [];
   H.registerModule = m => {

@@ -1450,7 +1450,9 @@
      Antwort: in den Klassen-Einstellungen (live.ans), die Kinder fragen sie alle 5 Sekunden ab.
      ================================================================= */
   const REL = { t: null, req: null, el: null, kind: null };
-  const relMode = () => (S.me && S.token && !isLP() && S.view && S.view.name !== "lp" && S.live && ["device", "qr", "auto"].includes(S.live.mode)) ? S.live.mode : "";
+  /* Module ohne Freigabe: Thema oder Modul mit «noGate» (z. B. Deutsch · Gespräche führen) gehen immer automatisch weiter */
+  const relNoGate = () => { if (!S.view || S.view.name !== "module") return false; const m = H.modules.find(x => x.id === S.view.id); if (!m) return false; const th = H.themes.find(x => x.id === m.theme); return !!(m.noGate || (th && th.noGate)); };
+  const relMode = () => !(S.me && S.token && !isLP() && S.view && S.view.name !== "lp") ? "" : relNoGate() ? "auto" : (S.live && ["device", "qr", "auto"].includes(S.live.mode)) ? S.live.mode : "";
   /* QR-Code des Tages: gleich für den ganzen Tag, ändert sich jede Nacht. Aus dem Geheimwort der Klasse (live.qrs) und dem Datum */
   const relDay = (d = new Date()) => d.toLocaleDateString("sv-SE");   // JJJJ-MM-TT, lokale Zeit
   function relDayCode(secret, day) {
