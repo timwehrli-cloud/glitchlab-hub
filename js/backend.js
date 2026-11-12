@@ -213,6 +213,9 @@
     testUnlock(studentId, stars, badges) {
       return this.q(this.sb.from("progress").upsert({ student_id: studentId, module_id: "test", activity_id: "alles", stars, data: { badges, fed: 7, deaths: 1 } }));
     }
+    /* Sterne schenken: pro Geschenk und Kind eine Zeile (module_id «gift»), so kann man es auch zurücknehmen */
+    giftStars(rows) { return this.q(this.sb.from("progress").insert(rows.map(r => ({ student_id: r.student_id, module_id: "gift", activity_id: r.id, stars: r.stars, data: r.data || {} })))); }
+    ungift(id) { return this.q(this.sb.from("progress").delete().eq("module_id", "gift").eq("activity_id", id)); }
   }
 
   /* =================================================================
@@ -277,7 +280,7 @@
       const c = ((d || this.db).classes || []).find(x => x.id === s.class_id); return (c && c.settings && c.settings.live) || {};
     }
     async me(token) {
-      const s = this.kid(token);
+      this.fresh(); const s = this.kid(token);
       return this.wait({
         student: this.pub(s),
         class_name: (this.db.classes.find(c => c.id === s.class_id) || {}).name,
@@ -400,7 +403,7 @@
       this.save();
     }
     async classProgress(classId) {
-      const ids = this.db.students.filter(s => s.class_id === classId).map(s => s.id);
+      this.fresh(); const ids = this.db.students.filter(s => s.class_id === classId).map(s => s.id);
       return this.wait(this.db.progress.filter(p => ids.includes(p.student_id)));
     }
     async resetProgress(studentId) {
@@ -437,6 +440,8 @@
       for (const m of (b.mods || [])) if (!this.db.mods.some(x => x.id === m.id)) this.db.mods.push({ id: m.id, data: m.data, published: !!m.published, updated_at: new Date().toISOString() });
       this.save(); return this.wait(c);
     }
+    async giftStars(rows) { this.fresh(); const at = new Date().toISOString(); rows.forEach(r => this.db.progress.push({ student_id: r.student_id, module_id: "gift", activity_id: r.id, stars: r.stars, data: r.data || {}, team: [], updated_at: at })); this.save(); return this.wait(true); }
+    async ungift(id) { this.fresh(); this.db.progress = this.db.progress.filter(p => !(p.module_id === "gift" && p.activity_id === id)); this.save(); return this.wait(true); }
     async setModStatus(studentId, moduleId, status) {
       this.db.progress = this.db.progress.filter(p => !(p.student_id === studentId && p.module_id === moduleId && p.activity_id === "lp-status"));
       if (status) this.db.progress.push({ student_id: studentId, module_id: moduleId, activity_id: "lp-status", stars: 0, data: { status, at: new Date().toISOString() }, team: [], updated_at: new Date().toISOString() });

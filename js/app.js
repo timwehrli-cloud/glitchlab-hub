@@ -62,7 +62,7 @@
   const subjStars = id => subjMods(id).reduce((a, m) => a + modStars(m), 0);
   const subjMax = id => subjMods(id).reduce((a, m) => a + H.maxStars(m), 0);
   const allStars = () => H.subjects.reduce((a, s) => a + subjStars(s.id), 0)
-    + (S.me?.progress || []).filter(p => p.module_id === "test").reduce((a, p) => a + p.stars, 0);   // Test-Modus der Lehrperson
+    + (S.me?.progress || []).filter(p => p.module_id === "test" || p.module_id === "gift").reduce((a, p) => a + p.stars, 0);   // Test-Modus und geschenkte Sterne der Lehrperson
   const GD = window.GL_DATA || { LEVELS: [{ n: "Start", s: 0 }], BADGES: [], OUTFITS: [] };
   /* Level nach oben offen: ab Level 100 alle 30 Sterne ein weiteres Level */
   const lvEnsure = n => { const L = GD.LEVELS; while (L.length >= 100 && L.length < n) { const k = L.length - 99; L.push({ n: window.GL_PRESTIGE ? GL_PRESTIGE.lvName(k) : "gLiTCh-Legende +" + k, s: L[99].s + k * 30 }); } };
@@ -1011,7 +1011,7 @@
     try { LP.members = S.be.listMembers ? await S.be.listMembers(c.id) : []; } catch (e) { LP.members = null; }   // null = Tabelle fehlt noch (schema.sql)
     const owner = isOwner(c);
     const st = (kid, subj) => H.modules.filter(m => !subj || m.subject === subj).reduce((a, m) => a + kidModStars(LP.prog, kid, m), 0)
-      + (subj ? 0 : LP.prog.filter(p => p.student_id === kid && p.module_id === "test").reduce((a, p) => a + p.stars, 0));
+      + (subj ? 0 : LP.prog.filter(p => p.student_id === kid && (p.module_id === "test" || p.module_id === "gift")).reduce((a, p) => a + p.stars, 0));
     const actSubjects = H.subjects.filter(s => subjMods(s.id).length);
     if (LP.cards) {
       app.innerHTML = head + `<main class="wrap">
@@ -1040,6 +1040,7 @@
           ${owner ? `<button type="button" class="btn small danger" data-delcls>${LP.confirm === "cls" ? "Wirklich ganze Klasse löschen?" : "Klasse löschen"}</button>` : `<span class="hint">Geteilte Klasse: Löschen kann nur, wer sie angelegt hat.</span>`}</div></section>
       ${lpTabsNav("cls")}
       <div class="lp-tab" data-tab="live">${livePanelHTML(c)}
+      ${giftPanelHTML(c)}
       <section class="panel"><h2>👀 Wer macht was?</h2><div id="whoNow"><p class="hint">Lädt …</p></div></section></div>
       <div class="lp-tab" data-tab="kinder">
       <section class="panel"><h2>Kinder (${LP.kids.filter(k => !k.is_teacher).length}) + Lehrpersonen-Konto</h2>
@@ -1099,7 +1100,7 @@
       const id = b.dataset.delkid; if (LP.confirm !== "d" + id) { LP.confirm = "d" + id; return render(); }
       await S.be.deleteStudent(id); LP.confirm = null; toast("Kind entfernt."); render();
     });
-    bindAccessPanel(c); bindKidModsPanel(); bindTeachersPanel(c); bindLivePanel(c); bindWho(); bindMembers(c);
+    bindAccessPanel(c); bindKidModsPanel(); bindTeachersPanel(c); bindLivePanel(c); bindGiftPanel(c); bindWho(); bindMembers(c);
     $("#addKids").onsubmit = async e => {
       e.preventDefault();
       const names = $("#kidNames").value.split(/\n|,/).map(s => s.trim()).filter(Boolean);
@@ -1296,6 +1297,77 @@
     const show = id => { LP.tabs[key] = id; $$(".lp-tab").forEach(t => { t.hidden = t.dataset.tab !== id; }); $$(`[data-lptab^="${key}:"]`).forEach(b => { const on = b.dataset.lptab === key + ":" + id; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); }); };
     show(LP.tabs[key] || LP_TABS[key][0][0]);
     $$(`[data-lptab^="${key}:"]`).forEach(b => b.onclick = () => { show(b.dataset.lptab.split(":")[1]); window.scrollTo({ top: 0, behavior: "smooth" }); });
+  }
+
+  /* ---------- Sterne schenken: einem Kind, mehreren oder der ganzen Klasse ---------- */
+  const GIFT_N = [1, 3, 5, 10, 20, 50];
+  const GIFT_WHY = ["Super Mitarbeit", "Hilfsbereit", "Tolle Teamarbeit", "Starke Präsentation", "Gut aufgeräumt", "Hausaufgaben erledigt", "Mutig gefragt", "Ruhig und konzentriert"];
+  LP.gift = LP.gift || { sel: new Set(), n: 5 };
+  function giftPanelHTML(c) {
+    const kids = LP.kids.filter(k => !k.is_teacher), G = LP.gift, all = kids.length && kids.every(k => G.sel.has(k.id));
+    const hist = {}; LP.prog.filter(p => p.module_id === "gift" && kids.some(k => k.id === p.student_id)).forEach(p => { const h = hist[p.activity_id.split("~")[0]] = hist[p.activity_id.split("~")[0]] || { id: p.activity_id.split("~")[0], n: p.stars, why: (p.data || {}).why || "", at: (p.data || {}).at || p.updated_at, who: [] }; h.who.push((kids.find(k => k.id === p.student_id) || {}).first_name); });
+    const list = Object.values(hist).sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 8);
+    return `<section class="panel gift-panel"><h2>⭐ Sterne schenken</h2>
+      <p class="hint">Für gute Mitarbeit, Hilfsbereitschaft oder einfach so. Die Sterne zählen fürs Level, und gLiTCh feiert sie beim Kind mit einer Überraschung.</p>
+      <div class="gift-kids" role="group" aria-label="Wer bekommt Sterne?">
+        <button type="button" class="gift-k all${all ? " on" : ""}" data-giftall aria-pressed="${all}">🎉 Ganze Klasse</button>
+        ${kids.map(k => `<button type="button" class="gift-k${G.sel.has(k.id) ? " on" : ""}" data-giftk="${k.id}" aria-pressed="${G.sel.has(k.id)}">${gl("normal", k.color, "still")}${esc(k.first_name)}</button>`).join("")}</div>
+      <div class="gift-row"><span class="gift-l">Wie viele?</span>${GIFT_N.map(n => `<button type="button" class="btn small${G.n === n ? " primary" : ""}" data-giftn="${n}">${n} ★</button>`).join("")}
+        <input class="input" id="giftN" type="number" min="1" max="500" inputmode="numeric" value="${G.n}" aria-label="Eigene Anzahl Sterne" style="width:90px"></div>
+      <label class="f" for="giftWhy">Wofür? (freiwillig, das Kind sieht es)<input class="input" id="giftWhy" maxlength="80" placeholder="z. B. Super Mitarbeit" value="${esc(G.why || "")}"></label>
+      <div class="gift-why">${GIFT_WHY.map(w => `<button type="button" class="btn small" data-giftwhy="${esc(w)}">${esc(w)}</button>`).join("")}</div>
+      <div class="row"><button type="button" class="btn primary" data-giftgo ${G.sel.size ? "" : "disabled"}>🎁 ${G.n} ★ an ${G.sel.size ? (all ? "die ganze Klasse" : G.sel.size === 1 ? esc((kids.find(k => G.sel.has(k.id)) || {}).first_name || "") : G.sel.size + " Kinder") : "…"} schenken</button></div>
+      ${list.length ? `<h3 style="margin-top:16px">Zuletzt geschenkt</h3><div class="gift-hist">${list.map(h => `<div class="gift-h"><b>${h.n} ★</b><span>${esc(h.who.length === kids.length && kids.length > 1 ? "ganze Klasse" : h.who.join(", "))}${h.why ? ` · «${esc(h.why)}»` : ""}<small>${new Date(h.at).toLocaleString("de-CH", { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</small></span>
+        <button type="button" class="btn small danger" data-ungift="${esc(h.id)}">${LP.confirm === "g" + h.id ? "Sicher?" : "Zurücknehmen"}</button></div>`).join("")}</div>` : ""}</section>`;
+  }
+  function bindGiftPanel(c) {
+    const G = LP.gift, kids = LP.kids.filter(k => !k.is_teacher), keep = async () => { const y = window.scrollY; await render(); window.scrollTo(0, y); };
+    $$("[data-giftk]").forEach(b => b.onclick = () => { const id = b.dataset.giftk; G.sel.has(id) ? G.sel.delete(id) : G.sel.add(id); keep(); });
+    const ga = $("[data-giftall]"); if (ga) ga.onclick = () => { const all = kids.every(k => G.sel.has(k.id)); G.sel = new Set(all ? [] : kids.map(k => k.id)); keep(); };
+    $$("[data-giftn]").forEach(b => b.onclick = () => { G.n = +b.dataset.giftn; keep(); });
+    const gn = $("#giftN"); if (gn) gn.onchange = () => { G.n = Math.max(1, Math.min(500, Math.round(+gn.value || 1))); keep(); };
+    const gw = $("#giftWhy"); if (gw) gw.oninput = () => { G.why = gw.value; };
+    $$("[data-giftwhy]").forEach(b => b.onclick = () => { G.why = b.dataset.giftwhy; gw.value = G.why; });
+    const go = $("[data-giftgo]"); if (go) go.onclick = async () => {
+      const to = kids.filter(k => G.sel.has(k.id)); if (!to.length) return;
+      const n = Math.max(1, Math.min(500, Math.round(+G.n || 1))), why = String(G.why || "").trim().slice(0, 80), id = "g" + Date.now().toString(36), at = new Date().toISOString();
+      go.disabled = true;
+      try {
+        await S.be.giftStars(to.map(k => ({ student_id: k.id, id: id + "~" + k.id.slice(0, 8), stars: n, data: { why, at } })));
+        /* Den Kindern Bescheid geben (über die Live-Steuerung, nach höchstens 5 Sekunden) */
+        const fresh = (await S.be.listClasses()).find(x => x.id === c.id) || c, st = Object.assign({}, fresh.settings || {}), live = Object.assign({}, st.live || {}), now = Date.now();
+        live.gifts = (live.gifts || []).filter(g => now - (g.t || 0) < 3600000).concat({ id, t: now, n, why, to: to.length === kids.length ? "all" : to.map(k => k.id) }).slice(-12);
+        st.live = live; await S.be.saveClassSettings(c.id, st); c.settings = st; if (LP.cur && LP.cur.id === c.id) LP.cur.settings = st;
+        LP.prog = await S.be.classProgress(c.id);
+        toast(`🎁 ${n} ★ an ${to.length === kids.length ? "die ganze Klasse" : to.map(k => k.first_name).join(", ")} geschenkt!`, "star", 5000);
+        G.sel = new Set(); G.why = ""; keep();
+      } catch (err) { toast(err.message, "err", 6000); go.disabled = false; }
+    };
+    $$("[data-ungift]").forEach(b => b.onclick = async () => { const id = b.dataset.ungift; if (LP.confirm !== "g" + id) { LP.confirm = "g" + id; return keep(); }
+      LP.confirm = null;
+      try { const rows = LP.prog.filter(p => p.module_id === "gift" && p.activity_id.split("~")[0] === id); for (const r of rows) await S.be.ungift(r.activity_id); LP.prog = await S.be.classProgress(c.id); toast("Geschenk zurückgenommen."); keep(); }
+      catch (err) { toast(err.message, "err", 6000); } });
+  }
+  /* Kind: Geschenk feiern, sobald es über die Live-Steuerung ankommt */
+  async function giftCheck(L) {
+    if (!S.me || isLP() || !L) return;
+    const gifts = Array.isArray(L.gifts) ? L.gifts : [], ids = [S.me.student.id].concat(S.team.map(t => t.student.id)), seenKey = "glhub.gifts." + S.me.student.id, seen = store.get(seenKey, null);
+    if (seen === null) { store.set(seenKey, gifts.map(g => g.id)); return; }   // erstes Mal auf diesem Gerät: ältere Geschenke nicht nochmals feiern
+    const nu = gifts.filter(g => !seen.includes(g.id) && (g.to === "all" || (Array.isArray(g.to) && g.to.some(x => ids.includes(x)))));
+    if (!nu.length) return;
+    store.set(seenKey, seen.concat(nu.map(g => g.id)).slice(-40));
+    try { const me = await S.be.me(S.token); S.me.progress = me.progress; } catch (e) { /* Sterne kommen beim nächsten Laden */ }
+    const n = nu.reduce((a, g) => a + g.n, 0), whys = [...new Set(nu.map(g => g.why).filter(Boolean))], all = nu.every(g => g.to === "all");
+    const names = all ? null : [S.me.student].concat(S.team.map(t => t.student)).filter(s => nu.some(g => g.to === "all" || g.to.includes(s.id))).map(s => s.first_name);
+    let ov = document.getElementById("giftMsg"); if (ov) ov.remove();
+    ov = document.createElement("div"); ov.id = "giftMsg"; ov.className = "rel-msg gift-msg"; ov.setAttribute("role", "alertdialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-labelledby", "giftT");
+    ov.innerHTML = `<div class="rel-msg-in ok"><div class="rel-msg-g">${G.svg("love", "#8B5CFF", { outfit: outfitOf() })}</div>
+      <div><h2 id="giftT">🎁 ${n} Sterne geschenkt!</h2><p>${all ? "Deine Lehrperson schenkt der ganzen Klasse Sterne." : `Deine Lehrperson schenkt ${names.length > 1 ? names.map(esc).join(" und ") + " je" : "dir"} ${n} Sterne.`}</p>
+      ${whys.length ? `<div class="rel-msg-c"><b>Wofür?</b><p>«${whys.map(esc).join("», «")}»</p></div>` : ""}
+      <button type="button" class="btn primary" data-giftok>Juhuu, danke!</button></div></div>`;
+    document.body.appendChild(ov); ov.querySelector("[data-giftok]").onclick = () => { ov.remove(); render(); }; ov.querySelector("[data-giftok]").focus();
+    const fx = document.createElement("div"); fx.className = "gift-rain"; fx.setAttribute("aria-hidden", "true"); fx.innerHTML = Array.from({ length: 24 }, (_, i) => `<i style="left:${Math.random() * 100}%;animation-delay:${(Math.random() * 1.2).toFixed(2)}s">${i % 3 ? "★" : "⭐"}</i>`).join("");
+    document.body.appendChild(fx); setTimeout(() => fx.remove(), 4200);
   }
 
   /* ---------- QR-Code zeichnen und drucken ---------- */
@@ -1716,6 +1788,7 @@
   }
   function liveApply(L) {
     S.live = L || {};
+    giftCheck(S.live).catch(() => {});
     let ov = document.getElementById("livePause");
     if (L.pause && !ov) {
       ov = document.createElement("div"); ov.id = "livePause"; ov.className = "live-pause"; ov.setAttribute("role", "alertdialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", "Pause");
