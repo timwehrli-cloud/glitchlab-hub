@@ -274,6 +274,56 @@
     { mod: "de-lava", id: "gr_vitrine", slot: "deko", n: "Eiskristall-Vitrine", box: [96, 56, 24, 36], need: { lv: 1, min: 10 },
       svg: `<rect x="99" y="86" width="18" height="6" fill="#3A3A44"/><rect x="100" y="60" width="16" height="26" fill="rgba(190,230,255,.18)" stroke="#BFE3F2" stroke-width=".8"/><circle cx="108" cy="73" r="9" fill="#9EE3FF" opacity=".12"/><g class="rm-bob"><path d="M108 64l5 8-5 10-5-10z" fill="#9EE3FF"/><path d="M108 64v18M103 72h10" stroke="#fff" stroke-width=".5" opacity=".8"/></g>` }
   ];
+  /* ---------- Web-App-Galerie: pro App der Kinder 3 Cosmetics (Skin, Emote, Zimmer), frei sobald man die App startet ---------- */
+  const APP_REW = [
+    { n: 1, app: "Brain-Quiz", emoji: "🧠", c: "#1E88C7", skin: { n: "Weltraum-Hirn", base: "#1E88C7" },
+      emote: { n: "Geistesblitz", d: "gLiTCh hat eine Idee: Es blitzt über seinem Kopf. Aha!", ic: "💡", text: "Aha!", anim: "gross", farben: ["#1E88C7", "#FFC21A"] },
+      room: { id: "ar_planeten", slot: "decke", n: "Planeten-Mobile", box: [40, 0, 80, 30],
+        svg: `<path d="M48 2h64" stroke="#3A3A44" stroke-width="1.2"/>` + [[56, 14, 5, "#FF8A65"], [80, 20, 7, "#FFC21A"], [104, 12, 4.5, "#4FC3F7"]].map(([x, y, r, c], k) => `<path d="M${x} 2V${y - r}" stroke="#9AA3B5" stroke-width=".6"/><g class="rm-bob" style="animation-delay:${k * .4}s"><circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/><circle cx="${x - r / 3}" cy="${y - r / 3}" r="${r / 3}" fill="#fff" opacity=".35"/>${k === 1 ? `<ellipse cx="${x}" cy="${y}" rx="${r + 4}" ry="2" fill="none" stroke="#FFE082" stroke-width="1.2"/>` : ""}</g>`).join("") + `<g class="rm-twinkle"><circle cx="68" cy="8" r=".8" fill="#fff"/><circle cx="94" cy="6" r=".8" fill="#fff"/></g>` } },
+    { n: 2, app: "Schweizer-Boss", emoji: "🐄", c: "#D3001A", skin: { n: "Alpenkuh", base: "#D3001A" },
+      emote: { n: "Kuhglocken-Tanz", d: "Berta, die Alpenkuh, läutet ihre Glocke und gLiTCh hüpft mit. Muuuh!", ic: "🐄", text: "Muuuh!", anim: "huepfen", farben: ["#D3001A", "#FFFFFF"] },
+      room: { id: "ar_kuhglocke", slot: "wand", n: "Bertas Kuhglocke", box: [4, 18, 32, 40],
+        svg: `<path d="M8 22h24l-3 9H11z" fill="#D3001A"/><rect x="18" y="23" width="4" height="7" fill="#fff"/><rect x="16.5" y="24.5" width="7" height="4" fill="#fff"/><path d="M11 31l4 3M29 31l-4 3" stroke="#8A0012" stroke-width="1"/><g class="rm-sway" style="transform-origin:20px 33px"><path d="M14 36h12l3 14H11z" fill="#C9A227"/><path d="M11 50h18" stroke="#8A6A10" stroke-width="1.4"/><path d="M15 39h10" stroke="#FFE082" stroke-width=".8"/><circle cx="20" cy="52" r="2" fill="#5D4A10"/></g>` } },
+    { n: 3, app: "Team-Boss", emoji: "🐞", c: "#14836B", skin: { n: "Teamgrün", base: "#14836B" },
+      emote: { n: "Marienkäfer-Flug", d: "Lilo, der Marienkäfer, fliegt eine Runde und gLiTCh dreht sich mit. Teamwork!", ic: "🐞", text: "Teamwork!", anim: "drehen", farben: ["#E53935", "#14836B"] },
+      room: { id: "ar_lilo", slot: "teppich", n: "Lilo-Teppich", box: [46, 82, 68, 14],
+        svg: `<ellipse cx="80" cy="90" rx="30" ry="5.4" fill="#E53935"/><path d="M80 84.6v10.8" stroke="#1A1210" stroke-width="1.2"/><ellipse cx="80" cy="85.4" rx="7" ry="1.8" fill="#1A1210"/>` + [[64, 89], [70, 92], [92, 88.6], [96, 92], [86, 91.6], [74, 88]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.7" fill="#1A1210"/>`).join("") + `<g class="rm-twinkle"><circle cx="77" cy="85" r=".6" fill="#fff"/><circle cx="83" cy="85" r=".6" fill="#fff"/></g>` } },
+    { n: 4, app: "Glitch, Plan", emoji: "👾", c: "#5A3BD6", skin: { n: "Wochenplan-Lila", base: "#5A3BD6" },
+      emote: { n: "Alles abgehakt", d: "gLiTCh hakt den ganzen Wochenplan ab und jubelt. Erledigt!", ic: "✅", text: "Erledigt!", anim: "jubeln", farben: ["#5A3BD6", "#3CFF7A"] },
+      room: { id: "ar_wochenplan", slot: "rechts", n: "Wochenplan-Tafel", box: [116, 34, 42, 58],
+        svg: `<path d="M124 90l4-26M150 90l-4-26" stroke="#5D3A1A" stroke-width="1.6"/><rect x="119" y="38" width="36" height="30" rx="2" fill="#16123A" stroke="#5A3BD6" stroke-width="1.4"/><text x="137" y="44.6" font-size="4" font-weight="900" text-anchor="middle" fill="#B79CFF" font-family="monospace">WOCHENPLAN</text>`
+          + ["Mo", "Di", "Mi", "Do", "Fr"].map((d, k) => `<text x="${123.6 + k * 6.6}" y="51" font-size="3" font-weight="800" text-anchor="middle" fill="#9AA3B5" font-family="sans-serif">${d}</text><rect x="${121.4 + k * 6.6}" y="53" width="4.4" height="4.4" rx=".8" fill="${k < 4 ? "#3CC48A" : "#2A2550"}"/>${k < 4 ? `<path d="M${122.2 + k * 6.6} 55.2l1.2 1.2 2-2.4" stroke="#fff" stroke-width=".7" fill="none"/>` : ""}`).join("")
+          + `<rect x="121" y="60" width="32" height="2.4" rx="1.2" fill="#2A2550"/><g class="rm-glowpulse"><rect x="121" y="60" width="25" height="2.4" rx="1.2" fill="#00E5FF"/></g>` } },
+    { n: 5, app: "Lern World", emoji: "🌍", c: "#E0498C", skin: { n: "Klötzchen-Pink", base: "#E0498C" },
+      emote: { n: "Coin-Regen", d: "Lauter Lern-Coins regnen herab und gLiTCh sammelt sie ein. Kling!", ic: "🪙", text: "Kling!", anim: "regen", farben: ["#FFC21A", "#E0498C"] },
+      room: { id: "ar_kloetzchenbaum", slot: "links", n: "Klötzchen-Baum", box: [2, 40, 46, 52],
+        svg: `<rect x="20" y="64" width="8" height="28" fill="#8B5A2B"/><rect x="20" y="64" width="2.6" height="28" fill="#A8743A"/>`
+          + [[8, 44], [16, 44], [24, 44], [32, 44], [12, 36], [20, 36], [28, 36], [8, 52], [16, 52], [24, 52], [32, 52], [20, 28]].map(([x, y], k) => `<rect x="${x}" y="${y}" width="8" height="8" fill="${k % 3 ? "#3CC48A" : "#2E9B6A"}"/><rect x="${x}" y="${y}" width="8" height="1.6" fill="#7EE3B0" opacity=".6"/>`).join("")
+          + `<g class="rm-bob"><circle cx="40" cy="70" r="3.6" fill="#FFC21A" stroke="#C98A00" stroke-width=".8"/><text x="40" y="71.6" font-size="4" font-weight="900" text-anchor="middle" fill="#8A5A00" font-family="monospace">C</text></g><rect x="4" y="88" width="40" height="4" fill="#6B4A2A"/><rect x="4" y="88" width="40" height="1.6" fill="#3CC48A"/>` } },
+    { n: 6, app: "Die Schlauen Köpfchen", emoji: "🐱", c: "#7A5CC9", skin: { n: "Katzen-Lila", base: "#7A5CC9" },
+      emote: { n: "Jons Miau", d: "Jon, die Katze, feuert gLiTCh an und gLiTCh wackelt vor Freude. Miau!", ic: "🐱", text: "Miau!", anim: "wackeln", farben: ["#7A5CC9", "#B0BEC5"] },
+      room: { id: "ar_jon", slot: "deko", n: "Jon im Körbchen", box: [92, 58, 30, 34],
+        svg: `<path d="M94 80h26l-3 11H97z" fill="#C9A06A"/><path d="M94 80h26" stroke="#8B5A2B" stroke-width="1.6"/><path d="M97 84h20M98 88h18" stroke="#A8743A" stroke-width=".7"/>`
+          + `<g class="rm-bob"><ellipse cx="107" cy="78" rx="9" ry="5" fill="#9AA3B5"/><circle cx="107" cy="70" r="6" fill="#9AA3B5"/><path d="M102 66l-1-5 4 3zM112 66l1-5-4 3z" fill="#9AA3B5"/><path d="M102.6 65l-.6-2.6 2 1.6zM111.4 65l.6-2.6-2 1.6z" fill="#F4A6B8"/>`
+          + `<g class="rm-blink"><rect x="104" y="69" width="1.6" height="2" rx=".8" fill="#14062E"/><rect x="108.6" y="69" width="1.6" height="2" rx=".8" fill="#14062E"/></g><path d="M106.6 72.4h1l-.5.6z" fill="#F4A6B8"/><path d="M99 71h-3M99 73h-3M115 71h3M115 73h3" stroke="#5E6676" stroke-width=".4"/></g>`
+          + `<g class="rm-sway" style="transform-origin:116px 78px"><path d="M116 78c4-1 5-6 3-9" stroke="#9AA3B5" stroke-width="2" fill="none" stroke-linecap="round"/></g>` } }
+  ];
+  const appSeen = n => !!((S.me?.extras || {}).apps || {})[n];
+  if (window.GLGlitch && GLGlitch.addSkins) GLGlitch.addSkins(APP_REW.map(a => ({ id: "as_" + a.n, n: a.skin.n, base: a.skin.base })));
+  /* Galerie im Rahmen: openApp() der Galerie abfangen und den Start der App merken */
+  function hookGallery(fr) {
+    try {
+      const w = fr.contentWindow; if (!w || w.__glHook || typeof w.openApp !== "function") return;
+      const orig = w.openApp; w.__glHook = true;
+      w.openApp = function (n) { try { appStarted(+n); } catch (e) { /* weiter */ } return orig.apply(this, arguments); };
+      const h = (w.location.hash || "").match(/gruppe-(\d)/); if (h) appStarted(+h[1]);
+    } catch (e) { /* fremde Seite */ }
+  }
+  function appStarted(n) {
+    const A = APP_REW.find(a => a.n === n); if (!A || !S.me || isLP() || appSeen(n)) return;
+    saveExtras({ apps: Object.assign({}, (S.me.extras || {}).apps || {}, { [n]: Date.now() }) });
+    toast(`🎁 Neu für dich, weil du «${A.app}» ausprobierst: Skin «${A.skin.n}», Emote «${A.emote.n}» und «${A.room.n}» fürs Zimmer!`, "star", 8000);
+  }
   const needOk = (m, n) => n.all ? m.activities.every(x => rawSt(m, x) >= n.all) : n.sum ? gameSum(m) >= n.sum : gameLv(m, n.lv) >= n.min;
   const needTxt = (m, n) => n.all ? `${m.title}: alle Tanks ganz voll` : n.sum ? `${m.title}: insgesamt ${n.sum} Sterne`
     : `${m.title}: ${m.activities.length > 1 ? `Level ${n.lv} mit ` : ""}${n.min} Sterne`;
@@ -291,7 +341,16 @@
         if (lp || gameSum(m) >= Math.ceil(gameMax(m) * .9)) earned.push(badge);
         out.skins.push({ id, badge, mod: m.title, n: g.skin.n, base: g.skin.base, light: sh.light, dark: sh.dark, hi: sh.hi, reqTxt: `${m.title}: 90 % der Sterne` }); }
     });
-    out.room = BUILTIN_ROOM.map(x => Object.assign({ mod: "" }, x));
+    /* Web-App-Galerie */
+    out.mods.push({ id: "mi-app-galerie", n: "Web-App-Galerie", c: "#E0498C", emoji: "🚀" });
+    APP_REW.forEach(a => { const ok = lp || appSeen(a.n), req = `In der Web-App-Galerie «${a.app}» starten`, mod = "Web-App-Galerie";
+      const sh = window.GLGlitch ? GLGlitch.shades(a.skin.base) : {};
+      [["as_", "skin"], ["ae_", "emote"]].forEach(([p]) => { if (ok) earned.push("hb:" + p + a.n); });
+      out.skins.push({ id: "as_" + a.n, badge: "hb:as_" + a.n, mod, n: a.skin.n, base: a.skin.base, light: sh.light, dark: sh.dark, hi: sh.hi, reqTxt: req });
+      out.emotes.push(Object.assign({ id: "ae_" + a.n, badge: "hb:ae_" + a.n, mod, reqTxt: req }, a.emote));
+      out.__appRoom = (out.__appRoom || []).concat({ id: a.room.id, slot: a.room.slot, n: a.room.n, box: a.room.box, svg: a.room.svg, badge: "hb:" + a.room.id, mod, reqTxt: req });
+      if (ok) earned.push("hb:" + a.room.id); });
+    out.room = BUILTIN_ROOM.map(x => Object.assign({ mod: "" }, x)).concat(out.__appRoom || []); delete out.__appRoom;
     if (lp) BUILTIN_ROOM.forEach(x => earned.push(x.badge));
     GAME_ROOM.forEach(x => { const m = gameMod(x.mod); if (!m) return; const badge = "hb:" + x.id;
       if (lp || needOk(m, x.need)) earned.push(badge);
@@ -895,7 +954,7 @@
     if (upHtml != null) fr.srcdoc = H.uploadDoc(upHtml, m, workKey(lab), S.me.student.first_name, S.team.map(t => t.student.first_name));
     else { const qv = window.GL_V ? "?v=" + window.GL_V : ""; fr.src = m && m.src ? m.src + qv : "lab/index.html" + qv + "#" + ((m && m.hash) || lab); }
     if (m && m.frameBg) fr.style.background = m.frameBg;
-    fr.onload = () => { const l = $("#labLoad"); if (l) l.remove(); };
+    fr.onload = () => { const l = $("#labLoad"); if (l) l.remove(); if (m && m.id === "mi-app-galerie") hookGallery(fr); };
     $(".labshell").appendChild(fr);
     /* gLiTCh sitzt in der Ecke, so wie er angezogen ist (nicht bei Lab-Modulen, die ihn schon zeigen, und nicht bei Spielen mit eigenem Maskottchen) */
     const ownGlitch = m && (m.kind === "lab" || m.noBuddy || (m.upload && m.meta && m.meta.maskottchen));
