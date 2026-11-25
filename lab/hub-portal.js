@@ -1047,9 +1047,9 @@ function prestigeSub(T, li){
   const P = prestigeP(); if (!P) return `Level ${li+1} · über 100!`;
   const base = LIB.LEVELS[99].s, p = P.of(T.stars, base);
   if (!p) return `Level ${li+1} · noch ${base + P.STEP - T.stars} ★ bis Prestige I`;
-  return `Prestige-Rang ${P.roman(Math.min(p, 10))}${p > 10 ? " ★" + (p - 9) : ""} · Stufe ${((li - 99) % 10) + 1} von 10`;
+  return `${P.rankTxt ? P.rankTxt(p) : "Prestige-Rang " + P.roman(Math.min(p, 10))} · Stufe ${((li - 99) % 10) + 1} von 10`;
 }
-function prestigeRing(T){ const P = prestigeP(), p = prestigeOfT(T); if (!P || !p) return ""; const c = P.RANKS[Math.min(p, 10) - 1].c; return ` style="border-color:${c};box-shadow:0 0 14px ${c}, inset 0 0 8px ${c}"`; }
+function prestigeRing(T){ const P = prestigeP(), p = prestigeOfT(T); if (!P || !p) return ""; const c = P.RANKS[Math.min(p, P.RANKS.length) - 1].c; return ` style="border-color:${c};box-shadow:0 0 14px ${c}, inset 0 0 8px ${c}"`; }
 function prestigeRows(T){
   const P = prestigeP(); if (!P) return "";
   const base = LIB.LEVELS[99].s, have = P.of(T.stars, base);
@@ -1057,8 +1057,8 @@ function prestigeRows(T){
     + P.RANKS.map((R, i)=>{ const k = i + 1, got = have >= k, cls = got ? "done" : k === have + 1 ? "cur" : "next";
       const gifts = [`<span class="pt-gift"><i>${R.ic}</i>Hintergrund «${esc(R.bg.n)}»</span>`, `<span class="pt-gift"><i>${R.dip.emoji}</i>Diplom</span>`,
         `<span class="pt-gift"><i>${R.emote.ic}</i>Emote «${esc(R.emote.n)}»</span>`, `<span class="pt-gift"><i class="glitch">${LIB.glitchSVG("normal", {outfit:{skin:"ps_" + k}})}</i>Skin «${esc(R.skin.n)}»</span>`];
-      return `<li class="pt-lv-row pt-lv-pp ${cls}" style="--pc:${R.c}"><span class="pt-lv-n">${P.roman(k)}</span><div><b>${esc(P.label(k))}</b><small>ab ${base + k * P.STEP} ★</small><div class="pt-gifts">${gifts.join("")}</div></div><span aria-hidden="true">${got ? "✓" : cls === "cur" ? "★" : "🔒"}</span></li>`; }).join("")
-    + `<li class="pt-lv-row pt-lv-ph"><span class="pt-lv-n">X+</span><div><b>Und danach?</b><small>Alle weiteren ${P.STEP} Sterne gibt es einen Zusatzstern: Regenbogen ★2, ★3 …</small></div><span aria-hidden="true">✨</span></li>`;
+      return (k === 11 ? `<li class="pt-lv-row pt-lv-ph pt-lv-ultra"><span class="pt-lv-n">⚡</span><div><b>Ultra-Prestige</b><small>Nach Prestige X geht es weiter: 10 Ultra-Ränge mit Blitzen und Spezialeffekten, wieder alle ${P.STEP} Sterne einer.</small></div><span aria-hidden="true"></span></li>` : "") + `<li class="pt-lv-row pt-lv-pp ${cls}" style="--pc:${R.c}"><span class="pt-lv-n">${P.num ? P.num(k) : P.roman(k)}</span><div><b>${esc(P.label(k))}</b><small>ab ${base + k * P.STEP} ★</small><div class="pt-gifts">${gifts.join("")}</div></div><span aria-hidden="true">${got ? "✓" : cls === "cur" ? "★" : "🔒"}</span></li>`; }).join("")
+    + `<li class="pt-lv-row pt-lv-ph"><span class="pt-lv-n">${P.RANKS.length > 10 ? "UX+" : "X+"}</span><div><b>Und danach?</b><small>Alle weiteren ${P.STEP} Sterne gibt es einen Zusatzstern: ${esc(P.RANKS[P.RANKS.length - 1].n)} ★2, ★3 …</small></div><span aria-hidden="true">✨</span></li>`;
 }
 (function(){ if (document.getElementById("ppCss")) return; const st = document.createElement("style"); st.id = "ppCss";
   st.textContent = ".pt-lv-pp{border-left:4px solid var(--pc)!important}.pt-lv-pp .pt-lv-n{background:var(--pc)!important;color:#14062E!important}.pt-lv-ph{background:rgba(255,194,26,.1)!important}.pt-lv-ph b{color:#FFC21A}";
@@ -1067,7 +1067,7 @@ function prestigeRows(T){
 function levelsHTML(){
   const s = student(D.me), T = totalsFor(s.id), li = LIB.levelOf(T.stars), L = LIB.LEVELS, RR = window.GLAB_R;
   return `<div class="wd-box" role="dialog" aria-modal="true" aria-labelledby="ptLvT">
-    <div class="wd-head"><div><small>${esc(s.n)} · ★ ${T.stars}</small><h2 id="ptLvT">Alle Level</h2><p>Sterne aus allen Modulen und Fächern zählen zusammen. Bis Level 100 bringt fast jedes Level eine Belohnung. Danach beginnt Prestige: alle 300 Sterne ein neuer Rang (I bis X) mit animiertem Hintergrund, Diplom, Beschwörungs-Emote und animiertem Skin. Gegenstände aus der Schweiz gibt es für die Diplome aus «Entdeckungsreise Schweiz».</p></div>
+    <div class="wd-head"><div><small>${esc(s.n)} · ★ ${T.stars}</small><h2 id="ptLvT">Alle Level</h2><p>Sterne aus allen Modulen und Fächern zählen zusammen. Bis Level 100 bringt fast jedes Level eine Belohnung. Danach beginnt Prestige: alle 300 Sterne ein neuer Rang (Prestige I bis X, danach Ultra-Prestige I bis X mit Blitzen und Spezialeffekten) mit animiertem Hintergrund, Diplom, Beschwörungs-Emote und animiertem Skin. Gegenstände aus der Schweiz gibt es für die Diplome aus «Entdeckungsreise Schweiz».</p></div>
       <button type="button" class="btn" data-pt="lv-close">Fertig</button></div>
     <ol class="pt-lv-list">${L.slice(0, 100).map((l,k)=>{
       const gifts = LIB.OUTFITS.filter(o=>o.lv === k).map(o=>`<span class="pt-gift"><i class="glitch">${LIB.glitchSVG("normal", {outfit:{[o.slot]:o.id}})}</i>${esc(o.n)}</span>`).concat(RR.rewardsAt(k).map(r=>`<span class="pt-gift"><i>${r.ic}</i>${esc(r.n)}</span>`));

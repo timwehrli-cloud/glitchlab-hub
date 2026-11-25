@@ -937,7 +937,7 @@
       ["dips", "mods", "emotes", "skins", "room"].forEach(k => { up.custom[k] = (bi.custom[k] || []).concat(up.custom[k] || []); });
       mods.hub.badges = [...new Set([...mods.hub.badges, ...up.earned, ...bi.earned])];
       if (isLP()) {   // Lehrpersonen-Konto: höchstes Level, alle Diplome, alles freigeschaltet
-        mods.hub.stars = GD.LEVELS[99].s + (window.GL_PRESTIGE ? 10 * GL_PRESTIGE.STEP : 0) + 1;   // zeigt auch Prestige X
+        mods.hub.stars = GD.LEVELS[99].s + (window.GL_PRESTIGE ? GL_PRESTIGE.RANKS.length * GL_PRESTIGE.STEP : 0) + 1;   // zeigt auch den höchsten Rang (Ultra X)
         mods.hub.badges = [...new Set([...mods.hub.badges, ...GD.BADGES.map(b => b.id), ...H.modules.map(m => "hub:" + m.id)])];
         mods.hub.fed = 99; mods.hub.deaths = 9;
       }
