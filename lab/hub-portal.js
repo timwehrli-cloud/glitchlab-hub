@@ -37,7 +37,13 @@ const MODULES = [
   {id:"politik", live:true, req:{badge:"erfindungen_4", txt:"Wird freigeschaltet, sobald ihr alle 4 Etappen der Schweizer Erfindungen präsentiert habt."}, n:"Schweizer Politik", y:"Abstimmungs-Simulation", d:"Bringt eine eigene Volksinitiative auf den Weg: Unterschriften sammeln, Argumente abwägen, Kampagne führen und am Abstimmungssonntag auf Volk und Kantone hoffen.", c:"#8B5CFF", c2:"#2A1660",
    i:'<rect x="5" y="10" width="14" height="10" rx="1.5"/><path d="M9 10V5h6v5M10 14h4"/>'},
   {id:"ebenen", live:true, req:{badge:"politik_4", txt:"Wird freigeschaltet, sobald ihr alle 4 Etappen der Schweizer Politik präsentiert habt."}, n:"Die drei Ebenen: Bund, Kantone, Gemeinden", y:"Ebenen-Simulator", d:"Wer ist wofür zuständig? Im Ebenen-Simulator verteilt ihr Anliegen, findet Kantone auf der Karte und überzeugt die Gemeindeversammlung von eurem Budget.", c:"#FF4F8B", c2:"#5A0F33",
-   i:'<path d="M4 20h16M6 16h12M8 12h8M12 4l5 4H7z"/>'}
+   i:'<path d="M4 20h16M6 16h12M8 12h8M12 4l5 4H7z"/>'},
+  {id:"hsp_tonstudio", live:true, n:"Auftakt: Im Tonstudio", y:"Deutsch · Spektakel fürs Ohr", d:"Wie entsteht ein Hörspiel? Wer spricht, wer coacht, wer schneidet? Am Schluss gestaltet ihr ein Hörspiel-Plakat.", c:"#F28C28", c2:"#4A1D00",
+   i:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8 21h8"/>'},
+  {id:"hsp_geschichte", live:true, n:"Alles beginnt mit einer guten Geschichte", y:"Deutsch · Audio 1", d:"Vom Buch zum Hörspiel: «Norde isch, wo obe isch» mit Paul und Mel. Am Schluss schreibt ihr eine Hörspiel-Kritik.", c:"#1FA3C7", c2:"#06364A",
+   i:'<path d="M3 16h18l-3 4H6zM12 4v12M12 5l6 8h-6"/>'},
+  {id:"hsp_skript", live:true, n:"Das Hörspielskript", y:"Deutsch · Audio 2", d:"Finn und Jola fahren Traktor: Regieanweisungen verstehen und ein eigenes Mini-Skript schreiben.", c:"#E0533A", c2:"#4A1208",
+   i:'<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 7h3M13 7h3M8 11h3M13 11h3M8 15h3M13 15h2"/>'}
 ];
 const COLS = ["#8B5CFF","#DD4646","#2E6BE6","#1F9D68","#E3A300","#FF4F8B","#00B3C7","#7B5CFF","#FF7A00","#3A1D7A"];
 const DIPCOL = ["#FF2BD6","#00E5FF","#FFC21A","#3CFF7A","#B79CFF","#FF7A00","#5B8CFF","#FF5D8F"];

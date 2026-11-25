@@ -215,16 +215,21 @@
   }));
   /* ---------------------------------------------------------------
      Deutsch · Spektakel fürs Ohr (Deutsch Sechs, Kapitel 3): Hörspiele
-     Die fertigen Module sind mit dem gLiTCh-Editor gebaut (games/hoerspiel/*.html).
+     Die drei fertigen Module laufen im gLiTCh-Lab wie die NMG-Module (lab/hoerspiel.js).
      Die Hörtexte hören die Kinder im Lehrmittel «Deutsch Sechs» (LMVZ) auf dem iPad.
      --------------------------------------------------------------- */
   const HSP = (o) => H.registerModule(Object.assign({ subject: "de", theme: "de-hoerspiel", kind: "upload", noBuddy: true }, o));
-  HSP({ id: "de-hsp-tonstudio", file: "games/hoerspiel/tonstudio.html", title: "Auftakt: Im Tonstudio", minutes: 45,
-    teaser: "Wie entsteht ein Hörspiel? Wer spricht, wer coacht, wer schneidet? Ein Blick hinter die Kulissen.", activities: [{ id: "etappe-1", title: "Was ist ein Hörspiel?", maxStars: 18 }, { id: "etappe-2", title: "Wer arbeitet im Tonstudio?", maxStars: 28 }, { id: "etappe-3", title: "Mein Job im Tonstudio", maxStars: 14 }] });
-  HSP({ id: "de-hsp-geschichte", file: "games/hoerspiel/geschichte.html", title: "Alles beginnt mit einer guten Geschichte", minutes: 70,
-    teaser: "Vom Buch zum Hörspiel: «Norde isch, wo obe isch» mit Paul und Mel. Mit Audio 1 aus Deutsch Sechs.", activities: [{ id: "etappe-1", title: "Vom Buch zum Hörspiel", maxStars: 22 }, { id: "etappe-2", title: "Richtig zuhören", maxStars: 22 }, { id: "etappe-3", title: "Audio 1: Was passiert?", maxStars: 19 }, { id: "etappe-4", title: "Figuren und Stimmen", maxStars: 30 }] });
-  HSP({ id: "de-hsp-skript", file: "games/hoerspiel/skript.html", title: "Das Hörspielskript", minutes: 90,
-    teaser: "Regieanweisungen verstehen und selbst schreiben: Finn und Jola fahren Traktor. Mit Audio 2 aus Deutsch Sechs.", activities: [{ id: "etappe-1", title: "So sieht ein Skript aus", maxStars: 28 }, { id: "etappe-2", title: "Audio 2: Kannawoniwasein!", maxStars: 28 }, { id: "etappe-3", title: "Finn und Jola", maxStars: 46 }, { id: "etappe-4", title: "Jetzt seid ihr die Sprecher", maxStars: 18 }] });
+  const HSP_BADGES = {
+    hsp_tonstudio: ["Hörspiel-Kenner", "Tonstudio-Profi", "Fachwort-Ass", "Studio-Star"],
+    hsp_geschichte: ["Buch-Detektiv", "Zuhör-Profi", "Stimmen-Kenner", "Nordwärts!"],
+    hsp_skript: ["Skript-Kenner", "Traktor-Profi", "Regie-Talent", "Hörspiel-Autor"] };
+  if (window.GL_DATA && window.GL_DATA.BADGES) Object.entries(HSP_BADGES).forEach(([mod, ns]) => ns.forEach((n, k) => {
+    if (!window.GL_DATA.BADGES.some(b => b.id === `${mod}_${k + 1}`)) window.GL_DATA.BADGES.push({ id: `${mod}_${k + 1}`, n, mod }); }));
+  [["tonstudio", "Auftakt: Im Tonstudio", 45, "Wie entsteht ein Hörspiel? Wer spricht, wer coacht, wer schneidet? Ein Blick hinter die Kulissen."],
+   ["geschichte", "Alles beginnt mit einer guten Geschichte", 70, "Vom Buch zum Hörspiel: «Norde isch, wo obe isch» mit Paul und Mel. Mit Audio 1 aus Deutsch Sechs."],
+   ["skript", "Das Hörspielskript", 90, "Regieanweisungen verstehen und selbst schreiben: Finn und Jola fahren Traktor. Mit Audio 2 aus Deutsch Sechs."]]
+    .forEach(([k, title, minutes, teaser]) => HSP({ id: "de-hsp-" + k, kind: "lab", lab: "hsp_" + k, title, minutes, teaser,
+      activities: [{ id: "lab", title, maxStars: null }] }));
   /* Noch in Arbeit: erscheinen als «Bald» */
   [["erzaehler", "Erzählerinnen und Erzähler", "Erzählrede und Figurenrede, Geräusche und Musik: «Der 13. Februar» und «Krabat»."],
    ["vertiefung", "Vertiefung: Wortschatz", "Regieanweisungen, lebendige Dialoge, Geräusche, Schauplatz und Stimmung."],

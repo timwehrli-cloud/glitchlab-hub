@@ -11,5 +11,6 @@ s = s.replace('<script src="js/config.js', f'<script>window.GL_V = "{v}";</scrip
 idx.write_text(s, encoding="utf-8")
 lab = root / "lab" / "index.html"; t = lab.read_text(encoding="utf-8")
 t = re.sub(r'<script src="hub-portal\.js(?:\?v=\w+)?"', f'<script src="hub-portal.js?v={v}"', t)
+t = re.sub(r'<script src="hoerspiel\.js(?:\?v=\w+)?"', f'<script src="hoerspiel.js?v={v}"', t)
 lab.write_text(t, encoding="utf-8")
 print("Version", v)
