@@ -158,7 +158,15 @@
         + `<g transform="translate(16 18)"><rect x="0" y="0" width="22" height="26" rx="2" fill="#1C0A0E" stroke="#8A3A1A" stroke-width="1.6"/><path d="M4 20l4-8 4 5 3-6 4 9" stroke="#FFC21A" stroke-width="1.2" fill="none"/><text x="11" y="7" font-size="4" font-weight="800" text-anchor="middle" fill="#FF8A1F" font-family="sans-serif">°C</text></g>`
         + `<g transform="translate(130 22)"><path d="M6 0l6 8-6 14-6-14z" fill="#9EE3FF"/><path d="M6 0v22M0 8h12" stroke="#fff" stroke-width=".7" opacity=".8"/><circle cx="6" cy="10" r="10" fill="#9EE3FF" opacity=".15"/></g>`
         + `<path d="M0 56c20-4 30 2 44 0M116 58c14-4 28 0 44-2" stroke="#FF6A00" stroke-width="2" fill="none"/>`,
-      done: () => gameAll("de-lava") }
+      done: () => gameAll("de-lava") },
+    { id: "bg_studio", n: "Tonstudio", ic: "🎙️", wand: ["#160E22", "#2E2140"], boden: ["#4A3424", "#3A281A", "#2A1C12"], reqTxt: "«Auftakt: Im Tonstudio»: alle 4 Etappen präsentieren",
+      svg: [4, 118].map(x0 => [0, 1, 2, 3].map(r => [0, 1, 2, 3, 4].map(c => { const x = x0 + c * 7.6, y = 8 + r * 11; return `<rect x="${x}" y="${y}" width="7" height="10" fill="#3A2A4E"/><path d="M${x} ${y}l3.5 5 3.5-5M${x} ${y + 10}l3.5-5 3.5 5" stroke="#251A33" stroke-width=".8" fill="none"/>`; }).join("")).join("")).join("")
+        + `<rect x="50" y="10" width="60" height="38" rx="2" fill="#0B0714" stroke="#5E4A7A" stroke-width="2"/><rect x="52" y="12" width="56" height="34" fill="#13263A"/><path d="M52 12l18 0-18 22z" fill="#fff" opacity=".06"/>`
+        + `<path d="M56 46l6-10h36l6 10z" fill="#2A2A33"/>` + [64, 70, 76, 82, 88, 94].map((x, k) => `<rect x="${x}" y="${38 + (k % 3)}" width="2.4" height="1.4" fill="${k % 2 ? "#FFC21A" : "#00E5FF"}"/>`).join("")
+        + `<circle cx="80" cy="28" r="5" fill="#1C2A3E"/><rect x="74" y="33" width="12" height="5" rx="2" fill="#1C2A3E"/><path d="M75 27c0-6 10-6 10 0" stroke="#3A4A66" stroke-width="1.4" fill="none"/>`
+        + `<g class="rm-twinkle"><rect x="60" y="16" width="2" height="2" fill="#3CFF7A"/><rect x="98" y="16" width="2" height="2" fill="#FF3B30"/></g>`
+        + `<rect x="66" y="2" width="28" height="6" rx="1" fill="#2A0A0A"/><g class="rm-glowpulse"><rect x="67" y="3" width="26" height="4" rx=".8" fill="#FF3B30"/></g><text x="80" y="6.4" font-size="3.4" font-weight="900" text-anchor="middle" fill="#fff" font-family="sans-serif">ON AIR</text>`,
+      done: () => myBadges().has("hsp_tonstudio_4") }
   ];
 
   /* ---------- Zusätzliche Zimmer-Gegenstände für Module, die bisher wenig gaben (Zimmer 160 × 100) ---------- */
@@ -310,6 +318,66 @@
   ];
   const appSeen = n => !!((S.me?.extras || {}).apps || {})[n];
   if (window.GLGlitch && GLGlitch.addSkins) GLGlitch.addSkins(APP_REW.map(a => ({ id: "as_" + a.n, n: a.skin.n, base: a.skin.base })));
+  /* ---------- Deutsch · Spektakel fürs Ohr: Tonstudio-Hintergrund, Studio-Möbel, zwei Tanz-Figuren, Emote und Skin ----------
+     Frei durch die Diplome der drei Hörspiel-Module im gLiTCh-Lab (hsp_…_1 bis _4). «Alle Diplome» = Modul mit allen Sternen geschafft. */
+  const HSP_MOD = { hsp_tonstudio: "Auftakt: Im Tonstudio", hsp_geschichte: "Alles beginnt mit einer guten Geschichte", hsp_skript: "Das Hörspielskript" };
+  const HSP_DIP = { hsp_tonstudio: ["Hörspiel-Kenner", "Tonstudio-Profi", "Fachwort-Ass", "Studio-Star"], hsp_geschichte: ["Buch-Detektiv", "Zuhör-Profi", "Stimmen-Kenner", "Nordwärts!"],
+    hsp_skript: ["Skript-Kenner", "Traktor-Profi", "Regie-Talent", "Hörspiel-Autor"] };
+  const hspAll = mod => [1, 2, 3, 4].every(k => myBadges().has(`${mod}_${k}`));
+  const hspTxt = (mod, k) => k ? `Diplom «${HSP_DIP[mod][k - 1]}» (${HSP_MOD[mod]})` : `«${HSP_MOD[mod]}» mit allen Sternen abschliessen (alle 4 Diplome)`;
+  const NOTE = (x, y, c) => `<path d="M${x + 2} ${y}v5" stroke="${c}" stroke-width=".9"/><path d="M${x + 2} ${y}l2 1" stroke="${c}" stroke-width=".9"/><ellipse cx="${x + 1}" cy="${y + 5}" rx="1.4" ry="1" fill="${c}"/>`;
+  const HSP_ROOM = [
+    { id: "hr_hsp_platte", mod: "hsp_tonstudio", dip: 1, slot: "wand", n: "Goldene Schallplatte", box: [4, 20, 32, 36],
+      svg: `<rect x="6" y="22" width="28" height="32" rx="1.5" fill="#3A2A1A"/><rect x="8" y="24" width="24" height="28" fill="#14062E"/><circle cx="20" cy="36" r="9.5" fill="#E8B923"/><circle cx="20" cy="36" r="7" fill="none" stroke="#C98A00" stroke-width=".5"/><circle cx="20" cy="36" r="4.6" fill="none" stroke="#C98A00" stroke-width=".5"/><circle cx="20" cy="36" r="2.6" fill="#E53935"/><circle cx="20" cy="36" r=".7" fill="#14062E"/><rect x="12" y="47" width="16" height="3" fill="#C98A00"/><path d="M14 48.5h12" stroke="#FFF3C4" stroke-width=".6"/>`
+        + `<g class="rm-twinkle"><path d="M15 29l1 1M25 41l1 1" stroke="#FFF3C4" stroke-width="1" stroke-linecap="round"/></g>` },
+    { id: "hr_hsp_mischpult", mod: "hsp_tonstudio", dip: 2, slot: "links", n: "Mischpult", box: [2, 56, 46, 36],
+      svg: `<rect x="6" y="76" width="3" height="16" fill="#2A2A33"/><rect x="40" y="76" width="3" height="16" fill="#2A2A33"/><path d="M3 76h44l-3-14H6z" fill="#3A3A44"/><path d="M3 76h44v3H3z" fill="#24242C"/>`
+        + [9, 15, 21, 27, 33, 39].map((x, k) => `<rect x="${x}" y="64" width=".8" height="10" fill="#14141A"/><rect x="${x - 1.3}" y="${66 + (k * 3) % 6}" width="3.4" height="2" rx=".5" fill="${k % 2 ? "#FFC21A" : "#00E5FF"}"/>`).join("")
+        + `<g class="rm-twinkle">${[9, 15, 21, 27, 33, 39].map((x, k) => `<rect x="${x - .4}" y="63" width="1.6" height="1" fill="${k % 3 ? "#3CFF7A" : "#FF3B30"}"/>`).join("")}</g>` },
+    { id: "hr_hsp_onair", mod: "hsp_tonstudio", dip: 3, slot: "decke", n: "ON-AIR-Leuchte", box: [44, 0, 72, 22],
+      svg: `<path d="M58 0v7M102 0v7" stroke="#2A2A33" stroke-width="1"/><rect x="52" y="7" width="56" height="14" rx="2" fill="#2A0A0A" stroke="#14062E" stroke-width="1"/><g class="rm-glowpulse"><rect x="54" y="9" width="52" height="10" rx="1.5" fill="#FF3B30"/></g><text x="80" y="17" font-size="7.4" font-weight="900" text-anchor="middle" fill="#fff" font-family="sans-serif" letter-spacing=".6">ON AIR</text>` },
+    { id: "hr_hsp_kassetten", mod: "hsp_geschichte", dip: 1, slot: "deko", n: "Kassetten-Turm", box: [96, 54, 26, 38],
+      svg: [0, 1, 2, 3, 4, 5].map(k => { const y = 85 - k * 6, c = ["#F28C28", "#4FC3F7", "#FF2BD6", "#3CC48A", "#FFC21A", "#B79CFF"][k], x = 98 + (k % 2) * 1.4;
+        return `<rect x="${x}" y="${y}" width="22" height="6" rx=".8" fill="#1C1C24"/><rect x="${x + 2}" y="${y + 1}" width="18" height="2.4" fill="${c}"/><circle cx="${x + 7}" cy="${y + 4.4}" r=".9" fill="#E8E0CC"/><circle cx="${x + 15}" cy="${y + 4.4}" r=".9" fill="#E8E0CC"/>`; }).join("") },
+    { id: "hr_hsp_klavier", mod: "hsp_geschichte", dip: 2, slot: "teppich", n: "Klaviertasten-Teppich", box: [44, 82, 72, 14],
+      svg: `<rect x="46" y="84" width="68" height="10" rx="1" fill="#F7F7F7" stroke="#14062E" stroke-width=".8"/>` + Array.from({ length: 13 }, (_, k) => `<path d="M${51.2 + k * 5.2} 84v10" stroke="#14062E" stroke-width=".5"/>`).join("")
+        + [0, 1, 3, 4, 5, 7, 8, 10, 11, 12].map(k => `<rect x="${49.6 + k * 5.2}" y="84" width="3.2" height="6" fill="#14062E"/>`).join("") },
+    { id: "hr_hsp_radio", mod: "hsp_geschichte", dip: 3, slot: "links", n: "Retro-Radio", box: [2, 48, 46, 44],
+      svg: `<rect x="8" y="74" width="34" height="3" fill="#6D4A2A"/><rect x="11" y="77" width="2.6" height="15" fill="#5A3A1E"/><rect x="36.4" y="77" width="2.6" height="15" fill="#5A3A1E"/><rect x="9" y="56" width="32" height="18" rx="4" fill="#C98A00"/><rect x="9" y="56" width="32" height="3" rx="1.5" fill="#E8B923"/><circle cx="18" cy="66" r="5.6" fill="#4A2E00"/><path d="M14 63h8M13.4 66h9.2M14 69h8" stroke="#6D4A1A" stroke-width=".8"/><rect x="26" y="61" width="12" height="4" fill="#FFF3D1"/><path d="M30 61v4" stroke="#E53935" stroke-width=".7"/><circle cx="29" cy="69.4" r="1.6" fill="#4A2E00"/><circle cx="35" cy="69.4" r="1.6" fill="#4A2E00"/><path d="M14 56l10-8" stroke="#9AA3B5" stroke-width=".8"/>`
+        + `<g class="rm-bob">${NOTE(36, 46, "#FFC21A")}${NOTE(42, 50, "#FF2BD6")}</g>` },
+    { id: "hr_hsp_pinnwand", mod: "hsp_skript", dip: 1, slot: "wand", n: "Skript-Pinnwand", box: [4, 20, 32, 36],
+      svg: `<rect x="5" y="21" width="30" height="33" rx="1" fill="#B0805A"/><rect x="7" y="23" width="26" height="29" fill="#C9A06A"/><rect x="9" y="25" width="13" height="17" fill="#FFF8EE" transform="rotate(-3 15 33)"/>`
+        + [28, 31, 34, 37, 40].map((y, k) => `<rect x="10" y="${y}" width="3" height="1" fill="#E0533A"/><rect x="14" y="${y}" width="${6 - (k % 2) * 2}" height="1" fill="#9A9080"/>`).join("")
+        + `<rect x="21" y="36" width="10" height="13" fill="#FFF3A8" transform="rotate(4 26 42)"/><path d="M23 40h6M23 43h5M23 46h6" stroke="#B0A060" stroke-width=".7"/><circle cx="15" cy="26" r="1.2" fill="#E53935"/><circle cx="26" cy="37" r="1.2" fill="#2E6BE6"/>` },
+    { id: "hr_hsp_mikro", mod: "hsp_skript", dip: 2, slot: "deko", n: "Studio-Mikrofon", box: [94, 42, 28, 50],
+      svg: `<ellipse cx="108" cy="91" rx="8" ry="1.6" fill="#2A2A33"/><path d="M108 91V64" stroke="#5E6676" stroke-width="1.6"/><path d="M108 64l6-6" stroke="#5E6676" stroke-width="1.4"/><rect x="111" y="44" width="7" height="13" rx="3.5" fill="#9AA3B5" transform="rotate(30 114 50)"/><path d="M112 47l5 3M111 50l5 3M110 53l5 3" stroke="#5E6676" stroke-width=".6"/>`
+        + `<circle cx="102" cy="50" r="6" fill="#14062E" opacity=".55" stroke="#2A2A33" stroke-width="1"/><path d="M108 56l-2-2" stroke="#2A2A33" stroke-width=".8"/>` },
+    { id: "hr_hsp_plattenspieler", mod: "hsp_skript", dip: 3, slot: "links", n: "Plattenspieler", box: [2, 58, 46, 34],
+      svg: `<rect x="6" y="78" width="38" height="3" fill="#6D4A2A"/><rect x="8" y="81" width="2.6" height="11" fill="#5A3A1E"/><rect x="39.4" y="81" width="2.6" height="11" fill="#5A3A1E"/><rect x="7" y="68" width="36" height="10" rx="1.5" fill="#C98A5A"/><rect x="7" y="68" width="36" height="2" fill="#E0A878"/>`
+        + `<ellipse cx="21" cy="69" rx="11" ry="3.2" fill="#14141A"/><g class="rm-twinkle"><ellipse cx="21" cy="69" rx="7.4" ry="2" fill="none" stroke="#3A3A44" stroke-width=".5"/></g><ellipse cx="21" cy="69" rx="2.6" ry=".8" fill="#E53935"/><path d="M38 66v3l-9 2" stroke="#9AA3B5" stroke-width=".9" fill="none"/><circle cx="38" cy="66" r="1.4" fill="#5E6676"/>`
+        + `<g class="rm-bob">${NOTE(24, 56, "#00E5FF")}${NOTE(31, 59, "#FFC21A")}</g>` },
+    { id: "hr_hsp_lautsprecher", mod: "hsp_skript", dip: 4, slot: "rechts", n: "Grosser Lautsprecher", box: [118, 36, 40, 56],
+      svg: `<rect x="124" y="40" width="28" height="52" rx="2" fill="#1C1C24"/><rect x="124" y="40" width="28" height="2" fill="#3A3A44"/><circle cx="138" cy="52" r="5" fill="#3A3A44"/><circle cx="138" cy="52" r="2" fill="#14141A"/>`
+        + `<g class="rm-glowpulse"><circle cx="138" cy="74" r="10.5" fill="none" stroke="#F28C28" stroke-width="1"/></g><circle cx="138" cy="74" r="9" fill="#3A3A44"/><circle cx="138" cy="74" r="4" fill="#14141A"/><circle cx="138" cy="74" r="1.4" fill="#5E6676"/>` },
+    /* Zwei eigene Tanz-Figuren (Deko rechts): für «alle Sterne» in Modul 1 und Modul 2 */
+    { id: "hr_hsp_bumbo", mod: "hsp_tonstudio", slot: "rechts", n: "Bumbo, die tanzende Bassbox", box: [116, 30, 42, 62],
+      svg: `<ellipse cx="137" cy="91" rx="13" ry="1.8" fill="#000" opacity=".25"/><g class="rm-hsp-dance" style="transform-origin:137px 90px">`
+        + `<path d="M131 80l-3 10h5M143 80l3 10h-5" stroke="#14062E" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M125 58l-7-6M149 58l7-7" stroke="#14062E" stroke-width="2.2" stroke-linecap="round"/><circle cx="118" cy="52" r="2.2" fill="#FFC21A"/><circle cx="156" cy="51" r="2.2" fill="#FFC21A"/>`
+        + `<rect x="124" y="40" width="26" height="42" rx="4" fill="#F28C28"/><rect x="124" y="40" width="26" height="4" rx="2" fill="#FFB36B"/><circle cx="137" cy="70" r="8" fill="#2A1206"/><g class="rm-glowpulse"><circle cx="137" cy="70" r="4.4" fill="#5A2A0E"/></g><circle cx="137" cy="70" r="1.6" fill="#F28C28"/>`
+        + `<circle cx="131.5" cy="51" r="2.6" fill="#fff"/><circle cx="142.5" cy="51" r="2.6" fill="#fff"/><g class="rm-blink"><circle cx="132" cy="51.4" r="1.3" fill="#14062E"/><circle cx="143" cy="51.4" r="1.3" fill="#14062E"/></g><path d="M133 56.6c2 2 6 2 8 0" stroke="#14062E" stroke-width="1.1" fill="none" stroke-linecap="round"/></g>`
+        + `<g class="rm-bob">${NOTE(118, 34, "#FF2BD6")}${NOTE(151, 36, "#00E5FF")}</g>` },
+    { id: "hr_hsp_kassetta", mod: "hsp_geschichte", slot: "rechts", n: "Kassetta mit Kopfhörern", box: [116, 34, 42, 58],
+      svg: `<ellipse cx="137" cy="91" rx="13" ry="1.8" fill="#000" opacity=".25"/><g class="rm-hsp-dance2" style="transform-origin:137px 90px">`
+        + `<path d="M132 72v12l-4 6M142 72v12l4 6" stroke="#14062E" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="124" y="88" width="7" height="3" rx="1.4" fill="#3CC48A"/><rect x="143" y="88" width="7" height="3" rx="1.4" fill="#3CC48A"/>`
+        + `<path d="M121 62l-5 6M153 62l5-7" stroke="#14062E" stroke-width="2" stroke-linecap="round"/>`
+        + `<rect x="120" y="50" width="34" height="24" rx="2.4" fill="#4FC3F7"/><rect x="123" y="53" width="28" height="9" rx="1" fill="#FFF8EE"/><circle cx="130" cy="57.6" r="2.2" fill="#14062E"/><circle cx="144" cy="57.6" r="2.2" fill="#14062E"/><circle cx="130.6" cy="57" r=".7" fill="#fff"/><circle cx="144.6" cy="57" r=".7" fill="#fff"/><rect x="133.6" y="56.4" width="6.8" height="2.4" fill="#C9B79A"/>`
+        + `<path d="M131 66c3 3 9 3 12 0" stroke="#14062E" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M127 71h20l-2 3h-16z" fill="#2A7FA8"/>`
+        + `<path d="M120 54c0-14 34-14 34 0" stroke="#FF2BD6" stroke-width="2" fill="none"/><rect x="116" y="51" width="5.6" height="9" rx="2" fill="#FF2BD6"/><rect x="152.4" y="51" width="5.6" height="9" rx="2" fill="#FF2BD6"/></g>`
+        + `<g class="rm-bob">${NOTE(116, 36, "#FFC21A")}${NOTE(152, 32, "#3CFF7A")}</g>` }
+  ];
+  const HSP_EMOTE = { id: "he_hsp", mod: "hsp_skript", dip: 4, n: "Mikro-Drop", d: "gLiTCh hält eine Rede, lässt das Mikrofon fallen und jubelt. Applaus!", ic: "🎤", text: "Mic drop!", anim: "jubeln", farben: ["#F28C28", "#FF3B30"] };
+  const HSP_SKIN = { id: "hs_hsp", mod: "hsp_skript", n: "Studio-Orange", base: "#F28C28" };
+  if (window.GLGlitch && GLGlitch.addSkins) GLGlitch.addSkins([{ id: HSP_SKIN.id, n: HSP_SKIN.n, base: HSP_SKIN.base }]);
   /* Galerie im Rahmen: openApp() der Galerie abfangen und den Start der App merken */
   function hookGallery(fr) {
     try {
@@ -355,6 +423,14 @@
     GAME_ROOM.forEach(x => { const m = gameMod(x.mod); if (!m) return; const badge = "hb:" + x.id;
       if (lp || needOk(m, x.need)) earned.push(badge);
       out.room.push({ id: x.id, slot: x.slot, n: x.n, box: x.box, svg: x.svg, badge, mod: m.title, reqTxt: needTxt(m, x.need) }); });
+    /* Spektakel fürs Ohr */
+    HSP_ROOM.forEach(x => { const badge = x.dip ? `${x.mod}_${x.dip}` : "hb:" + x.id;
+      if (lp || (x.dip ? myBadges().has(badge) : hspAll(x.mod))) earned.push(badge);
+      out.room.push({ id: x.id, slot: x.slot, n: x.n, box: x.box, svg: x.svg, badge, mod: "Spektakel fürs Ohr", reqTxt: hspTxt(x.mod, x.dip) }); });
+    { const e = HSP_EMOTE, req = hspTxt(e.mod, e.dip); if (lp || myBadges().has(`${e.mod}_${e.dip}`)) earned.push("hb:" + e.id);
+      out.emotes.push({ id: e.id, badge: "hb:" + e.id, mod: "Spektakel fürs Ohr", reqTxt: req, n: e.n, d: e.d, ic: e.ic, text: e.text, anim: e.anim, farben: e.farben }); }
+    { const k = HSP_SKIN, sh = window.GLGlitch ? GLGlitch.shades(k.base) : {}; if (lp || hspAll(k.mod)) earned.push("hb:" + k.id);
+      out.skins.push({ id: k.id, badge: "hb:" + k.id, mod: "Spektakel fürs Ohr", n: k.n, base: k.base, light: sh.light, dark: sh.dark, hi: sh.hi, reqTxt: hspTxt(k.mod) }); }
     return { custom: out, earned };
   };
   if (window.GLGlitch && GLGlitch.addSkins) GLGlitch.addSkins(GAME_REW.map(g => ({ id: "hs_" + g.mod.slice(3), n: g.skin.n, base: g.skin.base })));

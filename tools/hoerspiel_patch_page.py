@@ -24,6 +24,9 @@ def hoerspiel_patch(page):
     page = page.replace('Object.assign({}, m, {fach:"nmg"})', 'Object.assign({}, m, {fach: m.fach || "nmg"})')
     page = page.replace('const FACH = {mi:"Medien & Informatik", nmg:"Natur, Mensch, Gesellschaft"};',
                         'const FACH = {mi:"Medien & Informatik", nmg:"Natur, Mensch, Gesellschaft", de:"Deutsch"};')
+    # Eigenes Futter pro Modul (M.foods), sonst das Schweizer Essen
+    page = page.replace("const S = o.state, foods = BFOODS.map(", "const S = o.state, foods = (o.foods || BFOODS).map(", 1)
+    page = page.replace('B = window.GLAB_BUDDY({prefix:"ge", state:()=>BD,', 'B = window.GLAB_BUDDY({prefix:"ge", foods:M.foods, state:()=>BD,', 1)
     return page
 
 HSP_PORTAL = '  {id:"hsp_tonstudio", live:true, n:"Auftakt: Im Tonstudio", y:"Deutsch · Spektakel fürs Ohr", d:"Wie entsteht ein Hörspiel? Wer spricht, wer coacht, wer schneidet? Am Schluss gestaltet ihr ein Hörspiel-Plakat.", c:"#F28C28", c2:"#4A1D00",\n   i:\'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8 21h8"/>\'},\n  {id:"hsp_geschichte", live:true, n:"Alles beginnt mit einer guten Geschichte", y:"Deutsch · Audio 1", d:"Vom Buch zum Hörspiel: «Norde isch, wo obe isch» mit Paul und Mel. Am Schluss schreibt ihr eine Hörspiel-Kritik.", c:"#1FA3C7", c2:"#06364A",\n   i:\'<path d="M3 16h18l-3 4H6zM12 4v12M12 5l6 8h-6"/>\'},\n  {id:"hsp_skript", live:true, n:"Das Hörspielskript", y:"Deutsch · Audio 2", d:"Finn und Jola fahren Traktor: Regieanweisungen verstehen und ein eigenes Mini-Skript schreiben.", c:"#E0533A", c2:"#4A1208",\n   i:\'<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 7h3M13 7h3M8 11h3M13 11h3M8 15h3M13 15h2"/>\'}'

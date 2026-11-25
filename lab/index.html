@@ -2706,7 +2706,7 @@ const escH = s => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;
 const arrK = (s,k) => Array.isArray(s[k]) ? s[k] : [];
 window.GLAB_BUDDY = function(o){
   const P = o.prefix, av = ()=>document.getElementById(P + "Av"), bub = ()=>document.getElementById(P + "Bub"), box = ()=>av() && av().closest(".buddy");
-  const S = o.state, foods = BFOODS.map(f=>Object.assign({}, f, {li: o.levelOf(OLD_LV[f.lv])}));
+  const S = o.state, foods = (o.foods || BFOODS).map(f=>Object.assign({}, f, {li: o.levelOf(OLD_LV[f.lv])}));
   let sayT = null, busy = false, lastAct = Date.now(), hinted = new Set(), sleeping = false, sad = false, dead = false, clicks = [], hi5Open = false, petDist = 0, petLast = null, petT = null, reading = false;
   const mood = m => { const a = av(); if (a) a.innerHTML = o.glitch(m); };
   const base = () => mood(sleeping ? "sleep" : sad ? "sad" : "normal");
@@ -4762,7 +4762,7 @@ Object.assign(window.GLAB_GE_MODS, window.GLAB_GE_MODS2);
 ["nachbarn","erfindungen","politik","ebenen"].forEach(m=>window.GLAB_GE_MODS[m].badges.forEach((b,k)=>window.GLAB_GE_BADGES.push(Object.assign({id:`${m}_${k+1}`, mod:m}, b))));
 })();
 </script>
-<script src="hoerspiel.js?v=202611252006"></script>
+<script src="hoerspiel.js?v=202611252035"></script>
 <script>
 /* ================= NMG-Module (Geschichte der Schweiz): gemeinsamer Ablauf =================
    Gleiche Bausteine wie die übrigen gLiTCh-Module: Theorie mit gLiTCh, Aufgabe, Etappen präsentieren (Code der Lehrperson), Ziel mit Produkt.
@@ -5711,7 +5711,7 @@ let typeT = null;
 function onInput(e){ const t = e.target; if (t.matches && t.matches("[data-ge-wrange]")){ warpVal = +t.value; const y = document.getElementById("geWYear"); if (y) y.textContent = warpVal; return; } if (!t.dataset || !t.dataset.geText || !root.contains(t)) return; S[t.dataset.geText] = t.value; clearTimeout(typeT); typeT = setTimeout(()=>{ $("#geCard").innerHTML = productHTML(); const lv = root.querySelector("#geLive"); if (lv) lv.innerHTML = productHTML().replace(' id="gePosterEl"', ""); renderGame(); renderStepper(); save(); }, 350); }
 function initBuddy(){
   if (!window.GLAB_BUDDY) return;
-  B = window.GLAB_BUDDY({prefix:"ge", state:()=>BD, glitch:(m,o)=>X.glitch(m,o), levelOf:X.levelOf, levelIdx:()=>X.levelOf(X.totals({stars: modStars(), badges: earned(S)}).stars),
+  B = window.GLAB_BUDDY({prefix:"ge", foods:M.foods, state:()=>BD, glitch:(m,o)=>X.glitch(m,o), levelOf:X.levelOf, levelIdx:()=>X.levelOf(X.totals({stars: modStars(), badges: earned(S)}).stars),
     save:()=>save(), changed:anim=>renderGame(anim), sfx:k=>sfx(k === "scan" ? "found" : k), burst:(x,y,c,n,r)=>window.GLAB_R && window.GLAB_R.burst && window.GLAB_R.burst(x,y,c,n,r),
     stepKey:()=>"s" + step,
     hint:()=>{ const sec = SECTIONS[step]; if (!sec) return `Spielt doch die ${M.game.title}!`; const nd = need(S, sec).filter(Boolean); return isDone(S, sec) ? "Sieht gut aus! Tippt unten auf «Weiter»." : `Kleiner Tipp: Es fehlt noch ${nd[0]}.`; },
@@ -7037,7 +7037,7 @@ window.GLAB_KI = {
 };
 })();
 </script>
-<script src="hub-portal.js?v=202611252006"></script>
+<script src="hub-portal.js?v=202611252035"></script>
 
 <script>
 (function(){

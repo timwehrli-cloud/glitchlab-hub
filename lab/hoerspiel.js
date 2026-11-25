@@ -23,6 +23,29 @@ const I = {
   clap:'<rect x="3" y="9" width="18" height="11" rx="1.5"/><path d="M3 9l2-5 16 2-2 3M8 4.5l-1 4M13 5l-1 4"/>'
 };
 
+/* ---------- Diplome im Hörspiel-Design: Wandbilder fürs Zimmer (20 × 20) ---------- */
+const nail = '<circle cx="10" cy="1.2" r=".8" fill="#2A1206"/>';
+const str = (a, b, y) => `<path d="M${a} ${y}L10 1.2L${b} ${y}" stroke="#2A1206" stroke-width=".35" fill="none"/>`;
+const rec = (disc, label, frame) => str(4, 16, 4.6) + `<rect x="2.6" y="4.6" width="14.8" height="14" rx=".6" fill="${frame}"/><rect x="3.6" y="5.6" width="12.8" height="12" fill="#14062E"/>`
+  + `<circle cx="10" cy="11.2" r="5.2" fill="${disc}"/><circle cx="10" cy="11.2" r="3.8" fill="none" stroke="#000" stroke-opacity=".25" stroke-width=".3"/><circle cx="10" cy="11.2" r="2.6" fill="none" stroke="#000" stroke-opacity=".25" stroke-width=".3"/><circle cx="10" cy="11.2" r="1.5" fill="${label}"/><circle cx="10" cy="11.2" r=".35" fill="#14062E"/>`
+  + `<g class="rm-twinkle"><path d="M6.8 7.8l.8.8" stroke="#fff" stroke-width=".6" stroke-linecap="round"/></g>` + nail;
+const frame = (inner, c) => str(4, 16, 5) + `<rect x="2.5" y="5" width="15" height="13" rx=".6" fill="${c || "#3A2A1A"}"/><rect x="3.6" y="6.1" width="12.8" height="10.8" fill="#1A1028"/>` + inner + nail;
+const HSP_WALL = {
+  hsp_tonstudio_1: rec("#E8B923", "#F28C28", "#5A3A1E"),
+  hsp_tonstudio_2: '<path d="M10 1.2v2.4" stroke="#2A1206" stroke-width=".5"/><g class="wl-sway"><path d="M4.6 12V9.4a5.4 5.4 0 0 1 10.8 0V12" stroke="#3A3A44" stroke-width="1.3" fill="none"/><rect x="2.8" y="11" width="3.6" height="6" rx="1.4" fill="#F28C28"/><rect x="13.6" y="11" width="3.6" height="6" rx="1.4" fill="#F28C28"/><rect x="3.6" y="12" width="1.4" height="4" rx=".6" fill="#FFB36B"/></g>' + nail,
+  hsp_tonstudio_3: str(5, 15, 6) + '<g class="wl-sway"><rect x="2.6" y="6" width="14.8" height="10" rx="1" fill="#4FC3F7"/><rect x="4" y="7.2" width="12" height="3.4" fill="#FFF8EE"/><text x="10" y="9.8" font-size="2.6" font-weight="900" text-anchor="middle" fill="#14062E" font-family="sans-serif">ABC</text><circle cx="6.6" cy="13" r="1.5" fill="#14062E"/><circle cx="13.4" cy="13" r="1.5" fill="#14062E"/><rect x="8.2" y="12.4" width="3.6" height="1.2" fill="#C9B79A"/><path d="M5 16l1-1.6h8l1 1.6" fill="#2A7FA8"/></g>' + nail,
+  hsp_tonstudio_4: '<rect x="4" y="16.4" width="12" height="2.6" rx=".4" fill="#3A2A1A"/><rect x="6" y="15" width="8" height="1.6" fill="#5A3A1E"/><path d="M10 15v-3" stroke="#C98A00" stroke-width="1"/><rect x="7.6" y="3.4" width="4.8" height="9" rx="2.4" fill="#E8B923"/><path d="M7.8 6h4.4M7.8 8h4.4M7.8 10h4.4" stroke="#C98A00" stroke-width=".4"/><path d="M5.8 9a4.2 4.2 0 0 0 8.4 0" stroke="#C98A00" stroke-width=".7" fill="none"/><g class="rm-twinkle"><path d="M3 4l.6 1.2 1.2.6-1.2.6L3 7.6l-.6-1.2-1.2-.6 1.2-.6zM16.8 2.6l.5 1 1 .5-1 .5-.5 1-.5-1-1-.5 1-.5z" fill="#FFF3A8"/></g>',
+  hsp_geschichte_1: frame('<path d="M5 15V8.4c2-.8 3.6-.6 5 .4 1.4-1 3-1.2 5-.4V15c-2-.8-3.6-.6-5 .4-1.4-1-3-1.2-5-.4z" fill="#FFF8EE"/><path d="M10 8.8v6.6" stroke="#C9B79A" stroke-width=".4"/><path d="M6 10.4h2.6M6 12h2.6M11.4 10.4h2.6M11.4 12h2" stroke="#9A9080" stroke-width=".35"/><g class="rm-twinkle"><path d="M13.6 6.8c.8.6.8 1.8 0 2.4M14.8 6.2c1.4 1 1.4 2.6 0 3.6" stroke="#1FA3C7" stroke-width=".45" fill="none"/></g>', "#06364A"),
+  hsp_geschichte_2: rec("#CFD8DC", "#1FA3C7", "#06364A"),
+  hsp_geschichte_3: frame('<rect x="3.6" y="13.4" width="12.8" height="3.5" fill="#1FA3C7"/><g class="wl-sway2"><path d="M5.6 13h8.8l-1.6 2H7.2z" fill="#E8E0CC"/><path d="M10 7v6" stroke="#5D3A1A" stroke-width=".5"/><path d="M10.2 7.4l3.4 4.6h-3.4z" fill="#F7F7F7"/></g><path d="M4.4 8.6v2" stroke="#FFC21A" stroke-width=".4"/><ellipse cx="4" cy="10.6" rx=".6" ry=".45" fill="#FFC21A"/>', "#06364A"),
+  hsp_geschichte_4: '<path d="M10 1.2v2.8" stroke="#2A1206" stroke-width=".5"/><circle cx="10" cy="11" r="7" fill="#B07A2A"/><circle cx="10" cy="11" r="5.8" fill="#FFF8EE"/><path d="M10 5.8v1M10 15.2v1M4.8 11h1M14.2 11h1" stroke="#5A3A1E" stroke-width=".5"/><g class="wl-tilt" style="transform-origin:10px 11px"><path d="M10 6.6l1.3 4.4h-2.6z" fill="#E53935"/><path d="M10 15.4l1.3-4.4h-2.6z" fill="#5E6676"/></g><circle cx="10" cy="11" r=".6" fill="#14062E"/><text x="10" y="8.6" font-size="1.8" font-weight="900" text-anchor="middle" fill="#E53935" font-family="sans-serif">N</text>' + nail,
+  hsp_skript_1: str(6, 14, 3.4) + '<rect x="4" y="3.4" width="12" height="15.4" rx=".8" fill="#B0805A"/><rect x="7.4" y="2.6" width="5.2" height="2" rx=".6" fill="#9AA3B5"/><rect x="5" y="5" width="10" height="12.8" fill="#FFF8EE"/>' + [7, 9, 11, 13, 15].map((y, k) => `<rect x="6" y="${y}" width="2" height=".8" fill="#E0533A"/><rect x="8.6" y="${y}" width="${5 - (k % 2) * 1.6}" height=".8" fill="#9A9080"/>`).join("") + nail,
+  hsp_skript_2: frame('<rect x="3.6" y="15" width="12.8" height="1.9" fill="#6B4A2A"/><g class="wl-sway2"><rect x="5" y="10.4" width="6" height="3" fill="#2E9B4A"/><rect x="9.4" y="7.6" width="3.4" height="4.4" fill="#2E9B4A"/><rect x="10.2" y="8.2" width="1.8" height="1.8" fill="#BFE6F2"/><circle cx="6.6" cy="14" r="2" fill="#14062E"/><circle cx="12.6" cy="14.4" r="1.4" fill="#14062E"/><rect x="6" y="8.6" width=".8" height="2" fill="#5E6676"/></g>', "#4A1208"),
+  hsp_skript_3: '<path d="M10 1.2v2.4" stroke="#2A1206" stroke-width=".5"/><g class="wl-sway"><rect x="3" y="8" width="14" height="10" rx=".6" fill="#2A2A33"/><path d="M3 8l1-4.4 13.4 1.6L17 8z" fill="#3A3A44"/><path d="M6 4l-1 4M9.6 4.4l-1 3.6M13.2 4.8l-.8 3.2" stroke="#F7F7F7" stroke-width=".9"/><path d="M5 11h10M5 13.4h7M5 15.8h8" stroke="#F7F7F7" stroke-width=".5"/></g>' + nail,
+  hsp_skript_4: rec("#7FE6FF", "#E0533A", "#4A1208")
+};
+const ART = id => `<svg viewBox="0 0 20 20" aria-hidden="true">${HSP_WALL[id]}</svg>`;
+
 /* ---------- Bild-Karten für die Auswahl (48 × 48, animiert) ---------- */
 const A = window.GLAB_GE_ANIM || (window.GLAB_GE_ANIM = {});
 const sv = inner => `<svg viewBox="0 0 48 48" aria-hidden="true">${inner}</svg>`;
@@ -54,7 +77,19 @@ const POSTER = [
   {v:"gold", n:"Bühnen-Gold", c:["#1C1408","#FFF6DA","#FFC21A"]}];
 const LMVZ = (nr, name) => `Öffnet auf dem iPad das Lehrmittel «Deutsch Sechs» (LMVZ) und sucht «Audio ${nr}: ${name}». Setzt Kopfhörer auf und hört den Ausschnitt zweimal: Beim ersten Mal achtet ihr darauf, worum es insgesamt geht. Beim zweiten Mal achtet ihr auf die Details: Wer spricht? Was passiert genau? Danach löst ihr hier die Fragen.`;
 
-const DE = {fach:"de", fachKurz:"DE"};
+/* ---------- Futter für gLiTCh: Hörspiel-Sachen (8 × 8 Pixel, pro Level eins) ---------- */
+const PX = (rows, pal) => rows.map((r, y) => [...r].map((ch, x) => ch === "." ? "" : `<rect x="${x}" y="${y}" width="1" height="1" fill="${pal[ch]}"/>`).join("")).join("");
+const HSP_FOODS = [
+  {lv:1, n:"Musiknote", say:"Eine Musiknote! Schmeckt nach Do-Re-Mi. Meine Muskeln singen!", svg:PX(["....ppp.","....p.pp","....p..p","....p...","....p...",".pppp...","ppppp...",".ppp...."], {p:"#FF2BD6"})},
+  {lv:2, n:"Kassette", say:"Eine Kassette! Knusprig mit Bandsalat. Zurückspulen, nochmal essen!", svg:PX([".oooooo.","occcccco","occcccco","oddooddo","odwoowdo","oddooddo","oooooooo",".o....o."], {o:"#F28C28", c:"#FFF1E2", d:"#2A1206", w:"#E8E0CC"})},
+  {lv:3, n:"CD", say:"Eine CD! Glänzt wie ein Regenbogen. Jetzt habe ich 700 MB Muskeln!", svg:PX(["..ssss..",".sabsss.","sabssccs","sbsddscs","sssddscs","sssssccs",".ssssss.","..ssss.."], {s:"#CFD8DC", a:"#FF2BD6", b:"#00E5FF", c:"#FFC21A", d:"#14062E"})},
+  {lv:4, n:"Kopfhörer", say:"Kopfhörer zum Znüni! Ich höre jetzt jedes Geräusch, sogar meinen Bizeps.", svg:PX(["..kkkk..",".k....k.","k......k","k......k","pp....pp","pp....pp","pp....pp",".p....p."], {k:"#3A3A44", p:"#F28C28"})},
+  {lv:5, n:"Mikrofon", say:"Ein Mikrofon! Test, Test … eins, zwei … ich bin stärker!", svg:PX(["..gggg..","..gddg..","..gggg..","..gddg..","...gg...","...kk...","...kk...","..kkkk.."], {g:"#9AA3B5", d:"#5E6676", k:"#2A2A33"})},
+  {lv:6, n:"Schallplatte", say:"Eine Schallplatte! Ich drehe mich vor Freude im Kreis. Rundum stark!", svg:PX(["..kkkk..",".kggggk.","kgkrrkgk","kgrwwrgk","kgrwwrgk","kgkrrkgk",".kggggk.","..kkkk.."], {k:"#14141A", g:"#3A3A44", r:"#E53935", w:"#FFF1E2"})},
+  {lv:7, n:"Goldene Schallplatte", say:"Die Goldene Schallplatte! Ich bin offiziell der stärkste Star im Tonstudio!", svg:PX(["..yyyy..",".yooooy.","yoyrryoy","yorwwroy","yorwwroy","yoyrryoy",".yooooy.","..yyyy.."], {y:"#FFE066", o:"#E8B923", r:"#E53935", w:"#FFF1E2"})}
+];
+
+const DE = {fach:"de", fachKurz:"DE", foods:HSP_FOODS};
 window.GLAB_GE_MODS_DE = {
 
 /* ================================================================ 1 Auftakt: Im Tonstudio */
@@ -301,10 +336,10 @@ hsp_skript: Object.assign({}, DE, {
 })
 };
 Object.assign(window.GLAB_GE_MODS, window.GLAB_GE_MODS_DE);
-Object.keys(window.GLAB_GE_MODS_DE).forEach(m=>window.GLAB_GE_MODS[m].badges.forEach((b,k)=>window.GLAB_GE_BADGES.push(Object.assign({id:`${m}_${k+1}`, mod:m}, b))));
+Object.keys(window.GLAB_GE_MODS_DE).forEach(m=>window.GLAB_GE_MODS[m].badges.forEach((b,k)=>window.GLAB_GE_BADGES.push(Object.assign({id:`${m}_${k+1}`, mod:m, art:ART(`${m}_${k+1}`)}, b))));
 
 /* ---------- Deutsch-Module laufen immer im Dark Mode ---------- */
-if (/^#hsp_/.test(location.hash)) document.documentElement.dataset.theme = "dark";
+if (/^#hsp_/.test(location.hash)){ document.documentElement.dataset.theme = "dark"; document.documentElement.dataset.hsp = "1"; }
 
 /* ---------- Produkt «Hörspiel-Plakat» (Klasse ge-hsp) ---------- */
 const st = document.createElement("style");
@@ -320,6 +355,21 @@ st.textContent = `
 .ge-hsp .ge-pt{font-family:ui-monospace, Menlo, monospace; font-size:.95rem}
 .ge-swp.ge-hsp i:first-child{background:var(--p3)}
 @keyframes geHspRec{50%{opacity:.35}}
+/* Diplome im Modul: Schallplatten statt Sechsecke (gold, wenn erreicht) */
+html[data-hsp] .bdg{clip-path:circle(50%)!important; border-radius:50%; background:radial-gradient(circle, #3A3A44 0 30%, transparent 31%), repeating-radial-gradient(circle, #1C1C24 0 1.4px, #2A2A33 1.4px 2.8px)!important; color:rgba(255,255,255,.4)!important}
+html[data-hsp] .bdg svg{width:46%; height:46%; position:relative; z-index:1}
+html[data-hsp] .bdg.on{background:radial-gradient(circle, var(--bc, #F28C28) 0 31%, #14062E 32% 34%, transparent 35%), repeating-radial-gradient(circle, #E8B923 0 1.4px, #C98A00 1.4px 2.8px)!important; color:#14062E!important; animation:hspSpin 6s linear infinite}
+html[data-hsp] .bdg.on::after{content:""; position:absolute; inset:0; border-radius:50%; background:linear-gradient(135deg, rgba(255,255,255,.45), transparent 45%); pointer-events:none}
+html[data-hsp] .badge-pop .bdg.on{animation:hspSpin 1.6s linear infinite!important}
+html[data-hsp] .badge-pop{border-color:#E8B923!important; background:linear-gradient(135deg, #2A1206, #4A1D00)!important}
+html[data-hsp] .badge-pop small::before{content:"💿 "}
+@keyframes hspSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){html[data-hsp] .bdg.on{animation:none!important}}
+.rm-hsp-dance{animation:rmHspDance 1s ease-in-out infinite}
+.rm-hsp-dance2{animation:rmHspDance2 1.2s ease-in-out infinite}
+@keyframes rmHspDance{0%,100%{transform:rotate(-6deg) translateY(0)}25%{transform:rotate(0) translateY(-3px)}50%{transform:rotate(6deg) translateY(0)}75%{transform:rotate(0) translateY(-3px)}}
+@keyframes rmHspDance2{0%,100%{transform:translateX(-2px) rotate(-3deg)}50%{transform:translateX(2px) translateY(-2px) rotate(4deg)}}
+@media (prefers-reduced-motion: reduce){.rm-hsp-dance,.rm-hsp-dance2{animation:none}}
 @media (prefers-reduced-motion: reduce){.ge-hsp .ge-ch-sub::before{animation:none}}`;
 (document.head || document.documentElement).appendChild(st);
 })();
