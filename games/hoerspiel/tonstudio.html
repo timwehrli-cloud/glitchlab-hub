@@ -1,0 +1,1199 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auftakt: Im Tonstudio</title>
+<!-- Erstellt mit dem gLiTCh-Editor. Ins Glitchlab hochladen: Lehrpersonen → «Module hochladen». -->
+<script type="application/json" id="glitchlab-modul">{"titel":"Auftakt: Im Tonstudio","fach":"de","thema":"Spektakel fürs Ohr","beschreibung":"Wie entsteht ein Hörspiel? Wir schauen hinter die Kulissen eines Tonstudios.","minuten":45,"farbe":"#F28C28","emoji":"🎙️","aufgaben":[{"id":"etappe-1","titel":"Was ist ein Hörspiel?","sterne":18},{"id":"etappe-2","titel":"Wer arbeitet im Tonstudio?","sterne":28},{"id":"etappe-3","titel":"Mein Job im Tonstudio","sterne":14}],"sterne":60,"diplome":[{"id":"tonstudio","name":"Tonstudio-Profi","emoji":"🎚️","beschreibung":"Alle Etappen im Tonstudio geschafft","wand":"wimpel"}],"extras":{"outfits":[],"emotes":[],"zimmer":[],"hintergruende":[],"skins":[]},"erstellt":"gLiTCh-Editor","maskottchen":"glitch"}</script>
+<style>.glitch { display: inline-block; position: relative; line-height: 0; flex: none; }
+.glitch svg { width: 100%; height: 100%; overflow: visible; display: block; animation: gBob 2.6s ease-in-out infinite; animation-delay: var(--d, 0s); }
+.glitch .gc { transform: translate(-.7px, 0); opacity: .85; animation: gC 3.2s steps(1) infinite; animation-delay: var(--d, 0s); }
+.glitch .gm { transform: translate(.7px, 0); opacity: .85; animation: gM 3.2s steps(1) infinite; animation-delay: var(--d, 0s); }
+.glitch .ge { transform-box: fill-box; transform-origin: center; animation: gBlink 4.4s infinite; animation-delay: var(--d, 0s); }
+.glitch .gsl { opacity: 0; animation: gSl 3.2s steps(1) infinite; animation-delay: var(--d, 0s); }
+.glitch .gp { animation: gPix 2.2s steps(2) infinite; }
+.glitch .gp2 { animation-delay: .6s; } .glitch .gp3 { animation-delay: 1.2s; }
+.glitch.still svg, .glitch.still .gc, .glitch.still .gm, .glitch.still .gsl { animation: none; }
+@keyframes gBob { 50% { transform: translateY(-6%); } }
+@keyframes gC { 0%, 84%, 100% { transform: translate(-.7px, 0); } 86% { transform: translate(-2px, .5px); } 90% { transform: translate(1px, -.4px); } 93% { transform: translate(-1.4px, 0); } }
+@keyframes gM { 0%, 84%, 100% { transform: translate(.7px, 0); } 86% { transform: translate(2px, -.5px); } 90% { transform: translate(-1px, .4px); } 93% { transform: translate(1.4px, 0); } }
+@keyframes gSl { 0%, 85%, 100% { opacity: 0; } 87% { opacity: .9; clip-path: inset(30% 0 48% 0); transform: translateX(1.6px); } 89% { opacity: .9; clip-path: inset(60% 0 18% 0); transform: translateX(-1.6px); } 91% { opacity: 0; } }
+@keyframes gBlink { 0%, 93%, 100% { transform: none; } 95% { transform: scaleY(.15); } }
+@keyframes gPix { 50% { opacity: 0; } }
+
+:root{--bg:#F4F1FB;--surface:#FFFFFF;--surface2:#F6F2FF;--line:#DCD3F2;--ink:#1B1530;--muted:#625A7E;--accent:#7B4CEF;--teal:#00A9BC;--pink:#FF2BD6;--gold:#E3A300;--ok:#1F9D68;--bad:#DD4646;--mc:var(--accent);--dark:#14062E;color-scheme:light}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:radial-gradient(900px 420px at 0% -10%,rgba(123,76,239,.12),transparent 60%),radial-gradient(700px 380px at 110% 0%,rgba(0,169,188,.10),transparent 60%),var(--bg);color:var(--ink);font:16px/1.55 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px));padding-block:12px 40px}
+button{font:inherit;color:inherit}
+h1,h2,h3{font-family:"Bricolage Grotesque","Inter",system-ui,sans-serif;line-height:1.15;margin:0;text-wrap:balance}
+.btn{appearance:none;border:2px solid var(--dark);background:#fff;border-radius:12px;padding:9px 15px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:3px 3px 0 var(--dark);transition:transform .1s,box-shadow .1s}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--dark)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--dark)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.small{padding:5px 10px;font-size:.85rem;border-radius:10px;box-shadow:2px 2px 0 var(--dark)}
+.btn[disabled]{opacity:.45;cursor:default;transform:none}
+.btn:focus-visible,.opt:focus-visible,.tab:focus-visible,.menu-btn:focus-visible,.hex:focus-visible,.tipbtn:focus-visible,.lex:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+/* Kopf: Menü · Logo · gLiTCh mit Sprechblase */
+.lab-top{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,auto);gap:14px;align-items:center;max-width:1180px;margin:0 auto}
+.menu-btn{border:2.5px solid var(--dark);background:var(--dark);color:#fff;font-weight:800;border-radius:14px;padding:10px 14px;cursor:pointer;box-shadow:-3px 3px 0 var(--pink),3px -3px 0 #00E5FF}
+.logo{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;min-width:0}
+.logo-g{font:900 clamp(1.4rem,3.4vw,2.1rem)/1 "Bricolage Grotesque",system-ui,sans-serif;background:linear-gradient(90deg,var(--accent),var(--pink),#00C2D6);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+.logo-l{font:900 clamp(1.4rem,3.4vw,2.1rem)/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--dark)}
+.logo-chip{margin-left:6px;align-self:center;font:900 .78rem/1 ui-monospace,monospace;padding:6px 9px;border-radius:8px;background:#D52B1E;color:#fff;border:2px solid var(--dark);transform:rotate(-3deg);box-shadow:-2px 2px 0 #00E5FF}
+.logo small{flex-basis:100%;color:var(--gold);font-weight:800;font-size:.85rem}
+.logo small .test{color:var(--pink)}
+.talk{display:flex;align-items:center;gap:8px;justify-self:end;max-width:min(520px,100%)}
+.say-bub{position:relative;background:var(--dark);color:#fff;border:2.5px solid var(--pink);border-radius:16px;padding:10px 14px;box-shadow:4px 4px 0 #00E5FF;min-width:0;font-size:.95rem}
+.say-bub::after{content:"";position:absolute;right:-12px;top:50%;width:14px;height:14px;background:var(--dark);border-right:2.5px solid var(--pink);border-top:2.5px solid var(--pink);transform:translateY(-50%) rotate(45deg)}
+.say-bub b{font:800 .75rem ui-monospace,monospace;color:var(--pink)}
+.say-bub p{margin:2px 0 0}
+.say-bub .lex{color:#9FF6FF;border-bottom-color:#9FF6FF}
+.say-bub.pop{animation:pop .35s ease-out}
+.glitch.big{width:92px;height:92px;flex:none;cursor:pointer;border-radius:50%;background:radial-gradient(circle,rgba(255,43,214,.25),transparent 70%)}
+.menu{position:absolute;z-index:40;left:max(14px,env(safe-area-inset-left,0px));top:78px;display:grid;gap:4px;min-width:240px;background:#fff;border:2.5px solid var(--dark);border-radius:16px;padding:8px;box-shadow:5px 5px 0 var(--dark)}
+.menu button{all:unset;cursor:pointer;padding:10px 12px;border-radius:10px;font-weight:800;display:flex;justify-content:space-between;gap:12px}
+.menu button:hover,.menu button:focus-visible{background:var(--surface2)}
+.menu small{color:var(--muted);font-weight:600}
+/* Baustein-Leiste */
+.tabs{max-width:1180px;margin:14px auto 0;display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:thin;align-items:flex-start}
+.tab{all:unset;box-sizing:border-box;cursor:pointer;flex:0 0 96px;display:grid;justify-items:center;gap:4px;text-align:center}
+.tab b{display:grid;place-items:center;width:100%;height:36px;border-radius:10px;background:#E9E4F7;border:2px solid transparent;font-weight:900;color:var(--muted)}
+.tab span{font-size:.74rem;line-height:1.2;color:var(--muted);max-width:96px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tab.done b{background:#DDF5EA;color:var(--ok)}
+.tab.cur b{background:#fff;border-color:var(--dark);color:var(--dark);box-shadow:3px 3px 0 var(--dark)}
+.tab.cur span{color:var(--ink);font-weight:800}
+.tab.ziel b{border:2px dashed var(--line);background:transparent}
+.tab-sep{flex:0 0 auto;align-self:center;font-size:1.2rem;padding:0 2px;opacity:.8}
+/* Hauptbereich */
+.lab-grid{max-width:1180px;margin:8px auto 0;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+.stage-card{background:var(--surface);border-radius:20px;border:2px solid var(--line);border-top:6px solid var(--ec,var(--accent));padding:20px;box-shadow:0 14px 30px -24px rgba(20,6,46,.5)}
+.eyebrow{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font:800 .74rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.eyebrow span:first-child{color:var(--ec,var(--accent))}
+.stage-card h1{font-size:clamp(1.7rem,4vw,2.4rem);margin:6px 0 4px}
+.lead{color:var(--muted);margin:0 0 12px;font-size:1.05rem}
+.erkl{margin:14px 0;border-radius:16px;background:#FFF8E7;border:2px solid #F0DDA8;padding:14px 16px}
+.erkl.nach{background:#E9FBF2;border-color:#A8E3C6}
+.erkl-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.erkl-h b{color:var(--accent);font-family:"Bricolage Grotesque",system-ui,sans-serif}
+.erkl-h span{color:var(--muted);font-weight:700}
+.erkl-h .btn{margin-left:auto}
+.glitch.mini{width:30px;height:30px}
+.txt p{margin:0 0 10px}
+.txt p:last-child{margin-bottom:0}
+.lex{all:unset;cursor:help;border-bottom:2px dotted var(--accent);font-weight:800;color:inherit}
+.task{background:var(--surface2);border:2px solid var(--line);border-radius:18px;padding:16px;margin-top:14px}
+.task-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.task .kind{font:900 .74rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+.tipbtn{border:2px solid var(--gold);background:#FFF6D6;color:#6B4A00;font-weight:800;border-radius:99px;padding:5px 12px;cursor:pointer;font-size:.85rem}
+.task h3{font-size:1.18rem;margin-bottom:10px}
+.task .txt p{margin:0 0 10px}
+.opts{display:grid;gap:10px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 14px;border-radius:14px;background:#fff;border:2px solid var(--line);font-weight:700}
+.opt:hover{border-color:var(--accent)}
+.opt.ok{border-color:var(--ok);background:#E3F7EC}
+.opt.bad{border-color:var(--bad);background:#FDECEC}
+.opt[aria-disabled=true]{cursor:default}
+.tf{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.in{font:inherit;color:var(--ink);background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px 12px;width:100%}
+.in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(123,76,239,.2)}
+textarea.in{min-height:120px;resize:vertical}
+.gap{display:inline-block;min-width:110px;width:auto;padding:4px 8px;margin:2px;border-radius:9px}
+select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237B4CEF' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 10px center}
+.gap.ok{border-color:var(--ok)} .gap.bad{border-color:var(--bad)}
+.order li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:#fff;border:2px solid var(--line);margin-bottom:8px;list-style:none}
+.order{padding:0;margin:0}
+.order li span{flex:1}
+.order li.ok{border-color:var(--ok)} .order li.bad{border-color:var(--bad)}
+.fb{margin-top:12px;padding:12px 14px;border-radius:14px;display:flex;gap:10px;align-items:flex-start}
+.fb .glitch{width:44px;height:44px;flex:none}
+.fb.ok{background:#E3F7EC;border:2px solid var(--ok)}
+.fb.bad{background:#FDECEC;border:2px solid var(--bad)}
+.fb p{margin:0}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+/* Seitenleiste */
+.side{display:grid;gap:12px;position:sticky;top:10px}
+.side-card{background:linear-gradient(160deg,#2A1466,#14062E);color:#fff;border-radius:18px;padding:14px;display:grid;gap:8px;border:2px solid #3A1D7A}
+.side-card small{color:#C9B8FF}
+.side-card .cap{font:800 .7rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#FFC21A}
+.side-card .btn{justify-self:start;color:var(--dark)}
+.lvl{grid-template-columns:auto 1fr;align-items:center}
+.lvl b{display:block;font-size:1.25rem;font-family:"Bricolage Grotesque",system-ui,sans-serif}
+.ring{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#FFC21A calc(var(--p)*1%),rgba(255,255,255,.15) 0)}
+.ring span{width:44px;height:44px;border-radius:50%;background:#14062E;display:grid;place-items:center;color:#FFC21A;font-size:1.3rem}
+.hexes{display:flex;flex-wrap:wrap;gap:8px}
+.hex{all:unset;cursor:pointer;width:46px;height:50px;display:grid;place-items:center;font-size:1.2rem;background:rgba(255,255,255,.08);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.hex.got{background:linear-gradient(160deg,#FFE680,#E3A300)}
+.side-note{margin:0;font-size:.82rem;color:#C9B8FF}
+.prog-h{display:flex;justify-content:space-between;align-items:baseline}
+.pbar{height:10px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
+.pbar i{display:block;height:100%;background:linear-gradient(90deg,#FF2BD6,#FFC21A,#3CFF7A);border-radius:inherit;transition:width .4s}
+.et-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;font-size:.88rem;align-items:center}
+.et-row span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.et-row.ok small{color:#3CFF7A}
+/* Ziel */
+.ziel-hero{display:flex;gap:16px;align-items:center;margin:12px 0}
+.glitch.huge{width:120px;height:120px;flex:none}
+.ziel-stars{font:900 2.4rem/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--gold);margin:0 0 6px}
+.ziel-stars small{font-size:1rem;color:var(--muted)}
+.ziel-card h3{margin:16px 0 8px}
+/* Fenster */
+.ov{position:fixed;inset:0;z-index:50;background:rgba(20,6,46,.55);backdrop-filter:blur(4px);display:grid;place-items:center;padding:16px}
+.dlg{width:min(680px,100%);max-height:88vh;overflow:auto;background:#fff;border:2.5px solid var(--dark);border-radius:22px;padding:20px;box-shadow:6px 6px 0 var(--dark)}
+.dlg h2{margin-bottom:10px}
+.hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center}
+.hero .glitch{width:90px;height:90px}
+.bubble{position:relative;background:var(--dark);color:#fff;border:2px solid var(--pink);border-radius:16px;padding:12px 16px;box-shadow:3px 3px 0 #00E5FF}
+.bubble b{display:block;font:800 .8rem ui-monospace,monospace;color:var(--pink)}
+.bubble p{margin:2px 0 0}
+.dl{display:grid;gap:8px}
+.dl div{padding:10px 12px;border-radius:12px;background:var(--surface2);border:1px solid var(--line)}
+.dl dt{font-weight:900;color:var(--accent)} .dl dd{margin:2px 0 0}
+.dips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.dip{padding:14px;border-radius:16px;background:var(--surface2);border:2px solid var(--line);text-align:center}
+.dip .e{font-size:2.2rem;display:block}
+.dip.got{border-color:var(--gold);box-shadow:0 0 18px rgba(227,163,0,.25)}
+.dip:not(.got){opacity:.55;filter:grayscale(.7)}
+.dip small{display:block;color:var(--muted)}
+.links a{color:var(--accent);word-break:break-all}
+.confetti{position:fixed;width:8px;height:8px;z-index:70;pointer-events:none}
+@keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98)}}
+@media (max-width:900px){.lab-grid{grid-template-columns:1fr}.side{position:static}.lab-top{grid-template-columns:auto minmax(0,1fr)}.talk{grid-column:1/-1;justify-self:stretch;flex-direction:row-reverse}.say-bub::after{left:-12px;right:auto;transform:translateY(-50%) rotate(-135deg)}}
+@media (max-width:600px){.tf{grid-template-columns:1fr}.glitch.big{width:70px;height:70px}.stage-card{padding:14px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ---------- Mini-Spiele ---------- */
+.hintline{color:var(--muted);margin:-4px 0 10px;font-size:.92rem}
+.connect{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.connect .col{display:grid;gap:8px;align-content:start}
+.cn{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 14px;border-radius:14px;background:#fff;border:2px solid var(--line);font-weight:700;transition:transform .12s,border-color .12s}
+.cn:hover{border-color:var(--accent)}
+.cn.sel{border-color:var(--teal);box-shadow:0 0 0 3px rgba(46,230,214,.3);transform:translateX(4px)}
+.cn.bad{border-color:var(--bad);animation:shake .4s}
+.cn.done{cursor:default;color:#06030D;border-color:transparent}
+.cn.c0{background:#2EE6D6}.cn.c1{background:#FFC21A}.cn.c2{background:#FF8AD8}.cn.c3{background:#A07CFF}.cn.c4{background:#3CFF7A}.cn.c5{background:#FF9F5A}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.sorter{display:grid;gap:14px}
+.sort-card{min-height:120px;display:grid;place-items:center;text-align:center;gap:4px;padding:18px;border-radius:20px;background:#fff;border:2.5px solid var(--dark);box-shadow:5px 5px 0 var(--accent);font-size:1.15rem}
+.sort-card small{color:var(--teal);font-family:ui-monospace,monospace;font-size:.75rem}
+.sort-card.good{border-color:var(--ok)} .sort-card.bad{border-color:var(--bad);animation:shake .4s}
+.sort-bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.bin{all:unset;box-sizing:border-box;cursor:pointer;text-align:center;padding:16px 10px;border-radius:16px;font-weight:900;background:hsl(var(--h) 85% 92%);border:2.5px solid hsl(var(--h) 60% 40%);color:hsl(var(--h) 70% 22%);box-shadow:3px 3px 0 hsl(var(--h) 60% 40%)}
+.bin:hover{transform:translateY(-2px)} .bin:disabled{opacity:.45;cursor:default;transform:none}
+.tm{display:grid;gap:12px;justify-items:stretch}
+.tm-ev{text-align:center;padding:14px;border-radius:16px;background:var(--surface);border:1.5px solid var(--line);display:grid;gap:4px}
+.tm-ev small{color:var(--teal);font-family:ui-monospace,monospace;font-size:.75rem}
+.tm-dial{justify-self:center;display:flex;align-items:baseline;gap:8px;padding:10px 22px;border-radius:16px;background:#000;border:2px solid var(--teal);box-shadow:0 0 18px rgba(46,230,214,.35),inset 0 0 12px rgba(46,230,214,.2)}
+.tm-dial output{font:900 2.2rem/1 ui-monospace,Menlo,monospace;color:var(--teal);letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.tm-unit{color:var(--muted);font-weight:700}
+.tm-range{width:100%;accent-color:var(--pink);height:28px}
+.tm-ticks{display:flex;justify-content:space-between;color:var(--muted);font:600 .8rem ui-monospace,monospace}
+.tm-log{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.tm-log li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:8px 12px;border-radius:12px;background:var(--surface);border-left:4px solid var(--line)}
+.tm-log li small{grid-column:1/-1;color:#8A6200} .tm-log li.p3{border-color:var(--ok)} .tm-log li.p2{border-color:var(--teal)} .tm-log li.p1{border-color:var(--gold)} .tm-log li.p0{border-color:var(--bad)}
+.clues{margin:0 0 12px;padding-left:22px;display:grid;gap:6px}
+.clues li{padding:8px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);animation:pop .3s}
+.memory{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.mcard{all:unset;box-sizing:border-box;cursor:pointer;min-height:96px;border-radius:14px;display:grid;place-items:center;text-align:center;padding:8px;font-weight:800;font-size:.92rem;background:linear-gradient(135deg,var(--accent),var(--pink));border:2px solid transparent;transition:transform .25s}
+.mcard .front{display:none} .mcard .back{font-size:2rem;color:#fff;font-family:ui-monospace,monospace}
+.mcard.up{background:var(--surface);border-color:var(--teal);transform:rotateY(180deg) scaleX(-1)}
+.mcard.up .front{display:block} .mcard.up .back{display:none}
+.mcard.found{border-color:var(--ok);background:rgba(60,255,122,.1);cursor:default}
+.opt.chk{display:flex;align-items:center;gap:10px}
+.opt.chk i{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);flex:none}
+.opt.chk[aria-pressed=true]{border-color:var(--teal)} .opt.chk[aria-pressed=true] i{background:var(--teal);border-color:var(--teal)}
+.maker{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.mk-form{display:grid;gap:10px}
+.f{display:grid;gap:4px} .f>span{font-size:.75rem;font-weight:800;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+.sw{display:flex;flex-wrap:wrap;gap:8px}
+.swb{all:unset;cursor:pointer;width:32px;height:32px;border-radius:50%;background:var(--c);border:3px solid transparent}
+.swb[aria-pressed=true]{border-color:#fff;box-shadow:0 0 0 2px var(--c)}
+.stk{all:unset;cursor:pointer;font-size:1.4rem;width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:var(--surface);border:2px solid var(--line)}
+.stk[aria-pressed=true]{border-color:var(--teal)}
+.swb:focus-visible,.stk:focus-visible,.cn:focus-visible,.bin:focus-visible,.mcard:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.poster{position:relative;min-height:240px;border-radius:18px;padding:22px 18px;background:linear-gradient(160deg,color-mix(in srgb,var(--pc) 35%,#14082a),#14082a);border:3px solid var(--pc);box-shadow:6px 6px 0 color-mix(in srgb,var(--pc) 55%,transparent);overflow:hidden}
+.poster b{display:block;font:900 1.5rem/1.1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--pc);margin-bottom:10px;word-break:break-word}
+.poster p{margin:0;white-space:pre-wrap;word-break:break-word}
+.pst{position:absolute;right:10px;top:6px;font-size:2.6rem;transform:rotate(12deg)}
+@media (max-width:600px){.connect,.maker{grid-template-columns:1fr}}
+/* Freigabe zwischen Etappen, Selbsteinschätzung, PDF */
+.tab.locked{opacity:.5;cursor:not-allowed}
+.tab.locked b{background:#ECE7F8!important;border-color:var(--line)!important}
+.et-row.lock{opacity:.55}
+.selbst{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:14px 0}
+.sb{all:unset;box-sizing:border-box;cursor:pointer;display:grid;justify-items:center;gap:4px;padding:12px 8px;border-radius:16px;border:2px solid var(--line);background:var(--surface2);font-weight:800;font-size:.9rem;text-align:center}
+.sb span{font-size:2rem;line-height:1}
+.sb:hover{border-color:var(--accent)}
+.sb.on{border-color:var(--dark);background:#FFF3C4;box-shadow:3px 3px 0 var(--dark)}
+.sb:focus-visible,.pin-pad button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.pin{display:grid;justify-items:center;gap:10px;margin:14px 0 4px}
+.pin-dots{font:800 1.4rem/1 ui-monospace,monospace;letter-spacing:.3em;min-height:1.6rem;color:var(--muted)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,64px);gap:8px}
+.pin-pad button{all:unset;box-sizing:border-box;cursor:pointer;height:56px;border-radius:14px;border:2px solid var(--dark);background:#fff;font:800 1.3rem/1 system-ui,sans-serif;display:grid;place-items:center;box-shadow:2px 2px 0 var(--dark)}
+.pin-pad button:active{transform:translate(2px,2px);box-shadow:none}
+.pin-pad .go{background:var(--ok);color:#fff}
+.pin .err{color:var(--bad);font-weight:700;min-height:1.2em;margin:0}
+.pin.shake{animation:pinShake .4s}
+@keyframes pinShake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.selbst-list{display:grid;gap:6px;margin:6px 0 14px}
+.selbst-list div{display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center;padding:8px 12px;border-radius:12px;background:var(--surface2);border:1.5px solid var(--line)}
+.selbst-list span{grid-row:span 2;font-size:1.6rem}
+.selbst-list small{color:var(--muted)}
+.pdf-box{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;padding:12px 14px;border-radius:16px;background:#EEF9FB;border:2px solid var(--teal)}
+.pdf-box > span{font-size:1.8rem}
+.pdf-box div{flex:1;min-width:180px;display:grid}
+.pdf-box small{color:var(--muted)}
+@media (prefers-reduced-motion: reduce){.pin.shake{animation:none}}
+/* Präsentation */
+.g-step{font:700 .8rem/1 "Inter",system-ui,sans-serif;color:var(--muted);margin-left:6px;white-space:nowrap}
+.praes-head{display:flex;align-items:center;gap:12px;margin:12px 0;padding:14px 16px;border-radius:18px;background:color-mix(in srgb,var(--ec) 14%,#fff);border:2.5px solid var(--ec)}
+.praes-head > span{font-size:2.2rem}.praes-head div{flex:1;display:grid}.praes-head b{font-size:1.25rem}.praes-head small{color:var(--muted)}
+.praes-head em{font-style:normal;font-weight:800;color:var(--gold);white-space:nowrap}
+.praes-lead{font-weight:600}
+.praes-list{display:grid;gap:8px;padding-left:22px;margin:8px 0 14px}
+.praes-list li{padding:4px 0}
+.pw{display:inline-block;margin:2px 4px 2px 0;padding:2px 10px;border-radius:99px;background:var(--surface2);border:1.5px dashed var(--accent);font-weight:700}
+.praes-own{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:8px 0 14px}
+.po{padding:12px 14px;border-radius:16px;background:#fff;border:2.5px solid var(--pc);box-shadow:3px 3px 0 var(--pc)}
+.po p{margin:6px 0 0;white-space:normal}
+.praes-act{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.dlg:fullscreen,.dlg.big{width:100vw;max-width:none;height:100vh;max-height:none;border-radius:0;padding:4vh 6vw;font-size:1.35rem;overflow:auto}
+.dlg:fullscreen .praes-head b,.dlg.big .praes-head b{font-size:2rem}
+/* Diplome als Wand-Gegenstände (wie im gLiTCh-Lab) */
+.hex.got{background:none;clip-path:none}
+.hex svg,.dip .e.wall svg{width:44px;height:44px;overflow:visible;filter:drop-shadow(0 2px 1.5px rgba(42,22,8,.45))}
+.dip .e.wall{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 6px;border-radius:14px;background:linear-gradient(#4B2696,#2A1466)}
+.dip:not(.got) .e.wall svg{filter:grayscale(1) brightness(.5);opacity:.5}
+.dip-new{display:grid;place-items:center;margin:4px auto 10px;width:120px;height:120px;border-radius:22px;background:linear-gradient(#4B2696,#2A1466)}
+.dip-new svg{width:96px;height:96px;overflow:visible;filter:drop-shadow(0 3px 2px rgba(42,22,8,.5))}
+/* ---------- neue Aufgabenarten ---------- */
+.ws-slots,.ws-pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0}
+.ws-b{all:unset;box-sizing:border-box;cursor:pointer;width:46px;height:52px;display:grid;place-items:center;border-radius:12px;border:2.5px solid var(--dark);background:#fff;font:900 1.4rem/1 "Inter",system-ui,sans-serif;box-shadow:3px 3px 0 var(--dark)}
+.ws-b:disabled{opacity:.25;cursor:default;box-shadow:none}
+.ws-b.slot{background:var(--surface2);border-style:dashed;box-shadow:none}.ws-b.slot.full{border-style:solid;background:#FFF3C4}
+.ws-b.slot:disabled{opacity:1}.ws-b.ok{background:#D7F5E7!important;border-color:var(--ok)}.ws-b.bad{background:#FDE2E2!important;border-color:var(--bad)}
+.wr-word{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.wr-word span{width:38px;height:46px;display:grid;place-items:center;border-bottom:4px solid var(--dark);font:900 1.5rem/1 "Inter",system-ui,sans-serif}
+.wr-word span.sp{border:0;width:16px}.wr-word span.miss{color:var(--bad)}
+.wr-bat{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:10px}
+.bat{display:inline-flex;gap:3px;padding:3px;border:2px solid var(--dark);border-radius:6px}.bat i{width:12px;height:16px;border-radius:2px;background:#E5E0F2}.bat i.on{background:var(--ok)}
+.wr-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:6px}
+.wr-k{all:unset;box-sizing:border-box;cursor:pointer;height:42px;display:grid;place-items:center;border-radius:10px;border:2px solid var(--dark);background:#fff;font-weight:900}
+.wr-k:disabled{cursor:default}.wr-k.ok{background:var(--ok);color:#fff}.wr-k.bad{background:#EEE;color:#AAA;border-color:#CCC}
+.bz{display:grid;gap:10px;justify-items:center;margin-top:8px}
+.bz-top{display:flex;align-items:center;gap:10px;width:100%}.bz-time{flex:1;height:10px;border-radius:99px;background:#E5E0F2;overflow:hidden}.bz-time i{display:block;height:100%;background:linear-gradient(90deg,var(--bad),var(--gold))}
+.bz-card{width:100%;padding:22px 18px;border-radius:18px;border:2.5px solid var(--dark);background:#FFF8E1;text-align:center;font-size:1.2rem;box-shadow:4px 4px 0 var(--dark)}
+.bz-card.ok{background:#D7F5E7}.bz-card.bad{background:#FDE2E2}
+.bz-end{display:grid;gap:6px;justify-items:center;text-align:center}.bz-end b{font-size:1.4rem}
+.mk-text{line-height:2.3;font-size:1.08rem}
+.mk-w{all:unset;cursor:pointer;padding:1px 4px;border-radius:6px;border-bottom:2px dotted var(--line)}
+.mk-w.on{background:#FFE680;border-bottom-color:var(--gold)}.mk-w.ok{background:#BDEFD6}.mk-w.bad{background:#FBC9C9}
+.su-wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start}
+@media (max-width:600px){.su-wrap{grid-template-columns:1fr}}
+.su-grid{display:grid;gap:3px;max-width:520px}
+.su-c{all:unset;box-sizing:border-box;cursor:pointer;aspect-ratio:1;display:grid;place-items:center;border-radius:6px;background:#fff;border:1.5px solid var(--line);font:800 clamp(.75rem,2.4vw,1.05rem)/1 ui-monospace,monospace}
+.su-c.on{background:#BDEFD6;border-color:var(--ok)}.su-c.sel{background:#FFE680;border-color:var(--gold)}
+.su-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}.su-list li{padding:6px 10px;border-radius:10px;background:var(--surface2);font-weight:800;letter-spacing:.05em}.su-list li.on{text-decoration:line-through;background:#D7F5E7;color:var(--ok)}
+.kk{display:grid;gap:10px;justify-items:center}
+.kk-card{all:unset;box-sizing:border-box;cursor:pointer;width:min(420px,100%);min-height:170px;position:relative;perspective:900px}
+.kk-card span{position:absolute;inset:0;display:grid;place-items:center;padding:18px;text-align:center;border-radius:20px;border:2.5px solid var(--dark);box-shadow:4px 4px 0 var(--dark);font-size:1.25rem;font-weight:800;backface-visibility:hidden;transition:transform .45s}
+.kk-f{background:#fff}.kk-b{background:#E8F7FF;transform:rotateY(180deg)}
+.kk-card.flip .kk-f{transform:rotateY(180deg)}.kk-card.flip .kk-b{transform:rotateY(360deg)}
+.kk-end{display:grid;gap:8px;justify-items:center;text-align:center}
+.chat{border:2.5px solid var(--dark);border-radius:20px;overflow:hidden;background:#F3F7FB;box-shadow:4px 4px 0 var(--dark)}
+.chat-head{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-bottom:2px solid var(--line)}.chat-head span{font-size:1.6rem}.chat-head small{color:var(--ok);font-weight:700}
+.chat-log{display:grid;gap:8px;padding:14px;max-height:340px;overflow:auto}
+.cm{display:flex}.cm span{max-width:78%;padding:9px 13px;border-radius:16px;line-height:1.4}
+.cm.cm-in span{background:#fff;border:1.5px solid var(--line);border-bottom-left-radius:4px}
+.cm.cm-out{justify-content:flex-end}.cm.cm-out span{background:var(--accent);color:#fff;border-bottom-right-radius:4px}.cm.cm-out.no span{background:#D9D3E8;color:#5A5270;text-decoration:line-through}
+.chat-opts{display:grid;gap:8px;padding:12px 14px;background:#fff;border-top:2px solid var(--line)}
+.mn{display:grid;gap:12px}
+.mn-scale{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-weight:800}.mn-scale input{width:100%;accent-color:var(--accent)}
+.mn-args{display:grid;gap:8px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>window.MODUL = {"titel":"Auftakt: Im Tonstudio","beschreibung":"Wie entsteht ein Hörspiel? Wir schauen hinter die Kulissen eines Tonstudios.","emoji":"🎙️","farbe":"#F28C28","intro":"Willkommen im Tonstudio! Ihr habt in der Klasse schon über Hörspiele gesprochen. Jetzt findet ihr heraus, wer alles an einem Hörspiel mitarbeitet.","schluss":"Bravo! Ihr kennt jetzt das Tonstudio und seine Profis. Bald hört ihr echte Hörspiele!","fachname":"Deutsch","fachkurz":"DE","etappen":[{"titel":"Was ist ein Hörspiel?","ziel":"","emoji":"🎧","intro":"Ein Hörspiel ist Kino für die Ohren. Mal schauen, was alles drinsteckt!","lob":"Super! Ihr wisst jetzt, woraus ein Hörspiel besteht.","aufgaben":[{"typ":"info","titel":"Geschichten zum Hören","text":"Ein **Hörspiel** ist eine Geschichte, die man nur hört. Man sieht nichts. Darum muss alles im Ohr passieren.\n\nIn einem Hörspiel hörst du die **Stimmen** der Figuren, **Geräusche** (z. B. Schritte, Regen, eine knarrende Tür) und **Musik**. Oft erzählt auch eine **Erzählerin** oder ein **Erzähler**, was gerade passiert.\n\nMerke: Stimmen, Geräusche und Musik müssen gut zusammenpassen. Nur so können sich die Zuhörenden alles gut vorstellen."},{"typ":"mehrfach","titel":"Bausteine","frage":"Was kann man in einem Hörspiel hören? Wähle alles Richtige aus.","optionen":["Stimmen der Figuren","Geräusche","Musik","Bilder und Farben","Eine Erzählerin oder einen Erzähler"],"richtig":[0,1,2,4],"erklaerung":"Ein Hörspiel hat keine Bilder. Alles, was du dir vorstellst, entsteht durch Stimmen, Geräusche und Musik.","tipp":"Bei einem Hörspiel haben deine Augen Pause."},{"typ":"tf","titel":"Geräusche helfen","aussage":"Geräusche helfen dabei, sich den Ort vorzustellen, an dem die Geschichte spielt.","richtig":true,"erklaerung":"Genau! Möwen und Wellen lassen dich ans Meer denken, Vogelgezwitscher an einen Wald.","tipp":"Denk an Möwen und Meeresrauschen."},{"typ":"zuordnen","titel":"Geräusche-Detektiv","frage":"Welches Geräusch passt zu welchem Ort?","paare":[["Möwen und Wellen","am Meer"],["Schulglocke und Kinderstimmen","auf dem Pausenplatz"],["Hupen und Motoren","in der Stadt"],["Knisterndes Feuer und Wind","beim Lagerfeuer im Wald"]],"erklaerung":"Geräusche verraten, wo eine Szene spielt, ganz ohne Bild.","tipp":"Schliess die Augen und stell dir das Geräusch vor."}]},{"titel":"Wer arbeitet im Tonstudio?","ziel":"","emoji":"🎚️","intro":"Im Tonstudio arbeiten viele Profis zusammen. Wer macht was?","lob":"Stark! Ihr kennt jetzt die Profis im Tonstudio.","aufgaben":[{"typ":"info","titel":"Die Profis im Tonstudio","text":"Ein Hörspiel entsteht im **Tonstudio**. Dort arbeiten viele Menschen zusammen:\n\n🎙️ Die **Sprecherinnen und Sprecher** leihen den Figuren ihre Stimme. Sie sprechen ein, was im **Hörspielskript** steht. Es soll aber nicht abgelesen klingen, sondern natürlich. Darum werden manche Stellen mehrmals aufgenommen.\n\n🎬 Die **Regisseurin** oder der **Regisseur** coacht die Sprecherinnen und Sprecher. Sie achtet darauf, dass die **Regieanweisungen** im Skript umgesetzt werden. Regieanweisungen sagen, **wie** etwas gesagt werden soll.\n\n🎚️ Die **Tontechnikerin** oder der **Tontechniker** ist für die Aufnahmen zuständig. Sie oder er kontrolliert die Qualität und schneidet am Schluss alles zum fertigen Hörspiel zusammen."},{"typ":"zuordnen","titel":"Wer macht was?","frage":"Verbinde die Berufe mit ihren Aufgaben.","paare":[["Sprecherin / Sprecher","spricht die Sätze der Figuren ein"],["Regisseurin / Regisseur","coacht und achtet auf die Regieanweisungen"],["Tontechnikerin / Tontechniker","nimmt auf und schneidet alles zusammen"]],"erklaerung":"Alle drei braucht es, damit ein gutes Hörspiel entsteht.","tipp":"Wer sitzt am grossen Mischpult?"},{"typ":"mc","titel":"Regieanweisung","frage":"Was ist eine Regieanweisung?","optionen":["Eine Angabe im Skript, wie etwas gesagt werden soll","Die Musik am Anfang des Hörspiels","Der Name der Regisseurin","Eine Liste mit allen Geräuschen"],"richtig":0,"erklaerung":"Zum Beispiel: (flüsternd), (lachend) oder (wütend). Die Regisseurin achtet darauf, dass das umgesetzt wird.","tipp":"Das Wort «Regie» steckt drin: Wer führt die Regie?"},{"typ":"mehrfach","titel":"Noch mehr Leute","frage":"Wer kann sonst noch an einem Hörspiel mitarbeiten? Wähle alles Richtige aus.","optionen":["Eine Autorin, die die Geschichte als Skript aufschreibt","Ein Geräuschemacher, der Geräusche herstellt","Eine Komponistin, die Musik macht","Ein Kameramann, der alles filmt","Eine Sounddesignerin, die Geräusche und Musik gestaltet"],"richtig":[0,1,2,4],"erklaerung":"Ein Hörspiel braucht keine Kamera, aber eine gute Geschichte, Geräusche und Musik.","tipp":"Was braucht man bei einem Hörspiel sicher nicht?"},{"typ":"memory","titel":"Fachwörter","frage":"Findet die Paare: Fachwort und Erklärung.","paare":[["einsprechen","Text ins Mikrofon sprechen"],["coachen","anleiten und unterstützen"],["zusammenschneiden","Aufnahmen verbinden"],["Tonstudio","Raum für Tonaufnahmen"],["Hörspielskript","Text des Hörspiels"]],"erklaerung":"Diese Fachwörter braucht ihr im ganzen Kapitel.","tipp":"Tippe zwei Karten an und merk dir, wo sie liegen."}]},{"titel":"Mein Job im Tonstudio","ziel":"","emoji":"🌟","intro":"Jetzt geht es um euch: Was würdet ihr im Tonstudio am liebsten machen?","lob":"Danke für eure Gedanken! Vielleicht seid ihr ja bald selbst im Tonstudio.","aufgaben":[{"typ":"info","titel":"Jetzt bist du dran","text":"Stell dir vor, du darfst einen Tag im Tonstudio mitarbeiten.\n\nWelche Aufgabe würde dir am meisten Spass machen? Sprechen, coachen, aufnehmen, Geräusche machen oder Musik erfinden?\n\nTausch dich danach mit deiner Partnerin oder deinem Partner aus."},{"typ":"meinung","titel":"Mikrofon oder Mischpult?","frage":"Würdest du lieber ins Mikrofon sprechen oder am Mischpult arbeiten?","links":"Ich will sprechen!","rechts":"Ich will ans Mischpult!","argumente":["Mit der Stimme kann man spannende Figuren spielen.","Man ist im fertigen Hörspiel zu hören.","Am Mischpult entscheidet man, wie alles klingt.","Man muss nicht vor anderen sprechen.","Man kann mit Geräuschen und Musik tüfteln."],"mindestwoerter":12,"erklaerung":"Es gibt keine falsche Antwort. Wichtig ist, dass du deine Meinung begründest."},{"typ":"schreiben","titel":"Mein Lieblingshörspiel","auftrag":"Welches Hörspiel oder welche Hörspielfigur gefällt dir gut oder weniger gut? Schreib den Titel auf und begründe in 2 bis 3 Sätzen.","mindestwoerter":20,"erklaerung":"Sammelt danach einige Beispiele in der Klasse."}]}],"lexikon":[{"wort":"Hörspiel","erklaerung":"Eine Geschichte, die man nur hört: mit Stimmen, Geräuschen und Musik."},{"wort":"Hörspielskript","erklaerung":"Der Text eines Hörspiels. Darin steht, wer was sagt und wie."},{"wort":"Regieanweisung","erklaerung":"Eine Angabe im Skript, wie etwas gesagt werden soll, z. B. «flüsternd» oder «wütend»."},{"wort":"Regisseurin","erklaerung":"Sie leitet die Aufnahmen und hilft den Sprecherinnen und Sprechern, die Figuren gut zu spielen."},{"wort":"Tontechniker","erklaerung":"Er nimmt alles auf, prüft die Qualität und schneidet die Aufnahmen zusammen."},{"wort":"Tonstudio","erklaerung":"Ein besonderer Raum, in dem man Stimmen und Musik ohne Störgeräusche aufnehmen kann."},{"wort":"einsprechen","erklaerung":"Einen Text ins Mikrofon sprechen, damit er aufgenommen wird."},{"wort":"coachen","erklaerung":"Jemanden anleiten, unterstützen und Tipps geben, damit er besser wird."},{"wort":"zusammenschneiden","erklaerung":"Viele einzelne Aufnahmen zu einem fertigen Ganzen verbinden."},{"wort":"Produktion","erklaerung":"Die Herstellung, hier: wie ein Hörspiel Schritt für Schritt entsteht."}],"opt":{"tipps":true,"vorlesen":true,"lexikon":true,"pdf":true,"gates":[],"code":"","mascot":{"typ":"glitch"}},"sterne":60,"diplome":[{"id":"tonstudio","name":"Tonstudio-Profi","emoji":"🎚️","beschreibung":"Alle Etappen im Tonstudio geschafft","bedingung":"alle","wand":"wimpel"}],"links":[]};</script>
+<script>/* =====================================================================
+   gLiTCh · das Maskottchen (gleiche Pixel wie im gLiTCh-Lab)
+   GLGlitch.svg(mood, color) liefert das Bild als SVG-Text.
+   Stimmungen: normal, happy, wink, cool, shock, hmm, love, sleep, sad
+   ===================================================================== */
+(function () {
+  const BODY = [
+    "..##......##..",
+    "...#......#...",
+    "...########...",
+    "..##########..",
+    ".############.",
+    ".############.",
+    "##############",
+    "##############",
+    "##############",
+    ".############.",
+    ".############.",
+    "..##########..",
+    "..#.##..##.#..",
+    "..#..#..#..#.."
+  ];
+  const RECTS = [];
+  BODY.forEach((row, y) => { let x = 0; while (x < row.length) { if (row[x] === "#") { let w = 1; while (row[x + w] === "#") w++; RECTS.push([x, y, w]); x += w; } else x++; } });
+  const body = fill => RECTS.map(([x, y, w]) => `<rect x="${x}" y="${y}" width="${w}" height="1"${fill ? ` fill="${fill(y)}"` : ""}/>`).join("");
+  const W = "#fff", K = "#14062E";
+  const r = (x, y, w, h, f) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}"/>`;
+  const EYES = {
+    normal: r(3, 5, 2, 2, W) + r(9, 5, 2, 2, W) + r(4, 6, 1, 1, K) + r(10, 6, 1, 1, K),
+    happy: r(3, 6, 1, 1, W) + r(4, 5, 1, 1, W) + r(5, 6, 1, 1, W) + r(8, 6, 1, 1, W) + r(9, 5, 1, 1, W) + r(10, 6, 1, 1, W),
+    shock: r(3, 4, 3, 3, W) + r(8, 4, 3, 3, W) + r(4, 5, 1, 1, K) + r(9, 5, 1, 1, K),
+    wink: r(3, 5, 2, 2, W) + r(4, 6, 1, 1, K) + r(8, 6, 3, 1, W),
+    cool: r(2, 5, 10, 1, K) + r(3, 5, 3, 2, K) + r(8, 5, 3, 2, K) + r(3, 5, 1, 1, "#00E5FF") + r(8, 5, 1, 1, "#FF2BD6"),
+    sleep: r(3, 6, 2, 1, W) + r(9, 6, 2, 1, W),
+    sad: r(3, 6, 2, 2, W) + r(9, 6, 2, 2, W) + r(3, 7, 1, 1, K) + r(10, 7, 1, 1, K) + r(2, 5, 2, 1, K) + r(10, 5, 2, 1, K)
+  };
+  const MOUTH = {
+    smile: r(4, 9, 1, 1, K) + r(9, 9, 1, 1, K) + r(5, 10, 4, 1, K),
+    grin: r(4, 9, 6, 2, K) + r(5, 9, 4, 1, W),
+    o: r(6, 9, 2, 2, K),
+    smirk: r(5, 10, 3, 1, K) + r(8, 9, 1, 1, K),
+    flat: r(5, 10, 4, 1, K),
+    small: r(6, 10, 2, 1, K),
+    sad: r(5, 9, 4, 1, K) + r(4, 10, 1, 1, K) + r(9, 10, 1, 1, K)
+  };
+  const MOOD = { normal: ["normal", "smile"], happy: ["happy", "grin"], shock: ["shock", "o"], wink: ["wink", "smirk"], cool: ["cool", "grin"], hmm: ["normal", "flat"], love: ["happy", "smile"], sleep: ["sleep", "small"], sad: ["sad", "sad"] };
+
+  /* Farbtöne aus einer Grundfarbe ableiten (für Kinder-Avatare) */
+  function shades(hex) {
+    const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255];
+    const mix = (t, f) => "#" + c.map(v => Math.round(v + (t - v) * f).toString(16).padStart(2, "0")).join("");
+    return { light: mix(255, .38), base: hex, dark: mix(0, .22), hi: mix(255, .7) };
+  }
+
+  /* Outfit aus der Garderobe (Daten aus js/glitch-data.js) */
+  function outfit(o) {
+    const list = (window.GL_DATA && window.GL_DATA.OUTFITS) || [];
+    if (!o) return "";
+    return ["hals", "mund", "augen", "kopf", "hand", "haustier"].map(sl => { const it = list.find(x => x.id === o[sl]); return it ? it.svg : ""; }).join("");
+  }
+
+  function svg(mood = "normal", color = "#8B5CFF", opts = {}) {
+    const [e, m] = MOOD[mood] || MOOD.normal;
+    const s = shades(color);
+    const shade = y => y <= 3 ? s.light : y >= 11 ? s.dark : s.base;
+    const d = (Math.random() * 3).toFixed(2);
+    const blush = mood === "love" ? r(1, 7, 2, 2, "#FF4F7B") + r(11, 7, 2, 2, "#FF4F7B") : "";
+    const glitchy = opts.calm ? "" : `<rect class="gp gp1" x="-1" y="3" width="1" height="1" fill="#00E5FF"/><rect class="gp gp2" x="15" y="8" width="1" height="1" fill="#FF2BD6"/><rect class="gp gp3" x="13" y="-1" width="1" height="1" fill="#FFC21A"/>
+      <g class="gc" fill="#00E5FF">${body()}</g><g class="gm" fill="#FF2BD6">${body()}</g>`;
+    return `<svg viewBox="-2 -2 18 18" shape-rendering="crispEdges" aria-hidden="true" style="--d:-${d}s">
+      ${glitchy}
+      <g class="gb">${body(shade)}${r(2, 3, 1, 1, s.hi)}${r(0, 0, 1, 1, "#00E5FF")}${r(13, 0, 1, 1, "#FF2BD6")}</g>
+      <g class="ge">${EYES[e]}</g><g>${MOUTH[m]}</g>${blush}${outfit(opts.outfit)}
+      ${opts.calm ? "" : `<g class="gsl">${body(() => "#00E5FF")}${EYES[e]}</g>`}
+    </svg>`;
+  }
+
+  window.GLGlitch = { svg, shades };
+})();
+
+/* =====================================================================
+   gLiTCh · Diplome als Gegenstände an der Wand (20 × 20, ohne Hintergrund)
+   Gleicher Stil wie die Diplome der NMG- und M&I-Module im gLiTCh-Lab.
+   GLWall.svg(art, emoji, farbe) → SVG-Text. art: siehe GLWall.KINDS
+   ===================================================================== */
+window.GLWall = window.GLWall || (function () {
+  const NAIL = '<circle cx="10" cy="1.2" r=".8" fill="#3A2410"/>';
+  const STR = (a, b, y) => `<path d="M${a} ${y}L10 1.2L${b} ${y}" stroke="#3A2410" stroke-width=".35" fill="none"/>`;
+  const SHELF = '<rect x="2.4" y="16" width="15.2" height="1.3" rx=".3" fill="#8B5A2B"/><path d="M4.4 17.3l1.4 1.6M15.6 17.3l-1.4 1.6" stroke="#5D3A1A" stroke-width=".6"/>';
+  const clean = e => String(e || "🏅").replace(/[<>&"']/g, "").slice(0, 8) || "🏅";
+  const col = c => /^#[0-9a-f]{6}$/i.test(String(c || "")) ? c : "#7B4CEF";
+  const mix = (c, t, f) => "#" + [1, 3, 5].map(i => { const v = parseInt(c.slice(i, i + 2), 16); return Math.round(v + (t - v) * f).toString(16).padStart(2, "0"); }).join("");
+  const dk = c => mix(c, 0, .38), lt = (c, f = .8) => mix(c, 255, f);
+  const em = (e, x, y, s) => `<text x="${x}" y="${y}" font-size="${s}" text-anchor="middle" dominant-baseline="central">${e}</text>`;
+  const spark = (x, y, d) => `<path class="wl-flake" style="animation-delay:-${d}s" d="M${x} ${y - .9}v1.8M${x - .9} ${y}h1.8" stroke="#FFF3B0" stroke-width=".35"/>`;
+  const star = (cx, cy, ro, ri) => "M" + Array.from({ length: 10 }, (_, k) => { const a = -Math.PI / 2 + Math.PI * k / 5, r = k % 2 ? ri : ro; return `${(cx + r * Math.cos(a)).toFixed(2)} ${(cy + r * Math.sin(a)).toFixed(2)}`; }).join("L") + "z";
+  const K = {
+    rahmen: (e, c) => STR(4, 16, 5) + `<rect x="2.5" y="5" width="15" height="13" rx=".6" fill="#7A4A22"/><rect x="3.6" y="6.1" width="12.8" height="10.8" fill="${lt(c)}"/><rect x="3.6" y="14.6" width="12.8" height="2.3" fill="${lt(c, .55)}"/><g class="wl-fly">${em(e, 10, 11, 6.2)}</g>` + NAIL,
+    wimpel: (e, c) => `<path d="M10 1.2V3" stroke="#3A2410" stroke-width=".4"/><g class="wl-sway"><rect x="2.4" y="2.6" width="15.2" height="1.1" rx=".55" fill="#8B5A2B"/><path d="M3.2 3.7h13.6L10 18.8z" fill="${c}" stroke="${dk(c)}" stroke-width=".4"/><path d="M4.6 5.2h10.8" stroke="${lt(c, .5)}" stroke-width=".5"/>${em(e, 10, 8.8, 5)}</g>` + NAIL,
+    schild: (e, c) => STR(6, 14, 4.6) + `<g class="wl-sway"><path d="M10 4.4l5.6 2v4.2c0 3.8-2.7 6.1-5.6 7.3-2.9-1.2-5.6-3.5-5.6-7.3V6.4z" fill="${c}" stroke="${dk(c)}" stroke-width=".45"/><path d="M10 5.5l4.3 1.6v3.5c0 3-2 4.8-4.3 5.8z" fill="${lt(c, .25)}"/>${em(e, 10, 10.8, 5.2)}</g>` + NAIL,
+    pokal: (e, c) => SHELF + `<path d="M6.2 4.2h7.6v3.6c0 2.6-1.7 4.2-3.8 4.2s-3.8-1.6-3.8-4.2z" fill="#F2C94C" stroke="#8B6914" stroke-width=".35"/><path d="M6.2 5.4H4.6c0 2 .8 3 2 3.2M13.8 5.4h1.6c0 2-.8 3-2 3.2" stroke="#C9A227" stroke-width=".55" fill="none"/><rect x="9.3" y="12" width="1.4" height="1.8" fill="#C9A227"/><rect x="7" y="13.8" width="6" height="2.2" rx=".3" fill="${dk(c)}"/>${em(e, 10, 7.7, 3.8)}` + spark(4.2, 3.2, 0) + spark(15.8, 10.6, 1),
+    medaille: (e, c) => `<g class="wl-sway"><path d="M10 1.2 5.8 9.6h2.6L10 5.2z" fill="${c}"/><path d="M10 1.2l4.2 8.4h-2.6L10 5.2z" fill="${dk(c)}"/><circle cx="10" cy="13.4" r="5.2" fill="#F2C94C" stroke="#8B6914" stroke-width=".5"/><circle cx="10" cy="13.4" r="4" fill="#FFE680" stroke="#C98A00" stroke-width=".3"/>${em(e, 10, 13.6, 4.6)}<path class="wl-glow" d="M6.6 11.2a4.2 4.2 0 0 1 2-2" stroke="#fff" stroke-width=".6" fill="none"/></g>` + NAIL,
+    rolle: (e, c) => STR(5, 15, 4) + `<rect x="4" y="4" width="12" height="13" fill="#F1E2BC" stroke="#B89A5E" stroke-width=".4"/><rect x="3.4" y="3.2" width="13.2" height="1.8" rx=".9" fill="#D9C28E"/><rect x="3.4" y="16.2" width="13.2" height="1.8" rx=".9" fill="#D9C28E"/>${em(e, 10, 9.4, 4.6)}<path d="M6 13h8" stroke="#6B4A2B" stroke-width=".45"/><path d="M13.4 17.4v1.4" stroke="${dk(c)}" stroke-width=".5"/><circle class="wl-sway" cx="13.4" cy="18.9" r="1.2" fill="${c}"/>` + NAIL,
+    holz: (e, c) => `<g class="wl-sway">` + STR(5, 15, 6.2) + `<rect x="2.6" y="6.2" width="14.8" height="9.4" rx="1" fill="#C68A4E" stroke="#7A4A22" stroke-width=".5"/><path d="M3.6 8.4h12.8M3.6 13.4h12.8" stroke="#A86F38" stroke-width=".3"/><rect x="2.6" y="14.2" width="14.8" height="1.4" fill="${c}"/>${em(e, 10, 10.6, 5)}</g>` + NAIL,
+    stern: (e, c) => STR(6, 14, 4) + `<g class="wl-sway"><path d="${star(10, 11, 7.4, 3.4)}" fill="${c}" stroke="${dk(c)}" stroke-width=".45"/><path d="${star(10, 11, 5.6, 2.6)}" fill="${lt(c, .35)}"/>${em(e, 10, 11.4, 4.2)}</g>` + spark(3.4, 5.4, .4) + spark(16.4, 16, 1.2) + NAIL
+  };
+  const KINDS = [["rahmen", "Bilderrahmen"], ["wimpel", "Wimpel"], ["schild", "Wappenschild"], ["pokal", "Pokal"], ["medaille", "Medaille"], ["rolle", "Urkunde"], ["holz", "Holzschild"], ["stern", "Stern"]];
+  const pick = id => { let h = 0; String(id || "").split("").forEach(ch => { h = (h * 31 + ch.charCodeAt(0)) >>> 0; }); return KINDS[h % KINDS.length][0]; };
+  const svg = (art, emoji, c, id) => `<svg viewBox="0 0 20 20" aria-hidden="true" class="wl-art">${(K[art] || K[pick(id || emoji)])(clean(emoji), col(c))}</svg>`;
+  const CSS = ".wl-sway{transform-box:fill-box;transform-origin:50% 0;animation:wlSway 3.2s ease-in-out infinite}.wl-wave{transform-box:fill-box;transform-origin:0 50%;animation:wlWave 1.6s ease-in-out infinite}.wl-fly{animation:wlFly 3s ease-in-out infinite}.wl-flake{animation:wlFlake 2.6s linear infinite}.wl-glow{animation:wlGlow 2.2s ease-in-out infinite}"
+    + "@keyframes wlSway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}@keyframes wlWave{0%,100%{transform:skewY(0) scaleX(1)}50%{transform:skewY(-5deg) scaleX(.93)}}@keyframes wlFly{50%{transform:translateY(-.8px)}}@keyframes wlFlake{0%{opacity:0}20%{opacity:1}80%{opacity:1}100%{opacity:0}}@keyframes wlGlow{0%,100%{opacity:1}50%{opacity:.35}}"
+    + "@media (prefers-reduced-motion: reduce){.wl-sway,.wl-wave,.wl-fly,.wl-flake,.wl-glow{animation:none}}";
+  try { if (!window.GLWALL_NOCSS && !document.getElementById("glWallCss")) { const st = document.createElement("style"); st.id = "glWallCss"; st.textContent = CSS; (document.head || document.documentElement).appendChild(st); } } catch (e) { /* ohne DOM */ }
+  return { svg, KINDS, pick, CSS };
+})();
+
+/* =====================================================================
+   Maskottchen für Editor-Module: gLiTCh (Standard), Fenni der Wüstenfuchs
+   oder ein eigenes Pixel-Maskottchen (Raster mit Farbpalette).
+   ===================================================================== */
+window.GLMascot = window.GLMascot || (function () {
+  let fenniCache = "";
+  function fenni() {
+    if (fenniCache) return fenniCache;
+
+ const N=40,C={body:"#e9cd98",shade:"#d2a96b",light:"#fbf1dc",ear:"#f1b3a0",out:"#5a3b1f",eye:"#1b1210",hl:"#ffffff",nose:"#1b1210",tip:"#5a3b1f",mark:"#b07c45"};
+ const ell=(cx,cy,rx,ry,rot=0)=>(x,y)=>{const a=rot*Math.PI/180,dx=x-cx,dy=y-cy,u=dx*Math.cos(a)+dy*Math.sin(a),v=-dx*Math.sin(a)+dy*Math.cos(a);return (u*u)/(rx*rx)+(v*v)/(ry*ry)<=1};
+ const tri=(p)=>(x,y)=>{let s=0;for(let i=0;i<3;i++){const [x1,y1]=p[i],[x2,y2]=p[(i+1)%3];const c=(x2-x1)*(y-y1)-(y2-y1)*(x-x1);if(c===0)continue;if(!s)s=Math.sign(c);else if(Math.sign(c)!==s)return false}return true};
+ const rect=(x0,y0,x1,y1)=>(x,y)=>x>=x0&&x<=x1&&y>=y0&&y<=y1;
+ const mir=f=>(x,y)=>f(N-x,y);
+ const L=[ /* hinten nach vorne: [Test, Farbe, Ebene] */
+  [ell(31,33,8,4,-25),"body"],[ell(37,29.5,2.6,2.6),"tip"],
+  [ell(20,31,9,7.5),"body"],
+  [rect(14.5,32,18.5,38.6),"body"],[rect(21.5,32,25.5,38.6),"body"],
+  [ell(16.5,38,2.6,1.4),"light"],[ell(23.5,38,2.6,1.4),"light"],
+  [ell(20,29,4.6,6),"light"],
+  [tri([[2.5,0.5],[17,10],[9,17]]),"body"],[mir(tri([[2.5,0.5],[17,10],[9,17]])),"body"],
+  [tri([[5,3.5],[14.5,10.5],[9.5,14.5]]),"ear"],[mir(tri([[5,3.5],[14.5,10.5],[9.5,14.5]])),"ear"],
+  [ell(20,17,8.6,6.8),"body"],
+  [ell(20,21.4,5.2,3.4),"light"],[ell(13.5,19.5,2.2,1.6),"light"],[ell(26.5,19.5,2.2,1.6),"light"],
+ ];
+ const grid=[];for(let y=0;y<N;y++){grid[y]=[];for(let x=0;x<N;x++){let c=null;const px=x+.5,py=y+.5;for(const [f,col] of L)if(f(px,py))c=col;grid[y][x]=c}}
+ // Schattierung am Körperrand und Hinterkopf
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){const c=grid[y][x];if(c==="body"&&((y>=26&&Math.abs(x+.5-20)>6.3)||(y>=11&&y<=13&&Math.abs(x+.5-20)<5)))grid[y][x]="shade"}
+ // Augenstreifen (typisch Fennek)
+ [[15,19],[14,20],[25,19],[26,20]].forEach(([x,y])=>{if(grid[y][x])grid[y][x]="mark"});
+ // Umriss
+ const fill=(x,y)=>y>=0&&y<N&&x>=0&&x<N&&grid[y][x];
+ const out=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(grid[y][x]&&grid[y][x]!=="tip"&&(!fill(x-1,y)||!fill(x+1,y)||!fill(x,y-1)||!fill(x,y+1)))out.push([x,y])}
+ out.forEach(([x,y])=>grid[y][x]="out");
+ // Mittellinie zwischen Brust und Beinen
+ for(let y=33;y<39;y++){if(grid[y][19]&&grid[y][19]!=="out")grid[y][19]="shade";if(grid[y][20]&&grid[y][20]!=="out")grid[y][20]="shade"}
+ let r="";for(let y=0;y<N;y++){let x=0;while(x<N){const c=grid[y][x];if(!c){x++;continue}let w=1;while(x+w<N&&grid[y][x+w]===c)w++;r+=`<rect x="${x}" y="${y}" width="${w+.02}" height="1.02" fill="${C[c]}"/>`;x+=w}}
+ // Augen, Nase, Mund separat (Augen blinzeln)
+ const px=(x,y,w,h,c)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+ const eyes=`<g class="f-eyes">${px(15,15,3,3,C.eye)}${px(22,15,3,3,C.eye)}${px(15,15,1,1,C.hl)}${px(22,15,1,1,C.hl)}</g>`;
+ const face=px(19,21,2,1.6,C.nose)+px(18.5,20.6,3,1,C.nose)+px(19.5,22.6,1,1,C.out)+px(18,23.4,1.5,.8,C.out)+px(20.5,23.4,1.5,.8,C.out);
+ const blush=`<g class="f-blush" opacity="0">${px(12,20,2,1,"#f19a8c")}${px(26,20,2,1,"#f19a8c")}</g>`;
+ 
+    fenniCache = `<svg viewBox="-1 -1 42 42" shape-rendering="crispEdges" aria-hidden="true">${r}${eyes}${face}${blush}</svg>`;
+    return fenniCache;
+  }
+  /* Eigenes Maskottchen: pixel = Zeilen aus Buchstaben (Punkt = leer), palette = {Buchstabe: "#hex"} */
+  function clean(pix, pal) {
+    const P = {}; Object.entries(pal || {}).forEach(([k, v]) => { if (/^[a-z]$/i.test(k) && /^#[0-9a-f]{6}$/i.test(String(v))) P[k] = v; });
+    let rows = (Array.isArray(pix) ? pix : []).map(r => String(r).replace(/\s/g, "")).filter(r => r.length).slice(0, 24);
+    const n = Math.max(8, Math.min(24, Math.max(rows.length, ...rows.map(r => r.length))));
+    rows = rows.map(r => (r + ".".repeat(n)).slice(0, n).split("").map(c => P[c] ? c : ".").join(""));
+    while (rows.length < n) rows.push(".".repeat(n));
+    return { pix: rows, pal: P, n };
+  }
+  function pixel(pix, pal) {
+    const c = clean(pix, pal); let r = "";
+    c.pix.forEach((row, y) => { let x = 0; while (x < c.n) { const ch = row[x]; if (ch === ".") { x++; continue; } let w = 1; while (row[x + w] === ch) w++; r += `<rect x="${x}" y="${y}" width="${w + .02}" height="1.02" fill="${c.pal[ch]}"/>`; x += w; } });
+    return `<svg viewBox="-1 -1 ${c.n + 2} ${c.n + 2}" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`;
+  }
+  /* Bild für ein Modul-Maskottchen (null = gLiTCh) */
+  function svg(m) {
+    if (!m || m.typ === "glitch") return null;
+    if (m.typ === "fenni") return fenni();
+    if (m.typ === "eigen" && m.pix) return pixel(m.pix, m.pal);
+    return null;
+  }
+  const nameOf = m => !m || m.typ === "glitch" ? "gLiTCh" : m.typ === "fenni" ? (m.name || "Fenni") : (String(m.name || "").trim().slice(0, 24) || "Mascotti");
+  return { fenni, pixel, clean, svg, nameOf };
+})();
+</script>
+<script>/* gLiTCh-Modul · Laufzeit (vom gLiTCh-Editor in jede Moduldatei eingebaut)
+   Daten: window.MODUL = { titel, beschreibung, emoji, farbe, intro, schluss,
+     etappen:[{titel, ziel, emoji, intro, lob, aufgaben:[…]}], lexikon:[{wort, erklaerung}],
+     diplome:[{id, name, emoji, beschreibung, bedingung}], links:[{titel, url}] }
+   Im Glitchlab gibt es window.GLHub (Sterne, Diplome, Speichern). */
+(function () {
+  "use strict";
+  const M = window.MODUL || {}, HUB = window.GLHub || null, G = window.GLGlitch;
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const slug = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, " ").trim();
+  /* gLiTCh so, wie das Kind ihn im Glitchlab angezogen hat (ohne Glitchlab: ohne Outfit) */
+  /* Maskottchen aus dem Editor: gLiTCh (Standard), Fenni oder ein eigenes */
+  const MAS = (M.opt && M.opt.mascot) || { typ: "glitch" }, NAME = window.GLMascot ? GLMascot.nameOf(MAS) : "gLiTCh";
+  const MSVG = window.GLMascot ? GLMascot.svg(MAS) : null;
+  const nm = t => MSVG ? String(t ?? "").replace(/gLiTChs/g, NAME + "s").replace(/gLiTCh/g, NAME) : t;
+  if (MSVG) document.documentElement.classList.add("own-mascot");
+  const gsvg = mood => { if (MSVG) return MSVG; try { const x = HUB && HUB.glitch && HUB.glitch(mood); if (x) return x; } catch (e) { /* ohne Glitchlab */ } return G ? G.svg(mood, "#8B5CFF") : ""; };
+  const gl = (mood, cls = "") => `<span class="glitch ${cls}">${gsvg(mood)}</span>`;
+  /* Schalter aus dem Editor: was das Modul anbietet und wie es zwischen den Etappen weitergeht */
+  const O = Object.assign({ tipps: true, vorlesen: true, lexikon: true, pdf: true, freigabe: "keine", code: "" }, M.opt || {});
+  const ET = (M.etappen || []).filter(e => e && Array.isArray(e.aufgaben));
+  const LEX = O.lexikon ? (M.lexikon || []).filter(w => w && w.wort) : [];
+  const DIP = (M.diplome || []).filter(d => d && d.id);
+  const wall = d => window.GLWall ? GLWall.svg(d.wand, d.emoji, M.farbe, d.id) : esc(d.emoji || "🏅");
+  const scorable = a => a && a.typ !== "info";
+  const KEY = "glmod." + slug(M.titel || "modul");
+  document.documentElement.style.setProperty("--mc", /^#[0-9a-f]{3,8}$/i.test(M.farbe || "") ? M.farbe : "#A07CFF");
+  document.title = M.titel || "gLiTCh-Modul";
+
+  /* ---------- Speicherstand (im Glitchlab fürs ganze Team, sonst nur auf diesem Gerät) ---------- */
+  let S = null;
+  try { S = HUB ? HUB.laden() : JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
+  S = Object.assign({ ans: {}, dips: [], lex: false, fertig: false, gate: {}, selbst: {} }, S || {});
+  const save = () => { try { if (HUB) HUB.speichern(S); else localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* voll */ } };
+  const k = (e, t) => e + "-" + t;
+  /* Sterne pro Aufgabe: Spiele geben mehr Sterne als eine einzelne Quizfrage */
+  const WERT = { mc: 1, tf: 1, text: 1, luecke: 2, ordnen: 2, zuordnen: 2, schreiben: 2, mehrfach: 2, schaetzen: 2, gestalten: 2, sortieren: 3, zeitmaschine: 3, raetsel: 3, memory: 3, wortsalat: 2, wortraten: 2, blitz: 2, markieren: 2, wortsuche: 3, karteikarten: 2, chat: 2, meinung: 2 };
+  const wert = a => WERT[a.typ] || 1;
+  const solved = (e, t) => !!(S.ans[k(e, t)] && S.ans[k(e, t)].ok);
+  const etStarsRaw = e => ET[e].aufgaben.reduce((n, a, t) => { const x = S.ans[k(e, t)]; return n + (scorable(a) && x && x.ok ? Math.min(wert(a), x.pts != null ? x.pts : wert(a)) : 0); }, 0);
+  const etMaxRaw = e => ET[e].aufgaben.reduce((n, a) => n + (scorable(a) ? wert(a) : 0), 0);
+  /* Sterne-Budget aus dem Editor: die Punkte der Aufgaben werden auf die Sterne des Moduls umgerechnet */
+  const RAWMAX = ET.reduce((n, _, e) => n + etMaxRaw(e), 0), SCL = +M.sterne > 0 && RAWMAX ? +M.sterne / RAWMAX : 1;
+  const etStars = e => Math.round(etStarsRaw(e) * SCL);
+  const etMax = e => Math.round(etMaxRaw(e) * SCL);
+  const etOpen = e => ET[e].aufgaben.filter((a, t) => scorable(a) && !solved(e, t)).length;
+  const etDone = e => ET[e].aufgaben.some(scorable) ? etOpen(e) === 0 : !!S.ans[k(e, "seen")];
+  const total = () => ET.reduce((n, _, e) => n + etStars(e), 0);
+  const totalMax = () => ET.reduce((n, _, e) => n + etMax(e), 0);
+  const who = () => HUB && HUB.alle ? HUB.alle.join(" und ") : "";
+  /* Freigabe zwischen den Etappen: keine | selbst (Selbsteinschätzung) | lp (Code der Lehrperson) */
+  /* Freigabe-Schritte (frei kombinierbar): selbst = Selbsteinschätzung, praes = Präsentation, lp = Code der Lehrperson */
+  const GORDER = ["selbst", "praes", "lp"];
+  const GATES = (Array.isArray(O.gates) ? O.gates : O.freigabe === "selbst" ? ["selbst"] : O.freigabe === "lp" ? ["lp"] : []).filter((g, i, a) => GORDER.includes(g) && a.indexOf(g) === i).sort((a, b) => GORDER.indexOf(a) - GORDER.indexOf(b));
+  const stepsFor = e => GATES.filter(g => g !== "lp" || e < ET.length - 1 || GATES.length > 1);   // nur LP-Code: nach der letzten Etappe nicht nötig
+  const gateNeeded = e => stepsFor(e).length > 0;
+  S.gs = S.gs || {};
+  const gateDone = e => !!S.gate[e] || stepsFor(e).every(g => (S.gs[e] || {})[g]);
+  const etUnlocked = e => e <= 0 || !GATES.length || (etDone(e - 1) && (!gateNeeded(e - 1) || gateDone(e - 1)) && etUnlocked(e - 1));
+  const GNAME = { selbst: "euch selbst einschätzen", praes: "präsentieren", lp: "von der Lehrperson freigeben lassen" };
+  const missing = e => stepsFor(e).filter(g => !(S.gs[e] || {})[g]);
+  const andList = l => l.length > 1 ? l.slice(0, -1).join(", ") + " und " + l[l.length - 1] : l.join("");
+  const SELBST = [["super", "🤩", "Kann ich super"], ["gut", "🙂", "Kann ich gut"], ["teils", "🤔", "Teilweise"], ["hilfe", "😵‍💫", "Brauche noch Hilfe"]];
+
+  /* ---------- Diplome ---------- */
+  function dipOk(d) {
+    const b = String(d.bedingung || "alle").toLowerCase().trim();
+    if (b === "start") return total() > 0;
+    if (b === "lexikon") return !!S.lex;
+    if (b === "alle") return ET.length > 0 && ET.every((_, e) => etDone(e));
+    if (b === "perfekt") return ET.length > 0 && ET.every((_, e) => etDone(e)) && Object.values(S.ans).every(a => !a.ok || a.first);
+    const m = b.match(/^etappe:(\d+)$/); if (m) return !!ET[+m[1] - 1] && etDone(+m[1] - 1);
+    const s = b.match(/^sterne:(\d+)$/); if (s) return total() >= +s[1];
+    return false;
+  }
+  function checkDips() {
+    DIP.forEach(d => {
+      if (S.dips.includes(d.id) || !dipOk(d)) return;
+      S.dips.push(d.id); save();
+      if (HUB) HUB.badge(d.id);
+      setTimeout(() => showDip(d), 500);
+    });
+    if (!S.fertig && ET.length && ET.every((_, e) => etDone(e))) { S.fertig = true; save(); if (HUB) HUB.fertig(); }
+  }
+  function report(e) { if (HUB) HUB.sterne("etappe-" + (e + 1), etStars(e)); }
+
+  /* ---------- Text mit Fachwörtern (antippen = Erklärung) ---------- */
+  function rich(txt) {
+    const raw = String(nm(txt) ?? ""), taken = [];
+    LEX.slice().sort((a, b) => b.wort.length - a.wort.length).forEach(w => {
+      const re = new RegExp("(^|[^\\wäöüÄÖÜß])(" + w.wort.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")(?=[^\\wäöüÄÖÜß]|$)", "i");
+      const m = re.exec(raw); if (!m) return;
+      const st = m.index + m[1].length, en = st + m[2].length;
+      if (taken.some(x => st < x.en && en > x.st)) return;
+      taken.push({ st, en, w: w.wort });
+    });
+    taken.sort((a, b) => a.st - b.st);
+    let h = "", pos = 0;
+    taken.forEach(x => { h += esc(raw.slice(pos, x.st)) + `<button type="button" class="lex" data-lex="${esc(x.w)}">${esc(raw.slice(x.st, x.en))}</button>`; pos = x.en; });
+    h += esc(raw.slice(pos));
+    h = h.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    return h.split(/\n\s*\n/).map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
+  }
+
+  /* ---------- Bausteine: jede Aufgabe ist ein Baustein, Infos davor sind «gLiTCh erklärt» ---------- */
+  const B = [];
+  ET.forEach((E, e) => {
+    let pend = [], any = false;
+    E.aufgaben.forEach((a, t) => { if (!scorable(a)) { pend.push(a); return; } B.push({ e, t, erkl: pend }); pend = []; any = true; });
+    if (pend.length) { if (any) B[B.length - 1].nach = pend; else B.push({ e, t: -1, erkl: pend, info: true }); }
+  });
+  const bDone = i => { const x = B[i]; return x.info ? !!S.ans[k(x.e, "seen")] : solved(x.e, x.t); };
+  const KIND = { info: "Info", mc: "Quiz", tf: "Richtig oder falsch?", text: "Antwort eintippen", luecke: "Lückentext", ordnen: "Reihenfolge", zuordnen: "Verbinden", schreiben: "Schreibauftrag",
+    sortieren: "Sortier-Spiel", zeitmaschine: "Zeitmaschine", raetsel: "Rätsel", memory: "Memory", mehrfach: "Mehrere richtig", schaetzen: "Schätzen", gestalten: "Gestalten",
+    wortsalat: "Buchstabensalat", wortraten: "Wort-Raten", blitz: "Blitzrunde", markieren: "Wörter markieren", wortsuche: "Wörtersuche", karteikarten: "Lernkarten", chat: "Chat-Gespräch", meinung: "Meinung bilden" };
+  const TIPS = { mc: "Lies jede Antwort genau. Welche passt wirklich zur Frage?", tf: "Ein einziges falsches Wort macht die ganze Aussage falsch!", text: "Schau nochmals in «gLiTCh erklärt». Dort steht das Wort.",
+    luecke: "Lies den ganzen Satz laut. Welches Wort klingt richtig?", ordnen: "Was passiert zuerst? Beginne mit dem, was du sicher weisst.", zuordnen: "Fang mit dem Paar an, bei dem du ganz sicher bist.",
+    sortieren: "Überlege bei jeder Karte: Was ist das Besondere daran?", zeitmaschine: "Überlegt zuerst: Eher früher oder später als die anderen Ereignisse?", raetsel: "Holt euch ruhig den nächsten Hinweis!",
+    memory: "Merkt euch, wo die Karten liegen. Sagt die Begriffe laut!", mehrfach: "Prüft jede Antwort einzeln: stimmt sie oder nicht?", schaetzen: "Vergleicht mit etwas, das ihr kennt.",
+    gestalten: "Eine kurze, starke Überschrift und zwei, drei klare Sätze reichen.", schreiben: "Schreibt zuerst Stichworte, dann ganze Sätze.",
+    wortsalat: "Mit welchem Buchstaben fängt das Wort wohl an?", wortraten: "Probiert zuerst die häufigen Buchstaben: E, N, R, A, S.", blitz: "Nicht zu lange überlegen: Das Erste, was ihr denkt, stimmt oft!",
+    markieren: "Lest Satz für Satz und fragt bei jedem Wort: Passt es zur Anleitung?", wortsuche: "Sucht zuerst nach dem ersten Buchstaben eines Wortes.", karteikarten: "Sagt die Antwort laut, bevor ihr umdreht!",
+    chat: "Was würde eine höfliche und kluge Person antworten?", meinung: "Eine gute Begründung braucht ein «weil» und ein Beispiel." };
+  const PRAISE = ["Pixel-perfekt!", "Jawoll, richtig!", "Mega, das stimmt!", "Super gemacht!", "Volltreffer!"];
+  const short = a => a.titel || (a.frage || a.aussage || a.auftrag || a.anleitung || a.person || "").split(/[?.!:]/)[0].split(" ").slice(0, 3).join(" ") || KIND[a.typ];
+
+  const app = document.getElementById("app");
+  let view = { b: 0 }, sayT = null;
+  function say(text, mood = "happy", ms) {
+    const t = $("#sayT"), g = $("#bigG"); if (!t) return;
+    t.innerHTML = rich(nm(text)).replace(/^<p>|<\/p>$/g, ""); if (g) g.innerHTML = gsvg(mood);
+    $$(".lex", t).forEach(b => b.onclick = () => showLex(b.dataset.lex));
+    const bub = $("#say"); if (bub) { bub.classList.remove("pop"); void bub.offsetWidth; bub.classList.add("pop"); }
+    clearTimeout(sayT); if (ms) sayT = setTimeout(() => { const x = B[view.b]; say(x ? `Baustein ${view.b + 1}: ${short(ET[x.e].aufgaben[x.t] || x.erkl[0] || {})}. ${TIPS_START}` : "", "normal"); }, ms);
+  }
+  const TIPS_START = O.tipps ? "Brauchst du Hilfe? Tippe auf «💡 Tipp»." : "";
+  function frame() {
+    app.innerHTML = `<header class="lab-top">
+        <button type="button" class="menu-btn" id="menuBtn" aria-haspopup="true" aria-expanded="false">☰ Menü</button>
+        <div class="logo"><span class="logo-g">gLiTCh</span><span class="logo-l">-Lab</span><span class="logo-chip">${esc(M.fachkurz || M.fachname || "Modul")}</span>
+          <small>${esc(M.emoji || "")} ${esc(M.titel || "")}${HUB ? "" : ' · <b class="test">Testmodus</b>'}</small></div>
+        <div class="talk"><div class="say-bub" id="say" aria-live="polite"><b>${esc(NAME)}</b><p id="sayT"></p></div><span class="glitch big" id="bigG">${gsvg("happy")}</span></div>
+      </header>
+      <div class="menu" id="menu" hidden>
+        ${LEX.length ? `<button type="button" data-go="lex">📖 Lexikon <small>${LEX.length} Fachwörter</small></button>` : ""}
+        ${DIP.length ? `<button type="button" data-go="dip">🏅 Diplome <small>${S.dips.length} von ${DIP.length}</small></button>` : ""}
+        ${(M.links || []).length ? `<button type="button" data-go="links">🔗 Links</button>` : ""}
+        ${O.pdf ? `<button type="button" data-go="pdf">📄 Zusammenfassung als PDF</button>` : ""}
+        <button type="button" data-go="ziel">🏁 Ziel</button>
+        ${HUB ? `<button type="button" data-go="exit">← Zurück zum Glitchlab</button>` : ""}
+      </div>
+      <nav class="tabs" id="tabs" aria-label="Bausteine"></nav>
+      <main class="lab-grid"><section class="stage" id="stage"></section><aside class="side" id="side"></aside></main>`;
+    const mb = $("#menuBtn"), mn = $("#menu");
+    mb.onclick = () => { mn.hidden = !mn.hidden; mb.setAttribute("aria-expanded", String(!mn.hidden)); };
+    document.addEventListener("click", ev => { if (!mn.hidden && !mn.contains(ev.target) && ev.target !== mb) { mn.hidden = true; mb.setAttribute("aria-expanded", "false"); } });
+    $$("[data-go]", mn).forEach(b => b.onclick = () => { mn.hidden = true; const g = b.dataset.go; if (g === "lex") showLex(); if (g === "dip") showDips(); if (g === "links") showLinks(); if (g === "ziel") goB(B.length); if (g === "pdf") summaryPdf(); if (g === "exit" && HUB) HUB.beenden(); });
+    $("#bigG").onclick = () => { const x = B[view.b], a = x && ET[x.e].aufgaben[x.t]; say(a && O.tipps ? (a.tipp || TIPS[a.typ] || "Du schaffst das!") : a ? "Du schaffst das! Lies nochmals genau." : "Hoi! Ich bin gLiTCh.", "wink", 7000); };
+  }
+  function paintTabs() {
+    let lastE = -1;
+    $("#tabs").innerHTML = B.map((x, i) => { const a = ET[x.e].aufgaben[x.t] || x.erkl[0] || {}, sep = x.e !== lastE; lastE = x.e;
+      const lock = !etUnlocked(x.e);
+      return `${sep ? `<span class="tab-sep" title="${esc(ET[x.e].titel)}">${esc(ET[x.e].emoji || "")}</span>` : ""}<button type="button" class="tab${i === view.b ? " cur" : ""}${bDone(i) ? " done" : ""}${lock ? " locked" : ""}" data-b="${i}" aria-current="${i === view.b ? "step" : "false"}"${lock ? ' aria-disabled="true"' : ""}><b>${lock ? "🔒" : bDone(i) ? "✓" : i + 1}</b><span>${esc(short(a))}</span></button>`; }).join("")
+      + `<button type="button" class="tab ziel${view.b >= B.length ? " cur" : ""}" data-b="${B.length}"><b>🏁</b><span>Ziel</span></button>`;
+    $$("[data-b]", $("#tabs")).forEach(b => b.onclick = () => goB(+b.dataset.b));
+    const cur = $(".tab.cur"); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "center" });
+  }
+  function paintSide() {
+    const sd = $("#side"); if (!sd) return;
+    const st = total(), mx = totalMax(), dn = B.filter((_, i) => bDone(i)).length;
+    sd.innerHTML = `<div class="side-card lvl"><div class="ring" style="--p:${mx ? Math.round(st / mx * 100) : 0}"><span>★</span></div><div><small>Sterne in diesem Modul</small><b>${st} von ${mx}</b>${who() ? `<small>Team: ${esc(who())}</small>` : ""}</div></div>
+      ${DIP.length ? `<div class="side-card"><small class="cap">Diplome: ${esc(M.titel || "")}</small><div class="hexes">${DIP.map(d => `<button type="button" class="hex${S.dips.includes(d.id) ? " got" : ""}" data-dip="${esc(d.id)}" title="${esc(d.name)}">${S.dips.includes(d.id) ? wall(d) : "🔒"}</button>`).join("")}</div>
+        <p class="side-note">Tippt ein Diplom an, dann verrät ${esc(NAME)}, wie ihr es bekommt.</p></div>` : ""}
+      <div class="side-card"><div class="prog-h"><b>Fortschritt</b><span>${dn} / ${B.length}</span></div><div class="pbar"><i style="width:${B.length ? Math.round(dn / B.length * 100) : 0}%"></i></div>
+        ${ET.map((E, e) => { const se = S.selbst[e] && SELBST.find(x => x[0] === S.selbst[e].w);
+          return `<div class="et-row${etDone(e) ? " ok" : ""}${etUnlocked(e) ? "" : " lock"}"><span>${etUnlocked(e) ? esc(E.emoji || "⭐") : "🔒"}</span><span>${esc(E.titel)}</span><small>${se ? se[1] + " " : ""}${etDone(e) ? (!gateNeeded(e) || gateDone(e) ? "✓" : "✓ · " + ({ selbst: "Einschätzung", praes: "Präsentation", lp: "Freigabe" })[missing(e)[0]] + " fehlt") : `★ ${etStars(e)}/${etMax(e)}`}</small></div>`; }).join("")}
+        ${GATES.length ? `<p class="side-note">Nach jeder Etappe: ${andList(GATES.map(g => ({ selbst: "🪞 Selbsteinschätzung", praes: "🎤 Präsentation", lp: "🔐 Freigabe mit dem Code der Lehrperson" })[g]))}.</p>` : ""}</div>
+      ${LEX.length ? `<div class="side-card"><div class="prog-h"><b>📖 Fachwörter</b><span>${(S.words || []).length} / ${LEX.length}</span></div><p class="side-note">Wörter mit gepunkteter Linie antippen: ${esc(NAME)} erklärt sie.</p><button type="button" class="btn small" data-golex>Lexikon öffnen</button></div>` : ""}`;
+    $$("[data-dip]", sd).forEach(b => b.onclick = () => { const d = DIP.find(x => x.id === b.dataset.dip); say(S.dips.includes(d.id) ? `${d.emoji || "🏅"} **${d.name}**: geschafft! ${d.beschreibung || ""}` : `${d.emoji || "🏅"} **${d.name}**: ${d.beschreibung || "Löst die Bausteine, dann bekommt ihr es."}`, S.dips.includes(d.id) ? "cool" : "wink", 7000); });
+    const gl2 = $("[data-golex]", sd); if (gl2) gl2.onclick = () => showLex();
+  }
+  function goB(i) {
+    i = Math.max(0, Math.min(B.length, i));
+    const x = B[i];
+    if (x && !etUnlocked(x.e)) {
+      let p = 0; while (p < x.e && etUnlocked(p + 1)) p++;   // letzte offene Etappe
+      if (etDone(p) && gateNeeded(p) && !gateDone(p)) return gateDlg(p);
+      return say(`🔒 Zuerst Etappe ${p + 1} «${ET[p].titel}» fertig machen${gateNeeded(p) ? " und " + andList(missing(p).map(g => GNAME[g])) : ""}.`, "hmm", 7000);
+    }
+    view.b = i; paintTabs(); stage(); window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  /* ---------- Freigabe-Fenster nach einer Etappe ---------- */
+  function gateDlg(e, then) {
+    const E = ET[e], nextI = B.findIndex(y => y.e === e + 1);
+    const finish = () => { save(); paintTabs(); paintSide(); if (then) then(); else if (nextI >= 0) goB(nextI); else goB(B.length); };
+    if (!gateNeeded(e) || gateDone(e)) return finish();
+    const step = missing(e)[0], nSteps = stepsFor(e).length, nr = nSteps > 1 ? ` <small class="g-step">Schritt ${stepsFor(e).indexOf(step) + 1} von ${nSteps}</small>` : "";
+    const pass = () => { S.gs[e] = Object.assign({}, S.gs[e], { [step]: new Date().toISOString() }); save(); paintTabs(); paintSide(); if (gateDone(e)) finish(); else setTimeout(() => gateDlg(e, then), 350); };
+    if (step === "praes") return praesDlg(e, nr, pass);
+    if (step === "selbst") {
+      const ov = dlg(`<h2>🪞 Selbsteinschätzung${nr}</h2><div class="hero">${gl("wink")}<div class="bubble"><b>${esc(NAME)}</b><div><p>Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Wie gut kannst du das jetzt?</p></div></div></div>
+        <div class="selbst" role="radiogroup" aria-label="Selbsteinschätzung">${SELBST.map(([v, ic, n]) => `<button type="button" class="sb" data-sb="${v}" role="radio" aria-checked="false"><span>${ic}</span>${esc(n)}</button>`).join("")}</div>
+        <label class="f"><span>Das nehme ich mit (ein Satz, freiwillig)</span><textarea class="in" id="sbTxt" style="min-height:60px" placeholder="z. B. Ich weiss jetzt, dass …"></textarea></label>`);
+      const ok = $("[data-x]", ov); ok.textContent = "Speichern und weiter →"; ok.disabled = true;
+      let w = (S.selbst[e] || {}).w || "";
+      const mark = () => { $$("[data-sb]", ov).forEach(b => { b.classList.toggle("on", b.dataset.sb === w); b.setAttribute("aria-checked", String(b.dataset.sb === w)); }); ok.disabled = !w; };
+      $$("[data-sb]", ov).forEach(b => b.onclick = () => { w = b.dataset.sb; mark(); }); mark();
+      ok.onclick = () => { if (!w) return; S.selbst[e] = { w, t: $("#sbTxt", ov).value.trim().slice(0, 300), at: new Date().toISOString() }; ov.remove(); say(w === "hilfe" ? "Gut, dass du das sagst! Frag deine Lehrperson oder schau nochmals in «gLiTCh erklärt»." : "Danke! Weiter geht's.", w === "hilfe" ? "hmm" : "happy", 6000); pass(); };
+      return;
+    }
+    let code = "";
+    const ov = dlg(`<h2>🔐 Freigabe durch die Lehrperson${nr}</h2><div class="hero">${gl("cool")}<div class="bubble"><b>${esc(NAME)}</b><div><p>${GATES.includes("praes") ? `Präsentation von Etappe ${e + 1} geschafft! Jetzt gibt eure Lehrperson mit ihrem Code ${e < ET.length - 1 ? "die nächste Etappe" : "das Ziel"} frei.` : `Etappe ${e + 1} «${esc(E.titel)}» ist geschafft! Zeigt eure Arbeit eurer Lehrperson. Sie gibt mit ihrem Code die nächste Etappe frei.`}</p></div></div></div>
+      <div class="pin"><div class="pin-dots" id="pinD" aria-live="polite"></div><div class="pin-pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button type="button" data-pn="${n}">${n}</button>`).join("")}<button type="button" data-pn="del" aria-label="Löschen">⌫</button><button type="button" data-pn="0">0</button><button type="button" class="go" data-pn="ok">OK</button></div><p class="err" id="pinE" role="alert"></p></div>`);
+    $("[data-x]", ov).textContent = "Später";
+    const paint = () => { $("#pinD", ov).textContent = code ? "●".repeat(code.length) : "Code eingeben"; };
+    const check = () => {
+      let ok = false; try { ok = HUB && HUB.pruefeCode ? !!HUB.pruefeCode(code) : code === String(O.code || "1234"); } catch (err) { ok = false; }
+      if (ok) { ov.remove(); confetti(30); say(e < ET.length - 1 ? "Freigegeben! Weiter zur nächsten Etappe." : "Freigegeben! Ab zum Ziel.", "cool", 6000); pass(); }
+      else { code = ""; paint(); $("#pinE", ov).textContent = "Falscher Code. Nochmals versuchen."; const p = $(".pin", ov); p.classList.remove("shake"); void p.offsetWidth; p.classList.add("shake"); }
+    };
+    $$("[data-pn]", ov).forEach(b => b.onclick = () => { const v = b.dataset.pn; $("#pinE", ov).textContent = "";
+      if (v === "del") code = code.slice(0, -1); else if (v === "ok") return check(); else if (code.length < 8) code += v; paint(); });
+    paint();
+  }
+  /* ---------- Präsentation einer Etappe (wie im gLiTCh-Lab): Stichworte, eigene Produkte, Vollbild ---------- */
+  function praesDlg(e, nr, pass) {
+    const E = ET[e], A = E.aufgaben;
+    const own = A.map((a, t) => ({ a, x: S.ans[k(e, t)] })).filter(({ a, x }) => (a.typ === "schreiben" || a.typ === "gestalten") && x && x.v)
+      .map(({ a, x }) => typeof x.v === "string" ? { titel: a.titel || KIND[a.typ], text: x.v } : { titel: x.v.titel || a.titel || KIND[a.typ], text: x.v.text || "", farbe: x.v.farbe });
+    const txt = A.map(a => [a.text, a.frage, a.aussage, a.auftrag].join(" ")).join(" ");
+    const words = LEX.filter(w => new RegExp("(^|[^\\wäöüÄÖÜß])" + w.wort.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(?=[^\\wäöüÄÖÜß]|$)", "i").test(txt)).slice(0, 4);
+    const ideas = A.filter(a => !scorable(a) && a.titel).map(a => a.titel).slice(0, 4);
+    const ov = dlg(`<div class="praes" id="praesBox"><h2>🎤 Etappe ${e + 1} präsentieren${nr}</h2>
+      <div class="praes-head" style="--ec:${["#E3A300", "#1F9D68", "#2E6BE6", "#DD4646", "#7B4CEF", "#00B3C7"][e % 6]}"><span>${esc(E.emoji || "⭐")}</span><div><b>${esc(E.titel)}</b>${E.ziel ? `<small>${esc(E.ziel)}</small>` : ""}</div><em>★ ${etStars(e)} / ${etMax(e)}</em></div>
+      <p class="praes-lead">${who() ? esc(who()) + ": " : ""}Erzählt der Klasse oder eurer Lehrperson, was ihr in dieser Etappe herausgefunden habt.</p>
+      <ol class="praes-list">
+        <li><b>Worum ging es?</b> ${E.ziel ? esc(E.ziel) : "Erklärt das Thema in zwei Sätzen."}</li>
+        ${ideas.length ? `<li><b>Das haben wir gelernt:</b> ${ideas.map(esc).join(" · ")}</li>` : ""}
+        ${words.length ? `<li><b>Erklärt diese Fachwörter:</b> ${words.map(w => `<span class="pw">${esc(w.wort)}</span>`).join(" ")}</li>` : `<li><b>Ein schwieriges Wort</b> aus der Etappe erklären.</li>`}
+        <li><b>Das war spannend oder schwierig:</b> Was nehmt ihr mit?</li>
+      </ol>
+      ${own.length ? `<h3>Unser Produkt</h3><div class="praes-own">${own.map(o => `<div class="po" style="--pc:${/^#[0-9a-f]{6}$/i.test(o.farbe || "") ? o.farbe : "var(--mc)"}"><b>${esc(o.titel)}</b><p>${esc(o.text).replace(/\n/g, "<br>")}</p></div>`).join("")}</div>` : ""}
+      <div class="row praes-act"><button type="button" class="btn" data-full>⛶ Vollbild für die Klasse</button><button type="button" class="btn primary" data-done>✓ Wir haben präsentiert</button></div></div>`);
+    $("[data-x]", ov).textContent = "Später";
+    const box = $(".dlg", ov);
+    $("[data-full]", ov).onclick = () => { try { if (document.fullscreenElement) document.exitFullscreen(); else box.requestFullscreen(); } catch (err) { box.classList.toggle("big"); } };
+    $("[data-done]", ov).onclick = () => { try { if (document.fullscreenElement) document.exitFullscreen(); } catch (err) { /* egal */ } ov.remove(); confetti(30); say("Applaus! 👏 Toll präsentiert.", "cool", 5000); pass(); };
+  }
+  function readAloud(text) {
+    try { const u = new SpeechSynthesisUtterance(String(text).replace(/\*\*/g, "")); u.lang = "de-CH"; u.rate = .95; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { say("Vorlesen geht auf diesem Gerät leider nicht.", "sad", 4000); }
+  }
+  function erklHTML(list, cls = "") {
+    return list.map((a, n) => `<div class="erkl ${cls}"><div class="erkl-h">${gl("normal", "mini")}<b>${esc(NAME)} erklärt</b>${a.titel ? `<span>· ${esc(a.titel)}</span>` : ""}${O.vorlesen ? `<button type="button" class="btn small" data-read="${n}">🔊 Vorlesen</button>` : ""}</div><div class="txt">${rich(a.text || "")}</div></div>`).join("");
+  }
+  function stage() {
+    const sg = $("#stage");
+    if (view.b >= B.length) return ziel();
+    const x = B[view.b], E = ET[x.e], a = E.aufgaben[x.t];
+    const first = B.findIndex(y => y.e === x.e) === view.b, nInE = B.filter(y => y.e === x.e).length, posInE = B.slice(0, view.b).filter(y => y.e === x.e).length + 1;
+    sg.innerHTML = `<div class="stage-card" style="--ec:${["#E3A300", "#1F9D68", "#2E6BE6", "#DD4646", "#7B4CEF", "#00B3C7"][x.e % 6]}">
+      <div class="eyebrow"><span>Etappe ${x.e + 1} · ${esc(E.titel)}</span><span>Baustein ${view.b + 1} von ${B.length}</span></div>
+      <h1>${esc(a ? short(a) : (x.erkl[0].titel || E.titel))}</h1>${first && E.ziel ? `<p class="lead">${esc(E.ziel)}</p>` : ""}
+      ${erklHTML(x.erkl)}
+      ${x.info ? `<div class="nav"><button type="button" class="btn" data-prev ${view.b ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${view.b === B.length - 1 ? "Zum Ziel 🏁" : "Weiter →"}</button></div>` : `<div id="task"></div>`}
+      ${x.nach ? `<div id="nach" ${bDone(view.b) ? "" : "hidden"}>${erklHTML(x.nach, "nach")}</div>` : ""}
+    </div>`;
+    $$("[data-read]", sg).forEach(b => b.onclick = () => { const all = [...x.erkl, ...(x.nach || [])]; readAloud((all[+b.dataset.read + (b.closest(".nach") ? x.erkl.length : 0)] || {}).text || ""); });
+    $$(".erkl .lex", sg).forEach(b => b.onclick = () => showLex(b.dataset.lex));
+    if (x.info) { const wasSeen = etDone(x.e); S.ans[k(x.e, "seen")] = { seen: true }; save(); checkDips(); paintSide(); if (!wasSeen && etDone(x.e)) paintTabs(); $("[data-prev]").onclick = () => goB(view.b - 1); $("[data-next]").onclick = () => goB(view.b + 1); }
+    else { view.e = x.e; view.t = x.t; renderTask(); }
+    if (first && posInE === 1 && !bDone(view.b)) say(E.intro || `Etappe ${x.e + 1}: ${E.titel}. Los geht's!`, "happy", 9000);
+    else say(`${a ? KIND[a.typ] : "Info"}: ${posInE} von ${nInE} in dieser Etappe. ${TIPS_START}`, "normal");
+  }
+  function ziel() {
+    const all = ET.every((_, e) => etDone(e)), st = total(), mx = totalMax();
+    $("#stage").innerHTML = `<div class="stage-card ziel-card"><div class="eyebrow"><span>Ziel</span><span>${B.filter((_, i) => bDone(i)).length} von ${B.length} Bausteinen</span></div>
+      <h1>${all ? "Geschafft! 🎉" : "Fast am Ziel"}</h1>
+      <div class="ziel-hero">${gl(all ? "cool" : "wink", "huge")}<div><p class="ziel-stars">★ ${st} <small>von ${mx}</small></p><p>${esc(all ? (M.schluss || "Super, ihr habt alles geschafft!") : "Löst die offenen Bausteine (ohne ✓ in der Leiste oben), dann seid ihr am Ziel.")}</p></div></div>
+      ${DIP.length ? `<h3>Diplome</h3><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e wall" aria-hidden="true">${wall(d)}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>` : ""}
+      ${GATES.includes("selbst") && Object.keys(S.selbst).length ? `<h3>Eure Selbsteinschätzung</h3><div class="selbst-list">${ET.map((E, e) => { const se = S.selbst[e], x = se && SELBST.find(y => y[0] === se.w); return x ? `<div><span>${x[1]}</span><b>${esc(E.titel)}</b><small>${esc(x[2])}${se.t ? " · «" + esc(se.t) + "»" : ""}</small></div>` : ""; }).join("")}</div>` : ""}
+      ${O.pdf ? `<div class="pdf-box"><span>📄</span><div><b>Zusammenfassung als PDF</b><small>Alles Wichtige aus dem Modul${LEX.length ? ", die Fachwörter" : ""} und eure Sterne zum Aufbewahren.</small></div><button type="button" class="btn" data-pdf>Herunterladen</button></div>` : ""}
+      <div class="nav"><button type="button" class="btn" data-prev>← Zurück</button>${HUB ? `<button type="button" class="btn primary" data-exit>Zurück zum Glitchlab</button>` : ""}</div></div>`;
+    $("[data-prev]").onclick = () => goB(B.length - 1);
+    const pb = $("[data-pdf]"); if (pb) pb.onclick = () => summaryPdf(pb);
+    const ex = $("[data-exit]"); if (ex) ex.onclick = () => HUB.beenden();
+    say(all ? (M.schluss || "Ihr habt alles geschafft!") : "Noch nicht ganz! Schaut, welche Bausteine noch kein ✓ haben.", all ? "cool" : "wink");
+    if (all) confetti(40);
+  }
+  function done(e, t, ok, first, extra, pts) {
+    const key = k(e, t), old = S.ans[key] || {}, a = ET[e].aufgaben[t];
+    if (old.ok) return;
+    const wasDone = etDone(e), tries = (old.tries || 0) + 1;
+    if (pts == null) pts = ok ? Math.max(1, wert(a) - (tries - 1)) : 0;
+    S.ans[key] = Object.assign({}, old, extra || {}, { ok, tries, pts, first: ok && tries === 1 && pts >= wert(a) });
+    save(); if (ok) { report(e); confetti(); }
+    checkDips(); paintSide(); paintTabs();
+    const nach = $("#nach"); if (ok && nach) nach.hidden = false;
+    if (ok && !wasDone && etDone(e)) { setTimeout(() => say(`${ET[e].lob || "Etappe geschafft!"} ⭐`, "cool", 9000), 900); if (gateNeeded(e) && !gateDone(e)) { const when = () => { if (gateDone(e)) return; if (document.querySelector(".ov")) return setTimeout(when, 500); gateDlg(e); }; setTimeout(when, 2200); } }
+  }
+  function fb(ok, text) {
+    const f = document.createElement("div"); f.className = "fb " + (ok ? "ok" : "bad");
+    f.innerHTML = `${gl(ok ? "happy" : "hmm")}<div><p><b>${ok ? "Richtig!" : "Noch nicht ganz."}</b></p>${text ? rich(text) : ""}</div>`;
+    const old = $("#task .fb"); if (old) old.remove();
+    $("#task .task").appendChild(f);
+    $$(".lex", f).forEach(b => b.onclick = () => showLex(b.dataset.lex));
+    const x = B[view.b], a = x && ET[x.e].aufgaben[x.t];
+    if (ok) say(PRAISE[Math.floor(Math.random() * PRAISE.length)] + (a && wert(a) > 1 ? " Spiel gemeistert!" : ""), "happy", 5000);
+    else say(!O.tipps ? "Versuch es nochmal!" : a && a.tipp ? `Kleiner Tipp: ${a.tipp}` : (TIPS[a && a.typ] || "Versuch es nochmal!"), "hmm", 9000);
+  }
+  function renderTask() {
+    const { e, t } = view, A = ET[e].aufgaben, a = A[t], key = k(e, t), st = S.ans[key] || {};
+    const last = view.b === B.length - 1;
+    const stars = scorable(a) ? ` · bis ${Math.max(1, Math.round(wert(a) * SCL))} ★` : "";
+    let body = "";
+    if (a.typ === "info") body = `<h3>${esc(a.titel || "")}</h3><div class="txt">${rich(a.text || "")}</div>`;
+    if (a.typ === "mc") body = `<h3>${rich(a.frage).replace(/^<p>|<\/p>$/g, "")}</h3><div class="opts">${(a.optionen || []).map((o, i) => `<button type="button" class="opt${st.ok && i === +a.richtig ? " ok" : ""}" data-o="${i}" ${st.ok ? 'aria-disabled="true"' : ""}>${esc(o)}</button>`).join("")}</div>`;
+    if (a.typ === "tf") body = `<h3>${rich(a.aussage).replace(/^<p>|<\/p>$/g, "")}</h3><div class="tf"><button type="button" class="opt" data-tf="1">👍 Richtig</button><button type="button" class="opt" data-tf="0">👎 Falsch</button></div>`;
+    if (a.typ === "text") body = `<h3>${rich(a.frage).replace(/^<p>|<\/p>$/g, "")}</h3><div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><input class="in" id="ans" autocomplete="off" style="flex:1;min-width:180px" value="${esc(st.v || "")}" placeholder="Deine Antwort"><button type="button" class="btn primary" data-check>Prüfen</button></div>`;
+    if (a.typ === "luecke") {
+      let n = 0; const opts = a.optionen && a.optionen.length ? a.optionen : null;
+      const html = esc(a.text || "").replace(/\[\[(.+?)\]\]/g, () => { const i = n++; return opts ? `<select class="in gap" data-g="${i}"><option value="">…</option>${opts.map(o => `<option>${esc(o)}</option>`).join("")}</select>` : `<input class="in gap" data-g="${i}" autocomplete="off" size="10">`; });
+      body = `<h3>${esc(a.anleitung || "Fülle die Lücken.")}</h3><div class="txt"><p style="line-height:2.2">${html.replace(/\n/g, "<br>")}</p></div><button type="button" class="btn primary" data-check>Prüfen</button>`;
+    }
+    if (a.typ === "ordnen") {
+      const items = st.order || shuffle((a.elemente || []).map((x, i) => i));
+      view.order = items.slice();
+      body = `<h3>${esc(a.frage || "Bringe in die richtige Reihenfolge.")}</h3><ol class="order" id="ord"></ol><button type="button" class="btn primary" data-check>Prüfen</button>`;
+    }
+    if (a.typ === "zuordnen") {
+      view.mt = { sel: null, ok: st.ok ? a.paare.map((_, i) => i) : [], miss: 0, right: shuffle(a.paare.map((_, i) => i)) };
+      body = `<h3>${esc(a.frage || "Was gehört zusammen?")}</h3><p class="hintline">Tippe links einen Begriff an, dann rechts das Passende.</p><div class="connect"><div class="col" id="mtL"></div><div class="col" id="mtR"></div></div>`;
+    }
+    if (a.typ === "sortieren") {
+      const cats = (a.kategorien || []).map(String);
+      view.so = { i: 0, right: 0, order: shuffle((a.elemente || []).map((_, i) => i)), log: [] };
+      body = `<h3>${esc(a.frage || "Sortiere!")}</h3><div class="sorter"><div class="sort-card" id="soCard" aria-live="polite"></div><div class="sort-bins">${cats.map((c, i) => `<button type="button" class="bin" data-bin="${esc(c)}" style="--h:${(i * 97 + 180) % 360}"><span>${esc(c)}</span></button>`).join("")}</div><p class="hintline" id="soInfo"></p></div>`;
+    }
+    if (a.typ === "zeitmaschine") {
+      view.zm = { i: 0, res: [] };
+      body = `<h3>${esc(a.frage || "Stellt die Zeitmaschine auf das richtige Jahr!")}</h3><div class="tm"><div class="tm-ev" id="tmEv"></div>
+        <div class="tm-dial"><output id="tmOut">${a.von}</output><span class="tm-unit">${esc(a.einheit || "")}</span></div>
+        <input type="range" class="tm-range" id="tmR" min="${+a.von}" max="${+a.bis}" step="1" value="${Math.round((+a.von + +a.bis) / 2)}" aria-label="Jahr wählen">
+        <div class="tm-ticks"><span>${a.von}</span><span>${Math.round((+a.von + +a.bis) / 2)}</span><span>${a.bis}</span></div>
+        <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><button type="button" class="btn small" data-tm="-10">−10</button><button type="button" class="btn small" data-tm="-1">−1</button><button type="button" class="btn small" data-tm="1">+1</button><button type="button" class="btn small" data-tm="10">+10</button></div>
+        <button type="button" class="btn primary" id="tmGo">🚀 Losreisen!</button><ul class="tm-log" id="tmLog"></ul></div>`;
+    }
+    if (a.typ === "raetsel") {
+      view.ra = view.ra && view.ra.key === key ? view.ra : { key, shown: 1 };
+      body = `<h3>${esc(a.frage || "Wer oder was ist gemeint?")}</h3><p class="hintline">Je weniger Hinweise ihr braucht, desto mehr Sterne.</p><ol class="clues" id="raL"></ol>
+        <div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><input class="in" id="ans" autocomplete="off" style="flex:1;min-width:180px" placeholder="Eure Lösung"><button type="button" class="btn primary" data-check>Prüfen</button><button type="button" class="btn" id="raMore">💡 Nächster Hinweis</button></div>`;
+    }
+    if (a.typ === "memory") {
+      const cards = shuffle(a.paare.flatMap((p, i) => [{ i, txt: p[0] }, { i, txt: p[1] }]));
+      view.me = { cards, open: [], found: st.ok ? a.paare.map((_, i) => i) : [], miss: 0, lock: false };
+      body = `<h3>${esc(a.frage || "Findet die Paare!")}</h3><p class="hintline">Deckt zwei Karten auf. Passen sie zusammen, bleiben sie offen.</p><div class="memory" id="meG"></div><p class="hintline" id="meInfo"></p>`;
+    }
+    if (a.typ === "mehrfach") {
+      view.mf = new Set();
+      body = `<h3>${rich(a.frage).replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Es können mehrere Antworten richtig sein.</p><div class="opts">${(a.optionen || []).map((o, i) => `<button type="button" class="opt chk" data-mf="${i}" aria-pressed="false"><i aria-hidden="true"></i>${esc(o)}</button>`).join("")}</div><button type="button" class="btn primary" data-check style="margin-top:12px">Prüfen</button>`;
+    }
+    if (a.typ === "schaetzen") {
+      const mid = Math.round((+a.min + +a.max) / 2);
+      body = `<h3>${rich(a.frage).replace(/^<p>|<\/p>$/g, "")}</h3><div class="tm"><div class="tm-dial"><output id="esOut">${mid.toLocaleString("de-CH")}</output><span class="tm-unit">${esc(a.einheit || "")}</span></div>
+        <input type="range" class="tm-range" id="esR" min="${+a.min}" max="${+a.max}" step="${Math.max(1, Math.round((+a.max - +a.min) / 200))}" value="${mid}" aria-label="Schätzwert">
+        <div class="tm-ticks"><span>${(+a.min).toLocaleString("de-CH")}</span><span>${(+a.max).toLocaleString("de-CH")}</span></div><button type="button" class="btn primary" data-check>Prüfen</button></div>`;
+    }
+    if (a.typ === "gestalten") {
+      const v = st.v || {}, COLS = ["#FF6A00", "#FF2BD6", "#2EE6D6", "#A07CFF", "#3CFF7A", "#FFC21A"], stick = (a.sticker && a.sticker.length ? a.sticker : ["⭐", "💡", "🎉", "❤️", "🔥", "🌈"]).slice(0, 8);
+      view.ge = Object.assign({ titel: "", text: "", farbe: "", sticker: "" }, v);
+      body = `<h3>${rich(a.auftrag).replace(/^<p>|<\/p>$/g, "")}</h3><div class="maker"><div class="mk-form">
+          <label class="f"><span>${esc(a.titelname || "Überschrift")}</span><input class="in" id="geT" maxlength="60" value="${esc(view.ge.titel)}"></label>
+          <label class="f"><span>${esc(a.textname || "Text")}</span><textarea class="in" id="geX">${esc(view.ge.text)}</textarea></label>
+          <div class="f"><span>Farbe</span><div class="sw">${COLS.map(c => `<button type="button" class="swb" data-gc="${c}" style="--c:${c}" aria-label="Farbe ${c}" aria-pressed="${view.ge.farbe === c}"></button>`).join("")}</div></div>
+          <div class="f"><span>Sticker</span><div class="sw">${stick.map(x => `<button type="button" class="stk" data-gs="${esc(x)}" aria-pressed="${view.ge.sticker === x}">${esc(x)}</button>`).join("")}</div></div>
+        </div><div class="poster" id="gePv"></div></div><p class="hintline" id="geInfo"></p><button type="button" class="btn primary" data-check>Fertig gestaltet</button>`;
+    }
+    if (a.typ === "schreiben") body = `<h3>${rich(a.auftrag).replace(/^<p>|<\/p>$/g, "")}</h3><textarea class="in" id="wr" placeholder="Schreibe hier …">${esc(st.v || "")}</textarea><p style="color:var(--muted);margin:6px 0" id="wc"></p><button type="button" class="btn primary" data-check>Abgeben</button>`;
+    /* ---------- neue Aufgabenarten ---------- */
+    const up = s => String(s || "").toUpperCase().replace(/ß/g, "SS");
+    if (a.typ === "wortsalat") {
+      const w = up(a.wort).replace(/[^A-ZÄÖÜ]/g, "");
+      view.ws = view.ws && view.ws.key === key ? view.ws : { key, w, pool: shuffle(w.split("").map((c, i) => ({ c, i }))), pick: [] };
+      body = `<h3>${rich(a.frage || "Welches Wort versteckt sich hier?").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Tippt die Buchstaben in der richtigen Reihenfolge an. Antippen im Wort nimmt einen Buchstaben zurück.</p>
+        <div class="ws-slots" id="wsS"></div><div class="ws-pool" id="wsP"></div><button type="button" class="btn primary" data-check>Prüfen</button>`;
+    }
+    if (a.typ === "wortraten") {
+      const w = up(a.wort);
+      view.wr = view.wr && view.wr.key === key ? view.wr : { key, w, got: new Set(), miss: 0 };
+      body = `<h3>${rich(a.frage || "Welches Wort ist gesucht?").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Tippt Buchstaben an. Bei 7 falschen Buchstaben ist der Akku leer.</p>
+        <div class="wr-word" id="wrW"></div><div class="wr-bat" id="wrB" aria-live="polite"></div><div class="wr-keys" id="wrK"></div>`;
+    }
+    if (a.typ === "blitz") {
+      view.bz = { i: -1, right: 0, t: null, left: 0 };
+      body = `<h3>${rich(a.frage || "Blitzrunde: Stimmt das?").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">${(a.aussagen || []).length} Aussagen, je ${+a.sekunden || 8} Sekunden. Schnell entscheiden!</p>
+        <div class="bz" id="bz"><button type="button" class="btn primary" id="bzGo">⚡ Blitzrunde starten</button></div>`;
+    }
+    if (a.typ === "markieren") {
+      const toks = []; String(a.text || "").split(/(\s+)/).forEach(p => { if (/^\s+$/.test(p) || !p) { toks.push({ sp: p }); return; } const m = p.match(/^([«"(]*)\*(.+?)\*([.,;:!?»")]*)$/); if (m) toks.push({ pre: m[1], w: m[2], post: m[3], hit: true }); else { const m2 = p.match(/^([«"(]*)(.*?)([.,;:!?»")]*)$/); toks.push({ pre: m2[1], w: m2[2].replace(/\*/g, ""), post: m2[3], hit: false }); } });
+      view.mk = view.mk && view.mk.key === key ? view.mk : { key, toks, on: new Set() };
+      body = `<h3>${esc(a.anleitung || "Markiert die richtigen Wörter.")}</h3><p class="hintline">Antippen markiert ein Wort, nochmals antippen nimmt die Markierung weg.</p><p class="mk-text" id="mkT"></p><button type="button" class="btn primary" data-check>Prüfen</button>`;
+    }
+    if (a.typ === "wortsuche") {
+      view.su = view.su && view.su.key === key ? view.su : Object.assign({ key, found: [], sel: null }, buildGrid((a.woerter || []).map(up)));
+      body = `<h3>${rich(a.frage || "Findet die versteckten Wörter!").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Tippt den ersten und dann den letzten Buchstaben eines Wortes an. Die Wörter stehen waagrecht, senkrecht oder schräg.</p>
+        <div class="su-wrap"><div class="su-grid" id="suG"></div><ul class="su-list" id="suL"></ul></div>`;
+    }
+    if (a.typ === "karteikarten") {
+      view.kk = view.kk && view.kk.key === key ? view.kk : { key, stack: shuffle((a.karten || []).map((_, i) => i)), flip: false, known: 0, again: 0 };
+      body = `<h3>${rich(a.frage || "Lernkarten").replace(/^<p>|<\/p>$/g, "")}</h3><p class="hintline">Lest die Vorderseite, überlegt die Antwort und dreht die Karte um. Seid ehrlich: Was ihr noch nicht wusstet, kommt nochmals.</p><div class="kk" id="kk"></div>`;
+    }
+    if (a.typ === "chat") {
+      view.ch = view.ch && view.ch.key === key ? view.ch : { key, i: 0, log: [], miss: 0 };
+      body = `<h3>${rich(a.frage || "Chattet mit " + (a.person || "jemandem")).replace(/^<p>|<\/p>$/g, "")}</h3><div class="chat"><div class="chat-head"><span>${esc(a.emoji || "🙂")}</span><b>${esc(a.person || "Chat")}</b><small>online</small></div><div class="chat-log" id="chL" aria-live="polite"></div><div class="chat-opts" id="chO"></div></div>`;
+    }
+    if (a.typ === "meinung") {
+      const v = st.v || {}; view.mn = Object.assign({ pos: 50, args: [], text: "" }, v);
+      body = `<h3>${rich(a.frage || "Was meint ihr?").replace(/^<p>|<\/p>$/g, "")}</h3><div class="mn">
+        <div class="mn-scale"><span>${esc(a.links || "Ja")}</span><input type="range" min="0" max="100" value="${view.mn.pos}" id="mnR" aria-label="Eure Meinung"><span>${esc(a.rechts || "Nein")}</span></div>
+        ${(a.argumente || []).length ? `<p class="hintline">Welche Argumente überzeugen euch? (mindestens eins)</p><div class="mn-args">${a.argumente.map((x, i) => `<button type="button" class="opt chk" data-mn="${i}" aria-pressed="${view.mn.args.includes(i)}"><i aria-hidden="true"></i>${esc(x)}</button>`).join("")}</div>` : ""}
+        <label class="f"><span>Begründet eure Meinung (mit «weil …»)</span><textarea class="in" id="mnX" placeholder="Wir finden, dass …, weil …">${esc(view.mn.text)}</textarea></label><p class="hintline" id="mnI"></p>
+        <button type="button" class="btn primary" data-check>Meinung abgeben</button></div>`;
+    }
+    $("#task").innerHTML = `<div class="task"><div class="task-h"><span class="kind">${KIND[a.typ] || "Aufgabe"}${stars}</span>${O.tipps ? `<button type="button" class="tipbtn" data-tip>💡 Tipp von ${esc(NAME)}</button>` : ""}</div>${body}</div>
+      <div class="nav"><button type="button" class="btn" data-prev ${view.b ? "" : "disabled"}>← Zurück</button><button type="button" class="btn primary" data-next>${last ? "Zum Ziel 🏁" : "Weiter →"}</button></div>`;
+    if ($("[data-tip]")) $("[data-tip]").onclick = () => say(a.tipp || TIPS[a.typ] || "Lies nochmals in «gLiTCh erklärt» nach!", "wink", 10000);
+    $$("#task .lex").forEach(b => b.onclick = () => showLex(b.dataset.lex));
+    if (a.typ === "info") { S.ans[key] = { ok: false, seen: true }; if (!etMax(e)) S.ans[k(e, "seen")] = { seen: true }; save(); }
+    if (st.ok && a.typ !== "info") fb(true, a.erklaerung);
+    const chk = $("[data-check]");
+    if (a.typ === "mc") $$("[data-o]").forEach(b => b.onclick = () => { if ((S.ans[key] || {}).ok) return; const ok = +b.dataset.o === +a.richtig; b.classList.add(ok ? "ok" : "bad"); if (!ok) b.setAttribute("aria-disabled", "true"); done(e, t, ok, true); fb(ok, ok ? a.erklaerung : (a.tipp || "Versuch es nochmal!")); if (ok) $$("[data-o]").forEach(x => x.setAttribute("aria-disabled", "true")); });
+    if (a.typ === "tf") $$("[data-tf]").forEach(b => b.onclick = () => { if ((S.ans[key] || {}).ok) return; const ok = (b.dataset.tf === "1") === !!a.richtig; b.classList.add(ok ? "ok" : "bad"); done(e, t, ok, true); fb(ok, ok ? a.erklaerung : (a.tipp || "Überlege nochmal!")); });
+    if (a.typ === "text") { const go = () => { const v = $("#ans").value; const ok = (a.antworten || []).some(x => norm(x) === norm(v)); done(e, t, ok, true, { v }); fb(ok, ok ? a.erklaerung : (a.tipp || "Versuch es nochmal. Achte auf die Schreibweise.")); }; chk.onclick = go; $("#ans").onkeydown = ev => { if (ev.key === "Enter") go(); }; }
+    if (a.typ === "luecke") chk.onclick = () => { const sol = [...String(a.text || "").matchAll(/\[\[(.+?)\]\]/g)].map(m => m[1].split("|")); let all = true;
+      $$("[data-g]").forEach(g => { const ok = sol[+g.dataset.g].some(x => norm(x) === norm(g.value)); g.classList.toggle("ok", ok); g.classList.toggle("bad", !ok); all = all && ok; });
+      done(e, t, all, true); fb(all, all ? a.erklaerung : "Die roten Lücken stimmen noch nicht."); };
+    if (a.typ === "ordnen") { const paint = () => { $("#ord").innerHTML = view.order.map((ix, p) => `<li><span>${esc(a.elemente[ix])}</span><button type="button" class="btn small" data-up="${p}" ${p ? "" : "disabled"} aria-label="Nach oben">↑</button><button type="button" class="btn small" data-dn="${p}" ${p < view.order.length - 1 ? "" : "disabled"} aria-label="Nach unten">↓</button></li>`).join("");
+        $$("[data-up]").forEach(b => b.onclick = () => { const p = +b.dataset.up; [view.order[p - 1], view.order[p]] = [view.order[p], view.order[p - 1]]; paint(); });
+        $$("[data-dn]").forEach(b => b.onclick = () => { const p = +b.dataset.dn; [view.order[p + 1], view.order[p]] = [view.order[p], view.order[p + 1]]; paint(); }); };
+      paint(); chk.onclick = () => { const ok = view.order.every((ix, p) => ix === p); $$("#ord li").forEach((li, p) => li.classList.toggle(view.order[p] === p ? "ok" : "bad", true)); done(e, t, ok, true, { order: view.order.slice() }); fb(ok, ok ? a.erklaerung : "Die rot markierten stehen noch am falschen Platz."); setTimeout(paint, ok ? 99999 : 1400); }; }
+    if (a.typ === "zuordnen") { const M = view.mt, paint = () => {
+        $("#mtL").innerHTML = a.paare.map((p, i) => `<button type="button" class="cn${M.ok.includes(i) ? " done c" + (M.ok.indexOf(i) % 6) : ""}${M.sel === i ? " sel" : ""}" data-l="${i}" ${M.ok.includes(i) ? 'aria-disabled="true"' : ""}>${esc(p[0])}</button>`).join("");
+        $("#mtR").innerHTML = M.right.map(i => `<button type="button" class="cn${M.ok.includes(i) ? " done c" + (M.ok.indexOf(i) % 6) : ""}" data-r="${i}" ${M.ok.includes(i) ? 'aria-disabled="true"' : ""}>${esc(a.paare[i][1])}</button>`).join("");
+        $$("[data-l]").forEach(b => b.onclick = () => { if (M.ok.includes(+b.dataset.l)) return; M.sel = +b.dataset.l; paint(); });
+        $$("[data-r]").forEach(b => b.onclick = () => { const r = +b.dataset.r; if (M.sel == null || M.ok.includes(r)) { if (M.sel == null) b.animate([{ transform: "translateX(-4px)" }, { transform: "translateX(4px)" }, { transform: "none" }], { duration: 250 }); return; }
+          if (r === M.sel) { M.ok.push(r); M.sel = null; paint(); if (M.ok.length === a.paare.length) { done(e, t, true, M.miss === 0, {}, M.miss <= 1 ? 2 : 1); fb(true, a.erklaerung); } }
+          else { M.miss++; b.classList.add("bad"); setTimeout(() => { M.sel = null; paint(); }, 600); } }); };
+      paint(); }
+    if (a.typ === "sortieren") { const O = view.so, cards = O.order, paint = () => {
+        const n = cards.length, it = a.elemente[cards[O.i]];
+        $("#soCard").innerHTML = O.i < n ? `<small>${O.i + 1} / ${n}</small><b>${esc(it.text)}</b>` : `<small>Fertig</small><b>${O.right} von ${n} richtig</b>`;
+        $("#soInfo").textContent = O.log.length ? O.log[O.log.length - 1] : "Wohin gehört diese Karte?";
+        $$("[data-bin]").forEach(b => b.disabled = O.i >= n || !!st.ok); };
+      $$("[data-bin]").forEach(b => b.onclick = () => { const n = cards.length; if (O.i >= n) return; const it = a.elemente[cards[O.i]], ok = norm(it.kat) === norm(b.dataset.bin);
+        if (ok) O.right++; O.log.push(ok ? "✓ Richtig!" : `✗ Gehört zu «${it.kat}».${it.warum ? " " + it.warum : ""}`);
+        b.animate([{ transform: "scale(1)" }, { transform: "scale(1.08)" }, { transform: "scale(1)" }], { duration: 250 }); $("#soCard").classList.toggle("bad", !ok); $("#soCard").classList.toggle("good", ok);
+        O.i++; paint();
+        if (O.i >= n) { const r = O.right / n; done(e, t, true, r === 1, {}, r === 1 ? 3 : r >= .7 ? 2 : 1); fb(r >= .7, (r === 1 ? "" : `${O.right} von ${n} richtig. `) + (a.erklaerung || "")); } });
+      paint(); }
+    if (a.typ === "zeitmaschine") { const Z = view.zm, ev = a.ereignisse || [], span = Math.max(1, +a.bis - +a.von), R0 = $("#tmR");
+      const pts = d => d <= Math.max(1, span * .02) ? 3 : d <= span * .08 ? 2 : d <= span * .2 ? 1 : 0;
+      const paint = () => { $("#tmEv").innerHTML = Z.i < ev.length ? `<small>Reise ${Z.i + 1} von ${ev.length}</small><b>${esc(ev[Z.i].text)}</b>` : `<small>Alle Reisen geschafft</small><b>🕰️ Zurück in der Gegenwart!</b>`;
+        $("#tmLog").innerHTML = Z.res.map(r => `<li class="p${r.p}"><span>${esc(r.text)}</span><b>${r.jahr}</b><small>${r.d === 0 ? "Punktlandung!" : `ihr wart ${r.d} daneben`} ${"★".repeat(r.p)}</small></li>`).join("");
+        $("#tmGo").disabled = Z.i >= ev.length || !!st.ok; };
+      const show = () => { $("#tmOut").textContent = R0.value; }; R0.oninput = show; show();
+      $$("[data-tm]").forEach(b => b.onclick = () => { R0.value = Math.max(+a.von, Math.min(+a.bis, +R0.value + +b.dataset.tm)); show(); });
+      $("#tmGo").onclick = () => { if (Z.i >= ev.length) return; const x = ev[Z.i], d = Math.abs(+R0.value - +x.jahr); Z.res.push({ text: x.text, jahr: x.jahr, d, p: pts(d) }); Z.i++;
+        if (!matchMedia("(prefers-reduced-motion: reduce)").matches) $(".tm").animate([{ filter: "hue-rotate(0)" }, { filter: "hue-rotate(160deg) blur(1px)" }, { filter: "hue-rotate(0)" }], { duration: 500 });
+        paint(); if (Z.i >= ev.length) { const avg = Z.res.reduce((n, r) => n + r.p, 0) / ev.length; done(e, t, true, avg >= 2.5, {}, Math.max(1, Math.round(avg))); fb(avg >= 1.5, a.erklaerung || "Gut gereist!"); } };
+      paint(); }
+    if (a.typ === "raetsel") { const Q = view.ra, H = a.hinweise || [], paint = () => { $("#raL").innerHTML = H.slice(0, Q.shown).map(h => `<li>${esc(h)}</li>`).join(""); $("#raMore").disabled = Q.shown >= H.length || !!st.ok; };
+      paint(); $("#raMore").onclick = () => { Q.shown = Math.min(H.length, Q.shown + 1); paint(); };
+      const go = () => { const ok = (a.antworten || []).some(x => norm(x) === norm($("#ans").value)); if (ok) { done(e, t, true, Q.shown === 1, {}, Math.max(1, 3 - (Q.shown - 1))); fb(true, a.erklaerung); } else { const old = S.ans[key] || {}; S.ans[key] = Object.assign({}, old, { tries: (old.tries || 0) + 1 }); save(); fb(false, Q.shown < H.length ? "Noch nicht. Holt euch einen weiteren Hinweis!" : (a.tipp || "Versucht es nochmal.")); } };
+      chk.onclick = go; $("#ans").onkeydown = ev => { if (ev.key === "Enter") go(); }; }
+    if (a.typ === "memory") { const Me = view.me, paint = () => {
+        $("#meG").innerHTML = Me.cards.map((c, n) => { const up = Me.found.includes(c.i) || Me.open.includes(n); return `<button type="button" class="mcard${up ? " up" : ""}${Me.found.includes(c.i) ? " found" : ""}" data-mc="${n}" aria-label="${up ? esc(c.txt) : "Verdeckte Karte"}"><span class="back" aria-hidden="true">?</span><span class="front">${esc(c.txt)}</span></button>`; }).join("");
+        $("#meInfo").textContent = `${Me.found.length} von ${a.paare.length} Paaren · ${Me.miss} Fehlversuche`;
+        $$("[data-mc]").forEach(b => b.onclick = () => { const n = +b.dataset.mc, c = Me.cards[n]; if (Me.lock || Me.found.includes(c.i) || Me.open.includes(n)) return; Me.open.push(n); paint();
+          if (Me.open.length === 2) { const [x, y] = Me.open.map(m => Me.cards[m]); Me.lock = true;
+            setTimeout(() => { if (x.i === y.i) Me.found.push(x.i); else Me.miss++; Me.open = []; Me.lock = false; paint();
+              if (Me.found.length === a.paare.length && !(S.ans[key] || {}).ok) { const pp = Me.miss <= a.paare.length ? 3 : Me.miss <= 2 * a.paare.length ? 2 : 1; done(e, t, true, pp === 3, {}, pp); fb(true, a.erklaerung || "Alle Paare gefunden!"); } }, x.i === y.i ? 350 : 900); } }); };
+      paint(); }
+    if (a.typ === "mehrfach") { const ok0 = new Set((a.richtig || []).map(Number));
+      $$("[data-mf]").forEach(b => b.onclick = () => { if ((S.ans[key] || {}).ok) return; const i = +b.dataset.mf; if (view.mf.has(i)) view.mf.delete(i); else view.mf.add(i); b.setAttribute("aria-pressed", String(view.mf.has(i))); $$("[data-mf]").forEach(x => x.classList.remove("ok", "bad")); });
+      chk.onclick = () => { const ok = view.mf.size === ok0.size && [...view.mf].every(i => ok0.has(i)); $$("[data-mf]").forEach(b => { const i = +b.dataset.mf; if (view.mf.has(i)) b.classList.add(ok0.has(i) ? "ok" : "bad"); });
+        const miss = [...ok0].filter(i => !view.mf.has(i)).length; done(e, t, ok, true); fb(ok, ok ? a.erklaerung : miss && ![...view.mf].some(i => !ok0.has(i)) ? `Es fehlt noch ${miss === 1 ? "eine richtige Antwort" : miss + " richtige Antworten"}.` : (a.tipp || "Die rot markierten stimmen nicht.")); }; }
+    if (a.typ === "schaetzen") { const R1 = $("#esR"), show = () => { $("#esOut").textContent = (+R1.value).toLocaleString("de-CH"); }; R1.oninput = show; show();
+      chk.onclick = () => { const v = +R1.value, d = v - +a.antwort, ok = Math.abs(d) <= (+a.toleranz || Math.round((+a.max - +a.min) * .05)); done(e, t, ok, true, { v }); fb(ok, ok ? `Die richtige Zahl ist ${(+a.antwort).toLocaleString("de-CH")} ${a.einheit || ""}. ${a.erklaerung || ""}` : (d > 0 ? "Das ist zu hoch geschätzt. " : "Das ist zu tief geschätzt. ") + (a.tipp || "")); }; }
+    if (a.typ === "gestalten") { const V = view.ge, min = +a.mindestwoerter || 15, paint = () => {
+        $("#gePv").style.setProperty("--pc", V.farbe || "#A07CFF");
+        $("#gePv").innerHTML = `<span class="pst" aria-hidden="true">${esc(V.sticker || "")}</span><b>${esc(V.titel || "Eure Überschrift")}</b><p>${esc(V.text || "Euer Text erscheint hier …")}</p>`;
+        const n = (V.text.match(/\S+/g) || []).length; $("#geInfo").textContent = `${n} von mindestens ${min} Wörtern${V.farbe ? "" : " · Farbe wählen"}`; };
+      $("#geT").oninput = ev => { V.titel = ev.target.value; paint(); }; $("#geX").oninput = ev => { V.text = ev.target.value; paint(); };
+      $$("[data-gc]").forEach(b => b.onclick = () => { V.farbe = b.dataset.gc; $$("[data-gc]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); paint(); });
+      $$("[data-gs]").forEach(b => b.onclick = () => { V.sticker = b.dataset.gs; $$("[data-gs]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); paint(); });
+      paint(); chk.onclick = () => { const n = (V.text.match(/\S+/g) || []).length, ok = V.titel.trim().length >= 3 && n >= min && !!V.farbe; done(e, t, ok, true, { v: Object.assign({}, V) }, ok ? 2 : 0); fb(ok, ok ? (a.erklaerung || "Sieht super aus!") : "Es fehlt noch etwas: Überschrift, genug Text und eine Farbe."); }; }
+    if (a.typ === "schreiben") { const min = +a.mindestwoerter || 20, wc = () => { const n = ($("#wr").value.match(/\S+/g) || []).length; $("#wc").textContent = `${n} von mindestens ${min} Wörtern`; return n; };
+      wc(); $("#wr").oninput = wc; chk.onclick = () => { const ok = wc() >= min; done(e, t, ok, true, { v: $("#wr").value }); fb(ok, ok ? (a.erklaerung || "Super geschrieben!") : `Schreibe noch etwas mehr (mindestens ${min} Wörter).`); }; }
+    /* ---------- neue Aufgabenarten: Bedienung ---------- */
+    if (a.typ === "wortsalat") { const W = view.ws, paint = () => {
+        $("#wsS").innerHTML = W.w.split("").map((_, p) => { const it = W.pick[p]; return `<button type="button" class="ws-b slot${it ? " full" : ""}" data-wsx="${p}" ${it ? "" : "disabled"}>${it ? esc(it.c) : ""}</button>`; }).join("");
+        $("#wsP").innerHTML = W.pool.map((it, p) => `<button type="button" class="ws-b" data-wsp="${p}" ${W.pick.includes(it) ? "disabled" : ""}>${esc(it.c)}</button>`).join("");
+        $$("[data-wsp]").forEach(b => b.onclick = () => { if (st.ok || (S.ans[key] || {}).ok) return; const it = W.pool[+b.dataset.wsp]; if (W.pick.length < W.w.length) { W.pick.push(it); paint(); } });
+        $$("[data-wsx]").forEach(b => b.onclick = () => { if ((S.ans[key] || {}).ok) return; W.pick.splice(+b.dataset.wsx, 1); paint(); }); };
+      if (st.ok) W.pick = W.w.split("").map((c, i) => ({ c, i })); paint();
+      chk.onclick = () => { const v = W.pick.map(x => x.c).join(""), ok = v === W.w; $$(".ws-b.slot").forEach(b => b.classList.toggle(ok ? "ok" : "bad", true)); done(e, t, ok, true, { v }); fb(ok, ok ? a.erklaerung : (W.pick.length < W.w.length ? "Es fehlen noch Buchstaben." : "Noch nicht das richtige Wort. Antippen nimmt Buchstaben zurück.")); if (!ok) setTimeout(() => $$(".ws-b.slot").forEach(b => b.classList.remove("bad")), 900); };
+    }
+    if (a.typ === "wortraten") { const R = view.wr, ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ".split(""), letters = new Set(R.w.replace(/[^A-ZÄÖÜ]/g, "").split(""));
+      const won = () => [...letters].every(c => R.got.has(c)), lost = () => R.miss >= 7;
+      const paint = () => {
+        const show = (st.ok || won() || lost());
+        $("#wrW").innerHTML = R.w.split("").map(c => /[A-ZÄÖÜ]/.test(c) ? `<span class="${R.got.has(c) || show ? "on" : ""}${lost() && !R.got.has(c) ? " miss" : ""}">${R.got.has(c) || show ? esc(c) : ""}</span>` : `<span class="sp">${esc(c)}</span>`).join("");
+        $("#wrB").innerHTML = `<span class="bat">${Array.from({ length: 7 }, (_, i) => `<i class="${i < 7 - R.miss ? "on" : ""}"></i>`).join("")}</span><small>${7 - R.miss} Versuche übrig</small>`;
+        $("#wrK").innerHTML = ABC.map(c => `<button type="button" class="wr-k${R.got.has(c) ? (letters.has(c) ? " ok" : " bad") : ""}" data-wr="${c}" ${R.got.has(c) || won() || lost() || st.ok ? "disabled" : ""}>${c}</button>`).join("") + (lost() && !won() ? `<button type="button" class="btn small" id="wrAgain" style="grid-column:span 4">↺ Nochmal</button>` : "");
+        $$("[data-wr]").forEach(b => b.onclick = () => { const c = b.dataset.wr; R.got.add(c); if (!letters.has(c)) R.miss++; paint();
+          if (won()) { done(e, t, true, R.miss === 0, {}, R.miss <= 2 ? 2 : 1); fb(true, a.erklaerung); }
+          else if (lost()) { done(e, t, false, true); fb(false, `Das Wort war «${R.w}». Versucht es nochmals!`); } });
+        const ag = $("#wrAgain"); if (ag) ag.onclick = () => { view.wr = { key, w: R.w, got: new Set(), miss: 0 }; renderTask(); }; };
+      paint(); }
+    if (a.typ === "blitz") { const Z = view.bz, L = a.aussagen || [], sec = Math.max(4, Math.min(20, +a.sekunden || 8));
+      const end = () => { clearInterval(Z.t); const ok = Z.right >= Math.ceil(L.length * .7);
+        $("#bz").innerHTML = `<div class="bz-end"><b>${Z.right} von ${L.length} richtig</b><small>${ok ? "Blitzschnell!" : "Für den Stern braucht ihr " + Math.ceil(L.length * .7) + " richtige."}</small><button type="button" class="btn" id="bzGo">↺ Nochmals</button></div>`;
+        $("#bzGo").onclick = () => { Z.i = -1; Z.right = 0; next(); };
+        done(e, t, ok, true, { v: Z.right }, ok ? (Z.right === L.length ? 2 : 1) : 0); fb(ok, ok ? a.erklaerung : "Lest nochmals in den Erklärungen nach und startet die Blitzrunde neu."); };
+      const answer = v => { clearInterval(Z.t); const s0 = L[Z.i], ok = v === !!s0.richtig; if (ok) Z.right++;
+        $("#bz").querySelector(".bz-card").classList.add(ok ? "ok" : "bad"); setTimeout(next, 650); };
+      const next = () => { Z.i++; if (Z.i >= L.length) return end(); Z.left = sec;
+        $("#bz").innerHTML = `<div class="bz-top"><small>${Z.i + 1} / ${L.length}</small><span class="bz-time"><i id="bzT" style="width:100%"></i></span></div><div class="bz-card"><b>${esc(L[Z.i].text)}</b></div><div class="tf"><button type="button" class="opt" data-bz="1">👍 Stimmt</button><button type="button" class="opt" data-bz="0">👎 Stimmt nicht</button></div>`;
+        $$("[data-bz]").forEach(b => b.onclick = () => answer(b.dataset.bz === "1"));
+        const t0 = Date.now(); clearInterval(Z.t); Z.t = setInterval(() => { const f = 1 - (Date.now() - t0) / (sec * 1000); const bar = $("#bzT"); if (!bar) return clearInterval(Z.t); bar.style.width = Math.max(0, f * 100) + "%"; if (f <= 0) answer(null); }, 100); };
+      $("#bzGo").onclick = next; }
+    if (a.typ === "markieren") { const K = view.mk, paint = () => {
+        $("#mkT").innerHTML = K.toks.map((x, i) => x.sp != null ? esc(x.sp) : `${esc(x.pre)}<button type="button" class="mk-w${K.on.has(i) ? " on" : ""}" data-mk="${i}" aria-pressed="${K.on.has(i)}">${esc(x.w)}</button>${esc(x.post)}`).join("");
+        $$("[data-mk]").forEach(b => b.onclick = () => { if ((S.ans[key] || {}).ok) return; const i = +b.dataset.mk; K.on.has(i) ? K.on.delete(i) : K.on.add(i); paint(); }); };
+      if (st.ok) K.toks.forEach((x, i) => { if (x.hit) K.on.add(i); }); paint();
+      chk.onclick = () => { const hits = K.toks.map((x, i) => x.hit ? i : -1).filter(i => i >= 0), miss = hits.filter(i => !K.on.has(i)).length, extra = [...K.on].filter(i => !K.toks[i].hit).length, ok = !miss && !extra;
+        $$("[data-mk]").forEach(b => { const i = +b.dataset.mk; b.classList.toggle("ok", K.on.has(i) && K.toks[i].hit); b.classList.toggle("bad", K.on.has(i) && !K.toks[i].hit); });
+        done(e, t, ok, true); fb(ok, ok ? a.erklaerung : `${miss ? `Es fehlen noch ${miss}. ` : ""}${extra ? `${extra} markiert, die nicht passen (rot).` : ""}`); };
+    }
+    if (a.typ === "wortsuche") { const U = view.su, N = U.n, paint = () => {
+        const inFound = (x, y) => U.found.some(f => f.cells.some(([cx, cy]) => cx === x && cy === y));
+        $("#suG").style.gridTemplateColumns = `repeat(${N}, 1fr)`;
+        $("#suG").innerHTML = U.grid.map((row, y) => row.map((c, x) => `<button type="button" class="su-c${inFound(x, y) ? " on" : ""}${U.sel && U.sel[0] === x && U.sel[1] === y ? " sel" : ""}" data-su="${x},${y}">${c}</button>`).join("")).join("");
+        $("#suL").innerHTML = U.words.map(w => `<li class="${U.found.some(f => f.w === w) ? "on" : ""}">${esc(w)}</li>`).join("");
+        $$("[data-su]").forEach(b => b.onclick = () => { if ((S.ans[key] || {}).ok) return; const [x, y] = b.dataset.su.split(",").map(Number);
+          if (!U.sel) { U.sel = [x, y]; return paint(); }
+          const [x0, y0] = U.sel; U.sel = null; const dx = Math.sign(x - x0), dy = Math.sign(y - y0), len = Math.max(Math.abs(x - x0), Math.abs(y - y0)) + 1;
+          if ((x !== x0 && y !== y0 && Math.abs(x - x0) !== Math.abs(y - y0)) || len < 2) return paint();
+          const cells = Array.from({ length: len }, (_, i) => [x0 + dx * i, y0 + dy * i]), str = cells.map(([cx, cy]) => U.grid[cy][cx]).join(""), rev = str.split("").reverse().join("");
+          const w = U.words.find(w => (w === str || w === rev) && !U.found.some(f => f.w === w));
+          if (w) { U.found.push({ w, cells }); paint(); say(`«${w}» gefunden!`, "happy", 3000); if (U.found.length === U.words.length) { done(e, t, true, true, {}, 3); fb(true, a.erklaerung); } }
+          else { paint(); b.animate([{ transform: "translateX(-3px)" }, { transform: "translateX(3px)" }, { transform: "none" }], { duration: 250 }); } }); };
+      if (st.ok) U.found = U.places.map(p => ({ w: p.w, cells: p.cells })); paint(); }
+    if (a.typ === "karteikarten") { const C = view.kk, cards = a.karten || [], paint = () => {
+        if (!C.stack.length || st.ok && C.known === 0 && !C.flip && (S.ans[key] || {}).ok) {
+          $("#kk").innerHTML = `<div class="kk-end"><b>Alle ${cards.length} Karten gewusst! 🎉</b><button type="button" class="btn" id="kkAgain">↺ Nochmals üben</button></div>`;
+          $("#kkAgain").onclick = () => { view.kk = { key, stack: shuffle(cards.map((_, i) => i)), flip: false, known: 0, again: 0 }; renderTask(); }; return; }
+        const c = cards[C.stack[0]];
+        $("#kk").innerHTML = `<p class="hintline">Noch ${C.stack.length} Karte${C.stack.length === 1 ? "" : "n"}</p><button type="button" class="kk-card${C.flip ? " flip" : ""}" id="kkC" aria-label="Karte umdrehen"><span class="kk-f">${esc(c[0])}</span><span class="kk-b">${esc(c[1])}</span></button>
+          ${C.flip ? `<div class="tf"><button type="button" class="opt" data-kk="1">✓ Gewusst</button><button type="button" class="opt" data-kk="0">↺ Nochmal</button></div>` : `<p class="hintline">Antippen zum Umdrehen</p>`}`;
+        $("#kkC").onclick = () => { C.flip = !C.flip; paint(); };
+        $$("[data-kk]").forEach(b => b.onclick = () => { const i = C.stack.shift(); if (b.dataset.kk === "1") C.known++; else { C.again++; C.stack.push(i); } C.flip = false;
+          if (!C.stack.length) { done(e, t, true, C.again === 0, {}, C.again <= 1 ? 2 : 1); fb(true, a.erklaerung || "Super geübt!"); } paint(); }); };
+      paint(); }
+    if (a.typ === "chat") { const H = view.ch, steps = a.schritte || [], paint = () => {
+        const msgs = []; for (let i = 0; i <= Math.min(H.i, steps.length - 1); i++) { msgs.push(`<div class="cm cm-in"><span>${esc(steps[i].sagt)}</span></div>`); const L = H.log.filter(x => x.i === i); L.forEach(x => { msgs.push(`<div class="cm cm-out${x.ok ? "" : " no"}"><span>${esc(x.txt)}</span></div>`); if (!x.ok) msgs.push(`<div class="cm cm-in"><span>${esc(steps[i].falsch || "Hmm, bist du sicher? Überleg nochmals.")}</span></div>`); else if (steps[i].antwort) msgs.push(`<div class="cm cm-in"><span>${esc(steps[i].antwort)}</span></div>`); }); }
+        $("#chL").innerHTML = msgs.join(""); $("#chL").scrollTop = 1e6;
+        if (H.i >= steps.length || (S.ans[key] || {}).ok) { $("#chO").innerHTML = `<p class="hintline">✓ Gespräch beendet</p>`; return; }
+        const s0 = steps[H.i], tried = H.log.filter(x => x.i === H.i && !x.ok).map(x => x.o);
+        $("#chO").innerHTML = (s0.optionen || []).map((o, j) => `<button type="button" class="opt" data-ch="${j}" ${tried.includes(j) ? 'aria-disabled="true" disabled' : ""}>${esc(o)}</button>`).join("");
+        $$("[data-ch]").forEach(b => b.onclick = () => { const j = +b.dataset.ch, ok = j === +s0.richtig; H.log.push({ i: H.i, o: j, txt: s0.optionen[j], ok }); if (!ok) H.miss++;
+          if (ok) { H.i++; if (H.i >= steps.length) { done(e, t, true, H.miss === 0, {}, H.miss <= 1 ? 2 : 1); fb(true, a.erklaerung); } }
+          paint(); }); };
+      if (st.ok && !H.log.length) { steps.forEach((s0, i) => H.log.push({ i, o: +s0.richtig, txt: (s0.optionen || [])[+s0.richtig] || "", ok: true })); H.i = steps.length; }
+      paint(); }
+    if (a.typ === "meinung") { const V = view.mn, min = Math.max(5, +a.mindestwoerter || 10), info = () => { const n = (V.text.match(/\S+/g) || []).length; $("#mnI").textContent = `${n} von mindestens ${min} Wörtern${(a.argumente || []).length && !V.args.length ? " · ein Argument wählen" : ""}`; return n; };
+      $("#mnR").oninput = ev => { V.pos = +ev.target.value; };
+      $$("[data-mn]").forEach(b => b.onclick = () => { const i = +b.dataset.mn; V.args = V.args.includes(i) ? V.args.filter(x => x !== i) : V.args.concat(i); b.setAttribute("aria-pressed", String(V.args.includes(i))); info(); });
+      $("#mnX").oninput = ev => { V.text = ev.target.value; info(); }; info();
+      chk.onclick = () => { const ok = info() >= min && (!(a.argumente || []).length || V.args.length > 0); done(e, t, ok, true, { v: { pos: V.pos, args: V.args.slice(), text: V.text, titel: "Unsere Meinung" } }); fb(ok, ok ? (a.erklaerung || "Gut begründet! Andere dürfen anderer Meinung sein.") : "Wählt ein Argument und schreibt eure Begründung etwas länger."); };
+    }
+    $("[data-prev]").onclick = () => goB(view.b - 1);
+    $("[data-next]").onclick = () => goB(view.b + 1);
+  }
+  /* ---------- Zusammenfassung als PDF ---------- */
+  const plain = t => String(t || "").replace(/\*\*/g, "").replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, "").replace(/[ \t]+/g, " ").trim();
+  function loadJsPdf() { return window.jspdf ? Promise.resolve() : new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"; sc.onload = ok; sc.onerror = () => no(new Error("PDF-Bibliothek nicht erreichbar")); document.head.appendChild(sc); }); }
+  async function saveFile(blob, name) {
+    let dl = null;
+    try { const C = (window.claude && window.claude.use) ? window.claude : (window.parent !== window && window.parent.claude && window.parent.claude.use) ? window.parent.claude : null; dl = C ? await C.use("downloads") : null; } catch (e) { dl = null; }
+    if (dl) { await dl.save({ filename: name, data: blob }); return; }
+    const u = URL.createObjectURL(blob), a = document.createElement("a"); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+  }
+  async function summaryPdf(btn) {
+    const t0 = btn ? btn.textContent : ""; if (btn) { btn.disabled = true; btn.textContent = "PDF wird erstellt …"; }
+    try {
+      await loadJsPdf();
+      const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" }), W = 210, X = 18, MW = W - 2 * X; let y = 20;
+      const col = (M.farbe && /^#[0-9a-f]{6}$/i.test(M.farbe)) ? M.farbe : "#7B4CEF", rgb = [1, 3, 5].map(i => parseInt(col.slice(i, i + 2), 16));
+      const need = h => { if (y + h > 280) { doc.addPage(); y = 20; } };
+      const text = (t, size = 10.5, style = "normal", color = [30, 24, 50], gap = 1.5) => { doc.setFont("helvetica", style); doc.setFontSize(size); doc.setTextColor(...color);
+        doc.splitTextToSize(plain(t), MW).forEach(l => { need(size * .45); doc.text(l, X, y); y += size * .42 + .6; }); y += gap; };
+      doc.setFillColor(...rgb); doc.rect(0, 0, W, 34, "F");
+      doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.text(doc.splitTextToSize(plain(M.titel || "Modul"), MW)[0], X, 16);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10.5); doc.text(plain(`Zusammenfassung · ${M.fachname || ""}${who() ? " · " + who() : ""} · ${new Date().toLocaleDateString("de-CH")}`), X, 25);
+      y = 44;
+      text(`Sterne: ${total()} von ${totalMax()}   ·   Diplome: ${S.dips.length} von ${DIP.length}`, 11, "bold", rgb, 3);
+      if (M.beschreibung) text(M.beschreibung, 10.5, "italic", [90, 82, 120], 4);
+      ET.forEach((E, e) => {
+        need(20); doc.setDrawColor(...rgb); doc.setLineWidth(.6); doc.line(X, y, X + MW, y); y += 6;
+        text(`Etappe ${e + 1}: ${E.titel}`, 14, "bold", [20, 10, 50], 1);
+        text(`${etDone(e) ? "Geschafft" : "Noch offen"} · ${etStars(e)} von ${etMax(e)} Sternen`, 9.5, "normal", [110, 100, 140], 2);
+        if (E.ziel) text("Ziel: " + E.ziel, 10.5, "italic", [60, 50, 90], 2);
+        E.aufgaben.filter(a => !scorable(a)).forEach(a => { if (a.titel) text(a.titel, 11, "bold", [40, 30, 70], .5); text(a.text, 10.5); });
+        const se = S.selbst[e], x = se && SELBST.find(z => z[0] === se.w);
+        if (x) text(`Meine Selbsteinschätzung: ${x[2]}${se.t ? " – " + se.t : ""}`, 10.5, "bold", [31, 157, 104], 3);
+      });
+      if (LEX.length) { need(20); doc.setDrawColor(...rgb); doc.line(X, y, X + MW, y); y += 6; text("Fachwörter", 14, "bold", [20, 10, 50], 2);
+        LEX.slice().sort((a, b) => a.wort.localeCompare(b.wort, "de")).forEach(w => { text(w.wort, 10.5, "bold", [40, 30, 70], 0); text(w.erklaerung, 10, "normal", [60, 55, 80], 1.5); }); }
+      const got = DIP.filter(d => S.dips.includes(d.id));
+      if (got.length) { need(16); text("Meine Diplome", 14, "bold", [20, 10, 50], 2); got.forEach(d => text(`${d.name}${d.beschreibung ? ": " + d.beschreibung : ""}`, 10.5)); }
+      const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFontSize(8.5); doc.setTextColor(150, 140, 170); doc.text(`gLiTCh-Lab · Seite ${i} von ${n}`, W - X, 290, { align: "right" }); }
+      await saveFile(doc.output("blob"), `Zusammenfassung-${slug(M.titel || "modul") || "modul"}.pdf`);
+      say("Deine Zusammenfassung ist bereit! 📄", "cool", 5000);
+    } catch (err) { say("Das PDF ging gerade nicht. Probiert es später nochmals.", "sad", 6000); }
+    if (btn) { btn.disabled = false; btn.textContent = t0; }
+  }
+  function start() {
+    frame();
+    let i = B.findIndex((_, n) => !bDone(n)); if (i < 0) i = B.length;
+    let gateE = -1; if (B[i] && !etUnlocked(B[i].e)) { const e = B[i].e; let p = 0; while (p < e && etUnlocked(p + 1)) p++; gateE = p; i = B.map(y => y.e).lastIndexOf(p); }
+    view.b = i; paintTabs(); paintSide(); stage();
+    if (gateE >= 0 && etDone(gateE)) setTimeout(() => gateDlg(gateE), 600);
+    if (!Object.keys(S.ans).length) say(M.intro || M.beschreibung || "Hoi! Los geht's!", "happy", 10000);
+    checkDips();
+  }
+
+  /* Wörtersuche: Wörter in ein Buchstabenraster setzen (waagrecht, senkrecht, schräg; auch rückwärts) */
+  function buildGrid(words) {
+    words = [...new Set(words.map(w => w.replace(/[^A-ZÄÖÜ]/g, "")).filter(w => w.length >= 2 && w.length <= 12))].slice(0, 8);
+    const n = Math.max(8, Math.min(13, Math.max(...words.map(w => w.length), 0) + 2)), D8 = [[1, 0], [0, 1], [1, 1], [1, -1], [-1, 0], [0, -1]];
+    for (let tries = 0; tries < 40; tries++) {
+      const g = Array.from({ length: n }, () => Array(n).fill("")), places = []; let ok = true;
+      for (const w of words.slice().sort((a, b) => b.length - a.length)) {
+        let put = false;
+        for (let k = 0; k < 200 && !put; k++) {
+          const [dx, dy] = D8[Math.floor(Math.random() * (tries > 20 ? 2 : D8.length))], x0 = Math.floor(Math.random() * n), y0 = Math.floor(Math.random() * n), xe = x0 + dx * (w.length - 1), ye = y0 + dy * (w.length - 1);
+          if (xe < 0 || ye < 0 || xe >= n || ye >= n) continue;
+          const cells = w.split("").map((_, i) => [x0 + dx * i, y0 + dy * i]);
+          if (cells.every(([x, y], i) => !g[y][x] || g[y][x] === w[i])) { cells.forEach(([x, y], i) => { g[y][x] = w[i]; }); places.push({ w, cells }); put = true; }
+        }
+        if (!put) { ok = false; break; }
+      }
+      if (!ok) continue;
+      const ABC = "ABCDEFGHIJKLMNOPRSTUVWZ";
+      g.forEach(row => row.forEach((c, x) => { if (!c) row[x] = ABC[Math.floor(Math.random() * ABC.length)]; }));
+      return { grid: g, words, places, n };
+    }
+    return { grid: [words.join("").slice(0, 8).split("")], words: [], places: [], n: 8 };
+  }
+  function shuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } if (b.length > 1 && b.every((x, i) => x === a[i])) [b[0], b[1]] = [b[1], b[0]]; return b; }
+
+  /* ---------- Fenster ---------- */
+  function dlg(html, onClose) {
+    const ov = document.createElement("div"); ov.className = "ov"; ov.innerHTML = `<div class="dlg" role="dialog" aria-modal="true">${html}<div class="nav"><span></span><button type="button" class="btn primary" data-x>Schliessen</button></div></div>`;
+    document.body.appendChild(ov); const close = () => { ov.remove(); if (onClose) onClose(); };
+    $("[data-x]", ov).onclick = close; ov.onclick = ev => { if (ev.target === ov) close(); };
+    document.addEventListener("keydown", function f(ev) { if (ev.key === "Escape") { close(); document.removeEventListener("keydown", f); } });
+    setTimeout(() => $("[data-x]", ov).focus(), 20); return ov;
+  }
+  function showMsg(mood, text, btn, then) { const ov = dlg(`<div class="hero">${gl(mood)}<div class="bubble"><b>${esc(NAME)}</b><div>${rich(text)}</div></div></div>`, then); $("[data-x]", ov).textContent = btn; }
+  function showLex(word) {
+    if (!S.lex) { S.lex = true; save(); checkDips(); }
+    if (word) { S.words = [...new Set([...(S.words || []), word])]; save(); paintSide(); }
+    const ov = dlg(`<h2>📖 Lexikon</h2><input class="in" id="lq" placeholder="Wort suchen …" style="margin-bottom:10px"><dl class="dl" id="ll"></dl>`);
+    const paint = q => { $("#ll", ov).innerHTML = LEX.filter(w => !q || norm(w.wort + " " + w.erklaerung).includes(norm(q))).sort((a, b) => a.wort.localeCompare(b.wort, "de")).map(w => `<div${word && w.wort === word ? ' style="border-color:var(--teal)"' : ""}><dt>${esc(w.wort)}</dt><dd>${esc(w.erklaerung)}</dd></div>`).join("") || "<p>Nichts gefunden.</p>"; };
+    paint(""); $("#lq", ov).oninput = ev => paint(ev.target.value);
+    if (word) { const w = LEX.find(x => x.wort === word); if (w) { $("#ll", ov).insertAdjacentHTML("beforebegin", `<div class="bubble" style="margin-bottom:12px"><b>${esc(w.wort)}</b><p>${esc(w.erklaerung)}</p></div>`); } }
+  }
+  function showDips() { dlg(`<h2>🏅 Diplome</h2><div class="dips">${DIP.map(d => `<div class="dip${S.dips.includes(d.id) ? " got" : ""}"><span class="e wall" aria-hidden="true">${wall(d)}</span><b>${esc(d.name)}</b><small>${esc(d.beschreibung || "")}</small></div>`).join("")}</div>`); }
+  function showDip(d) { confetti(40); setTimeout(() => { const h = document.querySelector(".ov .hero"); if (h) h.insertAdjacentHTML("afterend", `<div class="dip-new">${wall(d)}</div>`); }, 0); showMsg("cool", `🏅 **Neues Diplom: ${d.name}!**\n\n${d.beschreibung || ""}${HUB ? "\n\nSchaut im Glitchlab in eurem Zimmer: Vielleicht gibt es dort etwas Neues." : ""}`, "Juhui!"); }
+  function showLinks() { dlg(`<h2>🔗 Links</h2><ul class="links">${(M.links || []).map(l => `<li><a href="${esc(/^https?:\/\//i.test(l.url) ? l.url : "#")}" target="_blank" rel="noopener">${esc(l.titel || l.url)}</a>${l.titel ? `<br><small>${esc(l.url)}</small>` : ""}</li>`).join("")}</ul>`); }
+  function confetti(n = 18) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    for (let i = 0; i < n; i++) { const c = document.createElement("i"); c.className = "confetti"; c.style.cssText += `left:${50 + (Math.random() - .5) * 40}vw;top:40vh;background:${["#FFC21A", "#FF2BD6", "#2EE6D6", "#A07CFF", "#3CFF7A"][i % 5]}`; document.body.appendChild(c);
+      c.animate([{ transform: "translate(0,0) rotate(0)", opacity: 1 }, { transform: `translate(${(Math.random() - .5) * 600}px,${200 + Math.random() * 300}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }], { duration: 1200 + Math.random() * 800, easing: "cubic-bezier(.2,.7,.4,1)" }).onfinish = () => c.remove(); }
+  }
+  start();
+})();
+</script>
+</body>
+</html>

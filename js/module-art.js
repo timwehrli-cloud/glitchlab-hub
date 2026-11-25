@@ -128,6 +128,43 @@ const MOD_ART = {
     <g class="ma-twinkle">${r(22, 8, 2, 2, "#FFC21A")}${r(96, 48, 2, 2, "#FFC21A")}</g>
     ${MINI_G(96, 26, .8)}`);
 
+  /* ---- neu: Spektakel fürs Ohr (Mikrofon, Schallwellen, Kopfhörer) ---- */
+  const hoerspiel = svg(`
+    ${r(0, 0, 120, 60, "#3A1600")}${r(0, 48, 120, 12, "#2A1000")}
+    <g class="ma-twinkle">${r(10, 8, 2, 2, "#FFC21A")}${r(108, 12, 2, 2, "#FFE680")}${r(96, 44, 2, 2, "#FFC21A")}</g>
+    ${r(52, 10, 16, 22, "#9AA3B5")}${r(54, 12, 12, 18, "#C9D1E0")}${[14, 18, 22, 26].map(y => r(54, y, 12, 1, "#7A8396")).join("")}
+    ${r(58, 32, 4, 10, "#5E6676")}${r(50, 42, 20, 3, "#5E6676")}${r(46, 22, 3, 8, "#5E6676")}${r(71, 22, 3, 8, "#5E6676")}${r(46, 30, 28, 2, "#5E6676")}
+    <g class="ma-wave">${r(30, 16, 2, 14, "#F28C28")}${r(24, 12, 2, 22, "#F28C28")}${r(86, 16, 2, 14, "#F28C28")}${r(92, 12, 2, 22, "#F28C28")}</g>
+    <g class="ma-wave w2">${r(18, 18, 2, 10, "#FFC21A")}${r(98, 18, 2, 10, "#FFC21A")}</g>
+    <g class="ma-pop p1">${r(8, 36, 14, 4, "#14062E")}${r(6, 32, 4, 10, "#F28C28")}${r(20, 32, 4, 10, "#F28C28")}</g>
+    ${MINI_G(98, 34, .9)}`);
+  /* Modul-Bilder: Tonstudio, Geschichte (Boot auf Wellen), Skript (Blatt und Traktor), Platzhalter */
+  const hspStudio = svg(`
+    ${r(0, 0, 120, 60, "#2A1A12")}${r(0, 40, 120, 20, "#4A2E1E")}
+    ${r(30, 6, 60, 26, "#1B3A4A")}${r(32, 8, 56, 22, "#2E5A6E")}${[36, 44, 52, 60, 68, 76].map(x => r(x, 10, 4, 18, "#3E7088")).join("")}
+    <g class="ma-blink">${r(54, 2, 12, 4, "#E53935")}</g>
+    ${r(10, 38, 100, 8, "#3A3A44")}${Array.from({ length: 12 }, (_, i) => r(14 + i * 8, 40, 3, 4, i % 3 ? "#9AA3B5" : "#FFC21A")).join("")}
+    <g class="ma-bob">${r(44, 18, 6, 8, "#FFD0A8")}${r(43, 16, 8, 3, "#5D3A1A")}${r(42, 20, 2, 3, "#14062E")}${r(50, 20, 2, 3, "#14062E")}</g>
+    <g class="ma-bob" style="animation-delay:.5s">${r(70, 18, 6, 8, "#C98A5A")}${r(69, 16, 8, 3, "#14062E")}${r(68, 20, 2, 3, "#14062E")}${r(76, 20, 2, 3, "#14062E")}</g>
+    <g class="ma-wave">${r(58, 22, 1, 6, "#3CFF7A")}${r(61, 20, 1, 8, "#3CFF7A")}${r(64, 23, 1, 4, "#3CFF7A")}</g>`);
+  const hspGeschichte = svg(`
+    ${r(0, 0, 120, 60, "#BFE6F2")}${r(0, 0, 120, 10, "#E6F6FB")}
+    <g class="ma-twinkle">${r(100, 6, 10, 10, "#FFC21A")}</g>
+    <path d="M0 40 Q15 34 30 40 T60 40 T90 40 T120 40 L120 60 L0 60 Z" fill="#1FA3C7" shape-rendering="geometricPrecision"/>
+    <g class="ma-bob">${r(44, 32, 30, 6, "#E8E0CC")}${r(48, 38, 22, 3, "#B9AC8E")}${r(56, 20, 2, 12, "#5D3A1A")}${r(58, 20, 10, 8, "#F7F7F7")}
+      ${r(48, 27, 4, 5, "#E5A65C")}${r(47, 25, 6, 2, "#E53935")}${r(66, 27, 4, 5, "#FFD0A8")}${r(65, 25, 6, 2, "#5D3A1A")}</g>
+    <g class="ma-wave">${r(10, 46, 12, 1, "#E6F6FB")}${r(84, 48, 14, 1, "#E6F6FB")}</g>
+    ${r(8, 12, 22, 16, "#C98A00")}${r(10, 14, 8, 12, "#FFF3D1")}${r(20, 14, 8, 12, "#FFF3D1")}${r(18, 12, 2, 16, "#8A5A00")}
+    <text x="102" y="34" font-size="9" font-family="monospace" fill="#14062E">N</text>${r(103, 36, 2, 6, "#14062E")}`);
+  const hspSkript = svg(`
+    ${r(0, 0, 120, 60, "#5A1E12")}${r(0, 46, 120, 14, "#3A120A")}
+    ${r(10, 6, 40, 48, "#FFF8EE")}${[12, 18, 24, 30, 36, 42].map((y, k) => r(14, y, 8, 2, "#E0533A") + r(24, y, 22 - (k % 3) * 4, 2, "#B0A89A")).join("")}
+    <g class="ma-pop p2">${r(30, 23, 14, 4, "#FFC21A")}</g>
+    <g class="ma-bob">${r(66, 30, 26, 12, "#2E9B4A")}${r(84, 20, 12, 14, "#2E9B4A")}${r(86, 22, 8, 6, "#BFE6F2")}${r(70, 26, 3, 6, "#5E6676")}
+      ${r(64, 38, 14, 14, "#14062E")}${r(68, 42, 6, 6, "#9AA3B5")}${r(88, 42, 10, 10, "#14062E")}${r(91, 45, 4, 4, "#9AA3B5")}
+      ${r(87, 23, 3, 4, "#FFD0A8")}${r(90, 23, 3, 4, "#E5A65C")}</g>
+    <g class="ma-pop p1">${r(100, 10, 14, 8, "#fff")}<text x="107" y="16" font-size="5" font-family="monospace" text-anchor="middle" fill="#14062E">!!</text></g>`);
+  const hspBald = (c, emo) => svg(`${r(0, 0, 120, 60, c)}<text x="60" y="38" font-size="24" text-anchor="middle" dominant-baseline="middle" style="font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emo}</text><g class="ma-twinkle">${r(14, 10, 2, 2, "#FFE680")}${r(104, 44, 2, 2, "#FFE680")}</g>`);
   H.modArt = {
     "mi-start": { c: "#8B5CFF", c2: "#3A1D7A", svg: hallo },
     "lab-prompt": { c: "#8B5CFF", c2: "#3A1D7A", svg: MOD_ART.prompt },
@@ -137,7 +174,16 @@ const MOD_ART = {
     "de-dschungel": { c: "#2BB57A", c2: "#0B3D24", svg: dschungel },
     "de-tundra": { c: "#5B8CFF", c2: "#0B1D3A", svg: tundra },
     "de-lava": { c: "#FF6A00", c2: "#2A0A12", svg: lava },
-    "mi-app-galerie": { c: "#7B4CEF", c2: "#FFF8EE", svg: galerie }
+    "mi-app-galerie": { c: "#7B4CEF", c2: "#FFF8EE", svg: galerie },
+    "de-hsp-tonstudio": { c: "#F28C28", c2: "#2A1A12", svg: hspStudio },
+    "de-hsp-geschichte": { c: "#1FA3C7", c2: "#0B3E5A", svg: hspGeschichte },
+    "de-hsp-skript": { c: "#E0533A", c2: "#3A120A", svg: hspSkript },
+    "de-hsp-erzaehler": { c: "#4A3A6E", c2: "#1A1030", svg: hspBald("#2A1F44", "🐦‍⬛") },
+    "de-hsp-vertiefung": { c: "#C98A00", c2: "#4A2E00", svg: hspBald("#4A2E00", "📝") },
+    "de-hsp-abschluss": { c: "#1FA3C7", c2: "#0B3E5A", svg: hspBald("#0B3E5A", "👂") },
+    "de-hsp-wahl1": { c: "#2E9B4A", c2: "#0B3D24", svg: hspBald("#0B3D24", "🚐") },
+    "de-hsp-wahl2": { c: "#7A5CC9", c2: "#24104F", svg: hspBald("#24104F", "🏰") },
+    "de-hsp-wahl3": { c: "#E0533A", c2: "#3A120A", svg: hspBald("#3A120A", "✍️") }
   };
   /* Bilder der Schweiz-Module (aus dem gLiTCh-Lab «NMG Schweiz») */
   ((window.GL_DATA && window.GL_DATA.LABMODS) || []).forEach(m => {
@@ -146,6 +192,6 @@ const MOD_ART = {
   H.themeArt = {
     hallo, prompt: MOD_ART.prompt, fakenews: MOD_ART.fakenews, kibilder: MOD_ART.kibilder,
     datenspuren: MOD_ART.datenspuren, werbung: MOD_ART.werbung, netiquette: MOD_ART.netiquette,
-    schweiz, roemer, gespraech, wueste, dschungel, tundra, lava
+    schweiz, roemer, gespraech, wueste, dschungel, tundra, lava, hoerspiel
   };
 })();

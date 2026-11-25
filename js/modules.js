@@ -51,7 +51,8 @@
     { id: "mi-medien", subject: "mi", title: "Medien durchschauen", teaser: "Fake News entlarven und KI-Bilder von echten Fotos unterscheiden.", art: "fakenews", c: "#DD4646", c2: "#5A1414" },
     { id: "nmg-schweiz", subject: "nmg", title: "Entdeckungsreise Schweiz", teaser: "Kantone, Berge, Flüsse und Städte: Wir reisen quer durch die Schweiz.", art: "schweiz", c: "#4FB3E8", c2: "#0B3E5A" },
     { id: "nmg-roemer", subject: "nmg", title: "Die Römer", teaser: "Leben, Bauten und Erfindungen der Römerinnen und Römer.", art: "roemer", c: "#C98A00", c2: "#4A2E00" },
-    { id: "de-gespraech", subject: "de", title: "Gespräche führen", teaser: "Gesprächsregeln, eine Meinung vertreten und euch in der Gruppe einigen.", art: "gespraech", c: "#E3A300", c2: "#6B3A00", noGate: true }   // noGate: Module hier brauchen nie eine Freigabe der Lehrperson
+    { id: "de-gespraech", subject: "de", title: "Gespräche führen", teaser: "Gesprächsregeln, eine Meinung vertreten und euch in der Gruppe einigen.", art: "gespraech", c: "#E3A300", c2: "#6B3A00", noGate: true },   // noGate: Module hier brauchen nie eine Freigabe der Lehrperson
+    { id: "de-hoerspiel", subject: "de", title: "Spektakel fürs Ohr", teaser: "Hörspiele hören, Hörspielskripte lesen und eigene Hörspielszenen schreiben.", art: "hoerspiel", c: "#F28C28", c2: "#4A1D00" }
   ];
   H.modules = [];
   H.registerModule = m => {
@@ -212,6 +213,26 @@
     title: g.title, minutes: g.minutes, frameBg: g.frameBg, noBuddy: true, teaser: g.teaser,
     activities: g.levels.map((n, k) => ({ id: "level" + (k + 1), title: g.levels.length > 1 ? `Level ${k + 1} · ${n}` : n, maxStars: 10 }))
   }));
+  /* ---------------------------------------------------------------
+     Deutsch · Spektakel fürs Ohr (Deutsch Sechs, Kapitel 3): Hörspiele
+     Die fertigen Module sind mit dem gLiTCh-Editor gebaut (games/hoerspiel/*.html).
+     Die Hörtexte hören die Kinder im Lehrmittel «Deutsch Sechs» (LMVZ) auf dem iPad.
+     --------------------------------------------------------------- */
+  const HSP = (o) => H.registerModule(Object.assign({ subject: "de", theme: "de-hoerspiel", kind: "upload", noBuddy: true }, o));
+  HSP({ id: "de-hsp-tonstudio", file: "games/hoerspiel/tonstudio.html", title: "Auftakt: Im Tonstudio", minutes: 45,
+    teaser: "Wie entsteht ein Hörspiel? Wer spricht, wer coacht, wer schneidet? Ein Blick hinter die Kulissen.", activities: [{ id: "etappe-1", title: "Was ist ein Hörspiel?", maxStars: 18 }, { id: "etappe-2", title: "Wer arbeitet im Tonstudio?", maxStars: 28 }, { id: "etappe-3", title: "Mein Job im Tonstudio", maxStars: 14 }] });
+  HSP({ id: "de-hsp-geschichte", file: "games/hoerspiel/geschichte.html", title: "Alles beginnt mit einer guten Geschichte", minutes: 70,
+    teaser: "Vom Buch zum Hörspiel: «Norde isch, wo obe isch» mit Paul und Mel. Mit Audio 1 aus Deutsch Sechs.", activities: [{ id: "etappe-1", title: "Vom Buch zum Hörspiel", maxStars: 22 }, { id: "etappe-2", title: "Richtig zuhören", maxStars: 22 }, { id: "etappe-3", title: "Audio 1: Was passiert?", maxStars: 19 }, { id: "etappe-4", title: "Figuren und Stimmen", maxStars: 30 }] });
+  HSP({ id: "de-hsp-skript", file: "games/hoerspiel/skript.html", title: "Das Hörspielskript", minutes: 90,
+    teaser: "Regieanweisungen verstehen und selbst schreiben: Finn und Jola fahren Traktor. Mit Audio 2 aus Deutsch Sechs.", activities: [{ id: "etappe-1", title: "So sieht ein Skript aus", maxStars: 28 }, { id: "etappe-2", title: "Audio 2: Kannawoniwasein!", maxStars: 28 }, { id: "etappe-3", title: "Finn und Jola", maxStars: 46 }, { id: "etappe-4", title: "Jetzt seid ihr die Sprecher", maxStars: 18 }] });
+  /* Noch in Arbeit: erscheinen als «Bald» */
+  [["erzaehler", "Erzählerinnen und Erzähler", "Erzählrede und Figurenrede, Geräusche und Musik: «Der 13. Februar» und «Krabat»."],
+   ["vertiefung", "Vertiefung: Wortschatz", "Regieanweisungen, lebendige Dialoge, Geräusche, Schauplatz und Stimmung."],
+   ["abschluss", "Abschluss: Probegalopp", "Die vier Elemente eines Hörspiels wiederholen und den Probegalopp zu «Krabat» lösen."],
+   ["wahl1", "Wahlmodul 1: Eine abenteuerliche Reise", "In der Gruppe ein realistisches Roadmovie-Hörspiel planen und schreiben."],
+   ["wahl2", "Wahlmodul 2: Eine Burg voller Rätsel", "Ein fantastisches Hörspiel, das in den Räumen einer Rätselburg spielt."],
+   ["wahl3", "Wahlmodul 3: Eine Anschluss-Szene schreiben", "Eine Szene schreiben, die an den Anfang eines bestehenden Hörspiels anschliesst."]]
+    .forEach(([k, title, teaser]) => HSP({ id: "de-hsp-" + k, title, teaser, soon: true, minutes: 45, activities: [] }));
   /* ---------------------------------------------------------------
      NMG · Entdeckungsreise Schweiz: die 8 Module aus dem gLiTCh-Lab «NMG Schweiz»
      (Daten in js/glitch-data.js, Bilder dort unter LABART)

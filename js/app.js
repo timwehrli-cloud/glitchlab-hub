@@ -947,6 +947,10 @@
       try { upHtml = await S.be.kidUploadHtml(S.token, m.uploadId); }
       catch (err) { const l = $("#labLoad"); if (l) l.innerHTML = `${gl("sad", "#8B5CFF")}<p>${esc(err.message)}</p>`; return; }
     }
+    else if (m && m.file) {   // fest eingebautes Modul aus dem gLiTCh-Editor (z. B. Spektakel fürs Ohr)
+      try { const r = await fetch(m.file + (window.GL_V ? "?v=" + window.GL_V : "")); if (!r.ok) throw new Error("Das Modul konnte nicht geladen werden."); upHtml = await r.text(); }
+      catch (err) { const l = $("#labLoad"); if (l) l.innerHTML = `${gl("sad", "#8B5CFF")}<p>${esc(err.message || "Das Modul konnte nicht geladen werden.")} Prüf das Internet und versuch es nochmals.</p>`; return; }
+    }
     if (m) stop = await workPrepare(lab);
     if (S.view.name !== (m ? "module" : "room")) { if (stop) stop(); return; }
     const fr = document.createElement("iframe");
