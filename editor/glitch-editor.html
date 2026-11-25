@@ -610,6 +610,34 @@ select.in{appearance:none;padding-right:28px;background:#fff url("data:image/svg
 .mn{display:grid;gap:12px}
 .mn-scale{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-weight:800}.mn-scale input{width:100%;accent-color:var(--accent)}
 .mn-args{display:grid;gap:8px}
+/* ===== Immer Dark Mode (wie das Glitchlab): dunkle Flächen, helle Schrift, Neon-Akzente ===== */
+:root{--bg:#0B0619;--surface:#170E2E;--surface2:#21143F;--line:#3A2A66;--ink:#F3EDFF;--muted:#A99CCB;--accent:#A07CFF;--teal:#2EE6D6;--gold:#FFC21A;--ok:#3CFF7A;--bad:#FF5A6E;--dark:#04010B;color-scheme:dark}
+body{background:radial-gradient(900px 420px at 0% -10%,rgba(139,92,255,.22),transparent 60%),radial-gradient(700px 380px at 110% 0%,rgba(46,230,214,.12),transparent 60%),var(--bg)}
+.btn,.menu,.opt,.in,.order li,.dlg,.cn,.sort-card,.pin-pad button,.po,.ws-b,.wr-k,.su-c,.kk-f,.chat-head,.cm.cm-in span,.chat-opts{background-color:var(--surface2);color:var(--ink)}
+select.in{background-color:var(--surface2)}
+.btn,.opt,.in,.order li,.sort-card,.po,.ws-b,.wr-k,.su-c,.kk-f,.pin-pad button{border-color:#5B47A0}
+.btn.primary{background:var(--accent);color:#fff}
+.side-card .btn{color:var(--ink)}
+.logo-l{color:var(--ink)}
+.tab b{background:#2A1F4A;color:var(--ink)}
+.tab.done b{background:rgba(60,255,122,.2)}
+.tab.cur b{background:var(--accent);color:#fff}
+.tab.locked b{background:#140D26!important}
+.erkl{background:rgba(255,194,26,.09);border-color:rgba(255,194,26,.35)}
+.erkl.nach{background:rgba(60,255,122,.1)}
+.tipbtn{background:rgba(255,194,26,.15);color:var(--gold)}
+.opt.ok,.fb.ok,.ws-b.ok,.bz-card.ok,.su-list li.on,.mk-w.ok,.su-c.on{background:rgba(60,255,122,.18)!important}
+.opt.bad,.fb.bad,.ws-b.bad,.bz-card.bad,.mk-w.bad{background:rgba(255,90,110,.18)!important}
+.sb.on,.ws-b.slot.full,.mk-w.on,.su-c.sel{background:rgba(255,194,26,.22)}
+.pdf-box{background:rgba(46,230,214,.1)}
+.praes-head{background:color-mix(in srgb,var(--ec) 22%,#170E2E)}
+.bat i,.bz-time{background:#2A1F4A}
+.bz-card{background:#231A3E}
+.kk-b{background:#13283A}
+.chat{background:#120B26}
+.cm.cm-out.no span{background:#3A3350}
+.lab-top{grid-template-columns:auto minmax(190px,1fr) minmax(0,auto)}
+.logo-g,.logo-l{white-space:nowrap}
 </script>
 <script type="text/plain" id="rt-gcss">.glitch { display: inline-block; position: relative; line-height: 0; flex: none; }
 .glitch svg { width: 100%; height: 100%; overflow: visible; display: block; animation: gBob 2.6s ease-in-out infinite; animation-delay: var(--d, 0s); }
