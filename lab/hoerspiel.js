@@ -335,6 +335,13 @@ hsp_skript: Object.assign({}, DE, {
     items:[["🚜 Traktor",1],["🐄 Kuh",1],["🌾 Weizen",1],["🐓 Huhn",1],["🐖 Schwein",1],["🥕 Rüebli",1],["🐑 Schaf",1],["🚇 U-Bahn",0],["🏢 Hochhaus",0],["🚕 Taxi",0],["🛍️ Einkaufszentrum",0],["🎡 Riesenrad",0]]}
 })
 };
+/* Richtige Antwort nicht immer an erster Stelle: feste, gemischte Reihenfolge (POSMIX), bei jedem Laden gleich */
+const POSMIX = [1, 2, 0, 2, 1, 0, 1, 0, 2, 0, 2, 1];
+let qn = 0;
+Object.values(window.GLAB_GE_MODS_DE).forEach(m => m.sections.forEach(sec => (sec.type === "mc" ? sec.qs : []).forEach(q => {
+  const want = POSMIX[qn++ % POSMIX.length] % q.o.length, right = q.o.find(o => o[0] === q.a), rest = q.o.filter(o => o[0] !== q.a);
+  if (right) q.o = rest.slice(0, want).concat([right], rest.slice(want));
+})));
 Object.assign(window.GLAB_GE_MODS, window.GLAB_GE_MODS_DE);
 Object.keys(window.GLAB_GE_MODS_DE).forEach(m=>window.GLAB_GE_MODS[m].badges.forEach((b,k)=>window.GLAB_GE_BADGES.push(Object.assign({id:`${m}_${k+1}`, mod:m, art:ART(`${m}_${k+1}`)}, b))));
 
