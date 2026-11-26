@@ -869,13 +869,29 @@
   /* Sterne und Diplome aus dem Lab sammeln und gebündelt speichern */
   const labPending = {};
   let labT = null;
+  /* Hub-Id eines Lab-Moduls (NMG/MI: «lab-…», Deutsch: «de-hsp-…») */
+  const labModId = lab => (H.modules.find(m => m.kind === "lab" && m.lab === lab && !m.alias) || {}).id || "lab-" + lab;
+  function fixLabRows(rows) {
+    const map = {}; H.modules.filter(m => m.kind === "lab" && !m.alias && m.id !== "lab-" + m.lab).forEach(m => { map["lab-" + m.lab] = m.id; });
+    if (!rows.some(p => map[p.module_id])) return rows;
+    const out = rows.filter(p => !map[p.module_id]);
+    rows.filter(p => map[p.module_id]).forEach(p => {
+      const mid = map[p.module_id], k = out.findIndex(x => x.student_id === p.student_id && x.module_id === mid && x.activity_id === p.activity_id);
+      if (k < 0) { out.push(Object.assign({}, p, { module_id: mid })); return; }
+      const q = out[k] = Object.assign({}, out[k]);
+      const a = q.data || {}, b = p.data || {};
+      q.stars = Math.max(q.stars || 0, p.stars || 0);
+      q.data = Object.assign({}, b, a, { badges: [...new Set([...(a.badges || []), ...(b.badges || [])])], fed: Math.max(a.fed || 0, b.fed || 0), deaths: Math.max(a.deaths || 0, b.deaths || 0) });
+    });
+    return out;
+  }
   function labReport(lab, r) {
     labPending[lab] = r; clearTimeout(labT); labT = setTimeout(labFlush, 1200);
   }
   async function labFlush() {
     for (const lab of Object.keys(labPending)) {
       const r = labPending[lab]; delete labPending[lab];
-      const mid = "lab-" + lab, p = progOf(mid, "lab"), d = (p && p.data) || {};
+      const mid = labModId(lab), p = progOf(mid, "lab"), d = (p && p.data) || {};
       const newBadge = (r.badges || []).some(b => !(d.badges || []).includes(b));
       if (!p ? !(r.stars || r.badges.length || r.fed || r.deaths) : !(r.stars > p.stars || newBadge || r.fed > (d.fed || 0) || r.deaths > (d.deaths || 0))) continue;
       try {
@@ -2266,6 +2282,9 @@
      ================================================================= */
   try { S.be = await window.GLBackend.create(); }
   catch (e) { app.innerHTML = `<main class="wrap gate"><div class="card"><h1>Keine Verbindung</h1><p>Das Glitchlab kann die Datenbank gerade nicht laden. Prüf das Internet und lade die Seite neu.</p></div></main>`; return; }
+  /* Lab-Module mit eigener Hub-Id (z. B. Deutsch «de-hsp-…»): Sterne, die früher unter «lab-…» gespeichert wurden, beim Laden dazuzählen */
+  ["me", "classProgress"].forEach(fn => { const orig = S.be[fn] && S.be[fn].bind(S.be); if (!orig) return;
+    S.be[fn] = async (...a) => { const r = await orig(...a); if (Array.isArray(r)) return fixLabRows(r); if (r && Array.isArray(r.progress)) r.progress = fixLabRows(r.progress); return r; }; });
   /* Rückkehr vom Bestätigungslink in der E-Mail (Supabase hängt Daten an die Adresse an) */
   const authHash = new URLSearchParams((location.hash || "").replace(/^#/, "") + "&" + (location.search || "").replace(/^\?/, ""));
   if ((authHash.get("type") === "recovery" || S.be.recovering) && !authHash.get("error")) {
