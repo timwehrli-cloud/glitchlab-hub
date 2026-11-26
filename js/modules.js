@@ -229,7 +229,7 @@
    ["geschichte", "Alles beginnt mit einer guten Geschichte", 70, "Vom Buch zum Hörspiel: «Norde isch, wo obe isch» mit Paul und Mel. Mit Audio 1 aus Deutsch Sechs."],
    ["skript", "Das Hörspielskript", 90, "Regieanweisungen verstehen und selbst schreiben: Finn und Jola fahren Traktor. Mit Audio 2 aus Deutsch Sechs."]]
     .forEach(([k, title, minutes, teaser]) => HSP({ id: "de-hsp-" + k, kind: "lab", lab: "hsp_" + k, title, minutes, teaser,
-      activities: [{ id: "lab", title, maxStars: null }] }));
+      activities: [{ id: "lab", title, maxStars: null }, { id: "alt", title: "Sterne aus der ersten Version (Etappen)", maxStars: null, legacy: true }] }));
   /* Noch in Arbeit: erscheinen als «Bald» */
   [["erzaehler", "Erzählerinnen und Erzähler", "Erzählrede und Figurenrede, Geräusche und Musik: «Der 13. Februar» und «Krabat»."],
    ["vertiefung", "Vertiefung: Wortschatz", "Regieanweisungen, lebendige Dialoge, Geräusche, Schauplatz und Stimmung."],

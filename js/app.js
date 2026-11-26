@@ -872,6 +872,14 @@
   /* Hub-Id eines Lab-Moduls (NMG/MI: «lab-…», Deutsch: «de-hsp-…») */
   const labModId = lab => (H.modules.find(m => m.kind === "lab" && m.lab === lab && !m.alias) || {}).id || "lab-" + lab;
   function fixLabRows(rows) {
+    /* Erste Version der Hörspiel-Module (Editor, Aufgaben «etappe-…»): diese Sterne bleiben, gesammelt als Aufgabe «alt» */
+    const legacy = new Set(H.modules.filter(m => m.activities.some(x => x.legacy)).map(m => m.id));
+    if (rows.some(p => legacy.has(p.module_id) && /^etappe-/.test(p.activity_id))) {
+      const keep = rows.filter(p => !(legacy.has(p.module_id) && /^etappe-/.test(p.activity_id))), sum = {};
+      rows.filter(p => legacy.has(p.module_id) && /^etappe-/.test(p.activity_id)).forEach(p => { const k = (p.student_id || "") + "|" + p.module_id;
+        sum[k] = sum[k] || { student_id: p.student_id, module_id: p.module_id, activity_id: "alt", stars: 0, data: {}, team: [] }; sum[k].stars += p.stars || 0; });
+      rows = keep.concat(Object.values(sum));
+    }
     const map = {}; H.modules.filter(m => m.kind === "lab" && !m.alias && m.id !== "lab-" + m.lab).forEach(m => { map["lab-" + m.lab] = m.id; });
     if (!rows.some(p => map[p.module_id])) return rows;
     const out = rows.filter(p => !map[p.module_id]);
@@ -1620,7 +1628,7 @@
     /* Fortschritt in den Bausteinen des Moduls, in dem das Kind gerade ist */
     const bausteine = (kid, mid) => { const m = mid && H.modules.find(x => x.id === mid); if (!m || !m.activities || !m.activities.length || m.noStars) return "";
       const done = lpStatOf(LP.prog, kid, m) === "fertig";
-      const acts = m.activities.map((x, n) => { const v = (LP.prog.find(p => p.student_id === kid && p.module_id === m.id && p.activity_id === x.id) || {}).stars || 0, mx = x.maxStars || 0;
+      const acts = m.activities.filter(x => !x.legacy).map((x, n) => { const v = (LP.prog.find(p => p.student_id === kid && p.module_id === m.id && p.activity_id === x.id) || {}).stars || 0, mx = x.maxStars || 0;
         return { n: n + 1, t: x.title || `Baustein ${n + 1}`, v: done ? mx || v : v, mx, full: done || (mx ? v >= mx : v > 0) }; });
       const cur = acts.find(a => !a.full) || null, sum = acts.reduce((a, x) => a + Math.min(x.v, x.mx || x.v), 0), max = acts.reduce((a, x) => a + x.mx, 0);
       return `<div class="who-bs" aria-label="Fortschritt in ${esc(m.title)}">${acts.map(a => `<span class="who-b${a.full ? " done" : a === cur ? " cur" : a.v ? " part" : ""}" title="${esc(a.t)}: ${a.v}${a.mx ? " von " + a.mx : ""} ★">${a.n}</span>`).join("")}
